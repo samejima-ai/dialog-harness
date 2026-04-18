@@ -157,9 +157,40 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 - ...
 - ドメイン間インターフェース: [概要。詳細は DOMAINS.md]
 
+## Lifecycle（1→5運用対応）
+- Lifecycle: [L=0 / L=1 / L=2]
+- 判定根拠: [history/ の有無、CHANGELOG.md 最終更新日]
+
+## 履歴層設定（Lifecycle ≥ 1 の場合のみ記載）
+- archive 移動年数: 2 年（デフォルト、上書き可）
+- 儀式拒否連続警告閾値: 5 回
+- 儀式スキップ連続警告閾値: 5 回
+
+## 履歴更新承認設定（Lifecycle ≥ 1 の場合のみ記載）
+- レベルA（自動承認）: スキップ
+- レベルB（確認推奨）: 通知のみ、デフォルト承認
+- レベルC（必須承認）: 必ず確認
+
 ## 判定ログ
 [対話の中で得られた判定材料となる発言の要約]
 ```
+
+---
+
+## history/ 配下テンプレート（Lifecycle ≥ 1）
+
+既存プロジェクト継続時は `history/` 配下に以下を配置する。各ファイルの詳細テンプレートは `history-layer-spec.md` を参照。
+
+- `history/SUMMARY.md` — 自動生成される圧縮サマリ（L0振り返り儀式で使用）
+- `history/INTENT.md` — 機能の意図・却下案・廃止理由・確度メタデータ
+- `history/CHANGELOG.md` — 時系列の機能変遷（献上サイクル単位で追記）
+- `history/REGIME-LOG.md` — 判定×実績の対応表、儀式記録
+- `history/ARCH-DECISIONS.md` — ADR形式の軽量版（任意）
+- `history/PATTERNS.md` — 罠／成功パターン集（任意）
+- `history/archive/` — 廃止から2年経過した INTENT の退避先
+
+訂正は取り消し線方式＋理由併記（`history-layer-spec.md` の「訂正記述」参照）。
+人間は承認のみ行い、更新本体は AI が書く。
 
 ---
 
