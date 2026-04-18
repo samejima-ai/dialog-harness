@@ -28,10 +28,12 @@ description: >
 
 ```
 1. ドキュメント＋開発環境の受領
+1.5. Lifecycle ≥ 1 の場合: history/INTENT.md / CHANGELOG.md を読み込む
+     儀式拒否（E2）時の背景照合タスクもここで受領
 2. REGIME.md 読み込み → モードに応じて実行フローを選択
    L2 → layer2-orchestrator に委譲してここで終了
    M1/M2 → 次へ
-3. 仕様レビュー
+3. 仕様レビュー（過去INTENTとの整合性も含む）
    → 問題あり: 仕様レビュー結果を即献上（ここで終了）
    → 問題なし: 次へ
 4. 実装タスク分解
@@ -42,7 +44,11 @@ description: >
 7. M2の場合: independent-reviewer を起動（常時必須）
    → PASS: 次へ
    → FAIL: 差戻し理由に従い6に戻る（自力修正上限内）
-8. 成果物＋フィードバックレポート＋体制事後評価を献上
+7.5. Lifecycle ≥ 1 の場合: 履歴層更新差分を3段階承認で作成
+     - A（自動承認）: CHANGELOG.md 追記、SUMMARY.md 再生成
+     - B（確認推奨）: INTENT.md 新規追加、REGIME-LOG.md 更新
+     - C（必須承認）: INTENT.md 廃止・訂正、REGIME.md スコア変更
+8. 成果物＋フィードバックレポート＋体制事後評価＋履歴層更新差分を献上
 ```
 
 ## モード別の実行フロー
@@ -203,11 +209,34 @@ independent-reviewer の役割と設計原則は `.claude/skills/independent-rev
 | 人間へ報告 | 技術的実現不可能、要件矛盾、パフォーマンス要件未達 | フィードバックレポート |
 | 即献上 | 仕様不足で開発続行不可能 | 仕様レビュー結果 |
 | 上位委譲 | REGIME.md が L2 判定 | layer2-orchestrator に委譲 |
+| 履歴層更新 | Lifecycle ≥ 1 での INTENT/CHANGELOG/REGIME-LOG 更新 | 3段階承認で献上差分化 |
+
+## 履歴層更新の責務（Lifecycle ≥ 1）
+
+既存プロジェクト（Lifecycle L=1/L=2）では、献上時に history/ 配下の更新差分を作成する。
+詳細は `references/delivery-format.md` の「履歴層更新差分」セクション参照。
+
+### 更新対象の3段階分類
+
+| レベル | 対象 | 承認 |
+|---|---|---|
+| A（自動承認） | CHANGELOG.md 追記、SUMMARY.md 再生成、PATTERNS.md への追記 | 人間確認なしで適用 |
+| B（確認推奨） | INTENT.md 新規追加、REGIME-LOG.md 更新、ARCH-DECISIONS.md 追記 | 通知のみ、デフォルト承認 |
+| C（必須承認） | INTENT.md の廃止・訂正、REGIME.md スコア変更、確度メタデータ上書き | 必ず人間確認 |
+
+### 儀式拒否（E2）時の背景照合
+
+L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙の追加タスクとして実行：
+- 過去 INTENT との整合性チェック（実装完了後）
+- 廃止機能への回帰検出
+- 却下案の再実装検出
+
+矛盾検出時は DELIVERY.md の「履歴整合性チェック」セクションで報告（人間に質問せず報告のみ）。
 
 ## 参照ドキュメント
 
-- `references/spec-review-checklist.md` — 仕様レビューの詳細チェックリスト
-- `references/delivery-format.md` — 献上物のフォーマット定義（VERIFICATION.md テンプレ・体制事後評価含む）
+- `references/spec-review-checklist.md` — 仕様レビューの詳細チェックリスト（過去INTENT整合性含む）
+- `references/delivery-format.md` — 献上物のフォーマット定義（VERIFICATION.md・体制事後評価・履歴層更新差分含む）
 
 ## 関連スキル（ハーネス側 Level A）
 
