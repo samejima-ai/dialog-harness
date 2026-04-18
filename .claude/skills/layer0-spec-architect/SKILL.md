@@ -126,6 +126,13 @@ description: >
 - ズレがなければステップ6に進む
 - 「だいたいOK」は許容しない。曖昧な承認には確認を入れる
 
+**実行前の推奨モデル提示**：
+- REGIME.md 確定時点で `references/model-recommendations.md` を読み込む
+- 判定モードに応じた推奨モデル構成を **モード / 推奨 / 乖離 / 根拠** の4項目骨子で動的に生成し、ユーザーへ提示する
+- 現使用モデルが推奨と乖離している場合は明示的に指摘する
+- ハイブリッド運用（Layer 0 と Layer 1 で異なるモデル）の提案も行う
+- ユーザーが推奨と異なるモデルで続行を選択した場合はそのまま進める（セーフティネット）
+
 ### 6. 開発環境の設計・構築
 
 認識ズレ解消済みのドキュメントとモード判定結果を入力として、以下を生成する。
@@ -221,5 +228,6 @@ project-root/
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
 - `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、Lifecycle判定）
 - `references/dialog-questions.md` — 非エンジニア向け対話質問例集（振り返り儀式テンプレ含む）
+- `references/model-recommendations.md` — 実行前の推奨モデル提示（モード別・ハイブリッド運用・AI能力バージョン別差分対策）
 - `references/history-layer-spec.md` — 履歴層（history/）のスキーマ・訂正・archive・承認レベル
 - `references/ritual-protocol.md` — 振り返り儀式プロトコル（4レベル判定・F1〜F3・E1/E2対応）
