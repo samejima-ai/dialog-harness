@@ -41,7 +41,7 @@ description: >
 6. 自己検証（計算的センサー＋推論的センサー）
    → 失敗: 自力修正して6に戻る
    → 修正不可能: フィードバックレポートに記載して7へ
-7. M2の場合: independent-reviewer を起動（常時必須）
+7. M2の場合: layer1-independent-reviewer を起動（常時必須）
    → PASS: 次へ
    → FAIL: 差戻し理由に従い6に戻る（自力修正上限内）
 7.5. Lifecycle ≥ 1 の場合: 履歴層更新差分を3段階承認で作成
@@ -60,15 +60,15 @@ REGIME.md の判定結果に従い、以下のように分岐する。
 - 仕様レビューを簡略化（最低粒度チェックのみ）
 - 計算的センサー中心で検証
 - 推論的センサーは自己検証で兼用可（軽量運用）
-- **independent-reviewer は起動しない**
+- **layer1-independent-reviewer は起動しない**
 - 献上物は DELIVERY.md のみ（VERIFICATION.md / INTEGRATION.md は生成しない）
 
 ### M2 標準モード（通常パス）
 
 - 上記処理フローを全ステップ実行
 - この規格のデフォルト動作
-- ステップ7の independent-reviewer 起動は**常時必須**
-- L1自己検証 PASS + independent-reviewer PASS の両方が成立したら献上
+- ステップ7の layer1-independent-reviewer 起動は**常時必須**
+- L1自己検証 PASS + layer1-independent-reviewer PASS の両方が成立したら献上
 - 判定が割れた場合は FAIL 扱いにして原因調査→差戻し
 
 ### L2 統括指揮モード
@@ -170,7 +170,7 @@ sensors/ の定義に従い、成果物を検証する。
 
 **M2の場合は常時必須**。M1では実行しない。
 
-- `independent-reviewer` スキル（ハーネス側 Level A）を起動する
+- `layer1-independent-reviewer` スキル（ハーネス側 Level A）を起動する
 - 入力: SPEC.md / DONT.md / REGIME.md / sensors/ / 成果物パス
 - 出力: `delivery/VERIFICATION.md`（実装コンテキスト隔離原則）
 - 判定:
@@ -178,7 +178,7 @@ sensors/ の定義に従い、成果物を検証する。
   - FAIL → 差戻し理由に従いステップ6に戻る（自力修正上限内）
   - 自力修正上限を超えた場合は未解決事項としてフィードバックに記載し献上
 
-independent-reviewer の役割と設計原則は `.claude/skills/independent-reviewer/SKILL.md` を参照。
+layer1-independent-reviewer の役割と設計原則は `.claude/skills/layer1-independent-reviewer/SKILL.md` を参照。
 プロジェクト差異は sensors/ や `sensors/review-checklist.md` に閉じる（agent本体はプロジェクト不変）。
 
 ### 8. 献上
@@ -240,6 +240,6 @@ L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙�
 
 ## 関連スキル（ハーネス側 Level A）
 
-- `.claude/skills/independent-reviewer/` — M2以上で常時起動する独立検証agent
+- `.claude/skills/layer1-independent-reviewer/` — M2以上で常時起動する独立検証agent
 - `.claude/skills/layer2-orchestrator/` — L2判定時の統括指揮（委譲先）
-- `.claude/skills/integration-verifier/` — L2オーケストレータが使う統合検証agent
+- `.claude/skills/layer2-integration-verifier/` — L2オーケストレータが使う統合検証agent

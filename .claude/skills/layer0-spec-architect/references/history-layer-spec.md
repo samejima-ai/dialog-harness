@@ -95,7 +95,7 @@ project-root/
   - ~~在庫超過時エラー → 在庫管理側との競合状態回避~~
   - **【訂正 2026-04-18】** 在庫超過時エラー → UX上の即時フィードバックが目的。
     - 訂正理由: F005実装時に在庫管理側のロック機構を確認、競合状態の問題はそちらで解決済みと判明
-    - 検出: independent-reviewer
+    - 検出: layer1-independent-reviewer
     - 合議: 人間承認（2026-04-18）
 ```
 
@@ -151,7 +151,7 @@ project-root/
 - **判定**: M2 (S=4, U=1, R=2)
 - **Lifecycle**: L=1（拡張）
 - **実績**: 妥当
-- **根拠**: independent-reviewer が2件指摘、自力修正1回ループ
+- **根拠**: layer1-independent-reviewer が2件指摘、自力修正1回ループ
 - **儀式レベル**: 2（動的格上げあり: 1→2、却下案再提案検出）
 - **儀式拒否**: なし  <!-- ありの場合は連続回数も記録 -->
 - **次回示唆**: 同規模なら M2 継続。F010 追加で独立ドメイン 4→5 に近づいたため L2 閾値に注意
@@ -237,7 +237,7 @@ ADR（Architecture Decision Record）形式の軽量版。L1 が実装時に HOW
 
 ## PATTERNS.md（任意）
 
-independent-reviewer が検証時に発見した罠パターンを蓄積。L1 が次回実装前に参照する。
+layer1-independent-reviewer が検証時に発見した罠パターンを蓄積。L1 が次回実装前に参照する。
 
 ```markdown
 # パターン集
@@ -246,7 +246,7 @@ independent-reviewer が検証時に発見した罠パターンを蓄積。L1 �
 
 ### P-001: 在庫チェックの二重実装
 - **発見日**: 2026-03-15
-- **検出**: independent-reviewer
+- **検出**: layer1-independent-reviewer
 - **症状**: 機能AとBで独立に在庫チェック → 整合性バグ
 - **対策**: 在庫チェックは F005（在庫管理）経由のみ許可
 

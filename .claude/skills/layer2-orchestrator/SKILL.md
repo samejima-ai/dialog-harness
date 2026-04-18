@@ -36,8 +36,8 @@ M1/M2 で誤起動しないこと。疑わしい場合は L0 に差し戻して 
    - 各L1の完了を待機・同期
 
 3. **検証フローの手配**
-   - 各L1完了後に independent-reviewer を必須起動（M2同等のL1検証）
-   - 全L1が PASS したら integration-verifier を起動
+   - 各L1完了後に layer1-independent-reviewer を必須起動（M2同等のL1検証）
+   - 全L1が PASS したら layer2-integration-verifier を起動
    - FAIL時の差戻し判断（L1差戻し or L0仕様見直し or L2再設計）
 
 4. **献上の統括**
@@ -51,8 +51,8 @@ M1/M2 で誤起動しないこと。疑わしい場合は L0 に差し戻して 
 2. サブドメイン分割 → DOMAINS.md 生成
 3. ドメイン別 SPEC / sensors の切り出し
 4. 各ドメインで L1 起動（並列可能なものは並列）
-5. 各L1完了 → independent-reviewer 必須起動
-6. 全L1 PASS → integration-verifier 起動
+5. 各L1完了 → layer1-independent-reviewer 必須起動
+6. 全L1 PASS → layer2-integration-verifier 起動
 7. PASS → 統合献上 / FAIL → 差戻し判断
 ```
 

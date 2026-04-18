@@ -34,7 +34,7 @@ Layer 0（spec-architect）のステップ5「人間レビュー」時点で、R
 
 費用対効果最適化のため、レイヤーごとに異なるモデルを使う構成も有効。
 
-| 構成 | Layer 0 | Layer 1 | independent-reviewer | 適用条件 |
+| 構成 | Layer 0 | Layer 1 | layer1-independent-reviewer | 適用条件 |
 |---|---|---|---|---|
 | 最高品質 | Opus 4.7 | Opus 4.7 | Opus 4.7 | R=3（本番・金銭絡み）・L2 |
 | **標準推奨** | **Opus 4.7** | **Sonnet 4.6** | **Sonnet 4.6** | M2 デフォルト |
@@ -45,7 +45,7 @@ Layer 0（spec-architect）のステップ5「人間レビュー」時点で、R
 
 - Layer 0 は**対話と仕様構造化**が本質タスク。認識ズレ解消の精度がプロジェクト全体の品質を決めるため、上位モデルの投資対効果が高い
 - Layer 1 以降は**構造化された手順の遂行**が主。Sonnet 系で Opus の 95〜99% の品質を約3分の1のコストで達成可能
-- independent-reviewer は**実装コンテキスト隔離**が要求される。Sonnet 4.6 でも実行可能だが、暗黙の検証観点を `sensors/review-checklist.md` に明文化することが前提
+- layer1-independent-reviewer は**実装コンテキスト隔離**が要求される。Sonnet 4.6 でも実行可能だが、暗黙の検証観点を `sensors/review-checklist.md` に明文化することが前提
 
 ---
 
@@ -79,12 +79,12 @@ SK 設計の基準点。全モード・全ステップで想定通り動作す�
 対策：
 - SK description を明示的なキーワードで補強
 - 最初は M1 単体モードで挙動を確認してから M2 以上に移行
-- independent-reviewer を跨ぎ検証として併用（Claude + GPT のクロスチェック）
+- layer1-independent-reviewer を跨ぎ検証として併用（Claude + GPT のクロスチェック）
 
 ### GPT-5.4 mini / Gemini 3 Flash 運用時
 
 - M1 では実用水準
-- M2 では Layer 1 のみに限定し、Layer 0 と independent-reviewer はフラッグシップを使う
+- M2 では Layer 1 のみに限定し、Layer 0 と layer1-independent-reviewer はフラッグシップを使う
 - L2 は非推奨
 
 ### Haiku 4.5 / GPT-5.4 nano / Flash-Lite 系運用時
@@ -97,7 +97,7 @@ SK 設計の基準点。全モード・全ステップで想定通り動作す�
 対策：
 - M1 限定運用
 - 使い捨てツール・実験用途に限る
-- independent-reviewer は起動しない前提で設計
+- layer1-independent-reviewer は起動しない前提で設計
 
 ---
 
@@ -108,7 +108,7 @@ Layer 0 が REGIME.md 確定後、以下の4項目骨子で動的に提示文面
 | 項目 | 記載内容 |
 |---|---|
 | モード | 判定モード（M1/M2/L2）と判定根拠の要約 |
-| 推奨 | Layer 0 / Layer 1 / independent-reviewer の推奨モデル構成（ハイブリッド運用を含む） |
+| 推奨 | Layer 0 / Layer 1 / layer1-independent-reviewer の推奨モデル構成（ハイブリッド運用を含む） |
 | 乖離 | 現使用モデルが推奨と乖離している場合、具体的に何がどう劣化するか |
 | 根拠 | 推奨の根拠（本ドキュメントのどのセクションから引いたか） |
 

@@ -1,10 +1,10 @@
 ---
-name: integration-verifier
+name: layer2-integration-verifier
 description: >
   L2発動時のみ起動される汎用統合検証スキル。
   複数L1ドメインの成果物が揃った後、跨ぎドメイン整合性・全体不変条件・E2E動作を検証する。
   REGIME.md でモードが L2 と判定された場合に layer2-orchestrator から起動される。
-  単一ドメインの成果物レビューはトリガーしない（それは independent-reviewer の責務）。
+  単一ドメインの成果物レビューはトリガーしない（それは layer1-independent-reviewer の責務）。
   agent本体はプロジェクト不変。プロジェクト差異は INTEGRATION.md チェックリストと統合sensorsに閉じる。
 ---
 
@@ -14,7 +14,7 @@ L2配下のL1群成果物を横断的に検証する汎用agent。
 
 ## 設計原則
 
-- **agent本体はプロジェクト不変**。independent-reviewer と同一骨格（フラクタル原則）
+- **agent本体はプロジェクト不変**。layer1-independent-reviewer と同一骨格（フラクタル原則）
 - **入力と照合対象が異なるだけ**: 対象が「単体成果物 vs SPEC」から「複数成果物 vs 統合仕様」に変わる
 - 各L1ドメインの VERIFICATION.md が全てPASSであることを前提条件とする（FAIL が残っていれば先にL1差戻し）
 - agent間通信は自然言語経由で情報損失が発生することを前提に、ドキュメント化された契約のみを信頼する
@@ -70,7 +70,7 @@ L2配下のL1群成果物を横断的に検証する汎用agent。
 
 ## プロジェクト不変性の担保
 
-- independent-reviewer と同じ原則:
+- layer1-independent-reviewer と同じ原則:
   - agent本体を個別プロジェクト用にカスタマイズしない
   - プロジェクト差異は `sensors/integration/` と `DOMAINS.md` に閉じる
   - 特殊な統合ルールが必要な場合はチェックリスト追加で対応
