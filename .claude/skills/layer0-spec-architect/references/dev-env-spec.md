@@ -46,7 +46,7 @@ AI自律開発環境を構成するRL/SK/センサーの記述フォーマット
 
 **重要な配置原則 — Level A と Level B の区別**:
 
-- **Level A（ハーネス自身）**: 汎用スキル（layer0-spec-architect, layer1-autonomous-dev, independent-reviewer, integration-verifier, layer2-orchestrator）はハーネスリポジトリ側にのみ存在する。プロジェクト側で再生成・コピーしない
+- **Level A（ハーネス自身）**: 汎用スキル（layer0-spec-architect, layer1-autonomous-dev, layer1-independent-reviewer, layer2-integration-verifier, layer2-orchestrator）はハーネスリポジトリ側にのみ存在する。プロジェクト側で再生成・コピーしない
 - **Level B（このプロジェクト）**: プロジェクト固有のスキルのみを置く。検証agentの本体はここには置かない（agent本体はプロジェクト不変。差異はチェックリスト/sensorsに閉じる）
 
 ### 配置規約
@@ -147,7 +147,7 @@ LLMによる確率的判定。仕様合致の自己評価に使う。
 
 ### sensors/integration/（L2のみ）
 
-L2発動時の統合検証用 sensors。integration-verifier が参照する。
+L2発動時の統合検証用 sensors。layer2-integration-verifier が参照する。
 
 ```
 sensors/integration/
@@ -189,9 +189,9 @@ sensors/integration/
 - .claude/skills/ （プロジェクト固有のみ。検証agent本体はハーネス側で持つ）
 - sensors/computational.md
 - sensors/inferential.md
-- sensors/review-checklist.md（independent-reviewer がプロジェクト固有項目を参照する場合）
+- sensors/review-checklist.md（layer1-independent-reviewer がプロジェクト固有項目を参照する場合）
 
-independent-reviewer の扱い：
+layer1-independent-reviewer の扱い：
 - skill本体は**ハーネス側 Level A** に存在するため、プロジェクトでは再生成しない
 - プロジェクト固有の検証観点が必要な場合のみ `sensors/review-checklist.md` を追加
 
@@ -204,7 +204,7 @@ M2の構成に加え、L2オーケストレータと統合検証の定義を追�
 - 各ドメイン配下の部分 SPEC（SPEC.md から切り出し）
 - sensors/integration/ 配下の統合sensors（contracts.md, invariants.md, e2e.md）
 
-layer2-orchestrator / integration-verifier の扱い：
+layer2-orchestrator / layer2-integration-verifier の扱い：
 - skill本体は**ハーネス側 Level A** に存在するため、プロジェクトでは再生成しない
 - プロジェクト差異は DOMAINS.md と sensors/integration/ に閉じる
 
@@ -240,3 +240,25 @@ layer2-orchestrator / integration-verifier の扱い：
 - 動的読み込みファイルへのパスはINDEX.mdに明記する
 - エージェントが「何を読めばよいか」を判断できるよう、INDEX.mdの目次を正確に保つ
 - REGIME.md はモード分岐判断に使うため、Layer 1 起動時に必ず読み込む
+
+---
+
+## ARCパターン別追加センサー
+
+REGIME.md の ARC 選択に応じて、sensors/ 配下に追加する項目が変わる。
+パターン別の詳細は `arc-patterns/{monolith,realtime-pubsub,event-sourcing}.md` の「追加センサー項目」セクションを参照。
+
+### monolith（デフォルト）
+- 追加センサーは不要。`sensors/computational.md` と `sensors/inferential.md` のデフォルト構成で充足
+
+### realtime-pubsub
+- `sensors/computational.md` に追記: 接続ゲートウェイのロードテスト、ブローカー障害時のフェイルオーバー検証
+- `sensors/inferential.md` に追記: 配信レイテンシ p95 の SLO 充足、再接続時の重複排除、接続中ユーザ数と subscriber 数の整合
+
+### event-sourcing
+- `sensors/computational.md` に追記: イベントスキーマ互換性チェック、プロジェクション再構築のドライラン
+- `sensors/inferential.md` に追記: aggregate 境界と整合性境界の一致、訂正イベントの追記性、最終整合性前提の UI 設計、監査要件充足
+
+### 追加センサーの作成タイミング
+ARC が monolith 以外に確定した時点で Layer 0 が sensors/ に該当項目を追記する。
+ARC 変更時は sensors/ の再評価が必須（旧パターンの項目は残し、新パターンの項目を追記する）。

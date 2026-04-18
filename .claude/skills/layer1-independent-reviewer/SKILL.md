@@ -1,5 +1,5 @@
 ---
-name: independent-reviewer
+name: layer1-independent-reviewer
 description: >
   L1（autonomous-dev）の成果物を、実装コンテキストから隔離した状態でSPEC.md/DONT.md/sensorsと照合する汎用独立検証スキル。
   M2以上のモードで必須起動される（L1から自動起動される想定）。
@@ -17,7 +17,7 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
 - **agent本体はプロジェクト不変**。プロジェクト差異は入力データ（SPEC/DONT/sensors/checklist）に閉じる
 - **実装コンテキスト隔離**。L1実装エージェントの生成コンテキストを引き継がない（自己検証バイアス排除）
 - **入力はドキュメントと成果物のみ**。実装時の試行錯誤ログ・中間思考は参照しない
-- フラクタル原則により、L2の integration-verifier と同一骨格（入力と照合対象が異なるだけ）
+- フラクタル原則により、L2の layer2-integration-verifier と同一骨格（入力と照合対象が異なるだけ）
 
 ## 責務
 
@@ -89,7 +89,7 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 |---|---|
 | M1（単体モード） | 起動しない（L1自己検証のみ） |
 | M2（標準モード） | **常時必須起動** |
-| L2（統括指揮発動） | L1単位で起動 + integration-verifier が上位で追加起動 |
+| L2（統括指揮発動） | L1単位で起動 + layer2-integration-verifier が上位で追加起動 |
 
 ## プロジェクト不変性の担保
 

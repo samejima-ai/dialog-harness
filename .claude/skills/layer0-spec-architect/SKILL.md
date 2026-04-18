@@ -23,7 +23,7 @@ description: >
 - 認識のズレがゼロになるまでレビューループを回す。ズレが残ったまま開発環境構築に進まない
 - 開発モードは規模・不確実性・リスクから判定する。人間組織論に基づく職種軸分業は採用しない
 - 単体エージェントで足りる場合は単体で回す。分業は根拠がある場合のみ
-- **フラクタル原則**: L0⇄人間の対話パターン = L1内 spec⇄code 照合 = L2⇄L1群 指示⇄検証 は同一形状
+- **フラクタル原則**: L0⇄人間の対話パターン = L1内 spec⇄code 照合 = L2⇄L1群 指示⇄検証 は同一形状。本拡張でも L3 運用層を新設しない方針を徹底する（運用インシデントは新仕様発見として L0 対話へ戻す）
 
 ## 処理フロー
 
@@ -33,7 +33,7 @@ description: >
      新規プロジェクト（L=0）ではレベル0で完全スキップ
      既存プロジェクト（L=1/L=2）では history/ を読み込み過去文脈と照合
 2. 対話による具体化（目的・機能・条件・制約の引き出し）
-   並行してモード判定情報も取得（規模・不確実性・リスク）
+   並行してモード判定情報も取得（規模・不確実性・リスク・NFR・ARC・ドメイン文脈・権限レベル）
    儀式で検出した矛盾・復活要求・再提案はここで解消する
 3. ドキュメント化（メタ仕様に従い構造化）
 4. モード判定（S/U/Rスコアリング + L2発動閾値チェック + Lifecycle記録）
@@ -63,7 +63,8 @@ description: >
 人間のイメージを「機能×条件」の粒度まで引き上げる。これがAI自律開発の最低ライン。
 
 並行してモード判定に必要な情報（S/U/R スコア算出用）も取得する。
-非エンジニア向けの質問例は `references/dialog-questions.md` を参照。
+非エンジニア向けの質問例は `references/dialog-questions.md` を参照（NFR・ARC・ドメイン文脈・権限レベルの質問例も末尾セクションに含む）。
+業界・業務固有の前提条件を引き出す対話プロトコルは `references/domain-context-dialog.md` を参照。
 
 粒度の目安：
 
@@ -87,13 +88,17 @@ description: >
 
 生成するドキュメント：
 - **INDEX.md** — 全体目次（100行以内）。他ドキュメントへの参照を集約
-- **SPEC.md** — 機能仕様（WHY / WHAT / 条件 / 優先順位 / 制約）
+- **SPEC.md** — 機能仕様（WHY / WHAT / 条件 / 優先順位 / 制約）。該当プロジェクトはデータモデル進化セクションを含む（詳細: `references/schema-evolution.md`）
 - **DONT.md** — スコープ外の明示（現時点でAI自律開発が困難な領域）
+- **DOMAIN-CONTEXT.md**（任意） — 業界・業務固有の前提条件。該当プロジェクトのみ。機密は `DOMAIN-CONTEXT.secret.md` に分離
 
 ### 4. モード判定
 
-規模・不確実性・リスクの3軸でスコアリングし、L2発動閾値もチェックして開発モードを決定する。
+規模・不確実性・リスク・NFR の 4 軸でスコアリングし、L2発動閾値もチェックして開発モードと ARC・権限レベルを決定する。
 判定プロトコルの詳細は `references/regime-assessment.md` を参照。
+NFR スコアリング（5カテゴリ × 0-3 点、オーバーライド4条件）は `references/nfr-scoring.md` を参照。
+ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `references/arc-patterns/` 配下 3 ファイルを参照。
+権限レベル（L0-2 / L0-3）と介入チャネル（C1/C2/C3）は `references/permission-delegation.md` を参照。
 
 判定アウトプット：
 - **REGIME.md** — モード判定結果（スコア・モード・根拠・AI能力バージョン・L2の場合はサブドメイン構成）
@@ -103,8 +108,8 @@ description: >
 | モード | 構成 | 適用目安 |
 |---|---|---|
 | M1 単体モード | L0 → L1（自己検証のみ） | 実験・小規模・自分だけ使う |
-| M2 標準モード | L0 → L1 + independent-reviewer | 標準（全体の90%以上） |
-| L2 統括指揮モード | L0 → L2オーケストレータ → L1群 + integration-verifier | 大規模（全体の<10%） |
+| M2 標準モード | L0 → L1 + layer1-independent-reviewer | 標準（全体の90%以上） |
+| L2 統括指揮モード | L0 → L2オーケストレータ → L1群 + layer2-integration-verifier | 大規模（全体の<10%） |
 
 判定ルール（要点）：
 1. L2発動閾値（SPEC>15k tok / >80 files or >10k 行 / domains ≥5 / 並行 ≥3 / 1サイクル >2h のいずれか）を超えたら **L2**
@@ -146,7 +151,7 @@ description: >
 | M2 | 標準構成（CLAUDE.md + REGIME.md + .claude/skills/ + sensors/computational + inferential + review-checklist） |
 | L2 | M2 + DOMAINS.md + 各ドメイン別部分SPEC + sensors/integration/ |
 
-**重要**: 検証agent（independent-reviewer / integration-verifier）や layer2-orchestrator の本体は**ハーネス側 Level A** に存在し、プロジェクト側で再生成しない。プロジェクト差異は sensors やチェックリストに閉じる。
+**重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は**ハーネス側 Level A** に存在し、プロジェクト側で再生成しない。プロジェクト差異は sensors やチェックリストに閉じる。
 
 生成する開発環境構成（M2 標準）：
 - **CLAUDE.md / .claude/settings.json** — エージェントのRL（ルール）定義
@@ -179,7 +184,9 @@ project-root/
 
 ## 決定済み制約
 
-- ARC原則モノリス。選択肢として提示しない
+- ARC デフォルトは monolith。ARC 未指定時は monolith が自動適用される
+- ARC 選択肢（`references/arc-patterns/` 配下 3 パターン: monolith / realtime-pubsub / event-sourcing）は**人間判断献上**で最終決定する。AI は NFR スコアと要件から推奨を提示するのみ
+- 上記 3 パターン以外の事前ライブラリ拡張（layered-monolith / microservices / CQRS 等）は本規格では射程外
 - 職種軸分業（FE/BE/QA等の人間組織模倣）は採用しない。分割軸は抽象度軸・責務軸・機能軸のみ
 - Don'tリストに含まれる領域は仕様に含めない：
   - 創造的UXデザイン
@@ -224,6 +231,8 @@ project-root/
 
 ## 参照ドキュメント
 
+### 既存（一字一句保持）
+
 - `references/meta-spec-template.md` — 仕様ドキュメントのテンプレートと記述ルール（REGIME.md テンプレ含む）
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
 - `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、Lifecycle判定）
@@ -231,3 +240,13 @@ project-root/
 - `references/model-recommendations.md` — 実行前の推奨モデル提示（モード別・ハイブリッド運用・AI能力バージョン別差分対策）
 - `references/history-layer-spec.md` — 履歴層（history/）のスキーマ・訂正・archive・承認レベル
 - `references/ritual-protocol.md` — 振り返り儀式プロトコル（4レベル判定・F1〜F3・E1/E2対応）
+
+### 拡張（業務システム運用・社内版LINE型射程対応）
+
+- `references/nfr-scoring.md` — NFR スコアリング規格（5 カテゴリ × 0-3 点、オーバーライド 4 条件、N=0 後方互換）
+- `references/arc-patterns/monolith.md` — ARC デフォルト（単一デプロイ単位、AI 自走完遂の標準形）
+- `references/arc-patterns/realtime-pubsub.md` — リアルタイム pub/sub パターン（社内版LINE型、大量同時接続）
+- `references/arc-patterns/event-sourcing.md` — イベントソーシング（監査必須、時系列復元、スキーマ進化完全準拠）
+- `references/schema-evolution.md` — データモデル進化プロトコル（互換性ポリシー / デプロイ戦略 / upcasting）
+- `references/permission-delegation.md` — 段階的権限委譲（L0-2/L0-3、介入チャネル C1/C2/C3、判断献上 5 カテゴリ）
+- `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
