@@ -1,5 +1,5 @@
 ---
-name: autonomous-dev
+name: layer1-autonomous-dev
 description: >
   Layer 0（spec-architect）が構築した仕様ドキュメントと開発環境を受け取り、
   AI単独で開発を完遂し成果物を人間に献上するスキル。
@@ -178,7 +178,7 @@ sensors/ の定義に従い、成果物を検証する。
   - FAIL → 差戻し理由に従いステップ6に戻る（自力修正上限内）
   - 自力修正上限を超えた場合は未解決事項としてフィードバックに記載し献上
 
-layer1-independent-reviewer の役割と設計原則は `.claude/skills/dialog-harness-layers/layer1-independent-reviewer/SKILL.md` を参照。
+layer1-independent-reviewer の役割と設計原則は `.claude/skills/layer1-independent-reviewer/SKILL.md` を参照。
 プロジェクト差異は sensors/ や `sensors/review-checklist.md` に閉じる（agent本体はプロジェクト不変）。
 
 ### 8. 献上
@@ -240,6 +240,6 @@ L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙�
 
 ## 関連スキル（Level A）
 
-- `.claude/skills/dialog-harness-layers/layer1-independent-reviewer/` — M2以上で常時起動する独立検証agent
-- `.claude/skills/dialog-harness-layers/layer2-orchestrator/` — L2判定時の統括指揮（委譲先）
-- `.claude/skills/dialog-harness-layers/layer2-integration-verifier/` — L2オーケストレータが使う統合検証agent
+- `.claude/skills/layer1-independent-reviewer/` — M2以上で常時起動する独立検証agent
+- `.claude/skills/layer2-orchestrator/` — L2判定時の統括指揮（委譲先）
+- `.claude/skills/layer2-integration-verifier/` — L2オーケストレータが使う統合検証agent

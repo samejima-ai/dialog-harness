@@ -1,5 +1,5 @@
 ---
-name: spec-architect
+name: layer0-spec-architect
 description: >
   人間のイメージ・ニュアンスを対話で具体化しドキュメント化し、開発モード（M1/M2/L2）を判定し、
   AIが自律開発できる開発環境を設計・構築するスキル。

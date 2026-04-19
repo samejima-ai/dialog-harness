@@ -11,14 +11,14 @@ AI自律開発環境を構成するRL/SK/センサーの記述フォーマット
 
 ### dialog-harness-layers
 
-AI 自律開発のための設計思想とスキル群の総称。
-実体は `.claude/skills/dialog-harness-layers/` 配下のスキル定義ファイル群。
+AI 自律開発のための設計思想とスキル群の総称（概念的グルーピング名）。
+実体は `.claude/skills/` 直下に `layerN-` prefix で配置されるスキル定義ファイル群。
 L0/L1/L2 の三層構造、フラクタル原則、人間⇄AI 協働プロトコル等を含む。
 
 ### Level A（共通スキル）
 
 全プロジェクトで不変の汎用スキル。プロジェクトごとに再生成しない。
-`.claude/skills/dialog-harness-layers/` 配下に配置：
+`.claude/skills/` 直下に `layerN-` prefix 付きで配置：
 
 - layer0-spec-architect
 - layer0-onboarding（使い捨て）
@@ -30,7 +30,7 @@ L0/L1/L2 の三層構造、フラクタル原則、人間⇄AI 協働プロト�
 ### Level B（プロジェクト固有スキル）
 
 プロジェクト固有の開発支援スキル。
-`.claude/skills/` 直下（dialog-harness-layers の外側）に配置。
+`.claude/skills/` 直下に `layerN-` prefix 以外のスキル名で配置（dialog-harness-layers 概念の外側）。
 
 ### layer
 
@@ -486,7 +486,7 @@ AI が変更内容から判断し、メジャー昇格時のみ人間に献上�
 
 dialog-harness-layers は 2 系統で流通する：
 
-- **配布元（repo 側）**: `dialog-haness` リポジトリの `.claude/skills/dialog-harness-layers/` 配下（正本）
+- **配布元（repo 側）**: `dialog-haness` リポジトリの `.claude/skills/` 配下（正本）
 - **利用者環境（user-scope 側）**: `~/.claude/skills/` 配下にフラット展開されたインストール版
 
 repo 側でバージョン昇格（メジャー／マイナー問わず）を行った場合、user-scope 側への反映は **利用者責務** とする。AI は同期漏れを検出しても自動修復しない（利用者のローカル改変を保護するため）。同期時は skill 本体のみコピーし、`.claude/settings.local.json` 等の環境固有ファイルは除外する。
