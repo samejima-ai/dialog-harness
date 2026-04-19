@@ -35,7 +35,7 @@ Built with dialog-harness/layer's v[X.Y] · [Model Name] · [YYYY-MM-DD]
 | Harness 名 | `dialog-harness/layer's` | 必須 |
 | バージョン | `v4.0` | 必須 |
 | 使用モデル | `Claude Opus 4.7` | 必須 |
-| 構築日 | `2026-04-19` | 必須 |
+| 構築日 | `[YYYY-MM-DD]` | 必須 |
 
 ### 省略する情報
 
