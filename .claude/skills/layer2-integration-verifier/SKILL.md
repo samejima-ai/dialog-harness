@@ -24,8 +24,11 @@ L2配下のL1群成果物を横断的に検証する汎用agent。
 - ドメイン間インターフェース契約の整合性検証
 - 全体不変条件（SPEC.md のクロスドメイン制約）の検査
 - E2E シナリオの動作確認
+- **Playwright Test Agents の出力統合**（`../layer2-orchestrator/references/e2e-integration.md` で規格化された Planner/Generator/Healer/Reviewer の成果物を受け取り、`delivery/e2e/review.md` を INTEGRATION.md に含める）
 - 不整合検出時の調停判断（どのL1に差戻すかの指示）
 - 結果を INTEGRATION.md として出力
+
+哲学的背景は `../layer0-spec-architect/references/philosophy.md` §3（情報純度原則）を参照。
 
 ## 処理フロー
 

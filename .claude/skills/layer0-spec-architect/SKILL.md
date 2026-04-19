@@ -50,6 +50,7 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 2. 対話による具体化（目的・機能・条件・制約の引き出し）
    並行してモード判定情報も取得（規模・不確実性・リスク・NFR・ARC・ドメイン文脈・権限レベル）
    儀式で検出した矛盾・復活要求・再提案はここで解消する
+2.5. UX 3問プロトコル（Must閾値・禁止挙動・参考類似サービス、未回答は業界標準で自動補完）
 3. ドキュメント化（メタ仕様に従い構造化）
 3.5. サブフェーズ選定と実行（基本5問で L0-2〜L0-6 を動的起動、`spec/` 配下に成果物生成）
      条件を満たさないプロジェクトは完全スキップ。詳細は `references/subphase-selection.md`
@@ -100,6 +101,34 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 - 抽象的な質問（「どんな感じですか？」）を避け、選択肢や具体例を提示する
 - 1回の応答で質問を詰め込みすぎない
 - 仕様の具体化とモード判定情報の取得を自然に織り交ぜる
+
+### 2.5. UX 3問プロトコル
+
+機能×条件の粒度が揃った時点で、UX 制約（Must 閾値・禁止挙動・参考類似サービス）を3問で取得する。人間に最低限の判断だけを求め、AI が残りを業界標準で自動補完する。
+
+#### 3問
+
+| # | 質問 | 格納先 |
+|---|---|---|
+| Q1 | Must 閾値: この機能で絶対に守りたい定量的制約は？（応答時間・クリック数・エラー率 等） | SPEC.md UX制約 |
+| Q2 | 禁止挙動: 絶対にしてほしくない操作や画面は？ | SPEC.md UX制約 + DONT.md |
+| Q3 | 参考類似サービス: 「あの UX が好き」という参考はある？ | SPEC.md UX制約 |
+
+#### 自動補完（未回答時の業界標準値）
+
+| 項目 | デフォルト |
+|---|---|
+| クリック数 | 主要タスクまで 3-5 回以内 |
+| 遷移深度 | 3 ページ以内 |
+| 応答時間 | p95 で 30 秒以内 |
+| 完了率 | 95% 以上 |
+| エラー率 | 5% 以下 |
+
+業界標準値は `references/philosophy.md` §第4条「UX は計算可能代理指標まで」の原則に従う。L1 は sensors/interaction-cost/ 経由で測定する。
+
+#### プロトコルの位置づけ
+
+UX 3問は独立軸ではなく、NFR 軸の補足として扱う（詳細は `references/regime-assessment.md` §軸4）。3問の回答は SPEC.md の UX制約セクション（`references/meta-spec-template.md`）に格納される。
 
 ### 3. ドキュメント化
 
@@ -378,3 +407,12 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v4.0 追加（哲学原典化・5層スタック・UX プロトコル）
+
+- `references/philosophy.md` — dialog-harness 5条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学）。全skill の参照原典。
+
+関連（他 skill 配下に配置される参照ファイル、本 SKILL.md から間接参照）：
+- `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` — 5層エラー処理スタック（L1 自己検証の埋め込み手順含む）
+- `../../layer2-orchestrator/references/e2e-integration.md` — Playwright Test Agents 規格（L2 配下の並列 Agent 群）
+- `../../layer2-orchestrator/references/sub-agent-protocol.md` — サブエージェント統括の情報純度プロトコル
