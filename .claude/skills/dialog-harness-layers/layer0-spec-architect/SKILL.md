@@ -51,6 +51,8 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
    並行してモード判定情報も取得（規模・不確実性・リスク・NFR・ARC・ドメイン文脈・権限レベル）
    儀式で検出した矛盾・復活要求・再提案はここで解消する
 3. ドキュメント化（メタ仕様に従い構造化）
+3.5. サブフェーズ選定と実行（基本5問で L0-2〜L0-6 を動的起動、`spec/` 配下に成果物生成）
+     条件を満たさないプロジェクトは完全スキップ。詳細は `references/subphase-selection.md`
 4. モード判定（S/U/Rスコアリング + L2発動閾値チェック + Lifecycle記録）
 5. 人間レビュー → 認識ズレがあれば2に戻る
 6. 認識ズレなし → モードに応じた開発環境の設計・構築
@@ -61,6 +63,7 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 
 ステップ5→2のループが最も重要。ここを省略しない。
 ステップ1.5は Lifecycle ≥ 1 の場合のみ実行する。プロトコル詳細は `references/ritual-protocol.md` を参照。
+ステップ3.5は DB/API/状態遷移/認可のいずれかが関与する場合に起動する。判定と実行のプロトコル詳細は `references/subphase-selection.md` を参照。
 
 ## ステップ詳細
 
@@ -108,6 +111,67 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 - **SPEC.md** — 機能仕様（WHY / WHAT / 条件 / 優先順位 / 制約）。該当プロジェクトはデータモデル進化セクションを含む（詳細: `references/schema-evolution.md`）
 - **DONT.md** — スコープ外の明示（現時点でAI自律開発が困難な領域）
 - **DOMAIN-CONTEXT.md**（任意） — 業界・業務固有の前提条件。該当プロジェクトのみ。機密は `DOMAIN-CONTEXT.secret.md` に分離
+
+### 3.5. サブフェーズ選定と実行
+
+自然言語の `SPEC.md` だけでは表現しきれない領域（ドメインモデル / API 契約 / 状態遷移 / 認可 / 層間不変条件）を、必要なときだけ数式化する動的プロトコル。
+判定と実行の詳細は `references/subphase-selection.md` を参照。
+
+#### 起動判定
+
+対話（ステップ 2）で得た情報から **基本 5 問** で必要サブフェーズを決定する。全問が「不要」なら本ステップは完全スキップする。
+
+| # | 質問 | 起動判定対象 |
+|---|---|---|
+| S1 | データを保存する必要があるか？ DB を使うか？ | L0-2 ドメインモデル |
+| S2 | 外部のシステムや API とつなぐか？ | L0-3 API 契約 |
+| S3 | 画面はいくつあるか？ 遷移は複雑か？ | L0-4 状態遷移 |
+| S4 | 複数ユーザーで使うか？ 権限の違いはあるか？ | L0-5 認可 |
+| S5 | 時間経過や承認で状態が自動的に変わるか？ | L0-6 層間不変条件（2 以上のサブフェーズ起動時のみ） |
+
+詳細な判定表（完全 / 簡易 / スキップ）は `references/subphase-selection.md` の起動判定表を参照。
+
+#### 実行プロトコル
+
+各サブフェーズは「対話 α → 生成 β → 検証 γ → 判定 δ」の 4 フェーズで構成される独立 AI 呼び出し単位。
+共通骨格は `references/subphase-common-protocol.md`、各サブフェーズ固有プロトコルは以下:
+
+- `references/subphase-l02-domain.md` — Zod + TypeScript ドメインモデル
+- `references/subphase-l03-api.md` — TypeSpec API 契約
+- `references/subphase-l04-transition.md` — XState + Mermaid 状態遷移
+- `references/subphase-l05-authz.md` — OpenFGA 認可モデル
+- `references/subphase-l06-invariants.md` — Gherkin 層間不変条件（Happy / Sad / Evil 三分類）
+
+#### 依存順
+
+L0-1 → L0-2 → (L0-3 ‖ L0-4) → L0-5 → L0-6 の順序で実行。L0-3 と L0-4 は並列可。
+
+#### 成果物配置
+
+起動時のみ `spec/` ディレクトリを新設し、以下を配置:
+
+```
+spec/
+├── subphase-manifest.md  # 選定結果・確度・起動ログ（pre-official、Phase 2 で REGIME.md に統合予定）
+├── domain.ts             # L0-2 起動時
+├── api.tsp               # L0-3 完全モード時
+├── api-signatures.ts     # L0-3 簡易モード時
+├── state-machine.ts      # L0-4 完全モード時
+├── state-diagrams.md     # L0-4（完全/簡易問わず）
+├── authz.fga             # L0-5 完全モード時
+├── authz-matrix.md       # L0-5 簡易モード時
+└── invariants.feature    # L0-6 起動時
+```
+
+全サブフェーズがスキップのプロジェクトでは `spec/` 自体を生成しない。
+
+#### 既存プロジェクトとの後方互換
+
+`spec/subphase-manifest.md` が存在しない既存プロジェクトで本ステップを通過しても、従来フロー（ステップ 1→4→…→7.6）と同一挙動となる（新規起動のみ影響）。
+
+#### 事後追加
+
+プロジェクト進行中のサブフェーズ追加・モード昇格・判定誤り訂正は独立した AI 呼び出しで実行する。プロトコルは `references/subphase-selection.md` の「事後追加プロトコル」を参照。
 
 ### 4. モード判定
 
@@ -300,5 +364,17 @@ project-root/
 ### v3.1 追加（配置規則・クレジット）
 
 - `references/credit-template.md` — README.md 制作クレジットの規格とテンプレート（マーカー管理・拒否権・更新ルール）
+
+### v3.2 追加（L0 サブフェーズ拡張 Phase 1）
+
+ステップ 3.5 で使用する動的サブフェーズ選定・実行プロトコル群。条件を満たさないプロジェクトではロードされない。
+
+- `references/subphase-common-protocol.md` — 対話→生成→検証→判定 の 4 フェーズ骨格、サブフェーズ間 I/O 契約、成果物配置規約
+- `references/subphase-selection.md` — 基本 5 問・起動判定表・モード選定・`spec/subphase-manifest.md` 雛形・事後追加プロトコル
+- `references/subphase-l02-domain.md` — L0-2 ドメインモデル（Zod + TypeScript, `domain.ts`）対話プロトコル
+- `references/subphase-l03-api.md` — L0-3 API 契約（TypeSpec, `api.tsp`）対話プロトコル
+- `references/subphase-l04-transition.md` — L0-4 状態遷移（XState v5 + Mermaid, `state-machine.ts` + `state-diagrams.md`）対話プロトコル
+- `references/subphase-l05-authz.md` — L0-5 認可（OpenFGA DSL, `authz.fga`）対話プロトコル
+- `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
