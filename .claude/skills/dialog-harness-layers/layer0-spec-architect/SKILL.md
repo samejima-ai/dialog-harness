@@ -25,6 +25,21 @@ description: >
 - 単体エージェントで足りる場合は単体で回す。分業は根拠がある場合のみ
 - **フラクタル原則**: L0⇄人間の対話パターン = L1内 spec⇄code 照合 = L2⇄L1群 指示⇄検証 は同一形状。本拡張でも L3 運用層を新設しない方針を徹底する（運用インシデントは新仕様発見として L0 対話へ戻す）
 
+## L0 スキル間の責務分担
+
+L0 は spec-architect と onboarding の 2 スキルで構成される（いずれも L0 兄弟、L3 運用層ではない）。トリガーは排他的。
+
+| ケース | 起動スキル | 判定条件 |
+|---|---|---|
+| 新規プロジェクト立ち上げ | **spec-architect** | SPEC/DONT/REGIME がいずれも未存在、かつコード未存在（空リポジトリ） |
+| 既存プロジェクトの継続開発・仕様追加・振り返り | **spec-architect** | REGIME.md 存在、Lifecycle ≥ 1 |
+| 既存プロジェクトへの harness 後付け導入 | **layer0-onboarding** | REGIME.md 未存在、かつ既存コード・既存ドキュメントが存在 |
+
+**排他ルール**:
+- REGIME.md に `onboarded_at` がある → onboarding 再起動禁止（spec-architect のみ）
+- onboarding 完了時は必ず spec-architect へ handoff する（`layer0-onboarding/references/handoff-to-spec-architect.md` 準拠）
+- 疑わしい場合は spec-architect が引き受けて Lifecycle 判定で切り分ける
+
 ## 処理フロー
 
 ```
@@ -40,6 +55,8 @@ description: >
 5. 人間レビュー → 認識ズレがあれば2に戻る
 6. 認識ズレなし → モードに応じた開発環境の設計・構築
 7. 開発環境一式を Layer 1（または L2）に渡せる状態で出力
+7.5. ファイル配置規則に沿った初期化（delivery/ と assets/ を作成、docs/ は初期生成しない）
+7.6. README.md クレジット挿入（credit-template.md 準拠、マーカー内で管理）
 ```
 
 ステップ5→2のループが最も重要。ここを省略しない。
@@ -151,7 +168,7 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 | M2 | 標準構成（CLAUDE.md + REGIME.md + .claude/skills/ + sensors/computational + inferential + review-checklist） |
 | L2 | M2 + DOMAINS.md + 各ドメイン別部分SPEC + sensors/integration/ |
 
-**重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は**ハーネス側 Level A** に存在し、プロジェクト側で再生成しない。プロジェクト差異は sensors やチェックリストに閉じる。
+**重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は **Level A（共通スキル）** に存在し、プロジェクト側で再生成しない。プロジェクト差異は sensors やチェックリストに閉じる。
 
 生成する開発環境構成（M2 標準）：
 - **CLAUDE.md / .claude/settings.json** — エージェントのRL（ルール）定義
@@ -181,6 +198,31 @@ project-root/
 │   └── integration/       # L2のみ（contracts.md / invariants.md / e2e.md）
 └── (テスト・ビルド基盤設定)
 ```
+
+### 7.5. ファイル配置規則に沿った初期化
+
+`references/dev-env-spec.md`「ファイル配置規則」に従い、プロジェクト初期化時に以下を実施する。
+
+- `delivery/` を空で作成（L1 献上先として確保）
+- `assets/` を空で作成（共有入力の置き場）
+- `docs/` は**初期生成しない**（L1 が共有出力として必要時に生成）
+- ルート直下は INDEX/SPEC/DONT/REGIME/CLAUDE/DOMAINS と README.md のみ許可
+- 違反（PLAN.md, TODO.md, MEMO.md 等のルート直下作業メモ）は **Phase B の自動修復対象** として DELIVERY.md にログ化
+
+本ステップは新規（Lifecycle L=0）のみ実施。既存プロジェクト（L=1/L=2）では現状配置を尊重し、違反検出時のみ L1 側で修復を提起する。
+
+### 7.6. README.md クレジット挿入
+
+`references/credit-template.md` に従い、README.md 末尾に制作クレジットを挿入する。
+
+- 既存 README.md がない場合: 最小構成で新規作成し、クレジットブロックを末尾に配置
+- 既存 README.md がある場合: マーカーコメント（`<!-- harness-credit: managed by layer0 skills. do not edit manually. -->`）の有無を確認
+  - マーカーあり: 内部のクレジット内容を最新情報で更新
+  - マーカーなし: 末尾にマーカー付きクレジットブロックを追記
+- テンプレート: `Built with dialog-harness/layer's vX.Y · [Model] · YYYY-MM-DD`
+- **拒否権**: ユーザーが明示的にクレジット不要と指示した場合は挿入しない。REGIME.md に拒否日を記録
+
+クレジットの更新差分は L1 献上時に DELIVERY.md「クレジット更新ログ」に記録する。
 
 ## 決定済み制約
 
@@ -231,7 +273,11 @@ project-root/
 
 ## 参照ドキュメント
 
-### 既存（一字一句保持）
+### 既存（参照リンク保持・内容拡張許容）
+
+本セクションの参照リンクは v3.0 時点の 7 件を**リンク単位で**保持する。
+個別ファイルの内容拡張（節の追加・記述の詳細化）は許容するが、リンクの削除・改名・リダイレクトは minor 昇格でも禁止する。
+骨格の完全な書き換えは major 昇格案件として扱う。
 
 - `references/meta-spec-template.md` — 仕様ドキュメントのテンプレートと記述ルール（REGIME.md テンプレ含む）
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
@@ -250,3 +296,9 @@ project-root/
 - `references/schema-evolution.md` — データモデル進化プロトコル（互換性ポリシー / デプロイ戦略 / upcasting）
 - `references/permission-delegation.md` — 段階的権限委譲（L0-2/L0-3、介入チャネル C1/C2/C3、判断献上 5 カテゴリ）
 - `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
+
+### v3.1 追加（配置規則・クレジット）
+
+- `references/credit-template.md` — README.md 制作クレジットの規格とテンプレート（マーカー管理・拒否権・更新ルール）
+
+※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
