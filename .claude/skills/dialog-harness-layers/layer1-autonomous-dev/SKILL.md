@@ -170,7 +170,7 @@ sensors/ の定義に従い、成果物を検証する。
 
 **M2の場合は常時必須**。M1では実行しない。
 
-- `layer1-independent-reviewer` スキル（ハーネス側 Level A）を起動する
+- `layer1-independent-reviewer` スキル（Level A）を起動する
 - 入力: SPEC.md / DONT.md / REGIME.md / sensors/ / 成果物パス
 - 出力: `delivery/VERIFICATION.md`（実装コンテキスト隔離原則）
 - 判定:
@@ -178,7 +178,7 @@ sensors/ の定義に従い、成果物を検証する。
   - FAIL → 差戻し理由に従いステップ6に戻る（自力修正上限内）
   - 自力修正上限を超えた場合は未解決事項としてフィードバックに記載し献上
 
-layer1-independent-reviewer の役割と設計原則は `.claude/skills/layer1-independent-reviewer/SKILL.md` を参照。
+layer1-independent-reviewer の役割と設計原則は `.claude/skills/dialog-harness-layers/layer1-independent-reviewer/SKILL.md` を参照。
 プロジェクト差異は sensors/ や `sensors/review-checklist.md` に閉じる（agent本体はプロジェクト不変）。
 
 ### 8. 献上
@@ -238,8 +238,8 @@ L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙�
 - `references/spec-review-checklist.md` — 仕様レビューの詳細チェックリスト（過去INTENT整合性含む）
 - `references/delivery-format.md` — 献上物のフォーマット定義（VERIFICATION.md・体制事後評価・履歴層更新差分含む）
 
-## 関連スキル（ハーネス側 Level A）
+## 関連スキル（Level A）
 
-- `.claude/skills/layer1-independent-reviewer/` — M2以上で常時起動する独立検証agent
-- `.claude/skills/layer2-orchestrator/` — L2判定時の統括指揮（委譲先）
-- `.claude/skills/layer2-integration-verifier/` — L2オーケストレータが使う統合検証agent
+- `.claude/skills/dialog-harness-layers/layer1-independent-reviewer/` — M2以上で常時起動する独立検証agent
+- `.claude/skills/dialog-harness-layers/layer2-orchestrator/` — L2判定時の統括指揮（委譲先）
+- `.claude/skills/dialog-harness-layers/layer2-integration-verifier/` — L2オーケストレータが使う統合検証agent
