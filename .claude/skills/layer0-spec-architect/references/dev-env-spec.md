@@ -336,6 +336,38 @@ LLMによる確率的判定。仕様合致の自己評価に使う。
 - エラーハンドリングが機能するか
 ```
 
+### sensors/e2e/（M1/M2/L2 共通、第2層）
+
+5層エラー処理スタック第2層（E2E機械検証）のシナリオ定義。L1 単独（M1/M2）では L1 自身が参照し、L2 発動時は Playwright Test Agents（`../../layer2-orchestrator/references/e2e-integration.md`）が参照する。
+
+```
+sensors/e2e/
+├── scenarios.md      # シナリオ定義（ID / 前提 / 操作 / 期待結果 / Priority）
+├── selectors.md      # DOM セレクタ命名規約（data-testid 等）
+├── fixtures/         # テストデータ・モック定義
+└── config.ts         # Playwright 設定（baseURL / timeout / browsers）
+```
+
+scenarios.md のテンプレートは `../../layer2-orchestrator/references/e2e-integration.md` §sensors/e2e/規格 を参照。
+
+Priority と実行範囲の対応：
+- critical → 全5層で検証（本 E2E 含む）
+- standard → 第0〜3層で検証（本 E2E 含む）
+- cosmetic → 第0〜1層のみ（本 E2E はスキップ）
+
+### sensors/interaction-cost/（M1/M2/L2 共通、第3層）
+
+5層エラー処理スタック第3層（Interaction Cost 測定）の UX 代理指標閾値。L0 対話ステップ 2.5（UX 3問プロトコル）の回答から生成される。
+
+```
+sensors/interaction-cost/
+├── thresholds.md     # UX 3問プロトコル Q1 の Must 閾値
+└── measurements.ts   # 測定スクリプト（Playwright から呼び出し）
+```
+
+thresholds.md のテンプレートは `../../layer2-orchestrator/references/e2e-integration.md` §sensors/interaction-cost/規格 を参照。
+未指定時の業界標準値: クリック 3-5 回・遷移 3 以内・応答 30 秒以内・完了率 95%・エラー率 5%。
+
 ### sensors/integration/（L2のみ）
 
 L2発動時の統合検証用 sensors。layer2-integration-verifier が参照する。
@@ -497,4 +529,17 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 - v2.0: 検証エージェント
 - v3.0: 三層構想＋オーケストレーション
 - v3.1: onboarding + 配置規則 + クレジット規格
-- v3.2: Archaeology 深度の英語語彙化 + L0 責務分担表 + 参照保持規格の明確化（現行）
+- v3.2: Archaeology 深度の英語語彙化 + L0 責務分担表 + 参照保持規格の明確化
+- v4.0: philosophy.md 5条原典化 + 5層エラー処理スタック + Playwright Test Agents 規格 + SPEC.md 拡張（UX制約・Priority critical/standard/cosmetic） + L0 対話 UX 3問プロトコル + sub-agent-protocol.md（現行）
+
+### v3.2 → v4.0 移行ノート
+
+既存プロジェクトを v4.0 harness で扱う際の互換性：
+
+- **SPEC.md の `優先順位: 高/中/低`** はそのまま受理可能。v4.0 の Priority とは以下のマッピングで扱う:
+  - 高 → critical（全5層で検証）
+  - 中 → standard（第0〜3層で検証）
+  - 低 → cosmetic（第0〜1層のみ）
+- **REGIME.md の `mode: L2`** はそのまま読める。L2 配下構成の明示欄が追加されたが、未記載の場合は L0 差し戻しで補完する
+- **sensors/e2e/ と sensors/interaction-cost/** が新設されたが、未整備の場合は DELIVERY.md で L0 に改善提案（タイプC献上）として戻す
+- **L1 自己検証フローのステップ 5.5** は追加のみ。既存ステップ番号は変更しない
