@@ -408,11 +408,11 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
-### v4.0 追加（哲学原典化・5層スタック・UX プロトコル）
+### v4.0 追加（哲学原典化・5層検出スタック・UX プロトコル）
 
 - `references/philosophy.md` — dialog-harness 5条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学）。全skill の参照原典。
 
 関連（他 skill 配下に配置される参照ファイル、本 SKILL.md から間接参照）：
-- `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` — 5層エラー処理スタック（L1 自己検証の埋め込み手順含む）
+- `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` — Shift Left 基盤 + 5層エラー検出スタック（L1 自己検証の埋め込み手順含む）
 - `../../layer2-orchestrator/references/e2e-integration.md` — Playwright Test Agents 規格（L2 配下の並列 Agent 群）
 - `../../layer2-orchestrator/references/sub-agent-protocol.md` — サブエージェント統括の情報純度プロトコル
