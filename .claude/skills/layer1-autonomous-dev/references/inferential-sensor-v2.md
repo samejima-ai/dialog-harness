@@ -227,7 +227,7 @@ L0 が SPEC.md で Must 閾値（UX 3問 Q1）を定義する。L1 はこれを 
 ### 埋め込み手順（ステップ5.5）
 
 ```
-5.5.1. Shift Left 基盤確認: spec/ 配下を逸脱していないか（書き換え禁止）。逸脱は基盤 FAIL（メタ FAIL）として独立記録
+5.5.1. Shift Left 基盤確認: spec/ 配下を逸脱していないか（書き換え禁止）。逸脱を検知した場合はタイプA献上し、あわせて基盤 FAIL（メタ FAIL）として独立記録
 5.5.2. 第1層実行: sensors/computational.md の全項目 PASS
        → FAIL: 自力修正（最大3回）→ 依然 FAIL なら未解決事項として献上
 5.5.3. 第1層 PASS 後、第2層実行: sensors/e2e/ シナリオ全 PASS
