@@ -61,9 +61,11 @@
 #### Priority
 [critical / standard / cosmetic]
 
-- **critical**: 全5層で検証（第0層設計時発生防止 + 第1層計算的センサー + 第2層 E2E + 第3層 Interaction Cost + 第4層推論的 + 第5層人間判断）
-- **standard**: 第0〜3層で検証（E2E と Interaction Cost まで）
-- **cosmetic**: 第0〜1層のみ（型・ビルド・テストのみ）
+Priority は**運用時の検出スタック（建物）**で何階まで使うかを決める。**Shift Left 基盤（土地）は Priority に関わらず常に整備される前提**であり、階数に加算しない。
+
+- **critical**: 第1〜5層すべてを使用（第1層計算的センサー + 第2層 E2E + 第3層 Interaction Cost + 第4層推論的 + 第5層人間判断）
+- **standard**: 第1〜3層まで使用（E2E と Interaction Cost まで）
+- **cosmetic**: 第1層のみ使用（型・ビルド・テストのみ）
 
 旧記法（高/中/低）は後方互換のため受理する（高=critical / 中=standard / 低=cosmetic）。
 
