@@ -7,10 +7,10 @@ L2 配下で並列起動される E2E 検証用 Agent 群の規格。
 
 ## 位置づけ
 
-### 5層検出スタックでの位置
+### 5層エラー検出スタックでの位置
 
 本規格は **5層エラー検出スタックの第2層（E2E機械検証）** の L2 発動時における実装。
-Shift Left 基盤 + 5層検出スタック全体の定義は `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` を参照。
+Shift Left 基盤 + 5層エラー検出スタック全体の定義は `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` を参照。
 
 ### L2 配下での起動
 
@@ -92,7 +92,7 @@ L2 は**起動の指揮のみ**を担う。Agent 内部の判断や修正は各 
 
 ### 前提条件
 
-Shift Left 基盤（設計時発生防止）と第1層（計算的センサー）が完遂してから発動する。Console エラーを残したまま E2E を回さない原則（Shift Left 基盤 + 5層検出スタック定義を参照）。
+Shift Left 基盤（設計時発生防止）が完遂している前提で、第1層（計算的センサー）の完遂後に発動する。Console エラーを残したまま E2E を回さない原則（Shift Left 基盤 + 5層エラー検出スタック定義を参照）。
 
 ### 後続層への接続
 
@@ -132,11 +132,11 @@ sensors/e2e/
 
 ### 優先度と実行範囲
 
-SPEC.md の Priority と対応する（`../../layer0-spec-architect/references/meta-spec-template.md` の Priority 定義参照）：
+SPEC.md の Priority と対応する（`../../layer0-spec-architect/references/meta-spec-template.md` の Priority 定義参照）。Priority は検出スタック（建物）の使用階数を決める。Shift Left 基盤（土地）は Priority に関わらず常に整備される前提で、階数に加算しない。
 
-- critical: Shift Left 基盤 + 全5層で検証（本 E2E 含む）
-- standard: Shift Left 基盤 + 第1〜3層で検証（本 E2E 含む）
-- cosmetic: Shift Left 基盤 + 第1層のみ（本 E2E はスキップ）
+- critical: 第1〜5層すべてを使用（本 E2E 含む）
+- standard: 第1〜3層まで使用（本 E2E 含む）
+- cosmetic: 第1層のみ使用（本 E2E はスキップ）
 
 ---
 

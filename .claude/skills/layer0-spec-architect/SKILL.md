@@ -408,7 +408,7 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
-### v4.0 追加（哲学原典化・5層検出スタック・UX プロトコル）
+### v4.0 追加（哲学原典化・5層エラー検出スタック・UX プロトコル）
 
 - `references/philosophy.md` — dialog-harness 5条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学）。全skill の参照原典。
 
