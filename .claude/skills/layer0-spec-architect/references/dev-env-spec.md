@@ -530,8 +530,8 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 - v3.0: 三層構想＋オーケストレーション
 - v3.1: onboarding + 配置規則 + クレジット規格
 - v3.2: Archaeology 深度の英語語彙化 + L0 責務分担表 + 参照保持規格の明確化
-- v4.0: philosophy.md 5条原典化 + 5層エラー処理スタック（現: 5層エラー検出スタック） + Playwright Test Agents 規格 + SPEC.md 拡張（UX制約・Priority critical/standard/cosmetic） + L0 対話 UX 3問プロトコル + sub-agent-protocol.md
-- v4.1: Shift Left 基盤 + 5層エラー検出スタック二層モデルへの呼称統一（旧「設計時発生防止 層」を Shift Left 基盤として運用スタック外に再配置、第3層 Interaction Cost FAIL の独立カウント化、philosophy.md の配分図を 30/30/20/10/7/3 に修正）
+- v4.0: philosophy.md 5条原典化 + 5層エラー検出スタック + Playwright Test Agents 規格 + SPEC.md 拡張（UX制約・Priority critical/standard/cosmetic） + L0 対話 UX 3問プロトコル + sub-agent-protocol.md（v4.0 リリース時点では旧呼称「処理」で定義されていたが v4.1 で「検出」に改称。以下の歴史記述は最終呼称に正規化して記載する）
+- v4.1: Shift Left 基盤 + 5層エラー検出スタック二層モデルへの呼称統一（スタック名の「処理」→「検出」改称、旧「設計時発生防止 層」を Shift Left 基盤として運用スタック外に再配置、第3層 Interaction Cost FAIL の独立カウント化、philosophy.md の配分図を 30/30/20/10/7/3 に修正、土地=基盤・建物=検出スタックの直交二層モデルを明文化）
 
 ### v3.2 → v4.0 移行ノート
 
