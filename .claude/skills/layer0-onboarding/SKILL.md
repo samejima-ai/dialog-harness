@@ -76,6 +76,29 @@ description: >
 - `CLAUDE.md`（最小版） — 以降の spec-architect が拡張する土台
 - README.md 末尾のクレジット（credit-template.md 準拠、拒否権あり）
 
+## 抽出例（standard 深度）
+
+既存の Python Flask アプリから抽出した SPEC.md の冒頭イメージ（確度メタデータ付き）:
+
+```markdown
+## F1. ユーザー登録
+- **条件**: email 一意、パスワード 8 文字以上、bcrypt ハッシュ化
+- **Priority**: critical
+- **確度**: コード確認（src/auth/register.py:42-78）
+
+## F2. ログイン
+- **条件**: セッション有効期限 24h、失敗 5 回で 15 分ロック
+- **Priority**: critical
+- **確度**: コード確認 + git log 追認（commit a1b2c3d）
+
+## F3. プロフィール画像アップロード
+- **条件**: JPEG/PNG のみ、2MB 上限、S3 保存
+- **Priority**: standard
+- **確度**: AI 推定（tests/test_profile.py から推測、人間承認待ち）
+```
+
+確度 3 段階（AI 推定 / コード確認 / 人間確定）は後続の spec-architect が追認時に参照する。`Priority` は `../layer0-spec-architect/references/philosophy.md` §第3条に準拠。
+
 ## 参照ドキュメント
 
 - `references/archaeology-protocol.md` — 考古学的抽出プロトコル（深度 shallow/standard/deep/full、対話深度判定、抽出フォーマット、機密領域の扱い）

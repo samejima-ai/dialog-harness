@@ -3,8 +3,10 @@ name: layer1-autonomous-dev
 description: >
   Layer 0（spec-architect）が構築した仕様ドキュメントと開発環境を受け取り、
   AI単独で開発を完遂し成果物を人間に献上するスキル。
-  「開発を始めて」「作って」「実装して」「ビルドして」等、
+  「開発を始めて」「作って」「実装して」「ビルドして」「implement」「ship」「出荷」「コード書いて」等、
   仕様が確定した状態から実装・献上に進む発話でトリガーする。
+  SPEC.md / REGIME.md が存在し仕様策定が終わっている状況なら、明示されなくても
+  本スキルの起動を必ず検討する（実装関連の依頼はまず本スキルで扱うのが既定）。
   仕様策定や環境構築の段階ではトリガーしない（それは spec-architect の責務）。
   開発中に人間に質問しない。仕様不足は即献上で対処する。
   REGIME.md のモード（M1/M2）に応じて実行フローを分岐する。L2判定時は layer2-orchestrator に委譲する。
@@ -204,6 +206,41 @@ layer1-independent-reviewer の役割と設計原則は `.claude/skills/layer1-i
 - 次回以降への示唆
 
 詳細は `references/delivery-format.md` の「体制事後評価（必須）」セクション参照。
+
+## DELIVERY.md 抜粋（イメージ）
+
+M2 モード・Lifecycle L=0 の成果物献上時の DELIVERY.md 冒頭部分:
+
+```markdown
+# DELIVERY.md
+
+## 体制情報
+- Mode: M2 / Lifecycle: L=0 / Cycle: 1
+- 自律修正回数: 2 / 上限 3
+
+## 実装済み機能
+- F1. ユーザー登録 (critical) — PASS
+- F2. ログイン (critical) — PASS
+- F3. プロフィール画像アップロード (standard) — PASS
+
+## 自己検証結果（5層検出スタック）
+| 層 | 対象 | 結果 |
+|---|---|---|
+| Shift Left 基盤 | 型・lint・フォーマット | PASS |
+| 第1層 計算的センサー | 単体/統合テスト 42 件 | PASS |
+| 第2層 E2E 機械検証 | Playwright 6 シナリオ | PASS |
+| 第3層 Interaction Cost | クリック数 p95=3、応答 p95=1.2s | PASS（閾値内） |
+| 第4層 推論的センサー | 「仕様に合う・動く・使える」 | PASS |
+| 第5層 独立検証 | independent-reviewer 照合 | 次フェーズ |
+
+## 仕様改訂提案（Type C）
+なし
+
+## 体制事後評価
+M2 は妥当。L2 発動閾値（NFR 3項目同時 critical）には到達せず。次 Cycle も M2 継続を推奨。
+```
+
+Type A（仕様レビュー結果）/ Type B（成果物）/ Type C（仕様改訂提案）の完全構造は `references/delivery-format.md` 参照。
 
 ## 内部処理の区分
 

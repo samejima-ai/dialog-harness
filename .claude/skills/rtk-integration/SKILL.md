@@ -5,7 +5,10 @@ description: >
   rtk は Rust 製 CLI プロキシで、Claude Code が Bash 経由で実行する
   git / test / build / lint 出力を 60-90% 圧縮しトークン消費を大幅削減する。
   「rtk を導入したい」「rtk 入れて」「トークン節約したい」「Bash 出力を圧縮したい」
-  「rtk-integration」等の発話でトリガーする。
+  「rtk-integration」等の発話に加え、
+  症状語「git log の出力が長すぎる」「テストのログで context が膨らむ」
+  「Bash の出力が長くて context を食う」「ビルド出力が冗長」「CLAUDE.md に rtk 設定したい」
+  等でも本スキルの起動を必ず検討する。
   install / uninstall / 越境パッチ適用までを自己完結で実行する。
   対象: Windows native（MSVC ビルド、rtk v0.37.1 固定）。
 ---
@@ -86,6 +89,33 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\skills\rtk-in
 
 rtk 非対応コマンドは素通しされる（rtk 側の仕様に依存）。
 
+## 圧縮例（イメージ）
+
+`rtk git status` 実行時の before/after（社内リポジトリでの実測目安）:
+
+**before（素の `git status`、約 600 tokens）:**
+```
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   src/auth/register.py
+        modified:   src/auth/login.py
+        modified:   tests/test_auth.py
+        ... (30 行続く)
+```
+
+**after（`rtk git status`、約 120 tokens、-80%）:**
+```
+master ↑0 ↓0
+M src/auth/{register,login}.py, tests/test_auth.py
+?? docs/new-feature.md
+```
+
+冗長な hint（`use "git add"...`）を全削除、同ディレクトリ複数ファイルを `{}` 展開で集約、未追跡は `??` で 1 行化。git log / test / build / lint も同様の集約ルールが適用される（詳細 `references/commands.md`）。
+
 ## 導入先 CLAUDE.md への追記テンプレ
 
 `references/claude-md-template.md` 参照。導入先プロジェクトの CLAUDE.md に以下の一文をコピーすることを推奨する:
@@ -109,7 +139,7 @@ rtk 非対応コマンドは素通しされる（rtk 側の仕様に依存）。
 ## トラブルシュート
 
 `references/troubleshoot.md` 参照。典型ケース:
-- `rtk --version` で command not found → 新規ターミナル起動 or PATH 手動追加
+- `rtk --version` で command not found → 新規ターミナル起動 or `refreshenv`（Chocolatey 導入環境）or PATH 手動追加
 - `rtk init -g` が権限エラー → User scope でのみ動作することを確認
 - 圧縮されない → `rtk init --show` でフック設置確認
 
