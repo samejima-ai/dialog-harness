@@ -14,7 +14,7 @@
 ## 責務に含まれないこと（フラット原則）
 
 - **判断しない**: Orchestrator は内容評価を行わない
-- **編集しない**: Persona の発言、Judgment Agent の判断を一切書き換えない
+- **編集しない**: Persona の発言や Judgment Agent の判断の**意味内容**は改変しない。ただし、スキーマ不適合時の `stance: "malformed"` 付与のような**構造正規化・エラーマーカー付与**はこの禁止に含めない（詳細は本ファイル §スキーマ検証 を参照）
 - **誘導しない**: Persona への入力に偏向（重みの事前開示等）を含めない
 - **学習しない**: 過去の COUNCIL-LOG を参照して入力を調整しない
 
@@ -101,7 +101,7 @@ Orchestrator は以下を Judgment Agent に渡す：
   "options": {元の発動要請},
   "persona_outputs": [{3 Persona の応答}],
   "final_weights": {計算結果},
-  "conflict_summary": {PR1: "unanimous" or "simple_conflict"},
+  "conflict_type": {PR1: "unanimous" or "simple_conflict"},
   "discussion_log": null  // PR2 で Phase 2 結果を入れる
 }
 ```

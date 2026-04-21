@@ -112,7 +112,7 @@ Persona の発言中に「この問い自体が誤っている」「options が�
 
 ## 全会一致時の扱い
 
-`conflict_summary = "unanimous"`（PR1）または類型 B（PR2）の場合、Judgment Agent は**多様性として質を評価**する。
+`conflict_type = "unanimous"`（PR1）または類型 B（PR2）の場合、Judgment Agent は**多様性として質を評価**する。
 詳細は [judgment-agent.md](judgment-agent.md) §全会一致時の扱い 参照。
 
 ## 対立類型判定の主体
@@ -134,6 +134,6 @@ LLM による判定は禁止する。
 PR1 では類型判定はしないが、後続 PR で類型分析できるよう、COUNCIL-LOG に以下を記録する：
 
 - 各 Persona の `stance` / `confidence` / `dimension` / `premise`
-- conflict_summary（unanimous / simple_conflict）
+- conflict_type（unanimous / simple_conflict）
 
 PR2 開発時に過去の COUNCIL-LOG を分析し、類型分布を実データで検証する。

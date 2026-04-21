@@ -180,7 +180,7 @@ SPEC.mdの機能一覧をもとに実装タスクに分解する。
 4. 合意プロセスに入る（`.claude/skills/council/references/consensus-protocol.md` 参照）:
    - 実装者は `recommended` を採用するか、別案で実装するかを決定する
    - `judgment_confidence < 0.5` の場合は自動で人間エスカレーション（献上で報告）
-   - 採用可否と根拠を DELIVERY.md「Council 発動記録」節に記載する
+   - 採用可否と根拠を DELIVERY.md の**体制事後評価内の履歴系記録欄**に記載する（Council 発動記録専用節の新設は PR2 で予定）
 
 #### 結果の扱い
 

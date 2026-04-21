@@ -59,7 +59,7 @@ Dialog Harness 本体から**独立**した構造で設計され、将来切り�
 - (c) 不可逆操作を行う直前
 - (d) 自己評価 confidence < 0.6（明示的に自問して採点）
 
-## 処理フロー（PR1: Phase 1 のみ）
+## 処理フロー（PR1: Phase 0 + 1 + 3、Phase 2 のみスキップ）
 
 ```
 [入力] 発動要請 (context + options + question_to_answer + source_skill)

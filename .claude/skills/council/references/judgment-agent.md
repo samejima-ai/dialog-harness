@@ -4,7 +4,7 @@
 
 ## 役割
 
-- 3 Persona 出力 + （PR2: 討論ログ）+ 重み配分 + conflict_summary を受領
+- 3 Persona 出力 + （PR2: 討論ログ）+ 重み配分 + conflict_type を受領
 - 重み付きで単一回答を構成
 - 意見の質と動的変化を評価
 - 少数意見を保持（消さない）
@@ -34,7 +34,7 @@
     {"persona": "哲学者", "stance": "案A", "reason": "...", "confidence": 0.5, ...}
   ],
   "final_weights": {"経営者": 2, "開発者": 6, "哲学者": 2},
-  "conflict_summary": "simple_conflict",  // PR1: unanimous / simple_conflict
+  "conflict_type": "simple_conflict",  // PR1: unanimous / simple_conflict
   "discussion_log": null  // PR2 で Phase 2 結果
 }
 ```
@@ -70,10 +70,10 @@
 - final_decision は常に null で返す（決定は実装者の合意プロセスが行う）
 - judgment_confidence < 0.5 の場合は理由を reasoning に明記する
 
-出力形式: 別添 schema（output-format.md §judgment_output）
+出力形式: 別添 schema（output-format.md §4 Judgment Agent 出力）
 
 入力に含まれる discussion_log が null の場合は、Phase 1 のみで判定する（PR1）。
-conflict_summary が "unanimous" の場合は、多様性として質を評価する（minority_opinion を「全員一致だが …」形式で記述）。
+conflict_type が "unanimous" の場合は、多様性として質を評価する（minority_opinion を「全員一致だが …」形式で記述）。
 ```
 
 ### Few-shot 例（PR1）
@@ -97,7 +97,7 @@ Judgment Agent は以下を考慮して `judgment_confidence` を 0.0-1.0 で自
 
 ## 全会一致時の扱い
 
-`conflict_summary = "unanimous"` の場合、Judgment Agent は：
+`conflict_type = "unanimous"` の場合、Judgment Agent は：
 
 1. 一致した stance を `recommended` に設定
 2. 3 Persona の reason から多様な根拠を `reasoning` に統合（多角的に理由付けされた良い意見の可能性が高い）
@@ -109,7 +109,7 @@ Judgment Agent は以下を考慮して `judgment_confidence` を 0.0-1.0 で自
 
 ## 単純対立時の扱い（PR1）
 
-`conflict_summary = "simple_conflict"` の場合：
+`conflict_type = "simple_conflict"` の場合：
 
 1. final_weights × confidence の積を各 stance ごとに集計
 2. 最大スコアの stance を `recommended` に設定

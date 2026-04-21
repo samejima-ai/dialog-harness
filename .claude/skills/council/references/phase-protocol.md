@@ -93,7 +93,7 @@ Council の処理フロー全体の規格。Orchestrator が本プロトコル�
 
 ### PR1 ではスキップ
 
-`conflict_summary` を `discussion_log: null` と共に Phase 3 に渡す。
+`conflict_type` を `discussion_log: null` と共に Phase 3 に渡す。
 
 ### PR2 以降の予告
 
@@ -112,7 +112,7 @@ Council の処理フロー全体の規格。Orchestrator が本プロトコル�
 
 - Phase 1 の 3 Persona 出力
 - `final_weights`（Orchestrator 計算結果）
-- `conflict_summary`（PR1: unanimous / simple_conflict）
+- `conflict_type`（PR1: unanimous / simple_conflict）
 - `discussion_log`（PR1: null）
 - 元の `question_to_answer` と `options`
 
@@ -142,7 +142,7 @@ Council の処理フロー全体の規格。Orchestrator が本プロトコル�
 | 0 | 発動要請 | pre_check 結果 | council_type / category |
 | 重み計算 | council-weights + category | final_weights | Phase 3 のみに渡す |
 | 1 | context / options / question_to_answer | 3 Persona 出力 | 対立度判定 + Phase 3 |
-| 対立度 | 3 Persona 出力 | conflict_summary | Phase 2 / Phase 3 |
+| 対立度 | 3 Persona 出力 | conflict_type | Phase 2 / Phase 3 |
 | 2 | （PR1 スキップ） | null | Phase 3 |
 | 3 | Phase 1 出力 + weights + conflict + discussion | Judgment | 出力返却 |
 

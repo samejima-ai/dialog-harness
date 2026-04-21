@@ -99,8 +99,8 @@ Orchestrator が実装者に返す最終応答：
   "status": "success | timeout | judgment_failed | pre_check_failed",
   "invocation_id": "string",
   "council_type": "business",
-  "phase_reached": "1 | 2 | 3",
-  "conflict_summary": "unanimous | simple_conflict",
+  "phase_reached": "phase_1 | phase_2 | phase_3",
+  "conflict_type": "unanimous | simple_conflict",
   "final_weights": {"経営者": 2, "開発者": 6, "哲学者": 2},
   "persona_outputs": [{...Persona 出力 × 3...}],
   "judgment": {...Judgment Agent 出力...},
@@ -138,27 +138,36 @@ Judgment Agent から実装者への delta 応答：
   "original_invocation_id": "string",
   "delta_response": "string (元 judgment への追加情報のみ、200 字以内)",
   "updates_to_judgment": null,
-  "follow_up_count": "number (この質問で何回目か、1 or 2)",
+  "follow_up_count": "number (この follow-up の通番、1 or 2)",
   "max_reached": "boolean (true なら次回はエスカレーション必須)"
 }
 ```
 
 `updates_to_judgment` は常に `null`（元 judgment は不変、`consensus-protocol.md` §Step 4）。
 
+### `follow_up_count` と COUNCIL-LOG `follow_up_questions_count` の違い
+
+| フィールド | 所在 | 意味 |
+|------------|------|------|
+| `follow_up_count` | Follow-up Response（本節） | この応答が本 invocation における何回目の follow-up か（1 または 2、Judgment Agent が応答時に採番） |
+| `follow_up_questions_count` | COUNCIL-LOG エントリ（§8） | 本 invocation で実施された follow-up の**総数**（合意プロセス完了時に実装者が後追記、0-3） |
+
+両者は粒度が異なる。前者は個別応答のカウンタ、後者は invocation 全体の総数。
+
 ## 8. COUNCIL-LOG エントリ
 
 `history/COUNCIL-LOG.md` に追記される 1 エントリ：
 
 ```yaml
-- invocation_id: "2026-04-21T15:30:00Z-a1b2c3"
-  invoked_at: "2026-04-21T15:30:00Z"
+- invocation_id: "council-2026-04-21T15:30:00Z-a1b2c3"
+  timestamp: "2026-04-21T15:30:00Z"
   source_skill: "layer1-autonomous-dev"
   question_to_answer: "..."
   council_type: "business"
   category: "implementation"
   category_fallback: false
-  phase_reached: 3
-  conflict_summary: "simple_conflict"
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
   final_weights:
     経営者: 2
     開発者: 6
@@ -168,9 +177,9 @@ Judgment Agent から実装者への delta 応答：
     開発者: { stance: "案B", confidence: 0.9 }
     哲学者: { stance: "案A", confidence: 0.5 }
   judgment_confidence: 0.75
-  recommended_summary: "案B（一文で）"
+  recommended: "案B（一文で）"
   human_escalated: false
-  # 後追記（合意プロセス完了時）
+  # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへの単方向埋め込みを許容
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-04-21T15:35:00Z"

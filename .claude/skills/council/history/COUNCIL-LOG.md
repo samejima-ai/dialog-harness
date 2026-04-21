@@ -4,11 +4,35 @@ Council 発動の append-only ログ。
 
 ## 運用ルール
 
-- **append-only**: 既存エントリは改変しない。訂正は新エントリで行う
-- **記録タイミング**: Judgment Agent の出力取得時点で1エントリ、実装者の合意確定時点で `implementer_consent` を追記
+- **append-only の定義**: 既存エントリの**削除・書き換え禁止**。新しいエントリは時系列昇順で末尾追加のみ。エントリ順序の変更も禁止
+- **記録タイミング**: Judgment Agent の出力取得時点で 1 エントリを append する。実装者の合意確定時点で下記の「合意プロセス後追記フィールド」を **null → 値** に埋め込む
 - **粒度**: 1 invocation = 1 エントリ（follow-up 質問は同じエントリ内に追記）
 - **監査用途**: F1（週次）/ F2（月次）/ F3（四半期）儀式で集計し、傾向分析に使用
 - **プライバシー**: 社外秘情報が含まれ得るため、skill 内部に閉じて保管する
+
+### append-only の例外条項（合意プロセスの後追記）
+
+合意プロセスは**発動の完結点**であり append 対象の新規情報だが、COUNCIL-LOG の粒度設計（1 invocation = 1 entry）上、新エントリを作ると invocation_id 対応が煩雑化する。この妥協点として、以下のフィールドに限り **null → 値への単方向の埋め込み**を許容する：
+
+| フィールド | 値 | 条件 |
+|------------|-----|------|
+| `implementer_consent` | `"agreed_recommended"` / `"agreed_with_modification"` / `"escalated"` | 合意プロセス完了時 |
+| `follow_up_questions_count` | 0-3 の整数 | 合意プロセス完了時 |
+| `agreed_at` | ISO 8601 タイムスタンプ | 合意プロセス完了時 |
+| `modification_note` | 自由記述 | `agreed_with_modification` の場合のみ |
+| `escalation_reason` | 自由記述 | `escalated` の場合のみ |
+
+**許容条件**: これらのフィールドが発動時点で **null として宣言されていた場合に限り**、単方向の埋め込み（null → 値）を認める。
+
+**禁止事項**:
+
+- 一度値を埋めたフィールドの書き換え
+- null 宣言されていないフィールドの新規追加
+- 他フィールド（invocation_id / timestamp / persona_summary / judgment 系 等）の削除・改変
+- 合意プロセス情報以外の後追記（訂正は新エントリで行う）
+- エントリ順序の変更
+
+**監査マーカー**: `implementer_consent != null` を「合意完了済み」のマーカーとして扱える。`null` のままのエントリは合意プロセス未完 = 進行中または放棄された invocation。
 
 ## エントリスキーマ（必須フィールド）
 
@@ -29,7 +53,7 @@ Council 発動の append-only ログ。
 | `human_escalated` | bool |
 | `implementer_consent` | 合意時に追記。内容は自由記述 |
 
-詳細スキーマは [../references/output-format.md](../references/output-format.md) §7 を参照。
+詳細スキーマは [../references/output-format.md](../references/output-format.md) §8 を参照。
 
 ## エントリ形式
 

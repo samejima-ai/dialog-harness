@@ -47,7 +47,7 @@ Judgment Agent 出力を受け取った実装者が、その判断に対して�
 
 ## Step 1: 出力受領
 
-実装者は Judgment Agent 出力を受領する。出力スキーマは [output-format.md](output-format.md) §judgment_output 参照。
+実装者は Judgment Agent 出力を受領する。出力スキーマは [output-format.md](output-format.md) §4 Judgment Agent 出力 を参照。
 
 `judgment_confidence < 0.5` の場合、Council 自体が自信を持っていない。
 合意プロセスを実行せず、即座に人間エスカレーションする（Step 8 へ）。
