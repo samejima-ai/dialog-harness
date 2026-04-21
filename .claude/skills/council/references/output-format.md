@@ -37,7 +37,7 @@ Council System の全エントリポイントの入出力 JSON スキーマ定�
   "status": "pre_check_passed | pre_check_failed",
   "council_type": "business | life | hybrid",
   "category": "string",
-  "invocation_id": "string (council-<ISO 8601 Z>-<6-char alnum>)",
+  "invocation_id": "string (council-<ISO 8601 Z>-<6-char [a-z0-9]>)",
   "reason": "string (pre_check_failed 時のみ、差し戻し理由)"
 }
 ```
