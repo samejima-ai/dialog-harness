@@ -37,10 +37,14 @@ description: >
    → 問題あり: 仕様レビュー結果を即献上（ここで終了）
    → 問題なし: 次へ
 4. 実装タスク分解
+   → 複数実装案が拮抗 or 実装者 confidence < 0.6 の判断点がある場合
+     → `council` スキルを起動して判断を仰ぐ（詳細は本文「Council 発動」節参照）
 5. タスク実行（コーディング）
 5.5. Shift Left 基盤 + 5層エラー検出スタックに沿った自己検証（計算的解決最優先）
      Shift Left 基盤（spec/ 逸脱なし確認） → 第1層（計算的センサー全PASS）
      → 第2層（E2E機械検証） → 第3層（Interaction Cost 測定）
+     不可逆操作（データ破壊/スキーマ変更/認証系変更/公開範囲変更等）検出時は
+     直前に `council` を起動して判断を仰ぐ
      詳細は `references/inferential-sensor-v2.md` 参照
 6. 自己検証（計算的センサー＋推論的センサー）
    → 失敗: 自力修正して6に戻る
@@ -140,6 +144,54 @@ SPEC.mdの機能一覧をもとに実装タスクに分解する。
 - 1タスク＝1機能または1機能の1側面
 - タスク間の依存関係を明確にし、依存順に実行する
 - タスクリストをファイルに書き出して進捗を追跡する
+
+### 4.5. Council 発動（判断点検出時のみ）
+
+分解の過程で判断点が現れた場合、自力解釈で進めずに `council` スキルを起動する。
+原則「開発中に人間に質問しない」は維持する — Council は人間ではなく判断モジュールである。
+
+#### 発動トリガー
+
+以下のいずれかに該当したら発動する：
+
+| 条件 | 例 |
+| --- | --- |
+| 複数実装案が viable で拮抗 | ライブラリ選定、アルゴリズム選択、データ構造選択 |
+| SPEC/DONT で曖昧さを検出 | 仕様文言が2通り以上に解釈できる |
+| 不可逆操作を含むタスク | マイグレーション、データ削除、スキーマ変更、認可境界変更 |
+| 実装者 confidence < 0.6 | 自己評価で自信が持てない判断 |
+
+発動しない場合（裁量で進める）：
+
+- タイポ・フォーマット・明確仕様の素直実装・定型リファクタ
+- 単一実装パスしかない場合
+- Council の過去 COUNCIL-LOG に類似判断があり `recommended` と一致する方針を取る場合
+
+#### 発動方法
+
+1. 入力を構造化する（`.claude/skills/council/references/output-format.md` §1 参照）:
+   - `context`: 該当タスクとその周辺状況
+   - `options`: 複数案（少なくとも2つ、Council は第3の道を提示してよい）
+   - `question_to_answer`: 問いを1文で
+   - `source_skill`: `layer1-autonomous-dev`
+   - `category`: `implementation` / `operation` / `maintenance` / `error_handling` 等
+2. `council` スキルを起動する
+3. Judgment Agent の出力を受け取る（`recommended` / `reasoning` / `minority_opinion` / `judgment_confidence` / `final_decision: null`）
+4. 合意プロセスに入る（`.claude/skills/council/references/consensus-protocol.md` 参照）:
+   - 実装者は `recommended` を採用するか、別案で実装するかを決定する
+   - `judgment_confidence < 0.5` の場合は自動で人間エスカレーション（献上で報告）
+   - 採用可否と根拠を DELIVERY.md「Council 発動記録」節に記載する
+
+#### 結果の扱い
+
+| Council 判断 | L1 の振る舞い |
+| --- | --- |
+| `recommended` + 合意可能 | 該当案で実装を続行 |
+| `recommended` + 実装者に強い異論 | 実装者案で進める旨を合意プロセスに記録し続行（Council は判断支援） |
+| `judgment_confidence < 0.5` | 人間エスカレーション（該当判断の実装保留、他タスクを先行） |
+| `conflict_type: E`（前提対立、PR2 以降） | SPEC 差し戻し、即献上 |
+
+`final_decision` は常に null で来る。実装者が合意プロセスで方針化する責務を負う。
 
 ### 5. タスク実行
 
