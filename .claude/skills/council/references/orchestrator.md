@@ -97,8 +97,8 @@ Orchestrator は以下を Judgment Agent に渡す：
 
 ```json
 {
-  "question_to_answer": {元の発動要請},
-  "options": {元の発動要請},
+  "question_to_answer": {元の発動要請の question_to_answer},
+  "options": {元の発動要請の options},
   "persona_outputs": [{3 Persona の応答}],
   "final_weights": {計算結果},
   "conflict_type": {PR1: "unanimous" or "simple_conflict"},

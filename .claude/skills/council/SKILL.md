@@ -171,7 +171,7 @@ L0 の仕様トレードオフ、L2 の跨ぎドメイン方針対立にも使�
 
 ### 参照原典（このスキル外）
 
-- [.claude/skills/layer0-spec-architect/references/philosophy.md](../../skills/layer0-spec-architect/references/philosophy.md) §1 フラクタル原則 / §3 情報純度原則 / §5 献上哲学
+- [.claude/skills/layer0-spec-architect/references/philosophy.md](../layer0-spec-architect/references/philosophy.md) §1 フラクタル原則 / §3 情報純度原則 / §5 献上哲学
 
 ### 参照ドキュメント（このスキル内 references/）
 

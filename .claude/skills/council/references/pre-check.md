@@ -17,9 +17,20 @@ if source_skill in ["layer1-autonomous-dev", "layer1-independent-reviewer",
                     "layer2-orchestrator", "layer2-integration-verifier"]:
     → business Council
 elif source_skill == "layer0-spec-architect" and category == "life":
-    → life Council （PR3 で有効化、PR1 では "not_implemented" エラー）
+    → PR3 で有効化。PR1 では pre_check_failed +
+       reason: "life_council_not_implemented_in_pr1" を返して差し戻す
 else:
     → business Council （デフォルト）
+```
+
+life Council 要請時の PR1 応答形式（`output-format.md` §2 の `pre_check_failed` スキーマに準拠）：
+
+```json
+{
+  "status": "pre_check_failed",
+  "reason": "life_council_not_implemented_in_pr1",
+  "detail": "life Council is scheduled for PR3. Current PR1 scope is business Council only."
+}
 ```
 
 ## 判定ルール（PR3 完全版の予告）
@@ -91,7 +102,7 @@ invocation_id = "council-" + utcnow().strftime("%Y-%m-%dT%H:%M:%SZ") + "-" + ran
 
 - 判定曖昧時の hybrid 発動はしない（business にフォールバック）
 - category 未指定時は `judgment` にフォールバック（COUNCIL-LOG に `category_fallback: true` を記録）
-- life Council の判定ロジックは書き出すが、PR1 実装では `"not_implemented"` エラーを返す
+- life Council の判定ロジックは書き出すが、PR1 実装では `pre_check_failed` + `reason: "life_council_not_implemented_in_pr1"` で差し戻す（`output-format.md` §2 スキーマに準拠）
 
 ## 決定論性の担保
 

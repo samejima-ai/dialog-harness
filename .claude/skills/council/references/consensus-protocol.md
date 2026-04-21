@@ -78,7 +78,7 @@ Judgment Agent 出力を受け取った実装者が、その判断に対して�
 ```json
 {
   "type": "follow_up_question",
-  "original_invocation_id": "2026-04-21T15:30:00Z-a1b2c3",
+  "original_invocation_id": "council-2026-04-21T15:30:00Z-a1b2c3",
   "additional_question": "minority_opinion の懸念点は案 B の実装で mitigation 可能か",
   "current_understanding": "案 B 採用、ただし哲学者の懸念点を CHANGELOG に明記する方針"
 }
@@ -91,7 +91,7 @@ Judgment Agent は **delta（差分）のみ**を返す（再判定はしない�
 ```json
 {
   "type": "follow_up_response",
-  "original_invocation_id": "2026-04-21T15:30:00Z-a1b2c3",
+  "original_invocation_id": "council-2026-04-21T15:30:00Z-a1b2c3",
   "delta_response": "案 B 採用時の哲学者懸念点（意味付けの希薄化）は、CHANGELOG への記載で部分 mitigation 可能。完全 mitigation には INTENT.md への明示記録が必要",
   "updates_to_judgment": null  // 元の judgment は変更しない
 }
