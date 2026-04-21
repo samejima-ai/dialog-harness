@@ -354,6 +354,8 @@ project-root/
 個別ファイルの内容拡張（節の追加・記述の詳細化）は許容するが、リンクの削除・改名・リダイレクトは minor 昇格でも禁止する。
 骨格の完全な書き換えは major 昇格案件として扱う。
 
+**例外（再分類）**: ファイルの identity（ベース名）と内容が完全に保持される格納ディレクトリの変更（例: skill-creator 規約への適合化に伴う `references/` ↔ `assets/` の再分類）は「改名」ではなく「再分類」として扱い、minor 昇格で許容する。該当変更は「v4.2 追加（分類再編・progressive disclosure 適合化）」以降の履歴節に記録する。
+
 - `assets/meta-spec-template.md` — 仕様ドキュメントのテンプレートと記述ルール（REGIME.md テンプレ含む）※v4.2 で `references/` → `assets/` に再分類（skill-creator の progressive disclosure 規約準拠、内容は不変）
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
 - `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、Lifecycle判定）
@@ -389,6 +391,14 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v4.2 追加（分類再編・progressive disclosure 適合化）
+
+skill-creator 規約（`references/` = 読み参考の docs、`assets/` = 埋めて使うテンプレ）への適合化として、以下 3 テンプレを `references/` → `assets/` に再分類。identity（ベース名）と内容は完全に保持。本節冒頭（§既存）の「改名禁止」制約には「再分類は例外」条項を明文化済み。
+
+- `assets/meta-spec-template.md` — 保持対象 7 件のうちの 1 件、再分類として minor 許容（上記例外条項に基づく）。§357 参照
+- `assets/credit-template.md` — v3.1 追加分、再分類。§377 参照
+- `../layer0-onboarding/assets/reverse-spec-template.md` — 兄弟 skill 側で同期移動（Issue #12）
 
 ### v4.1 追加（廃止判断プロトコル分離）
 
