@@ -103,8 +103,11 @@ description: >
 
 - `references/archaeology-protocol.md` — 考古学的抽出プロトコル（深度 shallow/standard/deep/full、対話深度判定、抽出フォーマット、機密領域の扱い）
 - `references/freeze-line-spec.md` — 凍結線の二段構え規格（振る舞い凍結 / コード凍結、AI 献上フォーマット、DONT.md 記載形式、違反時の処理）
-- `references/reverse-spec-template.md` — 逆仕様化テンプレート（as-is/to-be 分離、F 番号採番、INTENT.md 展開、確度メタデータ）
 - `references/handoff-to-spec-architect.md` — 引き継ぎ規格（タイミング、REGIME.md 特記事項、INTENT.md 初期状態、spec-architect 側の責務、再起動防止）
+
+## アセット（埋めて使うテンプレート）
+
+- `assets/reverse-spec-template.md` — 逆仕様化テンプレート（as-is/to-be 分離、F 番号採番、INTENT.md 展開、確度メタデータ）
 
 ## Level A 所属
 

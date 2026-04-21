@@ -132,7 +132,7 @@ sensors/e2e/
 
 ### 優先度と実行範囲
 
-SPEC.md の Priority と対応する（`../../layer0-spec-architect/references/meta-spec-template.md` の Priority 定義参照）。Priority は検出スタック（建物）の使用階数を決める。Shift Left 基盤（土地）は Priority に関わらず常に整備される前提で、階数に加算しない。
+SPEC.md の Priority と対応する（`../../layer0-spec-architect/assets/meta-spec-template.md` の Priority 定義参照）。Priority は検出スタック（建物）の使用階数を決める。Shift Left 基盤（土地）は Priority に関わらず常に整備される前提で、階数に加算しない。
 
 - critical: 第1〜5層すべてを使用（本 E2E 含む）
 - standard: 第1〜3層まで使用（本 E2E 含む）

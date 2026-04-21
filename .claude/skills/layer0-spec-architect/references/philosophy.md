@@ -183,7 +183,7 @@ L1 は開発中に人間へ質問しない。仕様不足は即献上（タイ�
        ↑ 参照
        ├── layer0-spec-architect/SKILL.md（5条の実装指針）
        ├── layer0-spec-architect/references/regime-assessment.md（第1条・第2条）
-       ├── layer0-spec-architect/references/meta-spec-template.md（第5条）
+       ├── layer0-spec-architect/assets/meta-spec-template.md（第5条）
        ├── layer0-onboarding/SKILL.md（第4条）
        │
        ├── layer1-autonomous-dev/SKILL.md（第2条・第4条・第5条）

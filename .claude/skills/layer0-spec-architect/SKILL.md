@@ -138,12 +138,12 @@ R3 完了時点で `SPEC.md` に `F1. カート: 最大30品、在庫超過時�
 
 #### プロトコルの位置づけ
 
-UX 3問は独立軸ではなく、NFR 軸の補足として扱う（詳細は `references/regime-assessment.md` §軸4）。3問の回答は SPEC.md の UX制約セクション（`references/meta-spec-template.md`）に格納される。
+UX 3問は独立軸ではなく、NFR 軸の補足として扱う（詳細は `references/regime-assessment.md` §軸4）。3問の回答は SPEC.md の UX制約セクション（`assets/meta-spec-template.md`）に格納される。
 
 ### 3. ドキュメント化
 
 メタ仕様テンプレートに従い、以下のドキュメント群を生成する。
-テンプレートの詳細は `references/meta-spec-template.md` を参照。
+テンプレートの詳細は `assets/meta-spec-template.md` を参照。
 
 生成するドキュメント：
 - **INDEX.md** — 全体目次（100行以内）。他ドキュメントへの参照を集約
@@ -316,7 +316,7 @@ project-root/
 
 ### 7.6. README.md クレジット挿入
 
-`references/credit-template.md` に従い、README.md 末尾に制作クレジットを挿入する。
+`assets/credit-template.md` に従い、README.md 末尾に制作クレジットを挿入する。
 
 - 既存 README.md がない場合: 最小構成で新規作成し、クレジットブロックを末尾に配置
 - 既存 README.md がある場合: マーカーコメント（`<!-- harness-credit: managed by layer0 skills. do not edit manually. -->`）の有無を確認
@@ -354,7 +354,7 @@ project-root/
 個別ファイルの内容拡張（節の追加・記述の詳細化）は許容するが、リンクの削除・改名・リダイレクトは minor 昇格でも禁止する。
 骨格の完全な書き換えは major 昇格案件として扱う。
 
-- `references/meta-spec-template.md` — 仕様ドキュメントのテンプレートと記述ルール（REGIME.md テンプレ含む）
+- `assets/meta-spec-template.md` — 仕様ドキュメントのテンプレートと記述ルール（REGIME.md テンプレ含む）※v4.2 で `references/` → `assets/` に再分類（skill-creator の progressive disclosure 規約準拠、内容は不変）
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
 - `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、Lifecycle判定）
 - `references/dialog-questions.md` — 非エンジニア向け対話質問例集（振り返り儀式テンプレ含む）
@@ -374,7 +374,7 @@ project-root/
 
 ### v3.1 追加（配置規則・クレジット）
 
-- `references/credit-template.md` — README.md 制作クレジットの規格とテンプレート（マーカー管理・拒否権・更新ルール）
+- `assets/credit-template.md` — README.md 制作クレジットの規格とテンプレート（マーカー管理・拒否権・更新ルール）※v4.2 で `references/` → `assets/` に再分類
 
 ### v3.2 追加（L0 サブフェーズ拡張 Phase 1）
 
