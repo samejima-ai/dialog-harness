@@ -1,0 +1,18 @@
+# dialog-harness is a skill-only repository.
+# This .gitignore exists as a guardrail to prevent non-skill artifacts
+# from being accidentally committed. See PR restoring this file for rationale.
+
+# Claude Code local machine settings (never shared)
+.claude/settings.local.json
+
+# Local-only design drafts / scratch docs (skill-only policy: PR #3)
+docs/
+drafts/
+scratch/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
