@@ -1,0 +1,244 @@
+# Consensus Protocol — 実装者と Council の合意プロセス
+
+Judgment Agent 出力を受け取った実装者が、その判断に対して合意して方針を決定するプロトコル。
+
+## 重要な前提
+
+**Judgment Agent の出力は判断（judgment）であって決定（decision）ではない**。
+決定は実装者が合意プロセスを経て確立する。
+詳細は [council-philosophy.md](council-philosophy.md) §3 認識合わせと合意の分離 を参照。
+
+## 合意の定義
+
+> 合意 = 判断者の出力に対して実装者が理解と質問をして方針が決まること
+
+認識合わせと合意は異なる：
+
+- **認識合わせ**: 発言側の主観を擦り合せる（Persona 間、人間⇄AI）
+- **合意**: 判断者の出力を実装者が受け取って方針化する（Council 出力 → 実装者）
+
+## プロトコル
+
+```
+[Judgment Agent 出力受領]
+        ↓
+[Step 1] 実装者が出力全体を読む
+        - recommended / reasoning / minority_opinion / weight_note / judgment_confidence
+        - judgment_confidence < 0.5 → 即座に人間エスカレーションへ
+        ↓
+[Step 2] 実装者が理解する
+        - reasoning が論理整合しているか
+        - minority_opinion を実装に反映できる箇所はないか
+        - weight_note の重み配分がカテゴリと整合しているか
+        ↓
+[Step 3] 必要なら追加質問（最大 2 往復）
+        ↓ （質問あり）           ↓ （質問なし）
+[Step 4a] Council に追加質問     [Step 5] 方針決定 = 合意成立
+        ↓                              ↓
+[Step 4b] Council が delta 応答  [Step 6] 実装に反映
+        ↓                              ↓
+        Step 3 に戻る              [Step 7] COUNCIL-LOG に
+        （3 回目で Step 8 へ）          implementer_consent を後追記
+                                       ↓
+                                       完了
+
+[Step 8] 合意できない / 質問 3 回到達 → 人間に献上（保留）
+```
+
+## Step 1: 出力受領
+
+実装者は Judgment Agent 出力を受領する。出力スキーマは [output-format.md](output-format.md) §4 Judgment Agent 出力 を参照。
+
+`judgment_confidence < 0.5` の場合、Council 自体が自信を持っていない。
+合意プロセスを実行せず、即座に人間エスカレーションする（Step 8 へ）。
+
+## Step 2: 理解
+
+実装者は以下を確認する：
+
+- **論理整合性**: `reasoning` が `recommended` をサポートしているか
+- **重み妥当性**: `weight_note` のカテゴリが今回の発動に適切か
+- **少数意見の扱い**: `minority_opinion` を実装で部分的に反映できないか（例: 採用案 + 少数意見の懸念点を mitigations として実装）
+
+## Step 3: 追加質問の判断
+
+理解できない / 不足を感じる場合のみ追加質問する。
+追加質問が**ない場合**は Step 5（方針決定）に進む。
+
+質問の例：
+
+- 「reasoning で言及された『短期 ROI』は具体的にどの指標か」
+- 「minority_opinion の哲学者の懸念点は、案 B の実装で mitigation 可能か」
+- 「weight_note の implementation カテゴリ適用は妥当か。本件は judgment カテゴリのほうが適切では」
+
+## Step 4: 追加質問プロトコル
+
+### 入力フォーマット
+
+```json
+{
+  "type": "follow_up_question",
+  "original_invocation_id": "council-2026-04-21T15:30:00Z-a1b2c3",
+  "additional_question": "minority_opinion の懸念点は案 B の実装で mitigation 可能か",
+  "current_understanding": "案 B 採用、ただし哲学者の懸念点を CHANGELOG に明記する方針"
+}
+```
+
+### 応答（Judgment Agent）
+
+Judgment Agent は **delta（差分）のみ**を返す（再判定はしない）：
+
+```json
+{
+  "type": "follow_up_response",
+  "original_invocation_id": "council-2026-04-21T15:30:00Z-a1b2c3",
+  "delta_response": "案 B 採用時の哲学者懸念点（意味付けの希薄化）は、CHANGELOG への記載で部分 mitigation 可能。完全 mitigation には INTENT.md への明示記録が必要",
+  "updates_to_judgment": null  // 元の judgment は変更しない
+}
+```
+
+### 制約
+
+- **最大 2 往復**（合計 3 回目の質問で Step 8 強制エスカレーション）
+- 各質問はコンテキスト全体を再送せず、`original_invocation_id` で参照する（コスト削減）
+- Judgment Agent は元の judgment を**書き換えない**。delta だけ返す
+
+### なぜ delta のみか
+
+完全な再判定は新規発動と同等のコスト。少数の追加質問は元判定への補足として処理することで、合意プロセスを軽量に保つ（`philosophy.md` §3 情報純度・コスト）。
+
+## Step 5-7: 合意成立
+
+実装者が方針を決定したら：
+
+1. 方針を明示（コミットメッセージ・実装メモ等で記録）
+2. 実装に反映
+3. COUNCIL-LOG の該当エントリに `implementer_consent` を後追記
+   - `implementer_consent`: `"agreed_recommended"` / `"agreed_with_modification"` / `"escalated"` のいずれか
+
+`agreed_with_modification` の例: 推奨案を採用したが、minority_opinion を mitigation として追加実装した場合。
+
+## Step 8: 合意できない場合
+
+以下の場合は人間に献上する（実装者は独自判断で進めない）：
+
+- `judgment_confidence < 0.5`（Council 自体が自信を持っていない）
+- 追加質問が 3 回目に到達
+- 実装者が論理整合性に納得できない
+- 実装者が重み配分の妥当性に納得できない
+- minority_opinion が実装で fundamental な問題を提起している
+
+献上時の記録：
+
+- COUNCIL-LOG: `implementer_consent: "escalated"` + `human_escalated: true`
+- DELIVERY.md（Lifecycle ≥ 1 環境では）: 該当 invocation_id と escalation 理由を記録
+
+### なぜ独自判断で進めないか
+
+実装者が Council 判断を無視して独自実装することは `philosophy.md` §5 献上哲学に反する。
+Council は実装者の支援機構であり、合意できない場合の正しい応答は「保留して人間に献上」である。
+これは `council-philosophy.md` §5 実装者への信頼 とも整合する（実装者は優秀だからこそ、自分の限界を認識して人間に判断を仰ぐ）。
+
+## 合意プロセスのログ化
+
+COUNCIL-LOG への追記項目（合意プロセス完了時）：
+
+```yaml
+implementer_consent: agreed_recommended | agreed_with_modification | escalated
+follow_up_questions_count: 0-3
+agreed_at: 2026-04-21T15:35:00Z
+modification_note: "..." # agreed_with_modification の場合のみ
+escalation_reason: "..." # escalated の場合のみ
+```
+
+## PR1 での簡略化
+
+- 追加質問の delta 応答は最低限実装（Judgment Agent prompt に「delta のみ返す」を明記）
+- COUNCIL-LOG への後追記は手動（PR3 で自動化）
+- escalation 時の DELIVERY.md 連携は Lifecycle ≥ 1 環境でのみ
+
+## PR2 以降の予告
+
+- 追加質問の往復回数を動的に調整（confidence 高い時は 1 回まで）
+- 合意プロセス自体のログ分析（どのカテゴリで escalation が多いか）
+- 実装者の confidence 自己評価ツール（チェックリスト形式）
+
+## PR2 で決着させる未決事項: `consensus_mode` フラグの導入
+
+### 問題
+
+PR1 実装後の実運用で、Claude（実装者エージェント）が Council 判定を受領した後、**「選択肢を再提示してユーザーに選ばせる」** というデフォルト質問パターンを合意プロセスに上書きしてしまう事例が発生した（COUNCIL-LOG `council-2026-04-21T15:30:00Z-m4t4q1` のメタ反復後の挙動）。
+
+これは Council の judgment（confidence 0.85、全会一致）を「また選択肢リスト」に降格させ、Council の価値を構造的に薄める問題。個々の AI エージェントの「気をつけ」に依存すると同じ失敗が繰り返されるため、**Council 出力側に構造として埋め込む**のが正しい。
+
+### 提案: Judgment Agent 出力に `consensus_mode` フィールド追加（2 モードのみ）
+
+```json
+{
+  "recommended": "...",
+  "judgment_confidence": 0.85,
+  "consensus_mode": "auto_agree" | "escalate_to_human",
+  "final_decision": null
+}
+```
+
+| モード | 受信側 AI の挙動 | 典型場面 |
+| --- | --- | --- |
+| `auto_agree` | 実装者として即同意 → そのまま実行。人間には事後報告のみ | カテゴリ別 confidence 閾値を超えた判定 |
+| `escalate_to_human` | 実装者は判断せず、人間に完全献上（DELIVERY.md 経由） | 閾値未達 / life Council / 対立類型 E・G |
+
+### なぜ 2 モードのみか（中間 `confirm_with_human` を排除した根拠）
+
+初期設計では `auto_agree` / `confirm_with_human` / `escalate_to_human` の 3 モードを検討したが、中間の `confirm_with_human`（yes/no ダイアログ）は以下の理由で不採用：
+
+1. **dialog-harness の「人間介入 0 を理想」とする核心思想と衝突**。中途半端な yes/no 介入は philosophy 違反
+2. **L1 autonomous-dev の「開発中に人間に質問しない」原則と矛盾**（`layer1-autonomous-dev/SKILL.md`）
+3. **献上哲学（`philosophy.md` §5）が既に正しい逃げ道を規定済み**。confidence 不足時は DELIVERY.md 経由で人間にまとまった形で渡すのが正解。yes/no はこの哲学の劣化版
+4. **コスパ観点**: 3 Persona × Judgment Agent の全工程を回した結果が yes/no では、計算量に対するアウトプット価値が釣り合わない
+5. **グレーゾーンは存在させない**: 「自動進行 or 献上」の二値に閉じることで、受信側の分岐ロジックが単純化され自律駆動を阻害しない
+
+### 導出ロジック（決定論）
+
+`consensus_mode` は Judgment Agent の LLM ではなく **Orchestrator が決定論で計算**する（`philosophy.md` §2 Shift Left）。このメタ判断自体が LLM で揺れると Council 全体の信頼性が崩れるため、ルール表で固定する：
+
+```python
+def compute_consensus_mode(council_type, category, confidence, conflict_type):
+    # ハードストップ: 献上確定
+    if council_type == "life":
+        return "escalate_to_human"
+    if conflict_type in ["E", "G"]:  # 前提対立 / メタ対立（PR2 で実装）
+        return "escalate_to_human"
+
+    # カテゴリ別 confidence 閾値
+    threshold = {
+        "operation": 0.7,    # 不可逆操作は高い閾値
+        "judgment": 0.6,     # スコープ・優先度・メタ判断
+        "conception": 0.6,   # 新規構造・思想
+    }.get(category, 0.5)     # デフォルト 0.5
+
+    if confidence < threshold:
+        return "escalate_to_human"
+    return "auto_agree"
+```
+
+閾値設計の意図：**中間モードを置かない代わりに、高リスク・高不可逆性のカテゴリでは confidence 閾値自体を上げる**。これにより「Council が強い自信を持っている時のみ自動進行」が実現できる。閾値を超えなければ献上。超えれば AI が自律実行。
+
+### 合意プロセスでやってはいけないパターン（PR2 で明文化）
+
+- **選択肢の再提示**: Council が判定した後に「1: 案A / 2: 案B / 3: 保留」のような形で再度選ばせない。Council の judgment を advisory に降格させる
+- **yes/no ダイアログでの事前確認**: 上記 2 モード設計の理由と同じ。`auto_agree` なら実行、`escalate_to_human` なら献上。中間形式は philosophy 違反
+- **Council 判定の無視**: 実装者が独自実装で進める（`philosophy.md` §5 献上哲学違反）
+- **合意プロセスの省略**: `auto_agree` モードでも、実装に反映した事実と `implementer_consent` の COUNCIL-LOG 追記は必須
+
+### 決定論出力の副次的価値: 自律駆動のフック化
+
+`consensus_mode` が決定論で出力され、かつ値が 2 種類に限定されることで、受信側は LLM 解釈を挟まずに挙動を分岐できる。最悪ケースではトリガーやフックで完全自動運用可能（`auto_agree` なら hook で即実行、`escalate_to_human` なら DELIVERY.md への自動追記 + 人間通知）。
+
+自律駆動開発を断続的に継続する上で、この「決定論出力 → 機械可読な二値分岐」は重要な土台となる。
+
+### 実装計画（PR2）
+
+1. `output-format.md` §4 Judgment Agent 出力に `consensus_mode` フィールド追加（値は 2 種類のみ）
+2. `orchestrator.md` に `compute_consensus_mode` 導出ルール表と計算式を追加
+3. 本ファイルに「モード別の正しい合意形式」と「やってはいけないパターン」節を上記 memo 参照で追加
+4. 受信側 skill（L1 / L0 / skill-creator 等）に `auto_agree` / `escalate_to_human` 分岐のテンプレ挙動を規定
