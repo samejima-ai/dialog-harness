@@ -157,12 +157,14 @@ SPEC.mdの機能一覧をもとに実装タスクに分解する。
 
 #### 判断分類（philosophy 第6条）
 
-判断は H / C の 2 カテゴリに分類される（詳細は `.claude/skills/layer0-spec-architect/references/philosophy.md` 第6条）。
+判断点は H / C の 2 カテゴリに分かれる。**カテゴリ定義は philosophy.md 第6条が原典で、本ファイルでは内容転記しない**（philosophy.md L4 / L282 メタ規則：他 skill は参照のみ・内容転記禁止＝散逸防止）。
 
-- **H カテゴリ（人間専管）**: H1 哲学変更（philosophy.md 改訂）／ H2 ルール変更（CLAUDE.md・SPEC.md・DONT.md の根本書き換え）／ H3 方向性発案（新規プロジェクト・次の方向性）／ H4 根本設計見直し（ARC 切替・モード昇格降格・L2 発動）。**Council を起動せず即時献上（タイプ A）** で人間に判断を委ねる — 権限境界の問題であり判断機構の問題ではない。
-- **C カテゴリ（Council 代替可能）**: C1 抵触判断（既存哲学・ルールに照らした実装中ジャッジ）／ C2 トレードオフ（スコープ・優先度・実装方針）／ C3 不可逆操作（権限レベル内）／ C4 仕様矛盾解決。Council を起動し、REGIME.md の CTL（Council Trust Level）が該当カテゴリを委譲範囲に含むかで自律実行と判断献上を切り替える。
+L1 の運用上の振る舞いは以下：
 
-L0 spec-architect が REGIME.md に CTL を明示しているので、L1 はそれを引き継いで参照する（CTL の独自算出はしない）。
+- **H カテゴリ抵触を検知**（philosophy.md §6「人間専管判断」）: Council を起動せず**即時献上（タイプ A）** で人間に判断を委ねる。権限境界の問題であり判断機構の問題ではない
+- **C カテゴリ抵触を検知**（philosophy.md §6「Council 代替可能判断」）: Council を起動し、REGIME.md の CTL（Council Trust Level）が該当カテゴリを委譲範囲に含むかで自律実行と判断献上を切り替える
+
+L0 spec-architect が REGIME.md に CTL を明示しているので、L1 はそれを引き継いで参照する（CTL の独自算出はしない）。詳細な H1〜H4 / C1〜C4 の定義は `.claude/skills/layer0-spec-architect/references/philosophy.md` §第6条 を直接参照すること。
 
 #### 発動トリガー（C カテゴリのみ）
 
