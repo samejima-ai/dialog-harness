@@ -60,7 +60,8 @@ Layer 1が人間に提出する献上物の構造と記述ルール。
 
 ```
 delivery/
-├── DELIVERY.md          # 献上レポート（全モード必須）
+├── DELIVERY.md          # 献上レポート（全モード必須、AI 内部状態 / L0 引き継ぎ用）
+├── HANDOFF.md           # 人間向け引き渡しサマリー（v4.2、全モード必須）
 ├── VERIFICATION.md      # 独立検証レポート（M2以上で必須）
 ├── INTEGRATION.md       # 統合レポート（L2のみ。L2オーケストレータが生成）
 ├── HISTORY-DIFF.md      # 履歴層更新差分（Lifecycle ≥ 1 で必須）
@@ -75,7 +76,7 @@ delivery/
 
 #### 許可
 
-- **規格ファイル**: `DELIVERY.md`, `VERIFICATION.md`, `INTEGRATION.md`, `HISTORY-DIFF.md`
+- **規格ファイル**: `DELIVERY.md`, `HANDOFF.md`, `VERIFICATION.md`, `INTEGRATION.md`, `HISTORY-DIFF.md`
 - **成果物**: `src/`, `tests/`, ビルド生成物（`dist/`, `build/` 等）、実行に必要なアセット
 - **プロジェクト固有の実行設定**: `package.json`, `requirements.txt` 等（プロジェクト側ディレクトリへの反映用）
 
@@ -467,3 +468,35 @@ DELIVERY.md の体制事後評価セクションは、複数プロジェクト�
 
 これらは Layer 0 の `references/regime-assessment.md` に反映し、運用知として育てていく。
 特に **AI能力バージョン** 記録は将来モデルでの閾値緩和判断に必須。
+
+---
+
+## HANDOFF.md との関係（v4.2 で新設）
+
+L1 ステップ 8「献上」では DELIVERY.md と HANDOFF.md を同時生成する。
+HANDOFF.md の規格詳細は `handoff-format.md` を参照。
+
+| ファイル | 役割 | 可読性優先 | デフォルト表示 |
+|---|---|---|---|
+| DELIVERY.md | AI 内部状態、L0 spec-architect への引き継ぎ | AI 可読性優先 | 要求時のみ展開 |
+| HANDOFF.md | 人間向け献上物、Council 判定ダイジェスト | 人間可読性優先 | 完成時・献上時に自動表示 |
+
+### 生成順序
+
+1. DELIVERY.md を先に生成（L1 内部の処理結果を全て記録）
+2. DELIVERY.md から人間可読部分を抽出して HANDOFF.md を生成
+3. 両ファイルを献上物として提示
+4. デフォルト表示は HANDOFF.md のみ
+
+### 体制事後評価との関係
+
+DELIVERY.md の「体制事後評価」セクションは HANDOFF.md には含めない
+（エンジニア向けの内部評価のため）。要求時のみ DELIVERY.md を展開して表示する。
+
+### 既存 history/SUMMARY.md との衝突回避
+
+`history/SUMMARY.md`（L0 振り返り儀式エントリポイント / 圧縮履歴サマリ）と
+本 HANDOFF.md は完全に別ファイル。役割も配置場所も異なる:
+
+- `history/SUMMARY.md`: AI 用、L0 ritual 用、Lifecycle ≥ 1 で再生成
+- `delivery/HANDOFF.md`: 人間用、献上時に毎回生成、Lifecycle 不問

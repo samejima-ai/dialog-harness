@@ -18,7 +18,11 @@ Council System の設計に至るブレスト経緯と、確定事項・未確�
 - L0 / L1 / L2 から横断的に呼び出される
 - skill 名は `council`（ブリーフでは `interlude-council` 仮置き、実装時に短縮）
 
-### 設計哲学（6 公理として `council-philosophy.md` に格納）
+### 設計哲学（7 公理）
+
+1〜6 は `council-philosophy.md` の §1〜§6 に格納。第 7 公理は v4.2 で追加された
+harness 全体（philosophy.md 第 6 条）と Council を結ぶ補助公理として、
+本ファイル内に記載する（`council-philosophy.md` への波及は v4.3 で再判断）。
 
 1. Council 内部は非フラクタル（起点・分岐点のため）
 2. 対立は構造化する（解消ではない）
@@ -26,6 +30,10 @@ Council System の設計に至るブレスト経緯と、確定事項・未確�
 4. 不完全性の受容（完璧は目指すが到達不能）
 5. 実装者への信頼（縛りすぎない）
 6. 人間との距離感（現段階は判断支援、理想は介入ゼロ）
+7. **人間 ≒ Council 原則**: Council は人間の判断代替機構である（v4.2 で正式化）。
+   判断種別を H カテゴリ（人間専管）と C カテゴリ（Council 代替可）に二分し、
+   CTL に応じて自律実行範囲を動的決定する。詳細は philosophy.md 第 6 条 /
+   `ctl-calculation.md` を参照。
 
 ### Council 種別
 
@@ -89,7 +97,7 @@ final_weight[persona] = base_weight[persona] × ethos_multiplier
 2. Orchestrator はフラット（判断機能を持たない）
 3. Judgment Agent は別 sub-agent（哲学者を止揚係から解放）
 4. 対立は解消せず構造化（少数意見を必ず保持）
-5. final_decision は常に人間（現段階は判断支援）
+5. `final_decision` は Council / Judgment Agent が埋めるフィールドではなく、Council 出力では常に `null`（v4.1 と同じ不変条件を維持）。CTL は「制度上の最終決定権者」を定義する仕組みであって、フィールドの記入主体を変えるものではない。H カテゴリは常に人間が決定権者となり、C カテゴリは CTL が CTL-1 以上のとき Council が `recommended` / `judgment` / `consensus_mode=auto_agree` を提示できるが、`final_decision` 自体の確定・記入は後段の実装者の合意プロセス（または事後評価）が担う（v4.2 で正式化）
 6. 独立性は視点レベルで十分（モデルの独立性は求めない）
 7. ハイブリッドは例外処理（常用しない）
 8. Council System 自体は非フラクタル（起点・分岐点のため）
@@ -151,3 +159,56 @@ PR1 実装後の Walking Skeleton 検証（Test A/B）で、subagent が 3 件�
 
 - 設計時の構成資料: ブリーフ（dialog-harness 本体外、ひで保管）
 - 実装後の参照: 本ファイル + `council-philosophy.md` + 各 references/*.md
+
+---
+
+## v4.2 改訂履歴（2026-04-25）
+
+### 6 公理から 7 公理への拡張
+
+「設計哲学（6 公理）」を 7 公理に拡張。第 7 公理として「人間 ≒ Council 原則」を
+追加（本ファイル冒頭の確定事項を参照）。
+
+`council-philosophy.md` 本体の改訂は v4.2 では行わない（既存 §1〜§7 を維持）。
+philosophy.md 第 6 条が新規原典の役割を担い、v4.2 では design-history.md のみで
+公理拡張を反映する。`council-philosophy.md` への波及は v4.3 で再判断する。
+
+### 確定事項の追加
+
+- CTL（Council Trust Level）の 4 段階（CTL-0〜CTL-3）を `ctl-calculation.md` に
+  規定。L0 spec-architect が REGIME.md 生成時に算出して記録する
+- 横断蓄積メカニズム（`~/.claude/council-data/`）を user-scope に新設。
+  プロジェクト横断で学習資産が引き継がれる
+- 事後評価フェーズの厳格な分離: AI 駆動開発終了後にのみ発動し、人間の能動的な
+  意思表示を経て初めて評価が始まる（philosophy.md 第 6 条参照）
+- 評価方式: harness が HANDOFF.md で人間に問いかけ、議題・判定結果・実装結果の
+  3 点に限定して確認する
+- H カテゴリ抵触時は即時献上（権限境界として処理）。H1 哲学変更 / H2 ルール変更 /
+  H3 方向性発案 / H4 根本設計見直し は CTL に関わらず常に escalate_to_human
+
+### compute_consensus_mode の拡張
+
+`consensus-protocol.md` の `compute_consensus_mode` を CTL 連動版に拡張。
+シグネチャに `ctl` と `stats` を追加し、H カテゴリ即時献上ルールと
+CTL ごとの閾値調整ロジックを導入。
+
+### 重要な設計判断（5 番）の修正
+
+「重要な設計判断」リスト 5 番を以下に書き換え:
+
+- 旧: `final_decision は常に人間（現段階は判断支援）`
+- 新: `final_decision フィールドは Council 出力では常に null（v4.1 不変条件を維持）。CTL は「制度上の最終決定権者」を定義し、H カテゴリは人間、C カテゴリは CTL ≥ CTL-1 で Council 自律実行（recommended / consensus_mode を提示）。フィールドの記入は後段の合意プロセスが担う`
+
+この再整理により、`output-format.md` §4 の「`final_decision` は常に null」「Judgment Agent
+が埋めることは哲学違反」（`council-philosophy.md` §3）と矛盾せず、CTL は判断委譲の
+**決定論フィルタ**として位置づけ直された。
+
+### v4.2 で先送りした項目（v4.3 候補）
+
+- philosophy 第 7 条（データ存在意義の二分原則 / データ生命性原則）
+- COUNCIL-LOG.md / CHANGELOG / ARCH-DECISIONS / DELIVERY.md の処遇確定
+- AI 用データ配置の二分規格
+- CTL 境界値の自己進化メカニズム（メタ Council 化）
+- H4 の濃淡整理（ARC 切替のみ Council 助言、他は決定論）
+- プロジェクト特性軸（S/U/R/N）でのカテゴリ別精度分割
+- `council-philosophy.md` への 7 公理目反映（design-history.md と同期）
