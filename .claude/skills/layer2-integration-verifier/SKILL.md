@@ -2,7 +2,8 @@
 name: layer2-integration-verifier
 description: >
   L2発動時のみ起動される汎用統合検証スキル。
-  複数L1ドメインの成果物が揃った後、跨ぎドメイン整合性・全体不変条件・E2E動作を検証する。
+  複数L1ドメインの成果物が揃った後、跨ぎドメイン整合性・全体不変条件・E2E動作を検証する
+  （素朴に言えば「ドメインを跨いだ整合性が壊れていないか」「全体としてちゃんと動くか」を確認する）。
   REGIME.md でモードが L2 と判定された場合に layer2-orchestrator から起動される。
   単一ドメインの成果物レビューはトリガーしない（それは layer1-independent-reviewer の責務）。
   agent本体はプロジェクト不変。プロジェクト差異は INTEGRATION.md チェックリストと統合sensorsに閉じる。

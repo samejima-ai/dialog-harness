@@ -1,14 +1,16 @@
 ---
 name: layer1-independent-reviewer
 description: >
-  L1（autonomous-dev）の成果物を、実装コンテキストから隔離した状態でSPEC.md/DONT.md/sensorsと照合する汎用独立検証スキル。
-  M2以上のモードで必須起動される（L1から自動起動される想定）。
-  「独立検証して」「レビューして」「verifyして」「チェックして」「サニティ確認」「PR レビュー」
-  「仕様と合ってるか確認」「動作確認して」等、検証・監査系の依頼でもトリガーする。
-  L1 成果物（DELIVERY.md や実装）を目にした段階で M2 以上なら、明示されなくても
+  L1（autonomous-dev）の成果物を、実装コンテキストから隔離した状態で
+  SPEC.md/DONT.md/HANDOFF.md/sensors と照合する汎用独立検証スキル。
+  **M2 以上のモードで L1 献上直後は、明示指示の有無に関わらず常時必須起動**（L1 から自動起動される想定）。
+  「独立検証して」「レビューして」「verifyして」「チェックして」「サニティ確認」
+  「献上物の独立審査」「仕様と合ってるか確認」「動作確認して」「PR レビュー」（L1→reviewer の独立審査の意味）等、
+  検証・監査系の依頼でもトリガーする。
+  L1 成果物（DELIVERY.md / HANDOFF.md / 実装）を目にした段階で M2 以上なら、明示されなくても
   本スキルの起動を必ず検討する（実装完了直後の独立レビューが既定フロー）。
-  仕様策定や実装の段階ではトリガーしない（それぞれL0/L1の責務）。
-  プロジェクト固有の検証項目は入力データ（SPEC/DONT/sensors/checklist）に閉じ、agent本体はプロジェクト不変。
+  仕様策定や実装の段階ではトリガーしない（それぞれ L0/L1 の責務）。
+  プロジェクト固有の検証項目は入力データ（SPEC/DONT/sensors/checklist）に閉じ、agent 本体はプロジェクト不変。
 ---
 
 # Independent Reviewer
@@ -27,6 +29,7 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
 - SPEC.md に記載された全機能が成果物に実装されているかを照合
 - DONT.md のスコープ外領域に踏み込んでいないかを検査
 - sensors/inferential.md の判定基準に従い「仕様に合う・動く・使える」を独立判定
+- **HANDOFF.md / DELIVERY.md / 実装の三点突き合わせ**で、人間可読サマリが実装結果と乖離していないかを検査（philosophy 第6条「人間 ≒ Council 原則」の事後評価入力品質を担保）
 - **Lifecycle ≥ 1 の場合**: 過去 INTENT との整合性・廃止機能の回帰・却下案の再提案を検査
 - 結果を VERIFICATION.md として出力
 
@@ -53,6 +56,10 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
      - 矛盾検出（過去 INTENT 条件 vs 今回実装）
      - 廃止機能の回帰検出（history/INTENT.md の `**廃止**` マーカー照合）
      - 却下案の再実装検出
+5.9. HANDOFF.md 整合性チェック
+     - HANDOFF.md と DELIVERY.md / 実装結果の三点突き合わせ
+     - 人間可読サマリの記述が実装結果と乖離していないか
+     - philosophy 第6条で発生条件が定義された情報（Council 議題・判定結果・該当実装箇所）の網羅性
 6. 発見事項の整理（独立視点で気付いた懸念を記録）
    訂正すべき箇所を発見しても**自分で取り消し線を書かない**。提起のみ行い合議フローに委ねる
 7. VERIFICATION.md 出力 → L1 に差戻しまたは献上進行の判定を返す
@@ -69,6 +76,7 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 - `sensors/inferential.md` — 推論的センサー判定基準
 - `checklist/` （任意） — プロジェクト固有の追加検証項目
 - 成果物のパス（`src/`, `tests/` 等）
+- `delivery/HANDOFF.md` — 人間可読サマリ（philosophy 第6条で発生条件が定義された献上の人間可読部分）。フォーマット: `layer1-autonomous-dev/references/handoff-format.md`
 - `history/INTENT.md` / `history/CHANGELOG.md` — **Lifecycle ≥ 1 の場合のみ**、過去履歴照合用
 
 ## 出力
