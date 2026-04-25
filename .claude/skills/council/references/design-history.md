@@ -97,7 +97,7 @@ final_weight[persona] = base_weight[persona] × ethos_multiplier
 2. Orchestrator はフラット（判断機能を持たない）
 3. Judgment Agent は別 sub-agent（哲学者を止揚係から解放）
 4. 対立は解消せず構造化（少数意見を必ず保持）
-5. final_decision は CTL に応じて Council または人間が下す。H カテゴリは常に人間、C カテゴリは CTL が CTL-1 以上で Council 自律実行可能（v4.2 で正式化）
+5. `final_decision` は Council / Judgment Agent が埋めるフィールドではなく、Council 出力では常に `null`（v4.1 と同じ不変条件を維持）。CTL は「制度上の最終決定権者」を定義する仕組みであって、フィールドの記入主体を変えるものではない。H カテゴリは常に人間が決定権者となり、C カテゴリは CTL が CTL-1 以上のとき Council が `recommended` / `judgment` / `consensus_mode=auto_agree` を提示できるが、`final_decision` 自体の確定・記入は後段の実装者の合意プロセス（または事後評価）が担う（v4.2 で正式化）
 6. 独立性は視点レベルで十分（モデルの独立性は求めない）
 7. ハイブリッドは例外処理（常用しない）
 8. Council System 自体は非フラクタル（起点・分岐点のため）
@@ -197,7 +197,11 @@ CTL ごとの閾値調整ロジックを導入。
 「重要な設計判断」リスト 5 番を以下に書き換え:
 
 - 旧: `final_decision は常に人間（現段階は判断支援）`
-- 新: `final_decision は CTL に応じて Council または人間が下す。H カテゴリは常に人間、C カテゴリは CTL が CTL-1 以上で Council 自律実行可能（v4.2 で正式化）`
+- 新: `final_decision フィールドは Council 出力では常に null（v4.1 不変条件を維持）。CTL は「制度上の最終決定権者」を定義し、H カテゴリは人間、C カテゴリは CTL ≥ CTL-1 で Council 自律実行（recommended / consensus_mode を提示）。フィールドの記入は後段の合意プロセスが担う`
+
+この再整理により、`output-format.md` §4 の「`final_decision` は常に null」「Judgment Agent
+が埋めることは哲学違反」（`council-philosophy.md` §3）と矛盾せず、CTL は判断委譲の
+**決定論フィルタ**として位置づけ直された。
 
 ### v4.2 で先送りした項目（v4.3 候補）
 

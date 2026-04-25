@@ -167,8 +167,11 @@ philosophy.md 第 6 条「人間 ≒ Council 原則」の実装規格。
 - ctl_calculated_at: 2026-04-25T10:30:00Z
 - delegation_scope: [C1, C3, C4]
 - escalation_categories: [C2]
-- council_data_version: v0.1
+- council_data_version: 0.1
 ```
+
+`council_data_version` は `~/.claude/council-data/version.md` の `version` 値および
+`stats.json` の `version` 値とリテラルが一致する（`v` 接頭辞は付けない）。
 
 ### CTL とモード（M1/M2/L2）の関係
 

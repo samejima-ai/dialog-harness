@@ -202,11 +202,16 @@ PR1 実装後の実運用で、Claude（実装者エージェント）が Counci
 `consensus_mode` は Judgment Agent の LLM ではなく **Orchestrator が決定論で計算**する（`philosophy.md` §2 Shift Left）。このメタ判断自体が LLM で揺れると Council 全体の信頼性が崩れるため、ルール表で固定する：
 
 ```python
-def compute_consensus_mode(council_type, category, confidence, conflict_type, ctl, stats):
+def compute_consensus_mode(council_type, category, decision_category, confidence, conflict_type, ctl, stats):
     """
     Args:
         council_type: "business" or "life"
-        category: "operation" / "judgment" / "conception" / "H1"-"H4" / "C1"-"C4"
+        category: 重み配分カテゴリ ("operation" / "judgment" / "conception" / "implementation" 等)。
+                  既存の Council 内部分類で、threshold 計算と重み補正に使用。
+                  pre-check.md / output-format.md COUNCIL-LOG エントリの category と同義。
+        decision_category: 第 6 条の判断委譲カテゴリ ("H1"-"H4" / "C1"-"C4")。
+                           v4.2 新規。H カテゴリ即時献上 / CTL stats lookup に使用。
+                           category と直交する概念（philosophy.md 第 6 条）。
         confidence: Judgment Agent の judgment_confidence (0.0〜1.0)
         conflict_type: "A" / "C" / "E" / "G" 等
         ctl: REGIME.md に記録された Council Trust Level（CTL-0〜CTL-3）
@@ -223,24 +228,24 @@ def compute_consensus_mode(council_type, category, confidence, conflict_type, ct
 
     # H カテゴリ抵触検知時は即時献上（v4.2 新規 / philosophy.md 第6条）
     # H1 哲学変更 / H2 ルール変更 / H3 方向性発案 / H4 根本設計見直し
-    if category in ["H1", "H2", "H3", "H4"]:
+    if decision_category in ["H1", "H2", "H3", "H4"]:
         return "escalate_to_human"
 
-    # カテゴリ別 confidence 閾値（既存運用カテゴリ）
+    # weight category 別 confidence 閾値（既存運用カテゴリ）
     base_threshold = {
         "operation": 0.7,    # 不可逆操作は高い閾値
         "judgment": 0.6,     # スコープ・優先度・メタ判断
         "conception": 0.6,   # 新規構造・思想
-    }.get(category, 0.5)     # デフォルト 0.5
+    }.get(category, 0.5)     # 未定義カテゴリのみデフォルト 0.5
 
     # CTL 連動の閾値調整（v4.2 新規）
     # CTL-0: コールドスタート → 全件献上
     if ctl == "CTL-0":
         return "escalate_to_human"
 
-    # CTL-1: カテゴリ別実績で判定（該当カテゴリのみ自律）
+    # CTL-1: decision_category 別実績で判定（該当カテゴリのみ自律）
     if ctl == "CTL-1":
-        category_stats = stats.get("categories", {}).get(category, {})
+        category_stats = stats.get("categories", {}).get(decision_category, {})
         if category_stats.get("count", 0) < 10:
             return "escalate_to_human"
         if category_stats.get("agreement_rate", 0) < 0.90:
@@ -265,6 +270,22 @@ def compute_consensus_mode(council_type, category, confidence, conflict_type, ct
 ```
 
 閾値設計の意図：**中間モードを置かない代わりに、高リスク・高不可逆性のカテゴリでは confidence 閾値自体を上げる**。これにより「Council が強い自信を持っている時のみ自動進行」が実現できる。閾値を超えなければ献上。超えれば AI が自律実行。
+
+### category と decision_category の役割分担（v4.2 新規）
+
+v4.2 では既存の `category`（重み配分・閾値計算用、operation/judgment/conception 等）と、
+第 6 条で導入された `decision_category`（判断委譲用、H1-H4 / C1-C4）を**直交した別概念**として
+扱う。両者は同じ判定で同時に使われる:
+
+| 引数 | 用途 | 値の種類 | 由来ドキュメント |
+|---|---|---|---|
+| `category` | 重み配分・閾値選択 | `operation` / `judgment` / `conception` / `implementation` 等 | 既存 `pre-check.md` / `output-format.md` |
+| `decision_category` | 判断委譲フィルタ | `H1`-`H4` / `C1`-`C4` | v4.2 `philosophy.md` 第 6 条 |
+
+例: 不可逆操作の C3 カテゴリ判断であれば、`category="operation"`（閾値 0.7）+
+`decision_category="C3"` の組で渡される。閾値は category で決まり、CTL stats lookup と
+H 即時献上は decision_category で決まる。これにより既存の重み配分ロジックを保ったまま、
+v4.2 の判断委譲フィルタを直交追加できる。
 
 v4.2 で追加された CTL 連動は、横断蓄積データ（`~/.claude/council-data/stats.json`）から
 決定論で算出された Council Trust Level に応じて、上記閾値を動的に調整する。

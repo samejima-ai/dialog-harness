@@ -51,6 +51,10 @@ CTL の意図と人間 ≒ Council 原則は philosophy.md 第 6 条を参照。
 }
 ```
 
+`categories` キーは `decision_category`（philosophy.md 第 6 条 / `consensus-protocol.md`
+の引数定義）。重み配分用の既存 `category`（operation/judgment/conception 等）は
+ここには含まれない（CTL 統計はあくまで H/C 軸の判断委譲精度を学習するためのもの）。
+
 H カテゴリ（H1〜H4）は CTL に関わらず常に escalate_to_human のため、
 `stats.json` には含めない（記録不要）。
 
@@ -66,6 +70,7 @@ def calculate_ctl(stats):
     Returns: "CTL-0" / "CTL-1" / "CTL-2" / "CTL-3"
     """
     total = stats.get("total_invocations", 0)
+    categories = stats.get("categories", {})
 
     # CTL-0: コールドスタート
     if total == 0:
@@ -75,15 +80,15 @@ def calculate_ctl(stats):
     if total >= 100:
         all_categories_meet = all(
             cat.get("count", 0) >= 25 and cat.get("agreement_rate", 0) >= 0.95
-            for cat in stats["categories"].values()
+            for cat in categories.values()
         )
-        if all_categories_meet and len(stats["categories"]) >= 4:
+        if all_categories_meet and len(categories) >= 4:
             return "CTL-3"
 
     # CTL-2: 標準運用
     if total >= 30:
         majority_meet = sum(
-            1 for cat in stats["categories"].values()
+            1 for cat in categories.values()
             if cat.get("count", 0) >= 10 and cat.get("agreement_rate", 0) >= 0.90
         )
         if majority_meet >= 3:  # 4 カテゴリ中 3 以上が条件達成
@@ -93,7 +98,7 @@ def calculate_ctl(stats):
     if total >= 10:
         any_meet = any(
             cat.get("count", 0) >= 10 and cat.get("agreement_rate", 0) >= 0.90
-            for cat in stats["categories"].values()
+            for cat in categories.values()
         )
         if any_meet:
             return "CTL-1"
@@ -101,6 +106,9 @@ def calculate_ctl(stats):
     # 上記いずれにも該当しない場合
     return "CTL-0"
 ```
+
+`stats.get("categories", {})` でガードしているのは、stats.json が欠損・破損して
+`categories` キーが無いケースでも安全にコールドスタート扱いに落とすため。
 
 | CTL | 判定条件（要約） | 委譲範囲 |
 |---|---|---|
@@ -128,7 +136,8 @@ def calculate_ctl(stats):
 {
   "invocation_id": "council-2026-04-25T10:30:00Z-abc123",
   "council_type": "business",
-  "category": "C1",
+  "category": "judgment",
+  "decision_category": "C1",
   "topic_summary": "ライセンス選定のトレードオフ判断",
   "judgment": "選択肢 A を推奨",
   "judgment_confidence": 0.85,
@@ -141,6 +150,9 @@ def calculate_ctl(stats):
   }
 }
 ```
+
+`category` は重み配分用、`decision_category` は判断委譲用（v4.2）。両者は直交。
+詳細は `consensus-protocol.md` の「category と decision_category の役割分担」節を参照。
 
 ### プライバシー配慮
 
@@ -169,10 +181,13 @@ REGIME.md に以下のブロックを記録する:
 ## Council Trust Level
 - ctl: CTL-2
 - ctl_calculated_at: 2026-04-25T10:30:00Z
-- delegation_scope: [C1, C3, C4]   # 自律実行されるカテゴリ
-- escalation_categories: [C2]       # 献上されるカテゴリ
-- council_data_version: v0.1
+- delegation_scope: [C1, C3, C4]   # 自律実行される decision_category
+- escalation_categories: [C2]       # 献上される decision_category
+- council_data_version: 0.1
 ```
+
+`council_data_version` は `~/.claude/council-data/version.md` の `version` 値および
+`stats.json` の `version` 値とリテラルが一致する（`v` 接頭辞は付けない）。
 
 `delegation_scope` / `escalation_categories` は CTL-1 のカテゴリ別判定で
 特に重要。CTL-2/CTL-3 では大半が自律になり、CTL-0 では空欄に近い。

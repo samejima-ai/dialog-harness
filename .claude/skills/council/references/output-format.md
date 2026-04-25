@@ -80,6 +80,7 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
   "minority_opinion": "string (採用されなかった視点を保持、200 字以内)",
   "weight_note": "string (重み配分の説明、100 字以内)",
   "judgment_confidence": "number (0.0-1.0, Judgment Agent の自己評価)",
+  "consensus_mode": "auto_agree | escalate_to_human (Orchestrator が決定論で計算、PR2 拡張領域)",
   "final_decision": null,
 
   "actual_outcome": {
@@ -91,7 +92,8 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
   "project_metadata": {
     "ctl_at_invocation": "CTL-2",
     "council_type": "business",
-    "category": "C1"
+    "category": "operation",
+    "decision_category": "C3"
   }
 }
 ```
@@ -104,11 +106,21 @@ Judgment Agent が埋めることは哲学違反（`council-philosophy.md` §3�
 
 ### v4.2 で追加されたフィールド
 
+#### `consensus_mode` — Orchestrator 決定論出力
+
+`auto_agree` / `escalate_to_human` の二値。Orchestrator が `compute_consensus_mode`
+（`consensus-protocol.md`）で算出し、Judgment Agent 出力に**後付け**で含める。
+受信側 skill（L0/L1/L2）はこのフィールドだけを見て LLM 解釈を挟まず分岐できる。
+
+PR1 では Judgment Agent 自身は埋めない（PR2 で Orchestrator 統合と同時に正式化予定）。
+本ファイルではフィールドの所在を明示するために v4.2 で追記。
+
 #### `actual_outcome` — 事後評価用（人間が後から記入）
 
 開発中は全フィールド `null`。事後評価フェーズ（philosophy.md 第 6 条）で
-人間が `~/.claude/council-data/invocations/<invocation_id>.json` の
-`actual_outcome` を更新し、stats.json の集計に反映される。
+人間が `~/.claude/council-data/invocations/<ISO8601Z (コロン→ハイフン)>-<invocation_id 末尾 6 文字>.json`
+の `actual_outcome` を更新し、stats.json の集計に反映される（ファイル命名規則は
+`ctl-calculation.md` §4 を参照）。
 
 | フィールド | 値 | 意味 |
 |---|---|---|
@@ -124,7 +136,11 @@ COUNCIL-LOG / `~/.claude/council-data/invocations/` 双方の主キーとして�
 #### `project_metadata` — CTL 算出用メタデータ
 
 `ctl_at_invocation` は本判定が行われた時点の Council Trust Level。
-`category` は H1〜H4 / C1〜C4 / 既存 operation/judgment/conception 等。
+`category` は既存の重み配分カテゴリ（`operation` / `judgment` / `conception` /
+`implementation` 等、§8 COUNCIL-LOG エントリの category と同義）。
+`decision_category` は v4.2 で追加された判断委譲カテゴリ（`H1`-`H4` / `C1`-`C4`、
+philosophy.md 第 6 条）。両者は直交概念（詳細は `consensus-protocol.md` の
+「category と decision_category の役割分担」節を参照）。
 プロジェクト名・コード断片は含めない（プライバシー配慮、`ctl-calculation.md` §4）。
 
 ## 5. Council 全体応答
