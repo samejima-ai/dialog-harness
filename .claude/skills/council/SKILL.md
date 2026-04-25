@@ -175,7 +175,7 @@ L0 の仕様トレードオフ、L2 の跨ぎドメイン方針対立にも使�
 
 ### 参照ドキュメント（このスキル内 references/）
 
-- [references/council-philosophy.md](references/council-philosophy.md) — Council 6 公理（design-history.md は v4.2 で 7 公理化、本ファイルは v4.3 で再判断）
+- [references/council-philosophy.md](references/council-philosophy.md) — Council 6 公理（design-history.md は v4.2 で 7 公理化、`council-philosophy.md` 本体への反映は v4.3 で再判断）
 - [references/pre-check.md](references/pre-check.md) — Phase 0 判定ルール
 - [references/orchestrator.md](references/orchestrator.md) — フラット実装と重み計算
 - [references/phase-protocol.md](references/phase-protocol.md) — Phase 0→1→3 規格
