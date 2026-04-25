@@ -1,6 +1,6 @@
 # Philosophy — dialog-harness v4
 
-dialog-harness の5条憲法。L0/L1/L2 の全skill はここを原典として参照する。
+dialog-harness の6条憲法。L0/L1/L2 の全skill はここを原典として参照する。
 各skillに同内容を転記しない（参照のみ）。
 
 ---
@@ -174,6 +174,109 @@ L1 は開発中に人間へ質問しない。仕様不足は即献上（タイ�
 
 ---
 
+## 第6条 人間 ≒ Council 原則
+
+人間と Council は判断機構として対称関係にある。
+ただし対称性は判断種別によって非対称になる。
+
+### 人間専管判断（H カテゴリ）
+
+以下の判断は Council で代替不可。harness の起点と分岐点に関わる。
+
+- **H1 哲学変更**: philosophy.md の改訂
+- **H2 ルール変更**: CLAUDE.md / SPEC.md / DONT.md の根本書き換え
+- **H3 方向性発案**: 新プロジェクト立ち上げ、次の方向性の発案
+- **H4 根本設計見直し**: ARC 切替、モード昇格・降格、L2 発動
+
+### Council 代替可能判断（C カテゴリ）
+
+以下の判断は Council Trust Level（CTL）に応じて自律実行可能。
+
+- **C1 抵触判断**: 既存哲学・ルールに照らした実装中のジャッジ
+- **C2 トレードオフ**: スコープ・優先度・実装方針の選択
+- **C3 不可逆操作**: 権限レベル内での判断
+- **C4 仕様矛盾解決**: SPEC.md 内部の矛盾解消
+
+### 委譲範囲の動的決定（CTL）
+
+L0 spec-architect が CTL を算出し、REGIME.md に明示する。
+CTL は Council 横断蓄積データから決定論で計算される。
+
+| CTL | 蓄積条件 | 委譲範囲 |
+|---|---|---|
+| CTL-0 | コールドスタート（蓄積なし） | C カテゴリも全件献上 |
+| CTL-1 | カテゴリ別 10〜30 件、一致率 90% | 該当カテゴリのみ自律 |
+| CTL-2 | 30〜100 件、一致率 90% | 大半のカテゴリ自律 |
+| CTL-3 | 100 件超、全カテゴリ一致率 95% | H 以外を全面自律 |
+
+算出ロジックは `council/references/ctl-calculation.md` を参照。
+
+### 横断蓄積
+
+Council データは `~/.claude/council-data/` にユーザー単位で蓄積する。
+プロジェクト横断で学習資産が引き継がれる。harness 本体（repo 側）は
+Council data を含まない（user-scope の責務）。
+
+### 事後評価による学習（厳格な発動条件）
+
+事後評価は AI 駆動開発が完全に終了した後にのみ発動する。
+開発途中での発動は禁止。これは harness の自律性原則を守るための
+不可侵の境界線である。
+
+#### AI 駆動開発の終了定義
+
+以下の全てが完了した時点を「AI 駆動開発終了」と定義する：
+
+1. L1 autonomous-dev のステップ8「献上」完了
+2. HANDOFF.md / DELIVERY.md / 統計記録の生成完了
+3. 全自力修正の完遂（または上限到達による未解決事項記載）
+4. 献上物の人間への提示完了
+
+#### 事後評価フェーズの起動条件
+
+事後評価フェーズは以下の条件を全て満たした場合のみ起動する：
+
+- AI 駆動開発が終了している（上記定義）
+- 人間が HANDOFF.md を開いた（または harness 側で確認動作を検知）
+- 人間が事後評価フェーズへの遷移に明示同意（「評価する」と発話 等）
+
+人間が HANDOFF.md を確認しただけで自動的に評価が始まらないこと。
+評価の開始は人間の能動的な意思表示によって発動する。
+
+#### 開発中の質問禁止
+
+L0 対話完了後、L1/L2 実行中は Council 事後評価のための質問を
+人間に発してはならない。Council 判定の適切性確認は全て事後に
+まとめて行う。
+
+例外: H カテゴリへの抵触を AI が検知した場合は、即時献上
+（C1 判断献上チャネル）で中断する。これは事後評価ではなく
+権限境界の問題である。
+
+#### 評価対象の限定
+
+人間が事後評価で確認する情報は以下の 3 点に限定する：
+
+1. Council の議題（何について判定したか）
+2. Council の判定結果（auto_agree / escalate_to_human の別、判定内容）
+3. HANDOFF.md の該当箇所（実装結果として何が起きたか）
+
+これら以外の詳細（推論プロセス・各 Persona 出力・重み計算等）は
+要求時のみ展開する。
+
+### 人間可読情報の発生条件
+
+人間向け出力は以下の条件でのみ発生する:
+
+- HANDOFF.md: 完成時・献上時に自動生成（L1 ステップ8）
+- DELIVERY.md: 同上、ただし詳細展開は要求時のみ
+- 個別判定の推論経緯: 要求時のみ展開
+- 日常の判断結果は HANDOFF.md にダイジェスト集約
+
+これは「人間は読まない（依頼駆動）」原則の Council 領域への拡張。
+
+---
+
 ## 参照関係
 
 本philosophy.md は L0 配下に原典を置き、他skillは**参照のみ**する。内容転記は禁止（散逸の原因）。
@@ -181,20 +284,25 @@ L1 は開発中に人間へ質問しない。仕様不足は即献上（タイ�
 ```
 [L0] layer0-spec-architect/references/philosophy.md  ← 原典
        ↑ 参照
-       ├── layer0-spec-architect/SKILL.md（5条の実装指針）
-       ├── layer0-spec-architect/references/regime-assessment.md（第1条・第2条）
+       ├── layer0-spec-architect/SKILL.md（6条の実装指針）
+       ├── layer0-spec-architect/references/regime-assessment.md（第1条・第2条・第6条）
        ├── layer0-spec-architect/assets/meta-spec-template.md（第5条）
        ├── layer0-onboarding/SKILL.md（第4条）
        │
        ├── layer1-autonomous-dev/SKILL.md（第2条・第4条・第5条）
        ├── layer1-autonomous-dev/references/inferential-sensor-v2.md（第2条）
        ├── layer1-autonomous-dev/references/delivery-format.md（第5条）
+       ├── layer1-autonomous-dev/references/handoff-format.md（第5条・第6条）
        ├── layer1-independent-reviewer/SKILL.md（第3条）
        │
        ├── layer2-orchestrator/SKILL.md（第3条）
        ├── layer2-orchestrator/references/sub-agent-protocol.md（第3条の詳細）
        ├── layer2-orchestrator/references/e2e-integration.md（第2条の E2E 実装）
-       └── layer2-integration-verifier/SKILL.md（第3条）
+       ├── layer2-integration-verifier/SKILL.md（第3条）
+       │
+       ├── council/SKILL.md（第6条）
+       ├── council/references/consensus-protocol.md（第6条の CTL 連動分岐）
+       └── council/references/ctl-calculation.md（第6条の CTL 算出）
 ```
 
 各skillからの参照例：

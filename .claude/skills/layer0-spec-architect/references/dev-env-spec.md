@@ -532,6 +532,7 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 - v3.2: Archaeology 深度の英語語彙化 + L0 責務分担表 + 参照保持規格の明確化
 - v4.0: philosophy.md 5条原典化 + 5層エラー検出スタック + Playwright Test Agents 規格 + SPEC.md 拡張（UX制約・Priority critical/standard/cosmetic） + L0 対話 UX 3問プロトコル + sub-agent-protocol.md（v4.0 リリース時点では旧呼称「処理」で定義されていたが v4.1 で「検出」に改称。以下の歴史記述は最終呼称に正規化して記載する）
 - v4.1: Shift Left 基盤 + 5層エラー検出スタック二層モデルへの呼称統一（スタック名の「処理」→「検出」改称、旧「設計時発生防止 層」を Shift Left 基盤として運用スタック外に再配置、第3層 Interaction Cost FAIL の独立カウント化、philosophy.md の配分図を 30/30/20/10/7/3 に修正、土地=基盤・建物=検出スタックの直交二層モデルを明文化）
+- v4.2: philosophy 第6条追加（人間 ≒ Council 原則）+ Council Trust Level（CTL）導入 + `~/.claude/council-data/` 横断蓄積 + 事後評価フェーズの厳格な分離 + HANDOFF.md 新設（非エンジニア向け献上物、既存 history/SUMMARY.md と命名分離）+ design-history.md の 6 公理→7 公理拡張 + compute_consensus_mode の CTL 連動拡張
 
 ### v3.2 → v4.0 移行ノート
 
@@ -544,3 +545,22 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 - **REGIME.md の `mode: L2`** はそのまま読める。L2 配下構成の明示欄が追加されたが、未記載の場合は L0 差し戻しで補完する
 - **sensors/e2e/ と sensors/interaction-cost/** が新設されたが、未整備の場合は DELIVERY.md で L0 に改善提案（タイプC献上）として戻す
 - **L1 自己検証フローのステップ 5.5** は追加のみ。既存ステップ番号は変更しない
+
+### v4.1 → v4.2 移行ノート
+
+既存プロジェクトを v4.2 harness で扱う際の互換性:
+
+- **既存 REGIME.md** に CTL 記録がない場合、CTL-0 として運用
+  （L0 spec-architect 起動時に `## Council Trust Level` ブロックを自動補完）
+- **`~/.claude/council-data/`** が未作成の場合、L0 spec-architect が
+  自動生成（コールドスタート、`stats.json` は空テンプレート）
+- **既存 DELIVERY.md** はそのまま読める。HANDOFF.md は v4.2 で新規生成のみ
+  （既存 delivery/ に HANDOFF.md がない場合、次回献上時に追加生成）
+- **既存 history/SUMMARY.md**（L0 振り返り儀式 / 圧縮履歴サマリ）は v4.2 で
+  変更なし。HANDOFF.md とは別ファイル・別役割（命名衝突回避）
+- **既存 Council 設計**: design-history.md は 6 公理 → 7 公理に拡張。
+  council-philosophy.md（§1〜§7）は v4.2 では変更しない。philosophy.md 第 6 条を
+  新規原典とし、council scope への波及は v4.3 で再判断
+- **compute_consensus_mode のシグネチャ変更**: 引数に `ctl` と `stats` を追加。
+  既存呼び出し側は CTL-0 / 空 stats で呼べば従来通り「全件献上」相当の挙動
+- **後方互換破壊**: なし

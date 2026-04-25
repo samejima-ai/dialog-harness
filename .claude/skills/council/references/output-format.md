@@ -80,7 +80,19 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
   "minority_opinion": "string (採用されなかった視点を保持、200 字以内)",
   "weight_note": "string (重み配分の説明、100 字以内)",
   "judgment_confidence": "number (0.0-1.0, Judgment Agent の自己評価)",
-  "final_decision": null
+  "final_decision": null,
+
+  "actual_outcome": {
+    "status": null,
+    "evaluated_at": null,
+    "modifier_note": null
+  },
+  "invocation_id": "council-2026-04-25T10:30:00Z-xxxxxx",
+  "project_metadata": {
+    "ctl_at_invocation": "CTL-2",
+    "council_type": "business",
+    "category": "C1"
+  }
 }
 ```
 
@@ -89,6 +101,31 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
 このフィールドは合意プロセス（`consensus-protocol.md`）が埋める。
 Judgment Agent が埋めることは哲学違反（`council-philosophy.md` §3）。
 スキーマ上は値を持つが、Council は常に `null` を返す。
+
+### v4.2 で追加されたフィールド
+
+#### `actual_outcome` — 事後評価用（人間が後から記入）
+
+開発中は全フィールド `null`。事後評価フェーズ（philosophy.md 第 6 条）で
+人間が `~/.claude/council-data/invocations/<invocation_id>.json` の
+`actual_outcome` を更新し、stats.json の集計に反映される。
+
+| フィールド | 値 | 意味 |
+|---|---|---|
+| `status` | `"agreed"` / `"modified"` | 人間判断との一致／修正の別 |
+| `evaluated_at` | ISO 8601 | 事後評価の実施日時 |
+| `modifier_note` | string or null | `"modified"` 時の修正理由（任意） |
+
+#### `invocation_id` — 横断蓄積の主キー
+
+`council-<ISO8601Z>-<6-char [a-z0-9]>` 形式。Pre-Check が採番し、
+COUNCIL-LOG / `~/.claude/council-data/invocations/` 双方の主キーとして共有する。
+
+#### `project_metadata` — CTL 算出用メタデータ
+
+`ctl_at_invocation` は本判定が行われた時点の Council Trust Level。
+`category` は H1〜H4 / C1〜C4 / 既存 operation/judgment/conception 等。
+プロジェクト名・コード断片は含めない（プライバシー配慮、`ctl-calculation.md` §4）。
 
 ## 5. Council 全体応答
 

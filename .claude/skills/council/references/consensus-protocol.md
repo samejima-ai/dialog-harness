@@ -202,26 +202,75 @@ PR1 実装後の実運用で、Claude（実装者エージェント）が Counci
 `consensus_mode` は Judgment Agent の LLM ではなく **Orchestrator が決定論で計算**する（`philosophy.md` §2 Shift Left）。このメタ判断自体が LLM で揺れると Council 全体の信頼性が崩れるため、ルール表で固定する：
 
 ```python
-def compute_consensus_mode(council_type, category, confidence, conflict_type):
+def compute_consensus_mode(council_type, category, confidence, conflict_type, ctl, stats):
+    """
+    Args:
+        council_type: "business" or "life"
+        category: "operation" / "judgment" / "conception" / "H1"-"H4" / "C1"-"C4"
+        confidence: Judgment Agent の judgment_confidence (0.0〜1.0)
+        conflict_type: "A" / "C" / "E" / "G" 等
+        ctl: REGIME.md に記録された Council Trust Level（CTL-0〜CTL-3）
+        stats: ~/.claude/council-data/stats.json から読み込まれた横断蓄積統計
+
+    Returns:
+        "auto_agree" or "escalate_to_human"
+    """
     # ハードストップ: 献上確定
     if council_type == "life":
         return "escalate_to_human"
     if conflict_type in ["E", "G"]:  # 前提対立 / メタ対立（PR2 で実装）
         return "escalate_to_human"
 
-    # カテゴリ別 confidence 閾値
-    threshold = {
+    # H カテゴリ抵触検知時は即時献上（v4.2 新規 / philosophy.md 第6条）
+    # H1 哲学変更 / H2 ルール変更 / H3 方向性発案 / H4 根本設計見直し
+    if category in ["H1", "H2", "H3", "H4"]:
+        return "escalate_to_human"
+
+    # カテゴリ別 confidence 閾値（既存運用カテゴリ）
+    base_threshold = {
         "operation": 0.7,    # 不可逆操作は高い閾値
         "judgment": 0.6,     # スコープ・優先度・メタ判断
         "conception": 0.6,   # 新規構造・思想
     }.get(category, 0.5)     # デフォルト 0.5
 
-    if confidence < threshold:
+    # CTL 連動の閾値調整（v4.2 新規）
+    # CTL-0: コールドスタート → 全件献上
+    if ctl == "CTL-0":
+        return "escalate_to_human"
+
+    # CTL-1: カテゴリ別実績で判定（該当カテゴリのみ自律）
+    if ctl == "CTL-1":
+        category_stats = stats.get("categories", {}).get(category, {})
+        if category_stats.get("count", 0) < 10:
+            return "escalate_to_human"
+        if category_stats.get("agreement_rate", 0) < 0.90:
+            return "escalate_to_human"
+        adjusted_threshold = base_threshold
+
+    # CTL-2: 標準運用（既存閾値）
+    elif ctl == "CTL-2":
+        adjusted_threshold = base_threshold
+
+    # CTL-3: 高度委譲（閾値を 0.1 緩和）
+    elif ctl == "CTL-3":
+        adjusted_threshold = base_threshold - 0.1
+
+    else:
+        # 未知の CTL は安全側に倒して献上
+        return "escalate_to_human"
+
+    if confidence < adjusted_threshold:
         return "escalate_to_human"
     return "auto_agree"
 ```
 
 閾値設計の意図：**中間モードを置かない代わりに、高リスク・高不可逆性のカテゴリでは confidence 閾値自体を上げる**。これにより「Council が強い自信を持っている時のみ自動進行」が実現できる。閾値を超えなければ献上。超えれば AI が自律実行。
+
+v4.2 で追加された CTL 連動は、横断蓄積データ（`~/.claude/council-data/stats.json`）から
+決定論で算出された Council Trust Level に応じて、上記閾値を動的に調整する。
+CTL-0（蓄積なし）では全件献上、CTL-3（高度委譲）では閾値を 0.1 緩和して自律性を高める。
+H カテゴリ（哲学変更・ルール変更・方向性発案・根本設計見直し）は CTL に関わらず常に献上する
+（philosophy.md 第 6 条 / `ctl-calculation.md` 参照）。
 
 ### 合意プロセスでやってはいけないパターン（PR2 で明文化）
 

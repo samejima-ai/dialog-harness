@@ -138,6 +138,61 @@ Lifecycle 判定は AI が履歴層から自動抽出する。人間に問わな
 
 ---
 
+## Council Trust Level（CTL）（v4.2 新規）
+
+L0 spec-architect は REGIME.md 生成・更新時に Council Trust Level（CTL）を
+算出し記録する。CTL は Council の自律実行範囲を動的決定する軸であり、
+philosophy.md 第 6 条「人間 ≒ Council 原則」の実装規格。
+
+算出ロジック・stats.json スキーマ・invocations/ 構造の詳細は
+`council/references/ctl-calculation.md` を参照。
+
+### 算出手順
+
+1. `~/.claude/council-data/stats.json` を読み込む
+   - ファイル不存在の場合: user-scope を初期化（CTL-0 で運用開始）
+2. `ctl-calculation.md` の `calculate_ctl(stats)` で CTL を算出
+3. REGIME.md に以下を記録（モード定義ブロックと並列）:
+   - `ctl: CTL-X`
+   - `ctl_calculated_at: <ISO 8601>`
+   - `delegation_scope: [自律実行されるカテゴリ]`
+   - `escalation_categories: [献上されるカテゴリ]`
+   - `council_data_version: <stats.json の version>`
+
+### REGIME.md への記録フォーマット
+
+```markdown
+## Council Trust Level
+- ctl: CTL-2
+- ctl_calculated_at: 2026-04-25T10:30:00Z
+- delegation_scope: [C1, C3, C4]
+- escalation_categories: [C2]
+- council_data_version: v0.1
+```
+
+### CTL とモード（M1/M2/L2）の関係
+
+CTL とモードは独立した軸。組み合わせ例:
+
+| モード | CTL | 含意 |
+|---|---|---|
+| M1 + CTL-0 | 単体実行、Council 全件献上 | 新規ユーザー |
+| M2 + CTL-2 | 標準実行、Council 大半が自律 | 慣れたユーザー |
+| L2 + CTL-3 | 統括実行、Council 全面自律 | 熟練ユーザー、大規模プロジェクト |
+
+### CTL-3 の例外
+
+CTL-3 ではほぼ全ての C カテゴリが Council 自律。ただし以下は例外として
+常に escalate_to_human:
+
+- conflict_type が E（前提対立）または G（メタ対立）
+- council_type が "life"（人生 Council）
+- H カテゴリ抵触検知時（H1 哲学変更 / H2 ルール変更 / H3 方向性発案 / H4 根本設計見直し）
+
+詳細は `council/references/consensus-protocol.md` の `compute_consensus_mode` を参照。
+
+---
+
 ## モード定義（3層設計）
 
 ### M1 単体モード（実験）
