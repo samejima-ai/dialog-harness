@@ -7,8 +7,8 @@ description: >
   「rtk を導入したい」「rtk 入れて」「トークン節約したい」「Bash 出力を圧縮したい」
   「rtk-integration」等の発話に加え、
   症状語「git log の出力が長すぎる」「テストのログで context が膨らむ」
-  「Bash の出力が長くて context を食う」「ビルド出力が冗長」「CLAUDE.md に rtk 設定したい」
-  等でも本スキルの起動を必ず検討する。
+  「Bash の出力が長くて context を食う」「コンテキストがすぐ埋まる」「context window が足りない」
+  「ビルド出力が冗長」「CLAUDE.md に rtk 設定したい」 等でも本スキルの起動を必ず検討する。
   install / uninstall / 越境パッチ適用までを自己完結で実行する。
   対象: Windows native（MSVC ビルド、rtk v0.37.1 固定）。
 ---

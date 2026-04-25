@@ -1,10 +1,12 @@
 ---
 name: layer0-onboarding
 description: >
-  既存プロジェクトに dialog-harness-layers を後付けで導入するための L0 兄弟スキル。
+  既存プロジェクトから仕様書を抽出したい場合、または dialog-harness-layers を後付け導入して
+  AI 自律開発に移行したい場合に起動する L0 兄弟スキル（reverse-spec & 後付け harness 化）。
   「既存プロジェクトを harness 化したい」「このコードベースに dialog-harness-layers を入れたい」
-  「レガシーに仕様書が欲しい」「後付けで onboarding したい」等、
-  既に動いているコード・既に存在するプロジェクトへの harness 導入依頼でトリガーする。
+  「レガシーに仕様書が欲しい」「既存コードから仕様書を抽出したい」「逆仕様化したい」
+  「後付けで onboarding したい」等、既に動いているコード・既に存在するプロジェクトへの
+  仕様書化または harness 導入依頼でトリガーする。
   新規プロジェクトの立ち上げ（spec-architect の責務）や、継続開発の仕様策定ではトリガーしない。
   使い捨てスキル：1 プロジェクトにつき最大 1 回のみ起動する。
   完了後は REGIME.md に onboarded_at を記録し、以降は spec-architect に引き継ぐ。

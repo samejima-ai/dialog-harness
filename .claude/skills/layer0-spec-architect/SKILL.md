@@ -4,8 +4,12 @@ description: >
   人間のイメージ・ニュアンスを対話で具体化しドキュメント化し、開発モード（M1/M2/L2）を判定し、
   AIが自律開発できる開発環境を設計・構築するスキル。
   「新しいプロジェクトを作りたい」「こういうものが欲しい」「機能を追加したい」「仕様を整理したい」
-  「開発環境をセットアップしたい」「振り返りたい」「既存プロジェクトを継続したい」等、
-  プロジェクトの立ち上げ・仕様策定・既存プロジェクトへの機能追加/拡張に関わるあらゆる発話でトリガーする。
+  「仕様書を作りたい」「ドキュメント化したい」「開発環境をセットアップしたい」「振り返りたい」
+  「既存プロジェクトを継続したい」等、プロジェクトの立ち上げ・仕様策定・
+  既存プロジェクトへの機能追加/拡張に関わるあらゆる発話でトリガーする。
+  REGIME.md が既にある状況での機能追加・仕様拡張・仕様書化・ドキュメント化の依頼は、
+  実装に進む前にまず本スキルの起動を必ず検討する（SPEC 改変が必要な追加機能は autonomous-dev ではなく
+  本スキルで扱う）。
   具体的な技術名やコードの話が出る前の、目的・意図・イメージの段階で使う。
   仕様ドキュメントの作成、モード判定、RL/SK/センサー定義等の開発環境一式を生成するところまでが責務。
   既存プロジェクト（Lifecycle L=1/L=2）では対話冒頭に振り返り儀式を実行する。
@@ -409,6 +413,6 @@ skill-creator 規約（`references/` = 読み参考の docs、`assets/` = 埋め
 - `references/philosophy.md` — dialog-harness 6条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学 / 人間 ≒ Council）。全skill の参照原典。第6条は v4.2 で追加。
 
 関連（他 skill 配下に配置される参照ファイル、本 SKILL.md から間接参照）：
-- `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` — Shift Left 基盤 + 5層エラー検出スタック（L1 自己検証の埋め込み手順含む）
-- `../../layer2-orchestrator/references/e2e-integration.md` — Playwright Test Agents 規格（L2 配下の並列 Agent 群）
-- `../../layer2-orchestrator/references/sub-agent-protocol.md` — サブエージェント統括の情報純度プロトコル
+- `../layer1-autonomous-dev/references/inferential-sensor-v2.md` — Shift Left 基盤 + 5層エラー検出スタック（L1 自己検証の埋め込み手順含む）
+- `../layer2-orchestrator/references/e2e-integration.md` — Playwright Test Agents 規格（L2 配下の並列 Agent 群）
+- `../layer2-orchestrator/references/sub-agent-protocol.md` — サブエージェント統括の情報純度プロトコル
