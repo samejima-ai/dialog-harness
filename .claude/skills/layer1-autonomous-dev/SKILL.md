@@ -329,7 +329,8 @@ L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙�
 ## 参照ドキュメント
 
 - `references/spec-review-checklist.md` — 仕様レビューの詳細チェックリスト（過去INTENT整合性含む）
-- `references/delivery-format.md` — 献上物のフォーマット定義（VERIFICATION.md・体制事後評価・履歴層更新差分含む）
+- `references/delivery-format.md` — 献上物のフォーマット定義（DELIVERY.md・VERIFICATION.md・体制事後評価・履歴層更新差分含む。HANDOFF.md との関係も記載）
+- `references/handoff-format.md` — HANDOFF.md 規格（v4.2 新規、非エンジニア向け献上サマリー、Section A 自動表示 / Section B 事後評価モード）
 
 ## 関連スキル（Level A）
 

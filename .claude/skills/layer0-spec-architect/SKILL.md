@@ -406,7 +406,7 @@ skill-creator 規約（`references/` = 読み参考の docs、`assets/` = 埋め
 
 ### v4.0 追加（哲学原典化・5層エラー検出スタック・UX プロトコル）
 
-- `references/philosophy.md` — dialog-harness 5条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学）。全skill の参照原典。
+- `references/philosophy.md` — dialog-harness 6条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学 / 人間 ≒ Council）。全skill の参照原典。第6条は v4.2 で追加。
 
 関連（他 skill 配下に配置される参照ファイル、本 SKILL.md から間接参照）：
 - `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` — Shift Left 基盤 + 5層エラー検出スタック（L1 自己検証の埋め込み手順含む）

@@ -175,15 +175,16 @@ L0 の仕様トレードオフ、L2 の跨ぎドメイン方針対立にも使�
 
 ### 参照ドキュメント（このスキル内 references/）
 
-- [references/council-philosophy.md](references/council-philosophy.md) — Council 6 公理
+- [references/council-philosophy.md](references/council-philosophy.md) — Council 6 公理（design-history.md は v4.2 で 7 公理化、`council-philosophy.md` 本体への反映は v4.3 で再判断）
 - [references/pre-check.md](references/pre-check.md) — Phase 0 判定ルール
 - [references/orchestrator.md](references/orchestrator.md) — フラット実装と重み計算
 - [references/phase-protocol.md](references/phase-protocol.md) — Phase 0→1→3 規格
 - [references/judgment-agent.md](references/judgment-agent.md) — Judgment Agent 設計
-- [references/consensus-protocol.md](references/consensus-protocol.md) — 合意プロセス
-- [references/output-format.md](references/output-format.md) — JSON 入出力規格
+- [references/consensus-protocol.md](references/consensus-protocol.md) — 合意プロセス（v4.2 で CTL 連動の `compute_consensus_mode` を追加、`category` / `decision_category` の役割分担）
+- [references/output-format.md](references/output-format.md) — JSON 入出力規格（v4.2 で `actual_outcome` / `invocation_id` / `project_metadata` / `consensus_mode` 追加）
 - [references/conflict-typology.md](references/conflict-typology.md) — 対立類型（PR1 はスタブ）
-- [references/design-history.md](references/design-history.md) — ブリーフ要約
+- [references/ctl-calculation.md](references/ctl-calculation.md) — Council Trust Level 算出規格（v4.2 新規、stats.json スキーマ・invocations/・user-scope 初期化）
+- [references/design-history.md](references/design-history.md) — ブリーフ要約（v4.2 で 7 公理拡張・改訂履歴追記）
 - [references/personas/business/](references/personas/business/) — 事業 Council 3 ペルソナ
 
 ### 起動時に参照する設定
