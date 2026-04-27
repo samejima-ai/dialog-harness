@@ -43,13 +43,13 @@ description: >
    → 問題なし: 次へ
 4. 実装タスク分解
    → 複数実装案が拮抗 or 実装者 confidence < 0.6 の判断点がある場合
-     → `council` スキルを起動して判断を仰ぐ（詳細は本文「Council 発動」節参照）
+     → `crosscut-council` スキルを起動して判断を仰ぐ（詳細は本文「Council 発動」節参照）
 5. タスク実行（コーディング）
 5.5. Shift Left 基盤 + 5層エラー検出スタックに沿った自己検証（計算的解決最優先）
      Shift Left 基盤（spec/ 逸脱なし確認） → 第1層（計算的センサー全PASS）
      → 第2層（E2E機械検証） → 第3層（Interaction Cost 測定）
      不可逆操作（データ破壊/スキーマ変更/認証系変更/公開範囲変更等）検出時は
-     直前に `council` を起動して判断を仰ぐ
+     直前に `crosscut-council` を起動して判断を仰ぐ
      詳細は `references/inferential-sensor-v2.md` 参照
 6. 自己検証（計算的センサー＋推論的センサー）
    → 失敗: 自力修正して6に戻る
@@ -152,7 +152,7 @@ SPEC.mdの機能一覧をもとに実装タスクに分解する。
 
 ### 4.5. Council 発動（判断点検出時のみ）
 
-分解の過程で判断点が現れた場合、自力解釈で進めずに `council` スキルを起動する。
+分解の過程で判断点が現れた場合、自力解釈で進めずに `crosscut-council` スキルを起動する。
 原則「開発中に人間に質問しない」は維持する — Council は人間ではなく判断モジュールである。
 
 #### 判断分類（philosophy 第6条）
@@ -187,16 +187,16 @@ H カテゴリ（H1〜H4）の抵触を検知したら、Council 発動ではな
 
 #### 発動方法
 
-1. 入力を構造化する（`.claude/skills/council/references/output-format.md` §1 参照）:
+1. 入力を構造化する（`.claude/skills/crosscut-council/references/output-format.md` §1 参照）:
    - `context`: 該当タスクとその周辺状況
    - `options`: 複数案（少なくとも2つ、Council は第3の道を提示してよい）
    - `question_to_answer`: 問いを1文で
    - `source_skill`: `layer1-autonomous-dev`
    - `category`: `implementation` / `operation` / `maintenance` / `error_handling` 等
-2. `council` スキルを起動する
+2. `crosscut-council` スキルを起動する
 3. Judgment Agent の出力を受け取る（`recommended` / `reasoning` / `minority_opinion` / `judgment_confidence` / `final_decision: null`）
    - `final_decision` が常に null である理由: 第6条により Council は判断機構であり決定機構ではない。決定は人間または実装者の合意プロセスが担う。CTL ≥ CTL-1 で該当 C カテゴリが委譲範囲内なら、実装者の合意プロセスが Council 結果を採用して続行できる。
-4. 合意プロセスに入る（`.claude/skills/council/references/consensus-protocol.md` 参照）:
+4. 合意プロセスに入る（`.claude/skills/crosscut-council/references/consensus-protocol.md` 参照）:
    - 実装者は `recommended` を採用するか、別案で実装するかを決定する
    - REGIME.md の CTL を確認し、該当 C カテゴリが委譲範囲外なら判断献上（Council 結果を参考情報として人間に渡す）
    - `judgment_confidence < 0.5` の場合は自動で人間エスカレーション（献上で報告）

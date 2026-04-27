@@ -145,7 +145,7 @@ L0 spec-architect は REGIME.md 生成・更新時に Council Trust Level（CTL�
 philosophy.md 第 6 条「人間 ≒ Council 原則」の実装規格。
 
 算出ロジック・stats.json スキーマ・invocations/ 構造の詳細は
-`council/references/ctl-calculation.md` を参照。
+`crosscut-council/references/ctl-calculation.md` を参照。
 
 ### 算出手順
 
@@ -192,7 +192,7 @@ CTL-3 ではほぼ全ての C カテゴリが Council 自律。ただし以下�
 - council_type が "life"（人生 Council）
 - H カテゴリ抵触検知時（H1 哲学変更 / H2 ルール変更 / H3 方向性発案 / H4 根本設計見直し）
 
-詳細は `council/references/consensus-protocol.md` の `compute_consensus_mode` を参照。
+詳細は `crosscut-council/references/consensus-protocol.md` の `compute_consensus_mode` を参照。
 
 ---
 
