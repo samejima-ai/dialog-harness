@@ -21,7 +21,7 @@ Built with [dialog-harness/layer's](https://github.com/[repo-url]) v[X.Y] · [Mo
 ```markdown
 ---
 
-Built with dialog-harness/layer's v[X.Y] · [Model Name] · [YYYY-MM-DD]
+Built with dialog-harness/layer's v[X.Y.Z] · [Model Name] · [YYYY-MM-DD]
 
 <!-- harness-credit: managed by layer0 skills. do not edit manually. -->
 ```
@@ -33,9 +33,11 @@ Built with dialog-harness/layer's v[X.Y] · [Model Name] · [YYYY-MM-DD]
 | 要素 | 例 | 必須/任意 |
 |---|---|---|
 | Harness 名 | `dialog-harness/layer's` | 必須 |
-| バージョン | `v4.0` | 必須 |
+| バージョン | `v5.0.0` （v5.0.0 以降は semver 厳格化） | 必須 |
 | 使用モデル | `Claude Opus 4.7` | 必須 |
 | 構築日 | `[YYYY-MM-DD]` | 必須 |
+
+v5.0.0 以降のバージョン記法は `vMAJOR.MINOR.PATCH`（semver）。v4.x までの `v4.0` 等の表記は v4.x 互換のため受理する。
 
 ### 省略する情報
 
@@ -132,7 +134,7 @@ README.md が存在しないプロジェクトで新規作成する場合のテ�
 
 ---
 
-Built with dialog-harness/layer's v[X.Y] · [Model Name] · [YYYY-MM-DD]
+Built with dialog-harness/layer's v[X.Y.Z] · [Model Name] · [YYYY-MM-DD]
 
 <!-- harness-credit: managed by layer0 skills. do not edit manually. -->
 ```

@@ -418,6 +418,17 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
+### v5.0.0 追加（GitHub 連携前提化・crosscut prefix 確立・semver 化、major 昇格）
+
+破壊的変更を含む major 昇格。詳細は `dh-upgrades/upgrade-spec-v5.0.0.md` および `history/REGIME-LOG.md` 参照。
+
+- L0 判定軸に `dev_mode`（local_only / github_assisted / github_autonomous）を 3 軸目として追加（§4 モード判定 / §dev_mode 軸 / `references/regime-assessment.md` §dev_mode 判定）
+- `assets/meta-spec-template.md` の REGIME.md テンプレに `## dev_mode` セクション追加
+- `references/dev-env-spec.md` の参照権限マトリクスに `templates/` 行を追加（配布雛形）
+- 関連: 既存 `council/` を `crosscut-council/` にリネーム（major 破壊）。`crosscut-` を Level A skill の第二の命名規則として確立
+- 関連: 5 新規 crosscut skill（issue-dispatcher / issue-implementer / verifier-drift / verifier-philosophy(placeholder) / feedback-loop）追加。詳細は各 SKILL.md
+- バージョン記法を semver 厳格化（v5.0.0 以降は MAJOR.MINOR.PATCH）。v4.x 互換のため旧表記は受理
+
 ### v4.2 追加（分類再編・progressive disclosure 適合化）
 
 skill-creator 規約（`references/` = 読み参考の docs、`assets/` = 埋めて使うテンプレ）への適合化として、以下 3 テンプレを `references/` → `assets/` に再分類。identity（ベース名）と内容は完全に保持。本節冒頭（§既存）の「改名禁止」制約には「再分類は例外」条項を明文化済み。
