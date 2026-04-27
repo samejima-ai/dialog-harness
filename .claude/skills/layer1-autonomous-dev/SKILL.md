@@ -352,6 +352,14 @@ L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙�
 
 ## 関連スキル（Level A）
 
+### Layer 系
 - `.claude/skills/layer1-independent-reviewer/` — M2以上で常時起動する独立検証agent
 - `.claude/skills/layer2-orchestrator/` — L2判定時の統括指揮（委譲先）
 - `.claude/skills/layer2-integration-verifier/` — L2オーケストレータが使う統合検証agent
+
+### Crosscut 系（v5.0.0 追加、`dev_mode` ≥ `github_assisted` で参照）
+- `.claude/skills/crosscut-council/` — 判断点での合議制判定（既存、v5.0.0 でリネーム）
+- `.claude/skills/crosscut-issue-implementer/` — Issue → 実装の起動主体（L1 が呼ばれる側、Actions 経由ありえる）
+- `.claude/skills/crosscut-verifier-drift/` — PR 作成時の SPEC drift 検出（L1 自己検証を補完）
+- `.claude/skills/crosscut-verifier-philosophy/` — 5本柱整合検証（v5.1.0 で実装、現状 placeholder）
+- `.claude/skills/crosscut-feedback-loop/` — 検証 FAIL / drift / 思想違反の還流先決定
