@@ -13,6 +13,11 @@ jobs:
   drift-detect:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read         # actions/checkout
+      issues: write          # github-script で PR コメント投稿（PR は issue として扱われる）
+      pull-requests: write   # PR コメント / レビュー
+      actions: write         # gh workflow run drift-feedback.yml
     steps:
       - uses: actions/checkout@v4
         with:

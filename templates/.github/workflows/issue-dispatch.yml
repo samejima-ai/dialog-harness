@@ -23,6 +23,9 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read   # actions/checkout
+      issues: write    # gh issue create
     steps:
       - uses: actions/checkout@v4
         with:
