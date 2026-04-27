@@ -1,0 +1,58 @@
+# Required mode: github_autonomous
+# Required CTL: >= 2
+# crosscut-issue-implementer の auto-merge 機構。
+# 全条件を満たした場合のみ squash merge を実行。
+# 詳細条件は .claude/skills/crosscut-issue-implementer/references/implement-protocol.md §auto-merge 発動条件 参照。
+
+name: Auto Merge
+
+on:
+  pull_request_review:
+    types: [submitted]
+  check_suite:
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'PR number'
+        required: true
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # event 種別に応じて PR 番号を抽出
+          echo "Replace with PR resolution logic"
+
+      - name: Check PR conditions
+        id: cond
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 条件1: label `ctl-2-or-higher` が付いている
+          # 条件2: 作成者が claude-code-action[bot]（人間 PR は対象外）
+          # 条件3: VERIFICATION.md が PASS（artifact から取得 or PR コメントから抽出）
+          # 条件4: 全 CI job (basic-ci, e2e-ci, spec-drift, interaction-cost) が success
+          # 全部満たした場合のみ ok=true を出力
+          echo "Replace with condition evaluation"
+
+      - name: Squash merge
+        if: steps.cond.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge ${{ steps.pr.outputs.number }} --squash --auto
+
+      - name: Append to history/CHANGELOG.md
+        if: steps.cond.outputs.ok == 'true'
+        run: echo "Replace with CHANGELOG append (Level A)"

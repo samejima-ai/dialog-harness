@@ -59,3 +59,21 @@ major 昇格。dev_mode 軸追加 / crosscut- prefix 統一 / 仕様 1〜4 Skill
 各 protocol.md は github_assisted / github_autonomous × CTL-0/1/2/3 の動作表を本体化、Council 事前検証発動条件 + CHANGELOG 記録形式を含む。
 
 `crosscut-council/references/ctl-maturity-strategy.md` を新規作成（spec §4.4.2.2、既存 `ctl-calculation.md` に育成戦略の項なしと確認済）。CTL 段階定義 / 量×質ハイブリッド昇格条件 / 横断蓄積補強 / 退行ロジック / CHANGELOG 自動記録形式を含む。
+
+### Step 5: GitHub Actions 雛形配置
+
+`templates/.github/workflows/` を新設し 9 yml を配置（spec §4.5）：
+
+- `basic-ci.yml`（既存検出スタック第1層 + Shift Left 基盤の CI 化）
+- `e2e-ci.yml`（既存検出スタック第2層、Playwright Test Agents 規格）
+- `interaction-cost.yml`（既存検出スタック第3層、UX 計算可能代理指標）
+- `spec-drift.yml`（crosscut-verifier-drift の CI 化）
+- `issue-dispatch.yml`（crosscut-issue-dispatcher の CI 化、CTL 連動 + Council 事前検証）
+- `issue-to-impl.yml`（crosscut-issue-implementer の CI 化、claude-code-action `<latest>` プレースホルダ）
+- `drift-feedback.yml`（crosscut-feedback-loop の CI 化、種別→還流先マトリクス実装）
+- `auto-merge.yml`（CTL ≥ 2 + 全条件達成時のみ squash merge）
+- `auto-degrade.yml`（連続失敗・重大インシデントで dev_mode + ctl 自動降格）
+
+各 yml 冒頭に `# Required mode:` `# Required CTL:` をコメント明記。
+
+`layer0-spec-architect/references/dev-env-spec.md` の参照権限マトリクスに `templates/` 行を追加（v5.0.0 追加、配布雛形のため AI 書 ✅・Human 書 △）。

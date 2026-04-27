@@ -1,0 +1,58 @@
+# Required mode: github_autonomous
+# Required CTL: >= 2
+# 連続失敗・重大インシデント検出時に dev_mode を autonomous → assisted へ自動降格、
+# CTL も -1 する機構。
+# 詳細条件は .claude/skills/crosscut-council/references/ctl-maturity-strategy.md §退行ロジック 参照。
+
+name: Auto Degrade
+
+on:
+  workflow_run:
+    workflows: [Issue → Implementation, Auto Merge]
+    types: [completed]
+  schedule:
+    - cron: '0 0 * * *'  # 日次の累積判定（reject 率・一致率）
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read REGIME.md (current dev_mode + ctl)
+        id: regime
+        run: echo "Replace with REGIME.md parsing"
+
+      - name: Evaluate degrade triggers
+        id: trigger
+        run: |
+          # 以下のいずれかで降格 (ctl-maturity-strategy.md §退行ロジック)
+          # - 直近 5 件の Council 判断が連続 reject
+          # - 重大インシデント検出 (data loss, rollback, SPEC violation)
+          # - 直近 30 件の一致率 < 0.7
+          # - workflow_run 連続失敗（issue-to-impl 3 連続失敗 等）
+          echo "Replace with trigger evaluation"
+
+      - name: Apply degrade
+        if: steps.trigger.outputs.degrade == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # REGIME.md の dev_mode と ctl を更新（PR を自動作成）
+          # github_autonomous → github_assisted
+          # ctl: N → N-1（最低 0）
+          # 変更内容を history/REGIME-LOG.md と history/ARCH-DECISIONS.md に記録
+          echo "Replace with REGIME.md update + PR creation"
+
+      - name: Notify human
+        if: steps.trigger.outputs.degrade == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Issue 起票（label: degrade-notice）+ delivery/UPGRADE-CONFLICT.md 追記
+          echo "Replace with notification logic"
