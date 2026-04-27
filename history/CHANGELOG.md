@@ -46,3 +46,16 @@ major 昇格。dev_mode 軸追加 / crosscut- prefix 統一 / 仕様 1〜4 Skill
 各 SKILL.md は frontmatter + 発動条件 + 処理フロー + CTL 別動作 + 関連参照のみのタイト構成。protocol references は Step 4 で追加。
 
 `layer1-autonomous-dev/SKILL.md` および `layer1-independent-reviewer/SKILL.md` の関連スキルセクションに crosscut- 系参照を追加（spec §4.3.4 完了条件）。
+
+### Step 4: CTL 連動 protocol + maturity strategy
+
+各 crosscut skill に CTL 別動作の references を追加（spec §4.4）：
+
+- `crosscut-issue-dispatcher/references/dispatch-protocol.md`
+- `crosscut-issue-implementer/references/implement-protocol.md`
+- `crosscut-verifier-drift/references/verify-protocol.md`
+- `crosscut-feedback-loop/references/feedback-protocol.md`
+
+各 protocol.md は github_assisted / github_autonomous × CTL-0/1/2/3 の動作表を本体化、Council 事前検証発動条件 + CHANGELOG 記録形式を含む。
+
+`crosscut-council/references/ctl-maturity-strategy.md` を新規作成（spec §4.4.2.2、既存 `ctl-calculation.md` に育成戦略の項なしと確認済）。CTL 段階定義 / 量×質ハイブリッド昇格条件 / 横断蓄積補強 / 退行ロジック / CHANGELOG 自動記録形式を含む。
