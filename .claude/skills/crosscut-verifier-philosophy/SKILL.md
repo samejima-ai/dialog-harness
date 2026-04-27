@@ -1,10 +1,12 @@
 ---
 name: crosscut-verifier-philosophy
 description: >
-  実装が 5本柱原則と整合しているかを検証する横断機構（仕様3-哲学、v5.0.0 placeholder）。
-  CTL ≥ 2 で発動予定。判定ロジックは v5.1.0 minor 改修で本実装される。
-  v5.0.0 では skill 配置のみで実体は未実装。発動しても「未実装」レポートを返す。
-  「思想検証」「5本柱整合チェック」「philosophy 違反検出」等の発話で v5.1.0 以降にトリガーされる。
+  **v5.0.0 では発動禁止 / DO NOT TRIGGER in v5.0.0**。
+  本 skill は仕様3-哲学（5本柱整合検証）の placeholder で、判定ロジックは v5.1.0 minor 改修で本実装される。
+  v5.0.0 環境でこの skill が選択された場合、即座に「未実装エラー」を返して人間に献上する以外の動作はしない。
+  v5.0.0 では誤発動防止のため、いかなる発話でもこの skill を選択してはならない。
+  v5.1.0 以降では CTL ≥ 2 で発動し、PR 内容を philosophy.md（6条憲法）と照合する。
+  v5.1.0 以降の想定トリガー語句（v5.0.0 では非トリガー）:「思想検証」「5本柱整合チェック」「philosophy 違反検出」等。
 ---
 
 # Philosophy Verifier (Placeholder)
