@@ -230,6 +230,7 @@ layer0-spec-architect は新規プロジェクトで以下を初期化する：
 - delivery/（空、.gitkeep 配置）
 - assets/（空、.gitkeep 配置）
 - docs/ は **初期生成しない**（依頼駆動で生える）
+- stack 別の **scaffold（実体ファイル）の生成必須リストと smoke test 手順** は `references/scaffold-checklist.md` を参照（v5.1.0 追加）
 
 ---
 
