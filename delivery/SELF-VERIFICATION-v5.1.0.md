@@ -141,14 +141,16 @@ $ git diff origin/master -- .claude/skills/crosscut-*/ templates/ \
 
 ## 5. Verification 7 件（プラン §Verification 準拠）
 
-| # | コマンド | 期待 | 実態 | 判定 |
+すべてのコマンドはリポジトリルート（`/home/user/dialog-harness`）で実行する想定。
+
+| # | コマンド（リポジトリルートで実行） | 期待 | 実態 | 判定 |
 |---|---|---|---|---|
 | 1 | `ls .claude/skills/layer0-spec-architect/references/scaffold-checklist.md delivery/SELF-VERIFICATION-v5.1.0.md` | 両者存在 | 両者存在 | PASS |
-| 2 | `grep -E '受け入れ基準\|§7.4\|Pre-flight' SKILL.md` | 複数行 hit | 「L0 完了の受け入れ基準」「§7.4 自己検証」「Pre-flight (v5.1.0)」hit | PASS |
-| 3 | `grep 'v5.1.0' assets/credit-template.md` | hit | 必須要素テーブル `v5.1.0` hit | PASS |
+| 2 | `grep -E '受け入れ基準\|§7.4\|Pre-flight' .claude/skills/layer0-spec-architect/SKILL.md` | 複数行 hit | 「L0 完了の受け入れ基準」「§7.4 自己検証」「Pre-flight (v5.1.0)」hit | PASS |
+| 3 | `grep 'v5.1.0' .claude/skills/layer0-spec-architect/assets/credit-template.md` | hit | 必須要素テーブル `v5.1.0` hit | PASS |
 | 4 | `grep -l 'v5.1.0' history/*.md` | 4 ファイル全て | CHANGELOG / REGIME-LOG / ARCH-DECISIONS / INTENT すべて hit | PASS |
-| 5 | `git diff origin/master -- crosscut-*/ templates/ philosophy.md dh-upgrades/upgrade-spec-v5.0.0.md` | 出力なし | 出力なし | PASS |
-| 6 | `head -5 SKILL.md`（frontmatter 妥当性） | name + description 不変 | 不変確認 | PASS |
+| 5 | `git diff origin/master -- .claude/skills/crosscut-*/ templates/ .claude/skills/layer0-spec-architect/references/philosophy.md dh-upgrades/upgrade-spec-v5.0.0.md` | 出力なし | 出力なし | PASS |
+| 6 | `head -16 .claude/skills/layer0-spec-architect/SKILL.md`（frontmatter 妥当性） | name + description 不変 | 不変確認 | PASS |
 | 7 | 本 4 章の自己適用検証 | 4 条件 PASS | 4 条件 PASS | PASS |
 
 7 件すべて **PASS**。

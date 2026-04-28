@@ -105,7 +105,7 @@ test -f .claude/skills/crosscut-council/SKILL.md && echo OK
 | `crosscut-issue-dispatcher` | SPEC/ADR 差分から Issue 生成 | commit hook / 明示コマンド |
 | `crosscut-issue-implementer` | Issue → 実装起動 | Issue assigned / label 付与 |
 | `crosscut-verifier-drift` | SPEC/ADR 乖離検出 | PR 作成時 CI |
-| `crosscut-verifier-philosophy` | 5本柱整合検証（v5.1.0 で本実装） | placeholder |
+| `crosscut-verifier-philosophy` | 5本柱整合検証（v5.1.0 では placeholder のまま、v5.2.0 候補として継続検討） | placeholder |
 | `crosscut-feedback-loop` | 検出 → 還流 | 検証 FAIL / drift / 思想違反検出時 |
 
 `local_only` では発動しない。`github_assisted` 以上で利用可能。

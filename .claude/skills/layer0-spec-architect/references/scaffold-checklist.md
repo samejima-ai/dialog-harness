@@ -28,7 +28,7 @@ M2 monolith Web PWA の既定 stack として固定。他 stack は将来 minor 
 | 9 | `src/main.tsx` | React mount | `createRoot(document.getElementById("root")).render(<App />)` |
 | 10 | `src/App.tsx` | 最小 App | プレースホルダ UI が描画される（空画面で起動エラーが出ないこと） |
 | 11 | `public/manifest.webmanifest` | PWA manifest | `name` / `short_name` / `start_url: "/"` / `display: "standalone"` / `icons: [...]` |
-| 12 | `public/icons/icon-192.png` & `icon-512.png` | PWA アイコン | プレースホルダ画像で可。Lighthouse PWA チェックを通る最小サイズ |
+| 12 | `public/icons/icon-192.png` & `public/icons/icon-512.png` | PWA アイコン | プレースホルダ画像で可。Lighthouse PWA チェックを通る最小サイズ |
 
 `pnpm-lock.yaml` は `pnpm install` で生成されるため初期生成チェック対象外。
 
