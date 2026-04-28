@@ -1,6 +1,8 @@
 ---
-name: council
+name: crosscut-council
 description: >
+  横断判定機構（crosscut prefix）。Layer 0/1/2 のいずれにも属さず、全 Layer から献上を受けて判定を返す。
+  人間 ≒ Council 原則（philosophy.md 第6条）の実装主体。
   実装中に発生する判断点で AI 自身が発動する**合議制判定機構（Council / 合議）の sub-skill**。
   3 ペルソナの並列独立意見生成と重み付き判定でトレードオフ判断・結論対立・
   不可逆操作・SPEC 矛盾・複数実装案の拮抗に対する判断支援を提供する。

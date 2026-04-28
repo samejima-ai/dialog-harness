@@ -175,3 +175,11 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
   - sensors/inferential.md のチェック項目を追加する
   - プロジェクト固有の `checklist/*.md` を追加し入力に渡す
 - agent本体の修正が必要になった場合は、dialog-harness-layers 本体のアップグレード案件として扱う（個別プロジェクト側では行わない）
+
+## 関連スキル（v5.0.0 追加、`dev_mode` ≥ `github_assisted` で参照）
+
+独立検証は本 skill の責務で完結するが、PR レベル / CI 上での補完層として以下を併用する：
+
+- `.claude/skills/crosscut-verifier-drift/` — PR 差分の SPEC drift 検出。本 skill の指摘と並列実行され、結果は VERIFICATION.md に統合
+- `.claude/skills/crosscut-verifier-philosophy/` — 5本柱整合検証（v5.1.0 で実装、現状 placeholder）
+- `.claude/skills/crosscut-feedback-loop/` — 検出された FAIL / drift / 思想違反を実装層・設計層・L0 へ還流（独立検証から直接還流せず、本 skill 経由で feedback-loop に渡す）

@@ -225,7 +225,7 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 権限レベル（L0-2 / L0-3）と介入チャネル（C1/C2/C3）は `references/permission-delegation.md` を参照。
 
 判定アウトプット：
-- **REGIME.md** — モード判定結果（スコア・モード・根拠・AI能力バージョン・L2の場合はサブドメイン構成）
+- **REGIME.md** — モード判定結果（スコア・モード・dev_mode・根拠・AI能力バージョン・L2の場合はサブドメイン構成）
 
 モードの概要：
 
@@ -242,6 +242,28 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 4. S+U+R 合計で M1/M2 を一次判定（0〜3=M1, 4〜=M2）
 
 **AI能力バージョン**（例: Claude Opus 4.7）を REGIME.md に必ず記録する。
+
+#### dev_mode 軸（v5.0.0 追加）
+
+GitHub 連携前提の自律駆動を 3 段階で表現する追加軸。規模・チーム軸と並列で動的判定する。
+詳細プロトコルは `references/regime-assessment.md` の「dev_mode 判定」セクション参照。
+
+| dev_mode | GitHub | Actions | Issue 自動化 | 並列実装 | 人間関与 |
+|---|---|---|---|---|---|
+| local_only | × | × | × | × | 全 Layer |
+| github_assisted | ○ | 任意 | × | 手動 | L0 + 承認 |
+| github_autonomous | ○ | ○ | ○ | 自動 | L0 のみ |
+
+判定フロー：
+1. 質問1：「GitHub 使う？」
+2. No → `local_only` 確定
+3. Yes → 規模 + Lifecycle から推論（v5.0.0 時点）
+   - M1 → `github_assisted`
+   - M2, Lifecycle ≤ 1 → `github_assisted`
+   - M2-L2, Lifecycle ≥ 1 → `github_autonomous`
+4. 推論結果を 1 回のみ確認、ユーザー裁量で昇格・降格可
+
+dev_mode 昇格・降格は手動 + ADR 記録必須（spec §3.2.3）。「GitHub 無しでも DH ベースは完全動作」が原則。
 
 ### 5. 人間レビュー
 
@@ -395,6 +417,17 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v5.0.0 追加（GitHub 連携前提化・crosscut prefix 確立・semver 化、major 昇格）
+
+破壊的変更を含む major 昇格。詳細は `dh-upgrades/upgrade-spec-v5.0.0.md` および `history/REGIME-LOG.md` 参照。
+
+- L0 判定軸に `dev_mode`（local_only / github_assisted / github_autonomous）を 3 軸目として追加（§4 モード判定 / §dev_mode 軸 / `references/regime-assessment.md` §dev_mode 判定）
+- `assets/meta-spec-template.md` の REGIME.md テンプレに `## dev_mode` セクション追加
+- `references/dev-env-spec.md` の参照権限マトリクスに `templates/` 行を追加（配布雛形）
+- 関連: 既存 `council/` を `crosscut-council/` にリネーム（major 破壊）。`crosscut-` を Level A skill の第二の命名規則として確立
+- 関連: 5 新規 crosscut skill（issue-dispatcher / issue-implementer / verifier-drift / verifier-philosophy(placeholder) / feedback-loop）追加。詳細は各 SKILL.md
+- バージョン記法を semver 厳格化（v5.0.0 以降は MAJOR.MINOR.PATCH）。v4.x 互換のため旧表記は受理
 
 ### v4.2 追加（分類再編・progressive disclosure 適合化）
 

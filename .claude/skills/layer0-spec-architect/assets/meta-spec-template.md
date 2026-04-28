@@ -152,6 +152,13 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 ## 判定結果
 モード: [M1 / M2 / L2]
 
+## dev_mode（v5.0.0 追加）
+- mode: [local_only / github_assisted / github_autonomous]
+- ctl: [0 / 1 / 2 / 3]   # Council Trust Level（crosscut-council/references/ctl-calculation.md 参照）
+- 判定根拠: [GitHub 利用有無 + 規模 + Lifecycle の組み合わせ]
+
+（判定プロトコルは `regime-assessment.md` §dev_mode 判定 参照。昇格・降格は手動 + ADR 記録必須。）
+
 ## 判定根拠
 
 ### 規模スコアの内訳

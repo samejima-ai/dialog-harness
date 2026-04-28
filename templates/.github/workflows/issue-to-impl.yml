@@ -1,0 +1,59 @@
+# Required mode: github_autonomous（CTL >= 1 で自動化）
+# Required CTL: >= 1
+# crosscut-issue-implementer（仕様2）を CI 化したテンプレート。
+# Anthropic 公式 claude-code-action を採用。
+# 詳細プロトコルは .claude/skills/crosscut-issue-implementer/references/implement-protocol.md 参照。
+
+name: Issue → Implementation
+
+on:
+  issues:
+    types: [labeled, assigned]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: |
+          # label `ready-for-ai` が付与されたか、または assignee が claude-code-action のいずれか
+          if [[ "${{ github.event.label.name }}" == "ready-for-ai" ]] || \
+             [[ "${{ github.event.assignee.login }}" == "claude-code-action[bot]" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  implement:
+    needs: guard
+    if: needs.guard.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # claude-code-action 公式採用。実装時点で公式リポジトリの最新版を確認すること。
+      # 公式: https://github.com/anthropics/claude-code-action
+      - name: Run Claude Code on Issue
+        uses: anthropics/claude-code-action@<latest>  # ピン止め推奨（vX.Y.Z 形式）
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_number: ${{ github.event.issue.number }}
+          # 起動する skill: layer1-autonomous-dev（自動推論される想定）
+          # 失敗時のフォールバック: auto-degrade.yml が trigger される
+
+      - name: Add label to PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 直近作成 PR を取得して label 付与
+          # CTL >= 2 の場合は ctl-2-or-higher を付与（auto-merge.yml の発動条件）
+          echo "Replace with PR labeling logic"

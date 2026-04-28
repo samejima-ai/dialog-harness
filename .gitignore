@@ -6,14 +6,16 @@
 .claude/settings.local.json
 
 # Local-only design drafts / scratch docs (skill-only policy: PR #3)
+# v5.0.0 例外: 配布対象の migration guide は許可（spec §5.4.2、AD-007 参照）
 docs/
+!docs/migration-guide-*.md
 drafts/
 scratch/
 
-# Council skill: 検証ワークスペース（subagent 出力の実データ。再現不能だが skill 本体ではない）
-.claude/skills/council-workspace/
+# crosscut-council skill: 検証ワークスペース（subagent 出力の実データ。再現不能だが skill 本体ではない）
+.claude/skills/crosscut-council-workspace/
 
-# Council skill: ブリーフ原稿は design-history.md に要約転記済み（design-history.md §17: 本体に内包しない）
+# crosscut-council skill: ブリーフ原稿は design-history.md に要約転記済み（design-history.md §17: 本体に内包しない）
 Council system dev brief .md
 
 # OS / editor noise

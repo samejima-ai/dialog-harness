@@ -1,0 +1,68 @@
+# Required mode: github_assisted 以上
+# Required CTL: >= 1
+# crosscut-verifier-drift（仕様3-drift）を CI 化したテンプレート。
+# 詳細プロトコルは .claude/skills/crosscut-verifier-drift/references/verify-protocol.md 参照。
+
+name: Spec Drift
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  drift-detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read         # actions/checkout
+      issues: write          # github-script で PR コメント投稿（PR は issue として扱われる）
+      pull-requests: write   # PR コメント / レビュー
+      actions: write         # gh workflow run drift-feedback.yml
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # diff against base branch
+
+      - name: Setup runtime
+        run: echo "Replace with actions/setup-*"
+
+      - name: Install dh-drift-check (placeholder)
+        run: |
+          # v5.0.0 時点では skill 内 protocol で実装。
+          # CI 上で skill を起動するための CC ランタイム or 同等ツールが必要。
+          # 例: npx @anthropic/claude-code-action invoke crosscut-verifier-drift
+          echo "Replace with crosscut-verifier-drift invocation"
+
+      - name: Run drift detection
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # 出力: delivery/DRIFT-REPORT.md
+          # 種別: spec_unrecorded_addition / adr_unapproved_removal / dont_violation /
+          #       signature_drift / ux_drift
+          echo "Run drift verification"
+
+      - name: Comment on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('delivery/DRIFT-REPORT.md')) return;
+            const body = fs.readFileSync('delivery/DRIFT-REPORT.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Spec Drift Report\n\n' + body
+            });
+
+      - name: Trigger feedback-loop on drift
+        if: failure()
+        run: |
+          # crosscut-feedback-loop 経由で還流（drift-feedback.yml に委譲）
+          gh workflow run drift-feedback.yml -f pr=${{ github.event.pull_request.number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

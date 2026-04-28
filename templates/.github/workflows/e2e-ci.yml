@@ -1,0 +1,43 @@
+# Required mode: priority >= standard を含むプロジェクト
+# Required CTL: any
+# 既存検出スタックの第2層（E2E 機械検証）を CI 化したテンプレート。
+# Playwright Test Agents 規格を想定（layer2-orchestrator/references/e2e-integration.md 参照）。
+
+name: E2E CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup runtime
+        run: echo "Replace with actions/setup-*"
+
+      - name: Install
+        run: |
+          # 例: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps
+          echo "Replace with project install + Playwright browsers install"
+
+      - name: Build app for E2E
+        run: echo "Replace with build command"
+
+      - name: Run E2E tests
+        run: |
+          # 例: pnpm exec playwright test --reporter=list,json
+          echo "Replace with project E2E command"
+
+      - name: Upload trace artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-trace
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7

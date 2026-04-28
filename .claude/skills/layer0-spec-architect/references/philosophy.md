@@ -209,7 +209,7 @@ CTL は Council 横断蓄積データから決定論で計算される。
 | CTL-2 | total ≥ 30 かつ 4 カテゴリ中 3 以上が count ≥ 10 / agreement_rate ≥ 90%（CTL-3 未達） | 大半のカテゴリ自律 |
 | CTL-3 | total ≥ 100 かつ 全カテゴリで count ≥ 25 / agreement_rate ≥ 95% | H 以外を全面自律 |
 
-算出ロジックは `council/references/ctl-calculation.md` を参照。
+算出ロジックは `crosscut-council/references/ctl-calculation.md` を参照。
 
 ### 横断蓄積
 
@@ -300,9 +300,9 @@ L0 対話完了後、L1/L2 実行中は Council 事後評価のための質問�
        ├── layer2-orchestrator/references/e2e-integration.md（第2条の E2E 実装）
        ├── layer2-integration-verifier/SKILL.md（第3条）
        │
-       ├── council/SKILL.md（第6条）
-       ├── council/references/consensus-protocol.md（第6条の CTL 連動分岐）
-       └── council/references/ctl-calculation.md（第6条の CTL 算出）
+       ├── crosscut-council/SKILL.md（第6条）
+       ├── crosscut-council/references/consensus-protocol.md（第6条の CTL 連動分岐）
+       └── crosscut-council/references/ctl-calculation.md（第6条の CTL 算出）
 ```
 
 各skillからの参照例：

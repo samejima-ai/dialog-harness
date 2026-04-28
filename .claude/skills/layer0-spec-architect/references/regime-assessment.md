@@ -145,7 +145,7 @@ L0 spec-architect は REGIME.md 生成・更新時に Council Trust Level（CTL�
 philosophy.md 第 6 条「人間 ≒ Council 原則」の実装規格。
 
 算出ロジック・stats.json スキーマ・invocations/ 構造の詳細は
-`council/references/ctl-calculation.md` を参照。
+`crosscut-council/references/ctl-calculation.md` を参照。
 
 ### 算出手順
 
@@ -192,7 +192,7 @@ CTL-3 ではほぼ全ての C カテゴリが Council 自律。ただし以下�
 - council_type が "life"（人生 Council）
 - H カテゴリ抵触検知時（H1 哲学変更 / H2 ルール変更 / H3 方向性発案 / H4 根本設計見直し）
 
-詳細は `council/references/consensus-protocol.md` の `compute_consensus_mode` を参照。
+詳細は `crosscut-council/references/consensus-protocol.md` の `compute_consensus_mode` を参照。
 
 ---
 
@@ -395,6 +395,73 @@ REGIME.md に以下を記録する。未記載時のデフォルトは **L0-2**�
 - R = 3 のプロジェクトでは L0-3 昇格を原則認めない（本番事故リスク回避）
 
 判断献上（C1）の発動カテゴリは `permission-delegation.md` の 5 カテゴリ（Cat-A スコープ境界 / Cat-B 権限超過 / Cat-C 外部依存 / Cat-D 倫理／コンプライアンス / Cat-E 破壊的変更）に従う。
+
+---
+
+## dev_mode 判定（v5.0.0 追加）
+
+GitHub 連携前提の自律駆動を 3 段階で表現する追加軸。規模・チーム軸と並列の動的判定軸として L0 対話で取得する。
+
+### モード境界
+
+| モード | GitHub | Actions | Issue 自動化 | 並列実装 | 人間関与範囲 |
+|---|---|---|---|---|---|
+| `local_only` | × | × | × | × | 全 Layer |
+| `github_assisted` | ○ | 任意 | × | 手動 | L0 + 承認 |
+| `github_autonomous` | ○ | ○ | ○ | 自動 | L0 のみ |
+
+### 判定プロトコル（2 段階判定）
+
+#### 質問1：GitHub 利用の有無
+
+L0 対話の 2.0〜2.5 ターン目で 1 回だけ質問する：
+
+> 「GitHub を使いますか？（Issue・PR・Actions の運用を含む）」
+
+- **No** → `local_only` 確定（追加質問なし）
+- **Yes** → 質問2 へ
+
+#### 質問2：規模 + Lifecycle からの推論（ユーザー確認）
+
+判定マトリクス（v5.0.0 時点）：
+
+| 規模 | Lifecycle | 推論 dev_mode |
+|---|---|---|
+| M1 | * | `github_assisted` |
+| M2 | L=0 | `github_assisted` |
+| M2 | L≥1 | `github_assisted`（運用実績で `github_autonomous` 昇格判断） |
+| L2 | * | `github_autonomous`（並列実装が前提） |
+
+推論結果を提示してユーザー確認（1 回のみ）：
+
+> 「dev_mode は `[推論結果]` を推奨します。理由：[規模 + Lifecycle の根拠]。このまま採用しますか？」
+
+ユーザーが推奨と異なる選択をした場合はそのまま採用し、ADR に根拠を記録する（spec §3.2.3）。
+
+### チーム軸（T1-T5）について
+
+spec §3.1.1 / §3.2.2 では dev_mode 推論にチーム軸（T1: 個人 〜 T5: 大規模分散チーム）を含める設計だが、v5.0.0 時点では既存軸（規模・Lifecycle）のみで運用する。チーム軸の operational 化は v5.x の minor 改修で扱う予定（INTENT.md 参照）。
+
+### REGIME.md への記録
+
+REGIME.md の `## dev_mode` セクションに以下を記録：
+
+```markdown
+## dev_mode
+
+- mode: github_assisted   # local_only / github_assisted / github_autonomous
+- ctl: 0                  # CTL段階（0-3）。crosscut-council/references/ctl-calculation.md 参照
+- 判定根拠: GitHub 利用、規模 M2、Lifecycle L=1
+```
+
+### 昇格・降格（手動 + ADR 記録必須）
+
+dev_mode の変更は人間判断による。昇格・降格いずれも `history/ARCH-DECISIONS.md` に記録（変更前後 / 根拠 / 影響範囲）。
+自動降格メカニズム（CI 連続失敗 等）は `templates/.github/workflows/auto-degrade.yml` で実装（spec §3.2.10）。
+
+### 「GitHub 無しでも DH ベースは完全動作」の原則
+
+`local_only` を選択しても DH の自律駆動性能は劣化しない。GitHub 連携は段階的拡張オプションであり、必須ではない。
 
 ---
 

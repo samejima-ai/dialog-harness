@@ -1,0 +1,70 @@
+# Required mode: github_assisted 以上
+# Required CTL: >= 1
+# crosscut-feedback-loop（仕様4）を CI 化したテンプレート。
+# spec-drift.yml から呼ばれて drift を還流先へ転送する。
+# 詳細プロトコルは .claude/skills/crosscut-feedback-loop/references/feedback-protocol.md 参照。
+
+name: Drift Feedback Loop
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'Source PR number'
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      pr:
+        required: true
+        type: string
+
+jobs:
+  feedback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read         # actions/checkout
+      issues: write          # gh issue create / comment
+      pull-requests: write   # PR comment / change request
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch DRIFT-REPORT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 対象 PR の delivery/DRIFT-REPORT.md を artifact から取得 or PR コメントから抽出
+          echo "Replace with DRIFT-REPORT acquisition"
+
+      - name: Determine routing target
+        id: route
+        run: |
+          # feedback-protocol.md のマトリクスに従って種別 -> 還流先 を決定
+          # spec_unrecorded_addition / adr_unapproved_removal -> 設計層 (Issue 生成)
+          # signature_drift / dont_violation -> 実装層 (PR コメント + 差戻し)
+          # ux_drift -> 実装層 + L0
+          echo "Replace with routing logic"
+
+      - name: Council pre-check (CTL >= 2)
+        if: steps.route.outputs.ctl >= '2'
+        run: echo "Replace with crosscut-council invocation"
+
+      - name: Route to design layer (issue creation)
+        if: steps.route.outputs.target == 'design'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # crosscut-issue-dispatcher 経由で SPEC 追記 Issue 生成
+          echo "Replace with issue creation"
+
+      - name: Route to implementation layer (revert / fix request)
+        if: steps.route.outputs.target == 'impl'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # PR にコメント + change-request review 投稿
+          echo "Replace with PR feedback"
+
+      - name: Append to history/CHANGELOG.md
+        run: echo "Replace with CHANGELOG append (Level A)"

@@ -1,0 +1,65 @@
+# Required mode: github_assisted 以上
+# Required CTL: >= 0（CTL-0 は assisted 相当の手動確認モード）
+# crosscut-issue-dispatcher（仕様1）を CI 化したテンプレート。
+# 詳細プロトコルは .claude/skills/crosscut-issue-dispatcher/references/dispatch-protocol.md 参照。
+
+name: Issue Dispatch
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'SPEC.md'
+      - 'history/ARCH-DECISIONS.md'
+      - 'spec/**'
+  workflow_dispatch:
+    inputs:
+      diff_base:
+        description: 'Compare against this ref (default: HEAD~1)'
+        required: false
+        default: 'HEAD~1'
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read   # actions/checkout
+      issues: write    # gh issue create
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read REGIME.md (dev_mode + ctl)
+        id: regime
+        run: |
+          # mode と CTL を抽出して GITHUB_OUTPUT に書き出す
+          # CTL 不適合（local_only）なら以降をスキップ
+          echo "Replace with REGIME.md parsing"
+
+      - name: Compute SPEC/ADR diff
+        id: diff
+        run: |
+          # 例: git diff ${{ inputs.diff_base }}..HEAD -- SPEC.md history/ARCH-DECISIONS.md spec/
+          echo "Replace with diff extraction"
+
+      - name: Council pre-check (CTL >= 2)
+        if: steps.regime.outputs.ctl >= '2'
+        run: |
+          # crosscut-council 起動（output-format.md §1 構造で入力）
+          # judgment_confidence < 0.5 なら以降を中断
+          echo "Replace with crosscut-council invocation"
+
+      - name: Generate Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 上限: 最大 5 Issue（REGIME.md の issue_dispatch_limit で上書き可）
+          # label: ready-for-ai を付与（issue-to-impl.yml の発動条件）
+          echo "Replace with issue creation logic (gh issue create ...)"
+
+      - name: Append to history/CHANGELOG.md
+        run: |
+          # レベル A 追記
+          echo "Replace with CHANGELOG append logic"

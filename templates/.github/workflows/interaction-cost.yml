@@ -1,0 +1,44 @@
+# Required mode: priority >= standard
+# Required CTL: any
+# 既存検出スタックの第3層（Interaction Cost / UX 測定）を CI 化したテンプレート。
+# sensors/interaction-cost/ から閾値（クリック数 p95、応答時間 p95、エラー率 等）を読み取って判定。
+
+name: Interaction Cost
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup runtime
+        run: echo "Replace with actions/setup-*"
+
+      - name: Install + build
+        run: echo "Replace with project install + build"
+
+      - name: Run interaction-cost scenarios
+        run: |
+          # 例: pnpm run measure:interaction-cost
+          # 出力: sensors/interaction-cost/results.json
+          echo "Replace with project measurement command"
+
+      - name: Compare against thresholds
+        run: |
+          # 例: pnpm exec dh-check-interaction-cost \
+          #       --thresholds sensors/interaction-cost/thresholds.json \
+          #       --results sensors/interaction-cost/results.json
+          echo "FAIL the job if any threshold breached"
+
+      - name: Upload measurement artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: interaction-cost
+          path: sensors/interaction-cost/results.json
+          retention-days: 30

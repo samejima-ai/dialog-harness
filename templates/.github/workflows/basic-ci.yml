@@ -1,0 +1,40 @@
+# Required mode: any
+# Required CTL: any
+# 既存検出スタックの第1層（計算的センサー）を CI 化したテンプレート。
+# Shift Left 基盤 + 第1層の機械検証を兼ねる。
+# プロジェクトの言語/ツールチェーンに合わせて install / build / test ステップを差し替える。
+
+name: Basic CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup runtime
+        # 例: actions/setup-node@v4 with node-version 20
+        # 例: actions/setup-python@v5 with python-version "3.12"
+        run: echo "Replace with actions/setup-* for your project"
+
+      - name: Install dependencies
+        run: |
+          # 例: npm ci / pnpm install --frozen-lockfile / poetry install
+          echo "Replace with project install command"
+
+      - name: Type check / Lint / Format
+        run: |
+          # Shift Left 基盤
+          # 例: npm run typecheck && npm run lint && npm run format:check
+          echo "Replace with project check commands"
+
+      - name: Test (computational sensor layer 1)
+        run: |
+          # 1分以内制約（dev-env-spec.md 参照）
+          # 例: npm test -- --maxWorkers=2
+          echo "Replace with project test command"
