@@ -449,6 +449,19 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
+### v5.1.0 追加（L0 受け入れ基準明文化・Pre-flight 必読化・scaffold checklist・自己検証ステップ、minor 昇格）
+
+後方互換維持の追加のみ。テストレビュー（PR #19、シナリオ「ケロぴの森」）で判明した L0 charter 未達 P0 4 項目（受け入れ基準・Pre-flight・scaffold・自己検証）を解消する。
+
+- §0「原則」に **L0 完了の受け入れ基準 4 条件** を明文化（仕様充足 / scaffold 実体 / smoke test / §7.4 PASS）。ドキュメント生成完了 ≠ L0 完了。
+- §1.5 / §3.5 / §4 / §6 / §7 各ステップ冒頭に **Pre-flight 必読リファレンス指定** を 1 行追加（読まずに進行禁止）
+- `references/scaffold-checklist.md` 新設。v5.1.0 標準 stack（Vite + TypeScript + React + PWA）の必須生成ファイル 12 種と smoke test 手順を規定
+- §7（出力）と §7.5 の間に **§7.4 L0 自己検証** を新設（broken reference / smoke test / DONT 自己照合 / Pre-flight 充足 / 受け入れ基準充足の 5 チェック）
+- `references/dev-env-spec.md` の「開発環境構築時の初期化」に scaffold-checklist.md への相互参照 1 行を追加
+- `assets/credit-template.md` のバージョン表記を v5.1.0 に更新
+
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（v5.2.0 候補として継続検討）。Lifecycle ≥ 1 既存プロジェクトは新規開始機能・フェーズに段階適用、既存成果物への遡及修正は不要。
+
 ### v5.0.0 追加（GitHub 連携前提化・crosscut prefix 確立・semver 化、major 昇格）
 
 破壊的変更を含む major 昇格。詳細は `dh-upgrades/upgrade-spec-v5.0.0.md` および `history/REGIME-LOG.md` 参照。
