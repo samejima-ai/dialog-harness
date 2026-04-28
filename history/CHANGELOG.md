@@ -2,6 +2,49 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.1.0 (in progress)
+
+minor 昇格。L0 受け入れ基準の明文化 / Pre-flight 必読化 / scaffold checklist / §7.4 自己検証ステップを追加。
+PR #19 テストレビュー（シナリオ「ケロぴの森」）で判明した L0 charter 未達 P0 4 項目（受け入れ基準・Pre-flight・scaffold・自己検証）を解消する。後方互換維持。
+
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（v5.2.0 候補として継続検討）。
+
+### Step 1: §0 受け入れ基準明文化
+
+`.claude/skills/layer0-spec-architect/SKILL.md` §0「原則」に「L0 完了の受け入れ基準（v5.1.0 追加）」を新設し、4 条件を明文化：仕様充足 / scaffold 実体生成 / smoke test 通過（または保留事由明記）/ §7.4 自己検証 PASS。Lifecycle ≥ 1 の既存プロジェクトには段階適用（既存成果物の遡及修正は不要）の旨を併記。
+
+### Step 2: Pre-flight 必読指定
+
+主要ステップ冒頭に「**Pre-flight (v5.1.0)**: 起動前に X を必読」行を追加：
+
+- §1.5 振り返り儀式 → `references/ritual-protocol.md`
+- §3.5 サブフェーズ選定 → `references/subphase-selection.md`
+- §4 モード判定 → `references/regime-assessment.md`（dev_mode 判定セクション含む）
+- §6 開発環境構築 → `references/dev-env-spec.md` + `references/scaffold-checklist.md`
+- §7 出力 → `assets/credit-template.md`
+
+§7.5 / §7.6 は既存 references の参照で充足するため Pre-flight 行追加なし。
+
+### Step 3: scaffold-checklist.md 新設
+
+`.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` を新規作成。v5.1.0 標準 stack を Vite + TypeScript + React + PWA に固定し、12 種の必須生成ファイル（package.json / tsconfig / vite.config / vitest.config / playwright.config / biome / .gitignore / index.html / src/main.tsx / src/App.tsx / public/manifest.webmanifest / public/icons）と smoke test 4 コマンド（pnpm install / dev / build / test）を規定。
+他 stack（Next.js / Vue / Astro / SvelteKit / 純 Node CLI）は将来 minor で追加。
+
+`references/dev-env-spec.md` の「開発環境構築時の初期化」リスト末尾に scaffold-checklist.md への相互参照 1 行を追加（既存内容は不変）。
+
+### Step 4: §7.4 自己検証ステップ追加
+
+`.claude/skills/layer0-spec-architect/SKILL.md` の §7（出力）と §7.5 の間に「### 7.4. L0 自己検証（v5.1.0 追加）」を新設。5 件のチェック項目をチェックボックス形式で配置：broken reference 検査 / scaffold smoke test 検査 / DONT 自己照合 / Pre-flight 充足 / 受け入れ基準充足。FAIL があれば §7（出力）に進まず原因解消する旨を明記。既存 §7.5 / §7.6 のセクション番号は不変。
+
+### Step 5: バージョン更新
+
+- `assets/credit-template.md`: v5.0.0 → v5.1.0
+- `.claude/skills/layer0-spec-architect/SKILL.md` の参照ドキュメント節に「### v5.1.0 追加（L0 受け入れ基準明文化・Pre-flight 必読化・scaffold checklist・自己検証ステップ、minor 昇格）」セクションを追加（既存 v5.0.0 セクションは不変、その上に積層）
+- `history/CHANGELOG.md`: 本セクション追加
+- `history/REGIME-LOG.md`: minor 昇格記録（不変項目遵守確認・改修体制・既存 v5.0.0 セクション保持）
+- `history/ARCH-DECISIONS.md`: AD-008（L0 完了基準の再定義）/ AD-009（scaffold-checklist の単一 stack 採用方針）追加
+- `history/INTENT.md`: v5.1.0 の意図追記（L0 charter 達成可能性の確保・Pre-flight 強制化）
+
 ## v5.0.0 (in progress)
 
 major 昇格。dev_mode 軸追加 / crosscut- prefix 統一 / 仕様 1〜4 Skill 化 / CTL 連動 / GitHub Actions 雛形 / 業界 BP 取り込み（claude-code-action）。

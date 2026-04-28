@@ -33,7 +33,7 @@ Built with dialog-harness/layer's v[X.Y.Z] · [Model Name] · [YYYY-MM-DD]
 | 要素 | 例 | 必須/任意 |
 |---|---|---|
 | Harness 名 | `dialog-harness/layer's` | 必須 |
-| バージョン | `v5.0.0` （v5.0.0 以降は semver 厳格化） | 必須 |
+| バージョン | `v5.1.0` （v5.0.0 以降は semver 厳格化） | 必須 |
 | 使用モデル | `Claude Opus 4.7` | 必須 |
 | 構築日 | `[YYYY-MM-DD]` | 必須 |
 
