@@ -78,7 +78,7 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 ```
 
 ステップ5→2のループが最も重要。ここを省略しない。
-ステップ1.5は Lifecycle ≥ 1 の場合のみ実行する。プロトコル詳細は `references/ritual-protocol.md` を参照。
+ステップ1.5は Lifecycle ≥ 1 の場合のみ実行する。**Pre-flight (v5.1.0)**: 起動前に `references/ritual-protocol.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
 ステップ3.5は DB/API/状態遷移/認可のいずれかが関与する場合に起動する。判定と実行のプロトコル詳細は `references/subphase-selection.md` を参照。
 
 ## ステップ詳細
@@ -168,6 +168,8 @@ UX 3問は独立軸ではなく、NFR 軸の補足として扱う（詳細は `r
 
 ### 3.5. サブフェーズ選定と実行
 
+**Pre-flight (v5.1.0)**: 起動前に `references/subphase-selection.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
+
 自然言語の `SPEC.md` だけでは表現しきれない領域（ドメインモデル / API 契約 / 状態遷移 / 認可 / 層間不変条件）を、必要なときだけ数式化する動的プロトコル。
 判定と実行の詳細は `references/subphase-selection.md` を参照。
 
@@ -228,6 +230,8 @@ spec/
 プロジェクト進行中のサブフェーズ追加・モード昇格・判定誤り訂正は独立した AI 呼び出しで実行する。プロトコルは `references/subphase-selection.md` の「事後追加プロトコル」を参照。
 
 ### 4. モード判定
+
+**Pre-flight (v5.1.0)**: 起動前に `references/regime-assessment.md` を必読（dev_mode 判定セクション含む）。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
 
 規模・不確実性・リスク・NFR の 4 軸でスコアリングし、L2発動閾値もチェックして開発モードと ARC・権限レベルを決定する。
 判定プロトコルの詳細は `references/regime-assessment.md` を参照。
@@ -297,6 +301,8 @@ dev_mode 昇格・降格は手動 + ADR 記録必須（spec §3.2.3）。「GitH
 
 ### 6. 開発環境の設計・構築
 
+**Pre-flight (v5.1.0)**: 起動前に `references/dev-env-spec.md`（配置規則・モード別差分）と `references/scaffold-checklist.md`（stack 別の生成必須ファイル一覧と smoke test 手順）の 2 件を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 2・4）。
+
 認識ズレ解消済みのドキュメントとモード判定結果を入力として、以下を生成する。
 各フォーマットの詳細は `references/dev-env-spec.md` を参照。
 
@@ -317,6 +323,8 @@ dev_mode 昇格・降格は手動 + ADR 記録必須（spec §3.2.3）。「GitH
 - **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）
 
 ### 7. 出力
+
+**Pre-flight (v5.1.0)**: 起動前に `assets/credit-template.md`（README.md クレジット規格）を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
 
 以下を Layer 1（autonomous-dev スキル）または L2 オーケストレータに渡せる状態として出力する。
 
