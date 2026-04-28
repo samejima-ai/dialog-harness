@@ -28,6 +28,21 @@ description: >
 - 開発モードは規模・不確実性・リスクから判定する。人間組織論に基づく職種軸分業は採用しない
 - 単体エージェントで足りる場合は単体で回す。分業は根拠がある場合のみ
 - **フラクタル原則**: L0⇄人間の対話パターン = L1内 spec⇄code 照合 = L2⇄L1群 指示⇄検証 は同一形状。本拡張でも L3 運用層を新設しない方針を徹底する（運用インシデントは新仕様発見として L0 対話へ戻す）
+- **ドキュメント完了 ≠ L0 完了**: L0 charter は「L1 が autonomous に開発を始められる環境の構築」であり、文書一式は必要条件だが十分条件ではない。L1 起動時に `pnpm install && pnpm run dev` で開発が始められる scaffold を含めて初めて L0 完了とみなす（v4.3）
+
+## L0 完了の受け入れ基準（Acceptance Criteria）
+
+L0 は以下のすべてを満たした時点でのみ完了とみなす。1 つでも欠ければ **L1 へ引き継いではならない**。
+
+1. **仕様 3 点**（SPEC.md / DONT.md / REGIME.md）が生成されている
+2. **CLAUDE.md / .claude/settings.json** が生成されている
+3. M2 以上では **sensors/{computational, inferential, review-checklist}.md** が生成されている
+4. 起動したサブフェーズの **spec/ 成果物**がすべて生成されている
+5. **L1 が `pnpm install && pnpm run dev` で開発を開始できる scaffold** が生成されている（package.json / tsconfig / ビルド設定 / lint 設定 / .gitignore / エントリポイント等。詳細は `references/dev-env-spec.md` §「scaffold 必須生成物」参照）
+6. **broken reference ゼロ**: 生成した文書中で参照する全ファイルが存在する
+7. **README.md にクレジット**マーカーが入っている（拒否時を除く）
+
+5 と 6 は計算的に検証可能。**ステップ 7.4 で自動検証を必ず実行する**。
 
 ## L0 スキル間の責務分担
 
@@ -62,6 +77,7 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 5. 人間レビュー → 認識ズレがあれば2に戻る
 6. 認識ズレなし → モードに応じた開発環境の設計・構築
 7. 開発環境一式を Layer 1（または L2）に渡せる状態で出力
+7.4. L0 出力の自己検証（broken reference 検査 + scaffold smoke test + DONT 文言自己照合）
 7.5. ファイル配置規則に沿った初期化（delivery/ と assets/ を作成、docs/ は初期生成しない）
 7.6. README.md クレジット挿入（credit-template.md 準拠、マーカー内で管理）
 ```
@@ -69,6 +85,23 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 ステップ5→2のループが最も重要。ここを省略しない。
 ステップ1.5は Lifecycle ≥ 1 の場合のみ実行する。プロトコル詳細は `references/ritual-protocol.md` を参照。
 ステップ3.5は DB/API/状態遷移/認可のいずれかが関与する場合に起動する。判定と実行のプロトコル詳細は `references/subphase-selection.md` を参照。
+ステップ7.4は受け入れ基準の機械検証ステップ。**fail があれば L0 未完了とみなし修復後に再検査**（v4.3）。
+
+### Pre-flight 必読リスト（v4.3 追加）
+
+各ステップ開始前に以下を **必ず読み込む**。SKILL.md 本体の知識のみで進行することは禁止する（v4.2 までの暗黙了解を v4.3 で明示化）。
+
+| ステップ | 開始前に必ず読む |
+|---|---|
+| 1.5 振り返り儀式（L≥1 のみ） | `references/ritual-protocol.md` |
+| 2 対話による具体化 | `references/dialog-questions.md`、ドメイン文脈関与時は `references/domain-context-dialog.md` |
+| 3 ドキュメント化 | `assets/meta-spec-template.md`、`references/philosophy.md` |
+| 3.5 サブフェーズ実行 | 起動する各サブフェーズの `references/subphase-l0X-*.md` + `references/subphase-common-protocol.md` |
+| 4 モード判定 | `references/regime-assessment.md`、`references/nfr-scoring.md`、`references/permission-delegation.md` |
+| 5 人間レビュー前 | `references/model-recommendations.md`（**読込必須かつ生成出力に含める**、§5 参照） |
+| 6 環境構築 | `references/dev-env-spec.md`（**読込必須**、scaffold 必須生成物セクションを必ず参照） |
+| 7.5 ファイル配置 | `references/dev-env-spec.md`「ファイル配置規則」 |
+| 7.6 クレジット | `assets/credit-template.md` |
 
 ## ステップ詳細
 
@@ -255,14 +288,16 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 - ズレがなければステップ6に進む
 - 「だいたいOK」は許容しない。曖昧な承認には確認を入れる
 
-**実行前の推奨モデル提示**：
-- REGIME.md 確定時点で `references/model-recommendations.md` を読み込む
-- 判定モードに応じた推奨モデル構成を **モード / 推奨 / 乖離 / 根拠** の4項目骨子で動的に生成し、ユーザーへ提示する
+**実行前の推奨モデル提示**（v4.3 で必読・必行に強化）：
+- **読込必須**: REGIME.md 確定時点で `references/model-recommendations.md` を必ず読み込む（読まずに推奨表を生成することは禁止）
+- **生成必須**: 判定モードに応じた推奨モデル構成を **モード / 推奨 / 乖離 / 根拠** の4項目骨子で動的に生成し、レビュー出力に必ず含めてユーザーへ提示する
 - 現使用モデルが推奨と乖離している場合は明示的に指摘する
 - ハイブリッド運用（Layer 0 と Layer 1 で異なるモデル）の提案も行う
 - ユーザーが推奨と異なるモデルで続行を選択した場合はそのまま進める（セーフティネット）
 
 ### 6. 開発環境の設計・構築
+
+**Pre-flight 必読（v4.3 強化）**: `references/dev-env-spec.md` を**必ず読み込む**。特に「scaffold 必須生成物」セクション（v4.3 で追加）は M1/M2/L2 すべてで scaffold 生成の根拠となる。読まずに本ステップを進めることは禁止する。
 
 認識ズレ解消済みのドキュメントとモード判定結果を入力として、以下を生成する。
 各フォーマットの詳細は `references/dev-env-spec.md` を参照。
@@ -271,9 +306,9 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 
 | モード | 追加生成物 |
 |---|---|
-| M1 | 最小構成（CLAUDE.md 簡略版 + REGIME.md + sensors/computational.md） |
-| M2 | 標準構成（CLAUDE.md + REGIME.md + .claude/skills/ + sensors/computational + inferential + review-checklist） |
-| L2 | M2 + DOMAINS.md + 各ドメイン別部分SPEC + sensors/integration/ |
+| M1 | 最小構成（CLAUDE.md 簡略版 + REGIME.md + sensors/computational.md + **最小 scaffold**） |
+| M2 | 標準構成（CLAUDE.md + REGIME.md + .claude/skills/ + sensors/computational + inferential + review-checklist + **完全 scaffold**） |
+| L2 | M2 + DOMAINS.md + 各ドメイン別部分SPEC + sensors/integration/ + **完全 scaffold** |
 
 **重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は **Level A（共通スキル）** に存在し、プロジェクト側で再生成しない。プロジェクト差異は sensors やチェックリストに閉じる。
 
@@ -281,7 +316,8 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 - **CLAUDE.md / .claude/settings.json** — エージェントのRL（ルール）定義
 - **.claude/skills/** — プロジェクト固有のSK（検証agent本体は含まない）
 - **sensors/** — センサー定義（計算的＋推論的）
-- **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）
+- **scaffold 一式（v4.3 必須化）** — `pnpm install && pnpm run dev` で起動可能な最小骨格。具体的な必須生成物リストは `references/dev-env-spec.md` §「scaffold 必須生成物」を参照。framework 既定値は ARC + 採用技術スタックから導出する（Web PWA なら Vite + TS + React/Solid、CLI なら Node + commander 等）
+- **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）。scaffold に含む
 
 ### 7. 出力
 
@@ -305,6 +341,51 @@ project-root/
 │   └── integration/       # L2のみ（contracts.md / invariants.md / e2e.md）
 └── (テスト・ビルド基盤設定)
 ```
+
+### 7.4. L0 出力の自己検証（v4.3 必須化）
+
+ステップ 7 完了後、**L0 完了の受け入れ基準**（本 SKILL.md §「L0 完了の受け入れ基準」）の達成を計算的に検証する。fail があれば L0 は完了とみなさない。修復後に再検査する。
+
+#### 検証 1: broken reference 検査
+
+生成した全 `.md` / `.ts` / `.feature` ファイルから相対パスリンクを抽出し、参照先が存在することを確認する。
+
+検出方法（例）:
+```bash
+# *.md 中の相対 path リンク検出
+grep -rEo '\]\(\.{1,2}/[^)]+\)' . --include='*.md' \
+  | sed -E 's/.*\((\.{1,2}\/[^)]+)\).*/\1/'  \
+  | while read p; do [ -e "$p" ] || echo "broken: $p"; done
+```
+
+期待: 出力 0 行。
+
+#### 検証 2: scaffold smoke test
+
+L1 が即着手できるかを実機で検証する。`references/dev-env-spec.md` §「scaffold 必須生成物」の検証コマンド節に従う。
+
+最小実行例（Vite + TS の場合）:
+```bash
+cd <project-root>
+pnpm install         # exit 0
+pnpm run typecheck   # exit 0
+pnpm run build       # exit 0
+pnpm run lint        # exit 0
+pnpm test --run      # exit 0（最小サンプルテスト 1 件以上 pass）
+```
+
+`pnpm` 不在環境では `npm` に切替可。**いずれか fail なら L0 は完了とみなさない**。
+
+#### 検証 3: DONT 文言自己照合
+
+SPEC.md / CLAUDE.md / sensors/* / spec/* に対し DONT.md 各節の禁則ワードを grep し、UI 文言として混入していないことを確認する。許容: 型名・章タイトル・コメントとしての出現。
+
+#### 失敗時の挙動
+
+検証 1〜3 のいずれかが fail の場合:
+1. 原因を特定して **L0 内で修復**（L1 に持ち越さない）
+2. 修復が SPEC.md / DONT.md / REGIME.md の更新を要する場合はステップ 5（人間レビュー）に戻る
+3. 検証を再実行し全 pass を確認してからステップ 7.5 へ進む
 
 ### 7.5. ファイル配置規則に沿った初期化
 
@@ -395,6 +476,20 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v4.3 追加（受け入れ基準明文化・自己検証ステップ・scaffold 必須化）
+
+L0 charter「L1 が autonomous に開発を始められる環境の構築」の達成度を v4.2 → v4.3 で計算的に検証可能にする変更群。`test-output/L0-SKILL-FINDINGS.md`（PR #19 内、v4.2 の E2E テスト所見）を入力に P0 改善を反映。
+
+- §「原則」末尾に **「ドキュメント完了 ≠ L0 完了」** 原則を追加
+- §「L0 完了の受け入れ基準」セクション新設（7 項目、5 と 6 は §7.4 で機械検証）
+- §「処理フロー」直後に **Pre-flight 必読リスト**を追加（参照ファイルの読込を命令化、v4.2 までの暗黙了解を明示化）
+- §5 人間レビューの `references/model-recommendations.md` 参照を「読込必須かつ生成出力に含める」に強化
+- §6 開発環境の設計・構築の `references/dev-env-spec.md` 参照を「読込必須」に強化、scaffold 必須生成物の生成義務を明文化
+- **§7.4 L0 出力の自己検証** を新設（broken reference 検査 + scaffold smoke test + DONT 文言自己照合）
+- `references/dev-env-spec.md` に **「scaffold 必須生成物」セクション**を追加（M2 monolith Web PWA / CLI 等の framework 別必須リスト + 検証コマンド）
+
+互換性: 既存の Lifecycle ≥ 1 プロジェクトは新規 scaffold 生成を強制されない（§7.5 と同じく L=0 のみ生成、L≥1 は違反検出時の修復対象）。新規（L=0）プロジェクトでは L1 起動時前提が安定化する。
 
 ### v4.2 追加（分類再編・progressive disclosure 適合化）
 

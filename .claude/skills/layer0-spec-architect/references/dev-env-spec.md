@@ -488,6 +488,109 @@ ARC 変更時は sensors/ の再評価が必須（旧パターンの項目は残
 
 ---
 
+## scaffold 必須生成物（v4.3 追加）
+
+L0 charter「L1 が autonomous に開発を始められる環境の構築」を達成するための、技術スタック別の **必須生成物リスト**。SKILL.md ステップ 6 で本セクションを **必ず参照**し、ステップ 7.4 の自己検証で達成度を機械検証する。
+
+> **L0 完了の必須条件**: ここに列挙した必須生成物のすべてが存在し、`pnpm install && pnpm run typecheck && pnpm run build && pnpm run lint && pnpm test --run` が exit 0 で完了すること。
+
+### 共通方針
+
+- **L0 が「動く最小骨格」まで作る**。L1 はビジネスロジックと UI を埋める
+- **framework 既定値の選定**: ARC + 採用技術スタックから自動導出する
+  - Web PWA + 単一ユーザー / Phase 1 MVP → **Vite + TS + React 18**（既定）
+  - Web PWA + 軽量重視 → Vite + TS + Solid
+  - Web PWA + 描画/ゲーム主体 → Vite + TS（framework-less）+ Phaser/PixiJS（必要時）
+  - CLI → Node + commander/yargs + TS
+  - SSR/Edge → Astro / Next.js（明示要求がある場合のみ）
+- **package manager 既定値**: `pnpm`（高速・disk 効率）。無ければ `npm` フォールバック
+- **TypeScript**: strict 必須、target は ES2022 既定
+
+### M2 monolith Web PWA — Vite + TS + React 18 既定 scaffold
+
+#### ルート設定ファイル（Critical Gap C1〜C7）
+
+| # | ファイル | 必須内容 |
+|---|---|---|
+| C1 | `package.json` | name, version, type: "module", scripts: dev/build/preview/typecheck/lint/format/test/test:e2e, dependencies (react@^18, react-dom@^18), devDependencies (vite, @vitejs/plugin-react, typescript@^5.5, vitest, @vitest/ui, jsdom, @testing-library/react, @playwright/test, @biomejs/biome, vite-plugin-pwa) |
+| C2 | `tsconfig.json` | strict: true, target: ES2022, module: ESNext, moduleResolution: bundler, jsx: react-jsx, paths（spec/ への path mapping 推奨） |
+| C2' | `tsconfig.node.json` | vite.config 用、composite: true, moduleResolution: bundler |
+| C3 | `vite.config.ts` | React plugin + vite-plugin-pwa（manifest 連携）、必要なら alias |
+| C4 | `vitest.config.ts` | environment: jsdom, globals: true, setupFiles, coverage 設定（v8 推奨） |
+| C5 | `playwright.config.ts` | testDir: tests/e2e、iPad viewport projects（必要なら）、@axe-core 統合 |
+| C6 | `biome.json` | formatter + linter、files.include で src/tests/ 対象指定、linter.recommended: true |
+| C7 | `.gitignore` | node_modules, dist, coverage, playwright-report, test-results, .env*, .DS_Store, *.tsbuildinfo |
+
+#### アプリエントリ（Critical Gap C8〜C10）
+
+| # | ファイル | 必須内容 |
+|---|---|---|
+| C8 | `index.html` | Vite エントリ、`<div id="root">`、PWA manifest link、viewport meta、theme-color meta |
+| C9a | `src/main.tsx` | React DOM root マウント、StrictMode、グローバル CSS import、PWA register 呼び出し |
+| C9b | `src/App.tsx` | プロジェクトの最小骨格コンポーネント。SPEC.md F* に対応する placeholder |
+| C9c | `src/styles.css` | reset + CSS 変数（カラーパレット、フォントサイズスケール、コントラスト準拠カラー） |
+| C10a | `public/manifest.webmanifest` | name / short_name / theme_color / background_color / display: standalone / icons (192/512) |
+| C10b | `public/favicon.svg` | 仮素材 SVG（プロジェクトトーンに合わせた最小ロゴ） |
+
+#### テスト雛形
+
+| # | ファイル | 必須内容 |
+|---|---|---|
+| T1 | `tests/sample.test.ts` | サンプルユニットテスト（最小 1 件、smoke test 用） |
+| T2 | `tests/e2e/sample.spec.ts` | サンプル E2E（`page.goto('/')` でルート表示確認のみ） |
+
+### M1 最小モード Web PWA scaffold
+
+M2 と同じ scaffold だが、以下を簡略化:
+- `playwright.config.ts` と `tests/e2e/` は省略可（vitest のみで smoke test）
+- `vite-plugin-pwa` は省略可（manifest 直書きで OK）
+- coverage 設定は省略可
+
+### CLI ツール scaffold
+
+| ファイル | 内容 |
+|---|---|
+| `package.json` | bin field、type: "module"、scripts: build/test/lint |
+| `tsconfig.json` | target: ES2022, module: NodeNext |
+| `tsup.config.ts` または `esbuild` 設定 | Node ESM ビルド |
+| `src/index.ts` | コマンドエントリ |
+| `vitest.config.ts` | environment: node |
+| `biome.json` / `.gitignore` | 同上 |
+
+### L2 大規模 scaffold
+
+M2 monolith に加えて:
+- monorepo 構成（pnpm workspaces）の場合は `pnpm-workspace.yaml` を追加
+- 各ドメインパッケージ毎の `package.json` / `tsconfig.json`
+- root `package.json` に `workspaces: ["packages/*"]` 等
+- `turbo.json`（Turborepo 採用時）
+
+### 検証コマンド（ステップ 7.4 自己検証で実行）
+
+```bash
+cd <project-root>
+pnpm install         # exit 0 必須
+pnpm run typecheck   # exit 0 必須
+pnpm run build       # exit 0 必須
+pnpm run lint        # exit 0 必須
+pnpm test --run      # exit 0 必須（sample.test.ts pass）
+```
+
+`pnpm` 不在環境では `npm` に切替。**いずれか fail なら L0 は完了とみなさない**。
+
+### framework 選択ガイダンス（採用判断のフロー）
+
+1. **ユーザーから明示指定**がある → 従う
+2. **SPEC.md F* で描画/ゲーム主体**（Canvas / WebGL / 60fps 重視）→ framework-less + Phaser/PixiJS
+3. **SPEC.md で a11y / コンポーネント分割重視 + 単一ユーザー** → React 18（既定）
+4. **bundle size を極小化したい / 静的ページ多め** → Solid + Vite or Astro
+5. **SSR / SEO 必須** → Next.js / Astro（user 明示同意後）
+6. **その他** → React 18 + Vite を既定とする
+
+判断結果と根拠を `REGIME.md` に「Tech Stack 選定根拠」として記録する。
+
+---
+
 ## dialog-harness-layers バージョニング規則
 
 dialog-harness-layers 本体のバージョン管理規則。プロジェクト固有のバージョニングには適用しない。
