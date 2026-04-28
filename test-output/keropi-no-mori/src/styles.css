@@ -1,0 +1,115 @@
+/*
+ * ケロぴの森 — グローバルスタイル
+ * ビジュアル方針 (iv): ミニマル + 差し色緑
+ * - 背景: 白
+ * - 文字: ダークグレー（コントラスト AA 4.5:1 以上）
+ * - アクセント: 緑（カエル / 森 / 「OK」シグナル）
+ */
+
+:root {
+  --color-bg: #ffffff;
+  --color-fg: #2d3436;
+  --color-muted: #636e72;
+  --color-accent: #7cb342;
+  --color-accent-soft: #c5e1a5;
+  --font-base: 18px;
+  --font-scale-large: 22px;
+  --font-scale-small: 16px;
+  --line-height: 1.6;
+  --radius: 12px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI",
+    sans-serif;
+  font-size: var(--font-base);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.hero {
+  text-align: center;
+  display: grid;
+  gap: 1rem;
+  place-items: center;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-fg);
+}
+
+.subtitle {
+  font-size: var(--font-scale-small);
+  color: var(--color-muted);
+  margin: 0;
+}
+
+/* 仮素材: ◯目玉カエル */
+.keropi-stub {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  padding: 0 18px;
+  box-shadow: 0 4px 16px rgba(124, 179, 66, 0.3);
+}
+
+.keropi-eye {
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  position: relative;
+}
+
+.keropi-eye::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--color-fg);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

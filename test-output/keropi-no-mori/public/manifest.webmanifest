@@ -1,0 +1,20 @@
+{
+  "name": "ケロぴの森",
+  "short_name": "ケロぴの森",
+  "description": "ケロぴの相棒となり、絵で答えて困りごとを助けるゲーム",
+  "lang": "ja",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#7cb342",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

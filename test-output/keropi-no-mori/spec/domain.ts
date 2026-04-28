@@ -30,14 +30,7 @@ export type Unit = z.infer<typeof UnitSchema>;
 export const DifficultySchema = z.enum(["star1", "star2", "star3"]);
 export type Difficulty = z.infer<typeof DifficultySchema>;
 
-export const PhaseSchema = z.enum([
-  "1.0",
-  "1.1",
-  "1.2",
-  "1.3",
-  "1.4",
-  "1.5",
-]);
+export const PhaseSchema = z.enum(["1.0", "1.1", "1.2", "1.3", "1.4", "1.5"]);
 export type Phase = z.infer<typeof PhaseSchema>;
 
 /** 判定結果の 3 段階。これ以外は禁止（DONT.md A 節）。 */

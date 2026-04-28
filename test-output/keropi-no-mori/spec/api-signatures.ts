@@ -5,7 +5,7 @@
  * の利用 signature のみを記述する。実装は src/services/ に配置する想定。
  */
 
-import type { Problem, Judgement, ReactionKind, Drawing } from "./domain";
+import type { Drawing, Judgement, Problem, ReactionKind } from "./domain";
 
 // ============================================================
 // Google Sheets 連携
@@ -25,21 +25,23 @@ import type { Problem, Judgement, ReactionKind, Drawing } from "./domain";
  *  - 最終取得分のキャッシュ（IndexedDB）を返す
  *  - キャッシュも無ければバンドル同梱の問題セット（Phase 1.0 用）を返す
  */
-export interface FetchProblemsFromSheets {
-  (sheetId: string, options?: { sheetName?: string }): Promise<{
-    problems: Problem[];
-    fetchedAt: Date;
-    source: "remote" | "cache" | "bundle";
-  }>;
-}
+export type FetchProblemsFromSheets = (
+  sheetId: string,
+  options?: { sheetName?: string },
+) => Promise<{
+  problems: Problem[];
+  fetchedAt: Date;
+  source: "remote" | "cache" | "bundle";
+}>;
 
 /**
  * 取得した行データを Problem 型にパース・バリデーション。
  * Zod スキーマで検証し、不正な行はスキップしてログ。
  */
-export interface ParseProblemRows {
-  (rows: unknown[][]): { valid: Problem[]; invalid: { row: unknown[]; reason: string }[] };
-}
+export type ParseProblemRows = (rows: unknown[][]) => {
+  valid: Problem[];
+  invalid: { row: unknown[]; reason: string }[];
+};
 
 // ============================================================
 // Gemini API 連携（マルチモーダル絵判定）
@@ -55,26 +57,22 @@ export interface ParseProblemRows {
  *
  * プロンプトテンプレートは assets/judgment-prompt.md に切り出し（チューニング可）。
  */
-export interface JudgeDrawingViaGemini {
-  (input: {
-    drawing: Drawing;
-    problem: Problem;
-    apiKey: string;
-    timeoutMs?: number; // 既定 10 秒
-  }): Promise<Judgement>;
-}
+export type JudgeDrawingViaGemini = (input: {
+  drawing: Drawing;
+  problem: Problem;
+  apiKey: string;
+  timeoutMs?: number; // 既定 10 秒
+}) => Promise<Judgement>;
 
 /**
  * Gemini レスポンスを 3 段階に正規化する純粋関数。
  * 不明なレスポンスは "encourage"（寄り添い）にフォールバック。
  */
-export interface NormalizeReaction {
-  (rawResponse: string): {
-    reactionKind: ReactionKind;
-    reactionUtterance: string;
-    followupHint?: string;
-  };
-}
+export type NormalizeReaction = (rawResponse: string) => {
+  reactionKind: ReactionKind;
+  reactionUtterance: string;
+  followupHint?: string;
+};
 
 // ============================================================
 // IndexedDB 永続化（ローカル）

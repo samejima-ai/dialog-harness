@@ -52,10 +52,7 @@ export const appMachine = setup({
   states: {
     /** 起動時、初回判定 */
     boot: {
-      always: [
-        { target: "opening", guard: "isFirstLaunch" },
-        { target: "home" },
-      ],
+      always: [{ target: "opening", guard: "isFirstLaunch" }, { target: "home" }],
     },
 
     /** F1: オープニング（Phase 1.1 で本格化、1.0 は仮素材スキップ可） */
