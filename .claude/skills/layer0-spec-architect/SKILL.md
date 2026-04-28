@@ -347,6 +347,18 @@ project-root/
 └── (テスト・ビルド基盤設定)
 ```
 
+### 7.4. L0 自己検証（v5.1.0 追加）
+
+§7（出力）に進む前に、§0「L0 完了の受け入れ基準」4 条件を逐項確認する。1 件でも FAIL があれば §7 へは進まず原因を解消する。検査項目は ls / grep / cat 等の手作業で十分（shell script 雛形は配置しない）。
+
+- [ ] **broken reference 検査**: 生成した `INDEX.md` / `SPEC.md` / `DONT.md` / `REGIME.md` / `DOMAIN-CONTEXT.md` 等が引用するファイル・パスが実体として存在する（dead link なし）
+- [ ] **scaffold smoke test 検査**: `references/scaffold-checklist.md` の対応 stack の必須ファイルが全て揃い、smoke test コマンド（`pnpm install` / `dev` / `build` / `test`）が exit 0。通らない場合は理由を `delivery/SELF-VERIFICATION-*.md` または DELIVERY.md に明記
+- [ ] **DONT 自己照合**: `SPEC.md` 内に `DONT.md` のいずれかの禁止条項に違反する記述・機能定義が混入していない（目視 + grep）
+- [ ] **Pre-flight 充足**: 本セッションで通過した §1.5 / §3.5 / §4 / §6 / §7 の各 Pre-flight 行が指定するリファレンスを実際に読んだ
+- [ ] **受け入れ基準充足**: §0 受け入れ基準の 4 条件（仕様充足 / scaffold 実体 / smoke test / 本 §7.4 PASS）を逐項チェック
+
+検証結果は `delivery/SELF-VERIFICATION-*.md`（任意ファイル名、L0 自己検証用）または DELIVERY.md の冒頭に記録する。Lifecycle ≥ 1 の既存プロジェクトでは、本ステップは v5.1.0 以降に追加開始する機能・フェーズに段階適用する（既存成果物の遡及検証は要求しない）。
+
 ### 7.5. ファイル配置規則に沿った初期化
 
 `references/dev-env-spec.md`「ファイル配置規則」に従い、プロジェクト初期化時に以下を実施する。
