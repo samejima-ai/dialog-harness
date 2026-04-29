@@ -79,6 +79,25 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
   "reasoning": "string (推奨に至った論理、500 字以内)",
   "minority_opinion": "string (採用されなかった視点を保持、200 字以内)",
   "weight_note": "string (重み配分の説明、100 字以内)",
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "string (options のいずれか)",
+        "supporters": ["string (persona 名)"],
+        "weight_sum": "number",
+        "weighted_score": "number (小数第2位)",
+        "components": [
+          {"persona": "string", "weight": "number", "confidence": "number"}
+        ]
+      }
+    ],
+    "third_way_excluded": [
+      {"persona": "string", "stance": "string", "weight": "number", "confidence": "number", "reason": "string"}
+    ],
+    "max_score_stance": "string (recommended と接頭辞一致必須、tie 時 null)",
+    "tie_break_applied": "boolean"
+  },
   "judgment_confidence": "number (0.0-1.0, Judgment Agent の自己評価)",
   "consensus_mode": "auto_agree | escalate_to_human (Orchestrator が決定論で計算、PR2 拡張領域)",
   "final_decision": null,
@@ -103,6 +122,27 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
 このフィールドは合意プロセス（`consensus-protocol.md`）が埋める。
 Judgment Agent が埋めることは哲学違反（`council-philosophy.md` §3）。
 スキーマ上は値を持つが、Council は常に `null` を返す。
+
+### `weight_calculation` — 決定論検算用（PR1 新規）
+
+Orchestrator が `verify_weight_calculation`（[orchestrator.md](orchestrator.md) §決定論検算プロトコル）で
+`recommended` と `max_score_stance` の一致、および各 stance の `weighted_score` の純粋関数結果との
+一致を検証する。不一致時は最大 1 回リトライ、2 回目も不一致なら `status = judgment_failed` で
+人間エスカレーション（[consensus-protocol.md](consensus-protocol.md) §Step 8）。
+
+**設計意図**: Judgment Agent が weight を恣意的に分割する哲学違反
+（COUNCIL-LOG `council-2026-04-29T18-00-00Z-d1m4n5` で発生）を構造的に防ぐ。
+1 persona = 1 weight 不可分の制約をスキーマ層で明示する。`components` を persona 単位の
+配列にすることで、按分自体がスキーマ上書けない構造とする。
+
+**third_way_excluded**: options 外の自由記述 stance（「第3の道」「保留」等）は
+PR1 では weight 加算対象から外す暫定運用（[conflict-typology.md](conflict-typology.md)
+§第3の道 stance の PR1 暫定運用ルール）。退避された意見は `minority_opinion` にも転載する。
+PR2 で `third_way` 類型として正式化する際にここから移行する。
+
+**max_score_stance の null 許容**: 1 位と 2 位の `weighted_score` 差が 0.01 未満（同点）の場合のみ
+null とし、同時に `tie_break_applied = true` を立てる。`recommended` 接頭辞一致検証はスキップされ、
+代わりに `judgment_confidence < 0.4` を要求する（同点処理の安全弁）。
 
 ### v4.2 で追加されたフィールド
 
@@ -230,6 +270,26 @@ Judgment Agent から実装者への delta 応答：
     開発者: { stance: "案B", confidence: 0.9 }
     哲学者: { stance: "案A", confidence: 0.5 }
   judgment_confidence: 0.75
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A"
+        supporters: ["経営者", "哲学者"]
+        weight_sum: 4
+        weighted_score: 1.65
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.70 }
+          - { persona: "哲学者", weight: 2, confidence: 0.50 }
+      - stance: "案B"
+        supporters: ["開発者"]
+        weight_sum: 6
+        weighted_score: 5.40
+        components:
+          - { persona: "開発者", weight: 6, confidence: 0.90 }
+    third_way_excluded: []
+    max_score_stance: "案B"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
   recommended: "案B（一文で）"
   human_escalated: false
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへの単方向埋め込みを許容
@@ -249,6 +309,10 @@ Judgment Agent から実装者への delta 応答：
 | Judgment Agent 出力スキーマ不適合 | `judgment_failed` で人間エスカレーション |
 | `final_decision` が null 以外 | エラー応答、再生成（哲学違反） |
 | follow-up が 3 回目 | 強制エスカレーション |
+| `weight_calculation` フィールド欠落 | スキーマ不適合扱い、1 回リトライ → 不一致継続なら `judgment_failed` |
+| `weight_calculation.max_score_stance` ≠ `recommended` 接頭辞 | 1 回リトライ → 不一致継続なら `judgment_failed` で人間エスカレーション |
+| `weight_calculation.scores[*].weighted_score` が `compute_weight_scores` 結果と不一致（小数第2位） | 1 回リトライ → 不一致継続なら `judgment_failed` |
+| `weight_calculation.tie_break_applied = true` かつ `judgment_confidence ≥ 0.4` | 1 回リトライ（同点処理の confidence 引き下げ要求）→ 不一致継続なら `judgment_failed` |
 
 ## PR1 での制限
 

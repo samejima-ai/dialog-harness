@@ -74,6 +74,14 @@
 
 入力に含まれる discussion_log が null の場合は、Phase 1 のみで判定する（PR1）。
 conflict_type が "unanimous" の場合は、多様性として質を評価する（minority_opinion を「全員一致だが …」形式で記述）。
+
+重み計算規則（PR1 単純対立、必須遵守）:
+- 各 Persona の final_weight は不可分の整数。複数 stance に按分してはならない（按分は哲学違反）
+- options 外 stance（「第3の道」「保留」等）は weight 加算対象外。weight_calculation.third_way_excluded に退避する（理由文付き）
+- recommended は weight_calculation.max_score_stance と接頭辞一致させる（不一致は Orchestrator 検算で自動的にリトライ → judgment_failed）
+- 出力には weight_calculation フィールド（output-format.md §4 のスキーマ）を必須で含める
+- 同点（差 < 0.01）の場合は weight_calculation.tie_break_applied = true、max_score_stance = null、judgment_confidence < 0.4 で出力し人間エスカレーションへ誘導する
+- weight_calculation.scores[*].weighted_score は weight × confidence の純粋計算結果（小数第2位）で記載する。意味的調整や dimension 軸での加点は行わない
 ```
 
 ### Few-shot 例（PR1）
@@ -92,6 +100,9 @@ Judgment Agent は以下を考慮して `judgment_confidence` を 0.0-1.0 で自
 - 単純対立で重みが拮抗 → 0.4-0.6
 - 全 Persona の confidence が低い → 0.3-0.5
 - 入力が malformed Persona を含む → 0.3 以下
+- weight_calculation の最大スコアと第二位スコアの差が < 0.5 → 0.4-0.6
+- options 外 stance（third_way_excluded）が存在し全 weight の 30% 以上を占める → 0.5 以下
+- weight_calculation.tie_break_applied = true → 0.4 未満（人間エスカレーション必須）
 
 `judgment_confidence < 0.5` の場合、Orchestrator は出力に `human_escalation_required: true` を付加する。
 
@@ -111,11 +122,28 @@ Judgment Agent は以下を考慮して `judgment_confidence` を 0.0-1.0 で自
 
 `conflict_type = "simple_conflict"` の場合：
 
-1. final_weights × confidence の積を各 stance ごとに集計
-2. 最大スコアの stance を `recommended` に設定
-3. 採用されなかった stance を `minority_opinion` に保持
-4. `weight_note` で重み計算過程を明示
-5. `judgment_confidence` はスコア差に応じて算出
+1. **weight 分割は禁止**。各 persona の `final_weight` は不可分の整数として扱う。1 persona = 1 stance = 1 weight 値。複数 stance への按分（例: 開発者 6 を A に 4 / C に 2）は哲学違反であり、Orchestrator の決定論検算で必ず `judgment_failed` 扱いとなる
+2. **options 外 stance（「第3の道」「保留」「自由記述」等）は weight 加算対象外**。これらは `weight_calculation.third_way_excluded` に退避し、`minority_opinion` にも転載する（暫定運用、PR2 で `third_way` 類型として正式化、[conflict-typology.md](conflict-typology.md) §第3の道 stance の PR1 暫定運用ルール）
+3. `options` に含まれる stance のみで `final_weights × confidence` の積を集計する
+4. 各 stance の `weighted_score = Σ (weight_i × confidence_i)`（同一 stance を支持する全 persona の積の合計）
+5. 最大 `weighted_score` の stance を `recommended` に設定する。`recommended` の文字列は `weight_calculation.max_score_stance` から始めること（接頭辞一致で Orchestrator が検証する）
+6. 同点（1 位と 2 位の `weighted_score` 差 < 0.01）の場合は `weight_calculation.tie_break_applied = true` を立て、`weight_calculation.max_score_stance = null` を返し、`judgment_confidence < 0.4` で人間エスカレーションへ誘導する
+7. 採用されなかった stance + `third_way_excluded` を `minority_opinion` に保持する
+8. `weight_calculation` フィールドに計算過程を構造化して**必ず出力する**（[output-format.md](output-format.md) §4 のスキーマ参照）
+9. `weight_note` には「`weight_calculation` を機械的に適用した」旨と適用カテゴリ（implementation / operation 等）を明記する
+10. `judgment_confidence` はスコア差に応じて算出する（差大→高、差小→低、本ファイル §judgment_confidence の算出指針）
+
+### 禁止事項（哲学違反、Orchestrator 検算で必ず検出される）
+
+- **1 persona の weight を複数 stance に按分する**（例: 開発者 6 → A に 4 / C に 2 は禁止）
+- **options 外 stance を任意の options に意味的包含で振り分ける**（「第3の道（実質 A）」を A に統合する等）
+- **`weight_calculation.max_score_stance` と `recommended` の接頭辞不一致**（`recommended` が `max_score_stance` で始まらない場合は哲学違反）
+- **`weight_calculation.scores[*].weighted_score` の数値を純粋関数結果（Orchestrator §`compute_weight_scores`）と異なる値で書く**
+
+これらは `weight_calculation` フィールド出力の必須化と Orchestrator の決定論検算
+（[orchestrator.md](orchestrator.md) §決定論検算プロトコル）によって構造的に防がれる。
+COUNCIL-LOG `council-2026-04-29T18-00-00Z-d1m4n5` の事例（開発者 weight 6 を A 寄り 4 / C 寄り 2 に分割）が
+本節の制約強化の契機。
 
 ## final_decision の扱い
 

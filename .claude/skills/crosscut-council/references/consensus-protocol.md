@@ -127,11 +127,14 @@ Judgment Agent は **delta（差分）のみ**を返す（再判定はしない�
 - 実装者が論理整合性に納得できない
 - 実装者が重み配分の妥当性に納得できない
 - minority_opinion が実装で fundamental な問題を提起している
+- Orchestrator の決定論検算（`verify_weight_calculation`、[orchestrator.md](orchestrator.md) §決定論検算プロトコル）が **2 回連続不一致**（COUNCIL-LOG の `weight_calculation_retry_count = 2`、`status = judgment_failed`）
+- `weight_calculation.tie_break_applied = true` かつ `judgment_confidence ≥ 0.4`（同点処理で Judgment Agent が高 confidence を出した不整合）
 
 献上時の記録：
 
 - COUNCIL-LOG: `implementer_consent: "escalated"` + `human_escalated: true`
 - DELIVERY.md（Lifecycle ≥ 1 環境では）: 該当 invocation_id と escalation 理由を記録
+- `judgment_failed`（検算不一致）の場合: `escalation_reason` に「weight_calculation 検算 2 回不一致: <verify_weight_calculation の reason>」を記録（PR1 新規）
 
 ### なぜ独自判断で進めないか
 
