@@ -2,6 +2,66 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.2.0（minor 昇格、後方互換維持）
+
+- 判定日: 2026-04-29
+- AI 能力バージョン: claude-opus-4-7
+- 改修主体: layer0-spec-architect → layer1-autonomous-dev（M2 体制、v5.0.0/v5.1.0 と同一）
+- 起源: HANDOFF「DH 自己検証機構（誤作動防止機構との統合検討用）」2026-04-29 + Council 合議（invocation_id: council-2026-04-29T21:00:00Z-d4mtr1, 4 論点一括）
+- 自己検証: `delivery/SELF-VERIFICATION-v5.2.0.md`
+
+### 非破壊追加（破壊項目なし）
+
+| 項目 | 内容 |
+|---|---|
+| 5 次元論 | D1〜D5 を確立。機械可読命名は D-numbering、思想文書では meta-layer 等を併走（AD-010） |
+| `harness-verifier/` | リポジトリルート直下に新規配置。DH 本体と並列の独立機構（AD-011, AD-012） |
+| `harness-verifier/PHILOSOPHY.md` | 規律の自己相似性、自己検証機構の存在論を記述 |
+| `harness-verifier/BOUNDARY.md` | DH 本体と本機構の境界線、5 検証項目スコープ、責務マトリクス |
+| `harness-verifier/HUMAN-PROTOCOL.md` | 月次運用 + push/PR トリガー、D5 判断カテゴリ、形骸化防止メカニズム |
+| `harness-verifier/glossary.yml` | 用語辞書（D1〜D5 / モード / Lifecycle / SK/RL/WF/CTL / 5 層スタック / prefix 等） |
+| `harness-verifier/verify.py` + `checks/` | Python 標準ライブラリのみ、5 検査モジュール（frontmatter / references / dependency_graph / five_layer_structure / glossary） |
+| `.github/workflows/harness-verify.yml` | 月次 cron + push/PR トリガー、月次レポート自動 commit |
+| layer0-spec-architect SKILL.md | v5.2.0 セクション追加（次元論メモ、L0 起動フローへの影響なし）|
+| バージョン記録 | INTENT / ARCH-DECISIONS / REGIME-LOG / CHANGELOG / COUNCIL-LOG |
+
+破壊項目なし。既存 SKILL.md セクション番号、既存 references の本文、philosophy.md、crosscut-* / templates/ は不変。
+利用者プロジェクトには配布されない（`harness-verifier/` は dialog-harness リポジトリ自身の保護機構）。
+
+### 移行方針
+
+v5.2.0 は **既存 Lifecycle ≥ 1 プロジェクトに対する強制適用なし**（v5.1.0 と同パターン）。
+利用者プロジェクト側には影響しない。dialog-harness リポジトリ自身の CI のみで動作する。
+v5.1.0 → v5.2.0 への upgrade は SKILL.md の v5.2.0 セクション読込で完結（個別の migration script は不要）。
+
+### 不変項目（spec §2 遵守確認）
+
+| 不変項目 | 遵守状況 |
+|---|---|
+| 5本柱原則（P1-P6） | ○（追加のみで思想に変更なし。第 7 条候補は v6.0.0 へ温存） |
+| 履歴層規約 | ○（v5.1.0 形式を継承して v5.2.0 セクションを追記） |
+| 献上プロトコル | ○（`delivery/SELF-VERIFICATION-v5.2.0.md` 経由で献上） |
+| Level A skill 本体不変 | ○（layer0-spec-architect SKILL.md に追記、本体構造は不変） |
+| philosophy.md 不変 | ○（v5.0.0 で確立、v5.2.0 でも非変更） |
+| 3層 + 1横断構造 | ○（crosscut-* prefix そのまま、新規 skill 追加なし） |
+| 既存セクション番号 | ○（SKILL.md §0〜§7.6 不変、参照ドキュメント節に v5.2.0 セクション追加のみ） |
+| 独立性要請 | ○（harness-verifier は DH 本体に依存しない、依存方向は一方向） |
+
+### モード判定（DH 本体自身、v5.0.0 から不変）
+
+DH 本体自身の REGIME.md は本改修スコープ外（メタ案件、v5.0.0/v5.1.0 と同様）。改修体制は以下：
+
+- Mode: M2 標準（S=低 1, U=低 1, R=低 1, N=0、単一ドメイン、L2 閾値未達）
+- 体制: L0（spec-architect）→ L1（autonomous-dev）+ layer1-independent-reviewer
+- AI 能力バージョン: claude-opus-4-7
+- dev_mode: github_assisted
+
+### 次バージョン予定
+
+- v5.3.0 候補: `crosscut-verifier-philosophy` 本実装（v5.1.0 で v5.2.0 候補とされたが v5.2.0 では D4 検査機構優先、再後送）
+- v5.3.0 候補: `harness-verifier/` 第 6 検証項目「次元境界保全」追加（Council 論点 4 少数意見）
+- v6.0.0 候補: philosophy.md 第 7 条「次元論と D4 の独立性」追加（major 昇格、AD-010〜AD-012 を本体哲学に格上げ）
+
 ## v5.1.0（minor 昇格、後方互換維持）
 
 - 判定日: 2026-04-28

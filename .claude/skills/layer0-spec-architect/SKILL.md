@@ -449,6 +449,21 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
+### v5.2.0 追加（次元論導入・D4 検査機構の独立配置、minor 昇格）
+
+dialog-harness 自身の自己検証機構として、リポジトリルート直下に `harness-verifier/` を独立配置する。
+DH 本体（D4: メタスキル層）の内部整合性を 5 項目で検査する独立機構であり、本 SKILL.md からは**情報依存しない**（独立性要請）。
+本セクションは次元論の概念と関連配置を記録するためのみのメモであり、L0 起動フローには影響しない。
+
+- **5 次元論**: D1（ソースコード）/ D2（開発環境）/ D3（配布 skill インスタンス）/ **D4（マスタ skill = メタスキル）** / D5（Meta モニタリング層 = 人間）。機械可読命名は D-numbering、思想文書では `meta-layer` / `meta-meta-layer` 等の階層形容詞を併走させる二重命名を採用（Council 合意 2026-04-29）
+- **`harness-verifier/`（リポジトリルート直下）**: D4 を検査する独立機構。`.claude/skills/` 配下ではなく、DH 本体と並列のディレクトリ。`PHILOSOPHY.md` / `BOUNDARY.md` / `HUMAN-PROTOCOL.md` / `glossary.yml` / `verify.py` / `checks/` / `reports/` を含む
+- **検証スコープ 5 項目**: frontmatter 整合性 / 参照 path 有効性 / SK 間依存グラフ循環（自己参照と未定義参照のみ） / 5 層構造保全（D4 解釈） / 用語辞書整合
+- **責務分離（BOUNDARY.md §5）**: 既存 `crosscut-verifier-drift`（D2/D3 対象）/ `crosscut-verifier-philosophy`（v5.3.0 候補、D2/D3 対象）/ §7.4 自己検証（D2 対象）と本機構（D4 対象）は次元が違う独立検証
+- **後方互換**: 既存 SKILL.md / references / crosscut-* の挙動は完全不変。`harness-verifier/` 不在でも DH は通常動作する
+
+`crosscut-verifier-philosophy` の本実装は v5.3.0 候補として引き続き継続検討（v5.1.0 から後送）。
+詳細: `harness-verifier/README.md`, `harness-verifier/PHILOSOPHY.md`, `history/ARCH-DECISIONS.md` AD-010〜AD-012。
+
 ### v5.1.0 追加（L0 受け入れ基準明文化・Pre-flight 必読化・scaffold checklist・自己検証ステップ、minor 昇格）
 
 後方互換維持の追加のみ。テストレビュー（PR #19、シナリオ「ケロぴの森」）で判明した L0 charter 未達 P0 4 項目（受け入れ基準・Pre-flight・scaffold・自己検証）を解消する。

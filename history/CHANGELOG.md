@@ -2,6 +2,107 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.2.0 (in progress)
+
+minor 昇格。次元論（D1〜D5）導入と D4 検査機構（`harness-verifier/`）の独立配置。
+HANDOFF「DH 自己検証機構（誤作動防止機構との統合検討用）」2026-04-29 と
+Council 合議（invocation_id: council-2026-04-29T21:00:00Z-d4mtr1, 4 論点一括）を起源とする。
+後方互換維持。利用者プロジェクトには配布されない。
+
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（v5.3.0 候補へ再後送）。
+
+### Step 0: Council 合議
+
+L0 対話中にユーザー指示で `crosscut-council` を起動、4 論点を一括諮問：
+
+1. 次元論の命名統一（案 a: D-numbering / 案 b: T-numbering / 案 c: 階層形容詞）
+2. D4 検査機構の名称（meta-verifier / harness-verifier / dh-integrity / singularity）
+3. バージョン昇格区分（v5.2.0 minor / v6.0.0 major / v5.2.0 + v5.3.0 後送）
+4. 検証スコープ 5 項目の D4 対象妥当性
+
+3 ペルソナ並列独立発言 → 重み付き Judgment Agent 出力で全論点 final_decision: null、
+合意プロセスで agreed_recommended 確定（implementer_consent 後追記済）。
+
+### Step 1: harness-verifier/ スキャフォールド
+
+リポジトリルート直下に新規ディレクトリを配置：
+
+- `harness-verifier/README.md` — 概要、5 次元論サマリ、5 検証項目、独立性原則、実行方法
+- `harness-verifier/PHILOSOPHY.md` — 規律の自己相似性、自己検証機構の存在論（singularity 別名併記）
+- `harness-verifier/BOUNDARY.md` — DH 本体との境界線、責務マトリクス、依存方向、5 層構造保全の D4 解釈
+- `harness-verifier/HUMAN-PROTOCOL.md` — 月次運用、レポートフォーマット、D5 判断カテゴリ、エスカレーション、形骸化防止
+- `harness-verifier/glossary.yml` — 用語辞書（version 0.1.0、12 カテゴリ）
+
+### Step 2: Python 検査本体
+
+Python 標準ライブラリのみ（外部依存ゼロ、独立性要請の担保）：
+
+- `harness-verifier/verify.py` — メインスクリプト、`--report` / `--strict` / `--json` / `--commit-sha` フラグ対応
+- `harness-verifier/checks/__init__.py` — モジュールパッケージ
+- `harness-verifier/checks/frontmatter.py` — 検証 1: SKILL.md frontmatter（name kebab-case + ディレクトリ名一致 + description 30-1024 chars）
+- `harness-verifier/checks/references.py` — 検証 2: Markdown インラインリンクの dead link 検出（拡張子フィルタ + アンカー除去）
+- `harness-verifier/checks/dependency_graph.py` — 検証 3: 未定義 skill 参照と自己参照検出（意図的相互参照は許容）
+- `harness-verifier/checks/five_layer_structure.py` — 検証 4: 5 層検出スタックの canonical 名整合（5 層検出スタック文脈フィルタで誤検出回避）
+- `harness-verifier/checks/glossary.py` — 検証 5: 簡易 YAML パーサ + forbidden_uses 検出 + crosscut/layern prefix members の実体整合
+
+### Step 3: GitHub Actions ワークフロー
+
+`.github/workflows/harness-verify.yml` を新設：
+
+- cron `0 0 1 * *`（毎月 1 日 09:00 JST）で月次レポート自動 commit
+- push / pull_request の `.claude/skills/**` または `harness-verifier/**` 変更で trigger
+- `--strict` モードで CI 厳格判定、月次のみ `--report` でファイル生成
+- `permissions: contents: write` で月次レポート自動 commit を許可
+
+### Step 4: SKILL.md v5.2.0 セクション追加
+
+`.claude/skills/layer0-spec-architect/SKILL.md` の参照ドキュメント節に v5.2.0 セクションを追加。
+次元論サマリと harness-verifier 配置・スコープを記述。L0 起動フローには影響しない（情報依存しない設計）。
+既存 §0〜§7.6 のセクション番号は不変、v5.1.0 セクションも不変、その上に積層。
+
+### Step 5: 履歴層更新
+
+- `history/INTENT.md`: v5.2.0 セクション追加（5 次元論確立 / D4 検査機構の独立配置 / 自己言及パラドックスの構造的回避）
+- `history/ARCH-DECISIONS.md`: AD-010（5 次元論導入と D-numbering 採用）/ AD-011（DH 本体外への独立配置）/ AD-012（harness-verifier 命名判断）/ AD-013（v5.2.0 minor 昇格と philosophy verifier 後送）追加
+- `history/REGIME-LOG.md`: v5.2.0 minor 昇格記録（不変項目遵守確認、改修体制、次バージョン予定 v5.3.0/v6.0.0）
+- `history/CHANGELOG.md`: 本セクション
+- `history/COUNCIL-LOG.md`: 4 invocation entry を追加（invocation_id 共通鍵、implementer_consent: agreed_recommended 後追記）
+
+### Step 6: §7.4 自己検証 + 献上
+
+`delivery/SELF-VERIFICATION-v5.2.0.md` 配置。
+broken reference / DONT 自己照合 / Pre-flight 充足 / 受け入れ基準充足 / harness-verifier smoke test の 5 チェック実行。
+本案件はメタスキル本体改修（D4 改修）であるため、scaffold-checklist.md の Vite+TS+React+PWA stack は適用対象外（D2 検査の責務、本案件の対象次元と異なる）。
+
+### Step 7: 独立検証 (layer1-independent-reviewer) FAIL → C-1/C-2/C-3 修正
+
+`delivery/VERIFICATION-v5.2.0.md` で M2 必須独立検証実施、初版 FAIL 判定（重要 1 + 警告 2）：
+
+- C-1: `_parse_yaml` が複数行 block list 構文を誤読、検査 5 が空回り
+- C-2: monthly cron の FAIL がメール通知されない（`|| echo` で吸収）
+- C-3: SELF-VERIFICATION の根拠補強（C-1 修正で自然解消）
+
+C-1 解決方針を Council 諮問（invocation_id: council-2026-04-29T22:30:00Z-c1fix1）。
+全会一致で「案 b 中核 + 案 a 防御 + 哲学者ドキュメント宣言」三段統合（judgment_confidence 0.88）を承認。
+
+実施内容：
+
+- `harness-verifier/glossary.yml` を subset YAML 形式に書き換え（forbidden_uses / crosscut_prefix.members / layern_prefix.members をインライン化、冒頭コメントで形式制約を明示）
+- `harness-verifier/checks/glossary.py` の `_parse_yaml` を全面改修：
+  - 複数行 block list 構文 (`- item`) を検出時に `SyntaxError` を raise（黙って誤読しない）
+  - `_split_top_level` でネスト構造を尊重した top-level 分割を実装
+  - `_parse_inline_value` でインライン list / list of dict / dict / scalar を統一処理
+  - key 正規表現に `=` を許可（`L=0`, `L=1`, `L=2` 等の Lifecycle キーを glossary で扱える）
+- `harness-verifier/BOUNDARY.md` に §9「独立性の代償（subset YAML 制約、AD-014）」を追加
+- `harness-verifier/glossary.yml` の `forbidden_uses` を「絶対に使うべきでない語」に絞り込み、予約語/未実装語（L3 運用層、T1-T5）は除外（否定文脈での言及は正当）
+- `.github/workflows/harness-verify.yml` の monthly 経路を `continue-on-error: true` + 末尾 fail step で修正、HUMAN-PROTOCOL.md §4 のメール通知エスカレーションが機能するよう整合化（C-2 解消）
+- `history/ARCH-DECISIONS.md` に AD-014（subset YAML 形式判断）を追加
+- `history/COUNCIL-LOG.md` に invocation entry 追加
+- `delivery/SELF-VERIFICATION-v5.2.0.md` に C-1〜C-3 解消反映を追記
+- `delivery/VERIFICATION-v5.2.0.md` を PASS 化（独立検証再判定）
+
+最終 smoke test: `python harness-verifier/verify.py --strict` で 5 検査全て **意味のある PASS**（検査 5 の forbidden_uses / prefix 整合検査が実走、検出 0 件は実態として違反なし）。
+
 ## v5.1.0 (in progress)
 
 minor 昇格。L0 受け入れ基準の明文化 / Pre-flight 必読化 / scaffold checklist / §7.4 自己検証ステップを追加。

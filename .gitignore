@@ -20,6 +20,11 @@ scratch/
 # crosscut-council skill: ブリーフ原稿は design-history.md に要約転記済み（design-history.md §17: 本体に内包しない）
 Council system dev brief .md
 
+# Python cache (harness-verifier ランタイム生成物、v5.2.0 追加)
+__pycache__/
+*.pyc
+*.pyo
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

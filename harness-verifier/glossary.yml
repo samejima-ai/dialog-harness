@@ -1,0 +1,191 @@
+# harness-verifier glossary
+#
+# 用語辞書（検証項目 5「用語辞書整合」のソース）。
+# DH 本体（D4）内で使用される用語を機械可読な形で持つ。
+#
+# 編集方針:
+# - 本ファイルは harness-verifier の所有物（独立性要請）
+# - DH 本体側 SKILL.md / references の用語使用が本辞書と乖離した場合、検証項目 5 で FAIL
+# - 用語追加・改訂は D5（人間）判断
+#
+# 【重要】形式制約（AD-014, BOUNDARY.md §独立性の代償 参照）:
+#   本ファイルは harness-verifier 簡易パーサ（checks/glossary.py の _parse_yaml）向けの
+#   "subset YAML" 形式に限定される。独立性要請（外部依存ゼロ）の代償として形式を制約する。
+#   - 複数行リスト構文（行頭 `- item`）は **使用禁止**。誤読を防ぐためパーサが明示的に SyntaxError を発生させる
+#   - リストはインライン形式のみ許容: `[a, b, c]` または `[{key: val}, {key: val}]`
+#   - dict のネストは許容（key: value のキーバリュー、空 value で次行 indent ネスト開始）
+#   - anchor / merge / multi-document / block scalar 等は対応外
+#
+# 形式違反検知時の挙動:
+#   `python harness-verifier/verify.py --strict` で SyntaxError → exit 2（検査機構自体のエラー）
+
+version: "0.1.0"
+last_updated: "2026-04-29"
+
+# 5 次元論（v5.2.0 で導入）
+dimensions:
+  D1:
+    name: "ソースコード"
+    aliases: []
+    definition: "プロジェクト実装ファイル群"
+  D2:
+    name: "開発環境"
+    aliases: []
+    definition: "D1 を成立させる足場（package.json / vite.config / sensors / SPEC.md 等）"
+  D3:
+    name: "配布 skill"
+    aliases: ["distributed-harness", "skill-instance"]
+    definition: "利用者プロジェクトに配置される .claude/skills/ インスタンス"
+  D4:
+    name: "マスタ skill（メタスキル）"
+    aliases: ["master-harness", "meta-layer", "skill-master"]
+    definition: "dialog-harness リポジトリ内の skill マスタ定義"
+  D5:
+    name: "Meta モニタリング層"
+    aliases: ["meta-monitor", "meta-meta-layer"]
+    definition: "D4 を外側から監視する人間（自動化禁止）"
+
+# 開発モード
+modes:
+  M1:
+    name: "単体モード"
+    aliases: []
+    definition: "L0 → L1（自己検証のみ）"
+  M2:
+    name: "標準モード"
+    aliases: []
+    definition: "L0 → L1 + layer1-independent-reviewer"
+  L0:
+    name: "Layer 0"
+    aliases: ["layer0"]
+    definition: "spec-architect / onboarding（仕様策定層）"
+  L1:
+    name: "Layer 1"
+    aliases: ["layer1"]
+    definition: "autonomous-dev / independent-reviewer（実装層）"
+  L2:
+    name: "Layer 2 / 統括指揮モード"
+    aliases: ["layer2"]
+    definition: "orchestrator / integration-verifier（大規模統括層）"
+
+# Lifecycle
+lifecycle:
+  L=0:
+    aliases: ["L=0", "Lifecycle 0"]
+    definition: "新規プロジェクト"
+  L=1:
+    aliases: ["L=1", "Lifecycle 1"]
+    definition: "既存プロジェクト、最初の献上完了済"
+  L=2:
+    aliases: ["L=2", "Lifecycle 2"]
+    definition: "保守フェーズ"
+
+# 構成要素（既存 DH 用語）
+components:
+  SK:
+    name: "Skill"
+    aliases: ["skill"]
+    definition: "AI 行動規範＋手順書（.claude/skills/ 配下のディレクトリ単位）"
+  RL:
+    name: "Rule"
+    aliases: ["rule"]
+    definition: "エージェント行動ルール（CLAUDE.md / .claude/settings.json で定義）"
+  WF:
+    name: "Workflow"
+    aliases: ["workflow"]
+    definition: "GitHub Actions 等の自動実行フロー"
+  CTL:
+    name: "Council Trust Level"
+    aliases: ["ctl"]
+    definition: "Council の判定信頼度レベル（0/1/2/3）"
+  ARC:
+    name: "Architecture Pattern"
+    aliases: ["arc"]
+    definition: "アーキテクチャパターン（monolith / realtime-pubsub / event-sourcing）"
+  NFR:
+    name: "Non-Functional Requirements"
+    aliases: ["nfr"]
+    definition: "非機能要件（5 カテゴリ × 0-3 点）"
+  SPEC:
+    name: "Specification"
+    aliases: []
+    definition: "機能仕様書（SPEC.md）"
+  DONT:
+    name: "Don't List"
+    aliases: []
+    definition: "スコープ外定義（DONT.md）"
+  REGIME:
+    name: "Regime"
+    aliases: []
+    definition: "モード判定結果（REGIME.md）"
+  ADR:
+    name: "Architecture Decision Record"
+    aliases: ["adr"]
+    definition: "設計判断記録（history/ARCH-DECISIONS.md）"
+
+# dev_mode（v5.0.0 追加）
+dev_modes:
+  local_only:
+    definition: "GitHub 不使用、DH ベースのみ"
+  github_assisted:
+    definition: "GitHub Issue / PR 使用、自動化限定的、人間レビュー必須"
+  github_autonomous:
+    definition: "claude-code-action 経由で自律実装、CTL 育成連動"
+
+# 5 層検出スタック（layer1-autonomous-dev/references/inferential-sensor-v2.md）
+five_layer_stack:
+  layer_1:
+    name: "計算的センサー"
+    aliases: ["computational-sensor"]
+    definition: "型 / lint / フォーマット / ドメインモデル等の決定論的検証"
+  layer_2:
+    name: "E2E 機械検証"
+    aliases: ["e2e-verification"]
+    definition: "Playwright Test Agents 等の機械実行検証"
+  layer_3:
+    name: "Interaction Cost 測定"
+    aliases: ["interaction-cost"]
+    definition: "UX 計算可能代理指標（クリック数 / 遷移深度 / 応答時間 / 完了率 / エラー率）"
+  layer_4:
+    name: "推論的センサー"
+    aliases: ["inferential-sensor"]
+    definition: "LLM ベースの意味整合検証"
+  layer_5:
+    name: "Vision/人間判断"
+    aliases: ["human-judgment"]
+    definition: "人間の最終判定"
+
+# crosscut prefix（v5.0.0 追加）
+crosscut_prefix:
+  pattern: "crosscut-"
+  definition: "全 Layer 横断 skill の命名規則"
+  members: [crosscut-council, crosscut-issue-dispatcher, crosscut-issue-implementer, crosscut-verifier-drift, crosscut-verifier-philosophy, crosscut-feedback-loop]
+
+# layerN prefix
+layern_prefix:
+  pattern: "layer[0-9]+-"
+  definition: "特定 Layer 専属 skill の命名規則"
+  members: [layer0-spec-architect, layer0-onboarding, layer1-autonomous-dev, layer1-independent-reviewer, layer2-orchestrator, layer2-integration-verifier]
+
+# 5 本柱（philosophy.md）
+philosophy_pillars:
+  P1: "フラクタル原則"
+  P2: "Shift Left 原則"
+  P3: "情報純度原則"
+  P4: "人間責務原則"
+  P5: "献上哲学"
+  P6: "人間 ≒ Council"
+
+# 禁則事項（誤用検出）
+#
+# ここに置くのは「絶対に使うべきでない語」のみ。
+# 「予約語」「未実装語」「設計上は不在の概念」は本リスト対象外
+# （それらは否定文脈で言及される正当な用法があるため）。
+#
+# インライン list of dict 形式（複数行 `- item` は使用禁止、形式制約参照）
+# 1 行に収める（subset YAML パーサは複数行インライン構文を対応外とする）
+#
+# 現時点の禁則:
+#   - "self-monitoring": v5.2.0 で harness-verifier に改称、誤読リスクのため使用禁止
+#   - 「L3 運用層」「T1-T5」「L=N」等は予約語/未実装語であり禁則ではない（否定文脈での言及は正当）
+forbidden_uses: [{term: "self-monitoring", reason: "v5.2.0 で harness-verifier に改称、誤読リスクのため非推奨"}]
