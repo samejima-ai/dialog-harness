@@ -297,3 +297,167 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-04-30T09:03:30Z"
+
+- invocation_id: "council-2026-04-30T11:00:00Z-l0agg1"
+  timestamp: "2026-04-30T11:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "cross-project ログ集約の Mirror 方式（Push/Pull/Council のみ Push/Hybrid）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案A-3: Council のみ Push, 他は Pull", confidence: 0.75, dimension: "ROI / 既存資産活用" }
+    開発者: { stance: "案A-3: Council のみ Push, 他は Pull", confidence: 0.85, dimension: "保守性 / 経路分離の明確性" }
+    哲学者: { stance: "案A-3: Council のみ Push, 他は Pull", confidence: 0.7, dimension: "意味 / 即時性 vs 事後性の質的差" }
+  judgment_confidence: 0.83
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A-3: Council のみ Push, 他は Pull"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.3
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.75 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+          - { persona: "哲学者", weight: 5, confidence: 0.7 }
+    third_way_excluded: []
+    max_score_stance: "案A-3: Council のみ Push, 他は Pull"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案A-3: Council のみ Push, 他は Pull。既存 ~/.claude/council-data/ の投資を活用し新規概念を最小化"
+  minority_opinion: "なし（全会一致、dimension は ROI/保守性/意味と多様性あり）"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
+
+- invocation_id: "council-2026-04-30T11:01:00Z-l0agg2"
+  timestamp: "2026-04-30T11:01:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "cross-project ログ集約の対象スコープ（Council のみ / +DH evolution / +verification / すべて）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案B-1: Council 判定のみ", confidence: 0.7, dimension: "ROI / MVP" }
+    開発者: { stance: "案B-1: Council 判定のみ", confidence: 0.85, dimension: "YAGNI / 保守性" }
+    哲学者: { stance: "案B-1: Council 判定のみ", confidence: 0.7, dimension: "意味 / 集約の本質" }
+  judgment_confidence: 0.82
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案B-1: Council 判定のみ"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.15
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.7 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+          - { persona: "哲学者", weight: 5, confidence: 0.7 }
+    third_way_excluded: []
+    max_score_stance: "案B-1: Council 判定のみ"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案B-1: Council 判定のみ。CTL 学習・権限委譲・振り返り調整 (F1) のいずれも council ログから派生可能"
+  minority_opinion: "哲学者: F1 で『DH 自身の改修動向』を cross-project で見たいケースは将来出る可能性あり、v5.4.0 候補として B-2 (DH evolution 拡張) を温存"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
+
+- invocation_id: "council-2026-04-30T11:02:00Z-l0agg3"
+  timestamp: "2026-04-30T11:02:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "user-scope 集約時の Privacy フィルタ（全文転送/schema-only/自動匿名化/Council のみ匿名化）"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "案C-2: schema-only", confidence: 0.7, dimension: "ROI / リスク" }
+    開発者: { stance: "案C-2: schema-only", confidence: 0.85, dimension: "保守性 / 機械可読性" }
+    哲学者: { stance: "案C-2: schema-only", confidence: 0.8, dimension: "意味 / 集約の純粋性" }
+  judgment_confidence: 0.85
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案C-2: schema-only"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.6
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.7 }
+          - { persona: "開発者", weight: 4, confidence: 0.85 }
+          - { persona: "哲学者", weight: 3, confidence: 0.8 }
+    third_way_excluded: []
+    max_score_stance: "案C-2: schema-only"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案C-2: schema-only。final_weights / persona_summary / confidence / agreement_rate / category 等の構造データのみ user-scope へ転送、テキスト本文は project-scope に残す"
+  minority_opinion: "なし（全会一致）。共通理解: 自動匿名化 (C-3) は完全な匿名化が不可能で誤検出が安全感を生み逆に構造的甘さを生む罠"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
+
+- invocation_id: "council-2026-04-30T11:03:00Z-l0agg4"
+  timestamp: "2026-04-30T11:03:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "Consumer (spec-architect / harness-verifier / Council CTL) が user-scope を読むクエリ API（直読み/共通ライブラリ/CLI/harness-verifier 統合）"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/", confidence: 0.7, dimension: "ROI / 将来コスト" }
+    開発者: { stance: "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/", confidence: 0.9, dimension: "技術的実現性 / 責務集約" }
+    哲学者: { stance: "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/", confidence: 0.8, dimension: "意味 / 階層性" }
+  judgment_confidence: 0.90
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 8.4
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.7 }
+          - { persona: "開発者", weight: 6, confidence: 0.9 }
+          - { persona: "哲学者", weight: 2, confidence: 0.8 }
+    third_way_excluded: []
+    max_score_stance: "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/。Python 標準ライブラリのみ依存、Consumer は import で集計責務を再利用。harness-verifier 統合 (D-4) は独立性原則違反のため却下"
+  minority_opinion: "なし（全会一致）。共通理解: harness-verifier 統合は『検査機構が集計機構を兼ねる』論理階層混合の罠"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null

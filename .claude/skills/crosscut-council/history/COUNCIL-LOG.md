@@ -646,3 +646,243 @@ D4 整合性監査議題 3 として諮問。3 Persona 全員が案 A（v6.0.0 �
 ### 合意プロセス記録
 
 D4 整合性監査議題 4 として諮問（HIGH-1 思想統一案件）。3 Persona 全員が案 A（P1-P5 統一）を支持し unanimous 成立。confidence 0.85+ の高判定。philosophy.md（不変対象）と DIMENSIONS.md §8.1 の構造を仕様核として尊重し、harness-verifier 系（glossary.yml + PHILOSOPHY.md）と REGIME-LOG.md v5.2.0 行を minor PR で整合化する方向で `agreed_recommended` 合意。具体的な実装は PR-γ で扱う（M-6 として）。
+
+## council-2026-04-30T11:00:00Z-l0agg1
+
+```json
+{
+  "invocation_id": "council-2026-04-30T11:00:00Z-l0agg1",
+  "timestamp": "2026-04-30T11:00:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "cross-project ログ集約の Mirror 方式: project-scope ログを user-scope に運ぶ経路として、Push / Pull / Council のみ Push（既存路線） / Hybrid のどれを採用するか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A-3: Council のみ Push, 他は Pull", "confidence": 0.75, "dimension": "ROI / 既存資産活用" },
+    "開発者": { "stance": "案A-3: Council のみ Push, 他は Pull", "confidence": 0.85, "dimension": "保守性 / 経路分離の明確性" },
+    "哲学者": { "stance": "案A-3: Council のみ Push, 他は Pull", "confidence": 0.7,  "dimension": "意味 / 即時性 vs 事後性の質的差" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案A-3: Council のみ Push, 他は Pull",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 8.3,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.75},
+          {"persona": "開発者", "weight": 3, "confidence": 0.85},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.7}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案A-3: Council のみ Push, 他は Pull",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.83,
+  "recommended": "案A-3: Council のみ Push, 他は Pull。既存 ~/.claude/council-data/ の投資を活用し新規概念を最小化。Council ログは即時性が高く Push（council 起動時に append）、ADR/CHANGELOG/REGIME-LOG 等の DH evolution は git に時系列保持されているので Pull（必要時にツールが読みに行く）。経路分離により責務ごとに最適化される",
+  "minority_opinion": "なし（全会一致、dimension は ROI/保守性/意味と多様性あり）。共通理解: Council のリアルタイム性と evolution の事後的性質は質が違うため、命名上分離するのは哲学的に正",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": null,
+  "follow_up_questions_count": null,
+  "agreed_at": null,
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+L0 spec-architect が cross-project ログ集約機構の設計 4 論点（議題 A/B/C/D）として一括諮問。本諮問は議題 A（Mirror 方式）。3 Persona 全員が案 A-3 を支持し unanimous 成立。既存 `~/.claude/council-data/` 投資を活用し新規概念追加なしで実現可能。implementer_consent は確定後 null → 値で埋める（合意プロセス進行中）。
+
+## council-2026-04-30T11:01:00Z-l0agg2
+
+```json
+{
+  "invocation_id": "council-2026-04-30T11:01:00Z-l0agg2",
+  "timestamp": "2026-04-30T11:01:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "cross-project ログ集約の対象スコープ: Council のみ / Council + DH evolution / Council + verification / すべて のどれを user-scope 集約対象とするか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案B-1: Council 判定のみ", "confidence": 0.7,  "dimension": "ROI / MVP" },
+    "開発者": { "stance": "案B-1: Council 判定のみ", "confidence": 0.85, "dimension": "YAGNI / 保守性" },
+    "哲学者": { "stance": "案B-1: Council 判定のみ", "confidence": 0.7,  "dimension": "意味 / 集約の本質" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案B-1: Council 判定のみ",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 8.15,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.7},
+          {"persona": "開発者", "weight": 3, "confidence": 0.85},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.7}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案B-1: Council 判定のみ",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.82,
+  "recommended": "案B-1: Council 判定のみ。CTL 学習・権限委譲・振り返り調整 (F1 週次) のいずれも council ログから派生可能。ADR/CHANGELOG は project-specific で cross-project の意味が薄い (git で時系列保持済)。verification は static で集約価値低い。最小スコープで MVP として提供し、必要に応じて段階拡張",
+  "minority_opinion": "哲学者: 振り返り儀式 F1 で『DH 自身の改修動向』を cross-project で見たいケースは将来出る可能性あり。v5.4.0 候補として B-2 (DH evolution 拡張) を温存。本案は MVP として B-1 で先行し、需要が顕在化した時点で B-2 へ拡張する path を予約",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": null,
+  "follow_up_questions_count": null,
+  "agreed_at": null,
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+L0 議題 B として諮問。3 Persona 全員が案 B-1 (Council 判定のみ) を支持し unanimous 成立。哲学者 minority opinion (B-2 拡張余地) は v5.4.0 候補として記録、現時点では B-1 で先行する方針で `agreed_recommended` 候補。
+
+## council-2026-04-30T11:02:00Z-l0agg3
+
+```json
+{
+  "invocation_id": "council-2026-04-30T11:02:00Z-l0agg3",
+  "timestamp": "2026-04-30T11:02:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "judgment",
+  "category_fallback": false,
+  "question_to_answer": "user-scope 集約時の Privacy フィルタ: 全文転送 / schema-only / 自動匿名化 / Council のみ匿名化 のどれを採用するか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 4,
+    "開発者": 4,
+    "哲学者": 3
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案C-2: schema-only", "confidence": 0.7,  "dimension": "ROI / リスク" },
+    "開発者": { "stance": "案C-2: schema-only", "confidence": 0.85, "dimension": "保守性 / 機械可読性" },
+    "哲学者": { "stance": "案C-2: schema-only", "confidence": 0.8,  "dimension": "意味 / 集約の純粋性" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案C-2: schema-only",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 8.6,
+        "components": [
+          {"persona": "経営者", "weight": 4, "confidence": 0.7},
+          {"persona": "開発者", "weight": 4, "confidence": 0.85},
+          {"persona": "哲学者", "weight": 3, "confidence": 0.8}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案C-2: schema-only",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.85,
+  "recommended": "案C-2: schema-only。final_weights / persona_summary / confidence / agreement_rate / category 等の構造データのみ user-scope へ転送。question_to_answer / recommended / minority_opinion 等のテキスト本文は project-scope に残す。CTL 算出 (B-1 で確定の council のみ) には schema 十分、テキスト混入による privacy リスクと multi-machine sync 複雑化を構造的に回避",
+  "minority_opinion": "なし（全会一致、dimension は ROI/保守性/意味と多様性あり）。共通理解: 自動匿名化 (案 C-3) は『完全な匿名化は不可能』という根本制約があり、誤検出が安全感を生み逆に構造的甘さに繋がる罠。schema-only は『集約は構造抽出である』という哲学的純粋性を保つ",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": null,
+  "follow_up_questions_count": null,
+  "agreed_at": null,
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持し unanimous 成立。confidence 0.85 の高判定。B-1 (council のみ) と組み合わせて純粋構造データ集約を実現。テキスト本文は project-scope に残し、user-scope は機械可読な構造データのみ保持。
+
+## council-2026-04-30T11:03:00Z-l0agg4
+
+```json
+{
+  "invocation_id": "council-2026-04-30T11:03:00Z-l0agg4",
+  "timestamp": "2026-04-30T11:03:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "implementation",
+  "category_fallback": false,
+  "question_to_answer": "Consumer (spec-architect / harness-verifier / Council CTL) が user-scope 集約ストアを読むクエリ API: 直ファイル読み / 共通ライブラリ / CLI / harness-verifier 統合 のどれを採用するか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 2,
+    "開発者": 6,
+    "哲学者": 2
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/", "confidence": 0.7, "dimension": "ROI / 将来コスト" },
+    "開発者": { "stance": "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/", "confidence": 0.9, "dimension": "技術的実現性 / 責務集約" },
+    "哲学者": { "stance": "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/", "confidence": 0.8, "dimension": "意味 / 階層性" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 10,
+        "weighted_score": 8.4,
+        "components": [
+          {"persona": "経営者", "weight": 2, "confidence": 0.7},
+          {"persona": "開発者", "weight": 6, "confidence": 0.9},
+          {"persona": "哲学者", "weight": 2, "confidence": 0.8}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.90,
+  "recommended": "案D-2: 共通ライブラリ ~/.claude/dh-data/lib/。Python 標準ライブラリのみ依存（harness-verifier の独立性ポリシーと整合）で書ける薄い module。Consumer (spec-architect / harness-verifier / Council CTL) は import で集計責務を再利用。C-2 schema-only と整合し、機械可読 JSON / YAML を扱う Python module で簡潔。harness-verifier 統合 (案 D-4) は独立性原則 (harness-verifier/PHILOSOPHY.md §3) と衝突するため却下",
+  "minority_opinion": "なし（全会一致）。共通理解: harness-verifier 統合 (D-4) は『検査機構が集計機構を兼ねる』という論理階層混合の罠。集計責務は独立 module に切り出し、各 Consumer が import する形が DH 文化（ツール責務分離）と整合",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": null,
+  "follow_up_questions_count": null,
+  "agreed_at": null,
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ) を支持し unanimous 成立。confidence 0.90 の最高判定。開発者重み 6 (implementation category で最大化) で技術的実現性が支配的、Python 標準ライブラリのみで書ける薄い実装方針。harness-verifier との独立性原則を尊重。
