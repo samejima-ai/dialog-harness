@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.2.0 (in progress)
+## v5.2.0 (released 2026-04-30)
 
 minor 昇格。次元論（D1〜D5）導入と D4 検査機構（`harness-verifier/`）の独立配置。
 HANDOFF「DH 自己検証機構（誤作動防止機構との統合検討用）」2026-04-29 と
@@ -103,7 +103,7 @@ C-1 解決方針を Council 諮問（invocation_id: council-2026-04-29T22:30:00Z
 
 最終 smoke test: `python harness-verifier/verify.py --strict` で 5 検査全て **意味のある PASS**（検査 5 の forbidden_uses / prefix 整合検査が実走、検出 0 件は実態として違反なし）。
 
-## v5.1.0 (in progress)
+## v5.1.0 (released 2026-04-28)
 
 minor 昇格。L0 受け入れ基準の明文化 / Pre-flight 必読化 / scaffold checklist / §7.4 自己検証ステップを追加。
 PR #19 テストレビュー（シナリオ「ケロぴの森」）で判明した L0 charter 未達 P0 4 項目（受け入れ基準・Pre-flight・scaffold・自己検証）を解消する。後方互換維持。
@@ -146,7 +146,7 @@ PR #19 テストレビュー（シナリオ「ケロぴの森」）で判明し�
 - `history/ARCH-DECISIONS.md`: AD-008（L0 完了基準の再定義）/ AD-009（scaffold-checklist の単一 stack 採用方針）追加
 - `history/INTENT.md`: v5.1.0 の意図追記（L0 charter 達成可能性の確保・Pre-flight 強制化）
 
-## v5.0.0 (in progress)
+## v5.0.0 (released 2026-04-28)
 
 major 昇格。dev_mode 軸追加 / crosscut- prefix 統一 / 仕様 1〜4 Skill 化 / CTL 連動 / GitHub Actions 雛形 / 業界 BP 取り込み（claude-code-action）。
 

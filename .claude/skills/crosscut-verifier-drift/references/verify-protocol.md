@@ -22,7 +22,7 @@
 | 層 | 対象 | 発動 CTL |
 |---|---|---|
 | **drift 検知** | SPEC/ADR との乖離（本 skill） | **CTL ≥ 1** |
-| 思想検証 | 5本柱整合（crosscut-verifier-philosophy） | CTL ≥ 2（v5.1.0 で実装） |
+| 思想検証 | 5 本柱整合（crosscut-verifier-philosophy） | CTL ≥ 2（v5.1.0 で実装） |
 
 ## CTL 別の drift 検証構成
 

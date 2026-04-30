@@ -38,7 +38,7 @@ v5.1.0 → v5.2.0 への upgrade は SKILL.md の v5.2.0 セクション読込�
 
 | 不変項目 | 遵守状況 |
 |---|---|
-| 5本柱原則（P1-P6） | ○（追加のみで思想に変更なし。第 7 条候補は v6.0.0 へ温存） |
+| 5 本柱原則（P1-P6） | ○（追加のみで思想に変更なし。第 7 条候補は v6.0.0 へ温存） |
 | 履歴層規約 | ○（v5.1.0 形式を継承して v5.2.0 セクションを追記） |
 | 献上プロトコル | ○（`delivery/SELF-VERIFICATION-v5.2.0.md` 経由で献上） |
 | Level A skill 本体不変 | ○（layer0-spec-architect SKILL.md に追記、本体構造は不変） |
@@ -91,7 +91,7 @@ v5.0.0 → v5.1.0 への upgrade は SKILL.md の v5.1.0 セクション読込�
 
 | 不変項目 | 遵守状況 |
 |---|---|
-| 5本柱原則（P1-P5） | ○（追加のみで思想に変更なし） |
+| 5 本柱原則（P1-P5） | ○（追加のみで思想に変更なし） |
 | 履歴層規約 | ○（v5.0.0 形式を継承して v5.1.0 セクションを追記） |
 | 献上プロトコル | ○（`delivery/SELF-VERIFICATION-v5.1.0.md` 経由で献上） |
 | Level A skill 本体不変 | ○（layer0-spec-architect SKILL.md に追記、本体構造は不変） |
@@ -109,7 +109,7 @@ DH 本体自身の REGIME.md は本改修スコープ外（メタ案件、v5.0.0
 
 ### 次バージョン予定
 
-- v5.2.0 候補: `crosscut-verifier-philosophy` 本実装（5本柱整合の自動検証）。本 v5.1.0 では L0 改善のみに範囲を絞り、philosophy verifier は別 minor で扱う
+- v5.2.0 候補: `crosscut-verifier-philosophy` 本実装（5 本柱整合の自動検証）。本 v5.1.0 では L0 改善のみに範囲を絞り、philosophy verifier は別 minor で扱う
 - v5.x: チーム軸（T1-T5）operational 化、stack 拡張（Next.js / Vue / Astro / SvelteKit / 純 Node CLI）
 
 ## v5.0.0（major 昇格、後方互換破壊あり）
@@ -155,7 +155,7 @@ DH 本体改修対象は本体配布元のみ（spec §1.4）。各既存プロ�
 
 | 不変項目 | 遵守状況 |
 |---|---|
-| 5本柱原則（P1-P5） | ○ |
+| 5 本柱原則（P1-P5） | ○ |
 | 履歴層規約 | ○（history/ 4 ファイルを v5.0.0 で初期化、形式は既存準拠） |
 | 献上プロトコル | ○（`delivery/SELF-VERIFICATION-v5.0.0.md` 経由で献上） |
 | Level A skill 本体不変 | ○（既存 layer skill は references 追記のみ、本体ロジック不変） |
@@ -172,5 +172,5 @@ DH 本体自身の REGIME.md は本改修スコープ外（メタ案件）。改
 
 ### 次バージョン予定
 
-- v5.1.0: `crosscut-verifier-philosophy` 本実装（5本柱整合の自動検証）
+- v5.1.0: `crosscut-verifier-philosophy` 本実装（5 本柱整合の自動検証）
 - v5.x: チーム軸（T1-T5）operational 化（dev_mode 推論精度向上）

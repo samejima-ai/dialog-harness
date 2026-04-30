@@ -131,3 +131,9 @@ PHILOSOPHY.md においてのみ、`singularity` 表記を保持する。
 本機構は 5 本柱の延長線上にあり、新たな柱を立てるものではない。
 v5.2.0 では philosophy.md 本体への「第 7 条」追加は見送り、本 PHILOSOPHY.md で完結させる。
 将来 v6.0.0 で major 昇格する際、第 7 条「次元論と D4 の独立性」として philosophy.md 本体に組み込む候補。
+
+---
+
+## バージョン
+
+v0.1.0（dialog-harness v5.2.0 で導入、`harness-verifier/` 機構の存在論初版）

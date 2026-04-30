@@ -42,7 +42,7 @@ description: >
 | 第4層 推論的センサー | 「仕様に合う・動く・使える」 |
 | 第5層 独立検証 | layer1-independent-reviewer |
 | **追加層 drift** | **SPEC/ADR との乖離（本 skill）** |
-| 追加層 思想 | 5本柱整合（crosscut-verifier-philosophy、v5.1.0） |
+| 追加層 思想 | 5 本柱整合（crosscut-verifier-philosophy、v5.1.0） |
 
 ## 関連
 
