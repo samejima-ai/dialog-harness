@@ -1,0 +1,91 @@
+# harness-verifier — D4 検査機構の自動実行
+#
+# このワークフローは dialog-harness リポジトリ自身を守る独立機構。
+# DH 本体（D4）の skill 群に依存せず、Python 標準ライブラリのみで動作する。
+#
+# 配布対象: dialog-harness リポジトリ自身のみ。利用者プロジェクトには配布されない。
+# 詳細: harness-verifier/PHILOSOPHY.md, BOUNDARY.md, HUMAN-PROTOCOL.md
+
+name: harness-verify
+
+on:
+  schedule:
+    # 毎月 1 日 00:00 UTC = 09:00 JST（HUMAN-PROTOCOL.md §1）
+    - cron: "0 0 1 * *"
+  push:
+    branches: [master, main]
+    paths:
+      - ".claude/skills/**"
+      - "harness-verifier/**"
+      - ".github/workflows/harness-verify.yml"
+  pull_request:
+    branches: [master, main]
+    paths:
+      - ".claude/skills/**"
+      - "harness-verifier/**"
+      - ".github/workflows/harness-verify.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write  # 月次レポートを自動 commit するため
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 月次 cron 時のみ、レポートを生成して commit する
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "monthly=true" >> "$GITHUB_OUTPUT"
+            echo "report_path=harness-verifier/reports/$(date -u +%Y-%m).md" >> "$GITHUB_OUTPUT"
+          else
+            echo "monthly=false" >> "$GITHUB_OUTPUT"
+            echo "report_path=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run harness-verifier (push/PR)
+        if: steps.mode.outputs.monthly != 'true'
+        run: |
+          python harness-verifier/verify.py --strict --commit-sha "${{ github.sha }}"
+
+      # 月次経路: report 生成 → commit → ジョブ失敗判定の順で動かす。
+      # `continue-on-error: true` で verifier の exit code を保持しつつ、
+      # 後続 step（commit）を必ず実行し、最後に exit code をジョブ全体の判定に反映させる。
+      # これにより HUMAN-PROTOCOL.md §4「FAIL 時のメール通知」が monthly 経路でも機能する。
+      - name: Run harness-verifier (monthly report)
+        id: verify_monthly
+        if: steps.mode.outputs.monthly == 'true'
+        continue-on-error: true
+        run: |
+          python harness-verifier/verify.py \
+            --report "${{ steps.mode.outputs.report_path }}" \
+            --commit-sha "${{ github.sha }}"
+
+      - name: Commit monthly report
+        if: steps.mode.outputs.monthly == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ steps.mode.outputs.report_path }}"
+          if git diff --cached --quiet; then
+            echo "no report changes to commit"
+          else
+            git commit -m "chore(harness-verifier): monthly report $(date -u +%Y-%m)"
+            git push
+          fi
+
+      - name: Fail job if monthly verifier detected FAIL
+        if: steps.mode.outputs.monthly == 'true' && steps.verify_monthly.outcome == 'failure'
+        run: |
+          echo "monthly harness-verifier reported FAIL — see committed report for details"
+          exit 1

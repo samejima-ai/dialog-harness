@@ -2,6 +2,53 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.2.0
+
+### AD-010: 5 次元論（D1〜D5）の導入と D-numbering 採用
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | DH の検証機構（5 層検出スタック / crosscut-verifier-drift / §7.4 自己検証等）が、それぞれどの抽象階層を対象にしているかが暗黙のままで、責務重複・責務漏れ判定が困難だった |
+| 判断 | 5 次元論を導入：D1（ソースコード）/ D2（開発環境）/ D3（配布 skill インスタンス）/ D4（マスタ skill = メタスキル）/ D5（Meta モニタリング層 = 人間）。機械可読命名は D-numbering、思想文書では meta-layer / meta-meta-layer 等の階層形容詞を併走させる二重命名 |
+| 根拠 | Council 合議（invocation_id: council-2026-04-29T21:00:00Z-d4mtr1, 論点 1）で D-numbering を recommended（judgment_confidence 0.78）。理由: (a) 既存 M1/M2/L0/L1/L2/CTL と prefix 衝突なし、(b) 短く grep 性能良好、(c) 案 b の T-numbering は既存予約のチーム軸 T1-T5 と衝突する致命的問題、(d) 案 c 階層形容詞は冗長で表記揺れリスク。哲学者の「関係性を呼び起こす命名は思想的支柱」少数意見を二重命名で吸収 |
+| 影響 | layer0-spec-architect SKILL.md に v5.2.0 セクション追加、harness-verifier/PHILOSOPHY.md / BOUNDARY.md で 5 次元定義を明示。既存 skill の用語使用には影響なし |
+
+### AD-011: D4 検査機構を DH 本体外（リポジトリルート直下）に独立配置
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | DH は生成物（D2/D3）の検証機構を完備していたが D4 自身の整合性検査が不在（靴屋の靴問題）。フラクタル原則 P1 の自然な拡張として「規律の自己相似性」を実装する必要があった。`.claude/skills/` 配下の crosscut-* skill として実装する案（crosscut-verifier-self-static 新設）と、DH 本体外に独立配置する案が拮抗 |
+| 判断 | リポジトリルート直下 `harness-verifier/` に独立配置する。`.claude/skills/` 配下には置かない。`crosscut-verifier-drift` の拡張案も却下 |
+| 根拠 | DH 内部 skill として実装すると自己言及パラドックス（自身が壊れたら自身を検査できない循環）が生じる。論理階層が一段違う（D4 vs D4 を検査する機構＝メタメタ層）ため Russell タイプ理論・Gödel 不完全性定理と同型の構造的回避が必要。HANDOFF §4.1 の特異点メタファに従う。Council 出力（案A: DH 内部 skill 新設）よりも哲学者の「特異点扱い」少数意見が、ユーザー確定の独立性要請（C: 一切影響されない独立性）と整合 |
+| 影響 | 新規ディレクトリ `harness-verifier/` を作成。DH 本体（`.claude/skills/`）の挙動は完全不変。本機構は DH 本体に **読み取り専用** で依存（逆方向の依存は禁止） |
+
+### AD-012: D4 検査機構の名称を `harness-verifier/` とする命名判断
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | HANDOFF 仮称 `self-monitoring/` は「self-」誤読リスク（自己が自己を監視＝独立性要請に反する読み）を持つ。命名候補: meta-verifier / harness-verifier / dh-integrity / singularity 等が拮抗 |
+| 判断 | ディレクトリ名・機械可読名は `harness-verifier/` を採用。PHILOSOPHY.md 冒頭で「別名: singularity（特異点メタファ）」を併記する二重命名 |
+| 根拠 | Council 合議（invocation_id 同上, 論点 2）で recommended（judgment_confidence 0.82）。理由: (a) `crosscut-verifier-drift` / `verifier-philosophy` と命名形式が同型でフラクタル原則 P1 整合、(b) 動詞由来（verifier）でファイル群の責務が明示、(c) grep 性能良好、(d) 外部説明コスト最小。哲学者の「singularity を命名で宣言する」少数意見は PHILOSOPHY.md 内で吸収 |
+| 影響 | ディレクトリ名・コード・grep 対象では `harness-verifier` で統一。PHILOSOPHY.md においてのみ singularity 表記を保持 |
+
+### AD-014: harness-verifier の glossary.yml を subset YAML 形式に限定する
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | 独立検証 (VERIFICATION-v5.2.0.md) で C-1 として、`harness-verifier/checks/glossary.py` の `_parse_yaml` が複数行 block list 構文 `- item` を誤読し、検査 5（用語辞書整合）が空回りしていた事象が判明。`forbidden_uses` の最初の要素消失、`crosscut_prefix.members` / `layern_prefix.members` の空 dict 化を確認 |
+| 判断 | `glossary.yml` を **subset YAML 形式** に限定する。block list 構文を使用禁止とし、インライン list / list of dict のみ許容。パーサが block list 構文を検出した時点で `SyntaxError` を raise（黙って誤読しない）。BOUNDARY.md §9 に「独立性の代償」として明文化 |
+| 根拠 | Council 合議（invocation_id: council-2026-04-29T22:30:00Z-c1fix1）で recommended（judgment_confidence 0.88）。3 ペルソナ全会一致で「案 b（インラインリスト書き換え）」を支持、開発者が「+ 案 a の防御コード」を補強、哲学者が「+ ドキュメント宣言」を補強する三段統合に着地。案 c（PyYAML 採用）は哲学者が「独立性要請の最初の妥協、5 本柱 P3（情報純度）侵食」と却下、本案件のスコープを越える BOUNDARY.md 改訂を要するため後送。subset YAML 制約により (i) C-1 即解消、(ii) 将来の偽陽性を構造的予防、(iii) 独立性要請の哲学的根拠強化を同時達成 |
+| 影響 | `harness-verifier/glossary.yml` を subset YAML 形式に書き換え（forbidden_uses / members をインライン化）。`harness-verifier/checks/glossary.py` の `_parse_yaml` に block list 検出 → SyntaxError 機構を追加、加えてインライン list of dict 完全対応を含む全面改修（ネスト dict / quote 保持 / top-level split）。BOUNDARY.md §9「独立性の代償」を追加。glossary.yml 冒頭コメントで形式制約を明示。少数意見として「subset YAML が glossary 肥大化時に破綻したら PyYAML 採用を Council 再諮問」を温存 |
+
+### AD-013: バージョン昇格を v5.2.0 minor とし philosophy verifier 本実装は v5.3.0 へ後送
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | 次元論導入 + D4 検査機構実装は (a) v5.2.0 minor / (b) v6.0.0 major / (c) v5.2.0 minor で次元論+D4 機構、philosophy verifier は v5.3.0 へ後送、の 3 案で拮抗 |
+| 判断 | (c) v5.2.0 minor で次元論導入 + D4 検査機構（harness-verifier/）実装、`crosscut-verifier-philosophy` 本実装は v5.3.0 へ後送 |
+| 根拠 | Council 合議（invocation_id 同上, 論点 3）で recommended（judgment_confidence 0.70）。理由: (a) 後方互換完全維持（新規ディレクトリ追加のみ、既存 SKILL.md / references / crosscut-* 不変）、(b) AD-008 / AD-009 の前例（後方互換維持で minor）と整合、(c) 開発者の semver 厳格論と経営者のリリース文脈説明可能性を両立。哲学者の「次元論導入は major 級の自己同定更新」少数意見は v6.0.0 で philosophy.md 第 7 条として吸収する候補として保持 |
+| 影響 | v5.1.0 → v5.2.0、後方互換維持。`crosscut-verifier-philosophy/` placeholder は v5.2.0 でも未実装のまま、v5.3.0 候補として継続検討 |
+
 ## v5.1.0
 
 ### AD-008: L0 完了の定義をドキュメント生成完了から「scaffold smoke test 通過 + 受け入れ基準充足」へ再定義
