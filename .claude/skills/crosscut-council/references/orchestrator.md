@@ -212,11 +212,20 @@ def verify_weight_calculation(judgment_output, persona_outputs, final_weights, o
                     "同点（差 < 0.01）だが judgment_confidence ≥ 0.4。"
                     "0.4 未満で再提出すること")
 
-    # actual.tie_break_applied の一致検証
-    if bool(actual.get("tie_break_applied", False)) != expected["tie_break_applied"]:
+    # actual.tie_break_applied の一致検証（型チェック含む、truthy 偽装を防ぐ）
+    if "tie_break_applied" not in actual:
+        return ("retry", "weight_calculation.tie_break_applied フィールド欠落")
+
+    actual_tie_break_applied = actual.get("tie_break_applied")
+    if not isinstance(actual_tie_break_applied, bool):
+        return ("retry",
+                "weight_calculation.tie_break_applied は bool である必要がある "
+                f"(actual={actual_tie_break_applied!r})")
+
+    if actual_tie_break_applied != expected["tie_break_applied"]:
         return ("retry",
                 f"tie_break_applied 不一致 "
-                f"actual={actual.get('tie_break_applied')} expected={expected['tie_break_applied']}")
+                f"actual={actual_tie_break_applied!r} expected={expected['tie_break_applied']!r}")
 
     # actual.max_score_stance の一致検証
     if actual.get("max_score_stance") != expected["max_score_stance"]:
@@ -270,8 +279,41 @@ def verify_weight_calculation(judgment_output, persona_outputs, final_weights, o
                 f"third_way_excluded persona 集合不一致 "
                 f"actual={actual_excluded_personas} expected={expected_excluded_personas}")
 
+    # components の整合性検証（按分隠蔽の構造的検出）
+    # supporters と components の persona 集合一致 + components の weight/confidence が
+    # 入力（final_weights / persona_outputs）と完全一致することを確認。
+    # これにより components を欠落させて weight_sum だけ合わせる隠蔽を防ぐ。
+    persona_outputs_by_persona = {p["persona"]: p for p in persona_outputs}
+    for s in actual.get("scores", []):
+        stance = s["stance"]
+        components = s.get("components", [])
+        component_personas = sorted(c.get("persona") for c in components)
+        supporter_set = sorted(s.get("supporters", []))
+        if component_personas != supporter_set:
+            return ("retry",
+                    f"components persona 集合 != supporters stance={stance} "
+                    f"components={component_personas} supporters={supporter_set}")
+        for c in components:
+            persona = c.get("persona")
+            expected_weight = final_weights.get(persona)
+            if c.get("weight") != expected_weight:
+                return ("retry",
+                        f"components[*].weight != final_weights stance={stance} "
+                        f"persona={persona} actual={c.get('weight')} expected={expected_weight}")
+            persona_output = persona_outputs_by_persona.get(persona)
+            if persona_output is None:
+                return ("retry",
+                        f"components persona が persona_outputs に存在しない "
+                        f"stance={stance} persona={persona}")
+            expected_conf = persona_output.get("confidence", 0.0)
+            if c.get("confidence") != expected_conf:
+                return ("retry",
+                        f"components[*].confidence != persona_outputs stance={stance} "
+                        f"persona={persona} actual={c.get('confidence')} expected={expected_conf}")
+
     # 1 persona = 1 weight 不可分担保: 各 persona は scores または third_way_excluded
     # のいずれか一箇所にのみ出現すべき（重複出現は按分の兆候）
+    # 上記 components 整合性検証で components persona ⊆ supporters が確定した後の二重防御
     seen_personas: set[str] = set()
     for s in actual.get("scores", []):
         for c in s.get("components", []):

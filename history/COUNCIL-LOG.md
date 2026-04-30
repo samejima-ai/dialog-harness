@@ -7,7 +7,7 @@ Council 発動の履歴（append-only）。
 
 PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を検出し、append-only の例外として一度限りの訂正を実施した（PR: chore/address-pr-21-22-23-reviews）:
 
-1. **invocation_id 重複**: `d4mtr1` を 4 entry で再利用していた（spec: 「1 invocation = 1 エントリ」違反）。4 論点それぞれに固有 ID を割当： `d4mtr1` (論点 1: 命名) / `d4mtr2` (論点 2: 機構名) / `d4mtr3` (論点 3: バージョン) / `d4mtr4` (論点 4: スコープ)。元々は同 timestamp での 4 sub-judgment を batch session として記録していたが、各エントリが独立 judgment 出力を持つ構造のため renumber が schema 整合に最も近い。
+1. **invocation_id 重複**: `d4mtr1` を 4 entry で再利用していた（spec: 「1 invocation = 1 エントリ」違反）。4 論点それぞれに固有 ID を割当： `d4mtr1` (論点 1: 命名) / `d4mtr2` (論点 2: 機構名) / `d4mtr3` (論点 3: バージョン) / `d4mtr4` (論点 4: スコープ)。元々は同 timestamp での 4 sub-judgment を batch session として記録していたが、各エントリが独立 judgment 出力を持つ構造のため renumber が schema 整合に最も近い。なお、本訂正以前のドキュメント（`history/CHANGELOG.md` / `history/INTENT.md` / `history/REGIME-LOG.md` / `history/ARCH-DECISIONS.md` / `delivery/SELF-VERIFICATION-v5.2.0.md` 等）で `council-2026-04-29T21:00:00Z-d4mtr1` を「4 論点一括の invocation_id」として参照している記述は、以後は論点別に読み替える。すなわち論点 1 → `d4mtr1`、論点 2 → `d4mtr2`、論点 3 → `d4mtr3`、論点 4 → `d4mtr4` に対応する（旧記述の歴史的事実は保存し、本訂正記録が翻訳鍵を提供する）。
 2. **conflict_type schema 違反**: `unanimous_with_variance` は PR1 schema (`unanimous` / `simple_conflict`) に存在しない。`unanimous` に修正、variance は既に `persona_summary` に保持されている。
 
 これは crosscut-council/history/COUNCIL-LOG.md の m4t4q1 (`agreed` → `agreed_with_modification`) 訂正と同型の例外措置。本訂正以降、同種の renumber/schema 修正は行わない。
