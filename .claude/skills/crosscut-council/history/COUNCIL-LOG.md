@@ -346,3 +346,61 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
 ### 合意プロセス記録
 
 実装中の不可逆操作判断（step 5.5 直前）で発動。F3 安全削除の実装戦略とフラグ間の責務分離を確定するため起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.88) の recommended を `agreed_recommended` で合意：案A（ゴミ箱経由削除 + typed permanent confirmation）。CLI 実装の対話確認関数で既に先行記述済みだったため、本 Council はその設計選択の事後妥当性確認として機能した。確認スキップフラグは対話確認をスキップするのみ、不可逆認可フラグは別途 typed confirmation を要求するという責務分離を SPEC / 運用文書に明記する。依存定義への削除支援ライブラリ採用は本 Council 結果に基づく正式採用。
+
+## council-2026-04-30T03:50:00Z-cln1k7
+
+```json
+{
+  "invocation_id": "council-2026-04-30T03:50:00Z-cln1k7",
+  "timestamp": "2026-04-30T03:50:00Z",
+  "source_skill": "user-direct",
+  "council_type": "business",
+  "category": "operation",
+  "category_fallback": false,
+  "question_to_answer": "ローカル `.claude/skills/council-workspace/iteration-1/` （walking skeleton 期 untracked データ 17 ファイル）をどう扱うべきか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 4,
+    "開発者": 4,
+    "哲学者": 2
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案B: .gitignore に追加", "confidence": 0.7, "dimension": "ROI / リスク" },
+    "開発者": { "stance": "案B: .gitignore に追加", "confidence": 0.9, "dimension": "可逆性 / 保守性" },
+    "哲学者": { "stance": "案B + 半年後再評価併記", "confidence": 0.55, "dimension": "意味 / 長期影響" }
+  },
+  "weight_calculation": {
+    "scores": [
+      {
+        "stance": "案B: .gitignore に追加",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 10,
+        "weighted_score": 7.5,
+        "components": [
+          {"persona": "経営者", "weight": 4, "confidence": 0.7},
+          {"persona": "開発者", "weight": 4, "confidence": 0.9},
+          {"persona": "哲学者", "weight": 2, "confidence": 0.55}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案B: .gitignore に追加",
+    "tie_break_applied": false
+  },
+  "judgment_confidence": 0.85,
+  "recommended": "案B: `.gitignore` に旧名 `.claude/skills/council-workspace/` を追加。哲学者 minority を統合し、ignore コメントに walking skeleton 由来 + 再評価期日（2026-10）を明記",
+  "minority_opinion": "全員一致だが dimension が ROI/可逆性/意味で多様。共通懸念は『永続放置による残骸化』『再評価の機械的トリガー不在』。哲学者は ignore コメントへの『walking skeleton iteration-1, 再評価予定 2026-10』記載を mitigation として要請",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T03:55:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+dialog-harness リポジトリの cleanup 判断（PR #24 マージ後の残務）でユーザーが直接 `councilで判断して` と要請して発動。3 Persona 全員が案B（.gitignore 追加）を支持し unanimous 成立。dimension は経営者=ROI/リスク、開発者=可逆性/保守性、哲学者=意味/長期影響と多様性あり。判定確度 0.85 で人間エスカレーション閾値（0.5）を上回り auto_agree モード適用。哲学者 minority（半年後再評価）は recommended テキストに統合済みのため `agreed_recommended`（modification 不要）で合意。本記録の 5 分後に commit 確定。
