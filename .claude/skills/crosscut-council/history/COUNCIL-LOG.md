@@ -266,3 +266,83 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
   - 「施行時点と遡及適用」節を追加し、遡及補完を「施行前事象への一度限りの例外措置」として明示
 
 哲学者 minority_opinion（完璧主義への警戒）を受け、本コミットは Walking Skeleton 原則の枠内で整合性回復のみに留める方針。新規機能追加なし。
+
+## council-2026-04-21T18:00:00Z-h4s7a1
+
+```json
+{
+  "invocation_id": "council-2026-04-21T18:00:00Z-h4s7a1",
+  "timestamp": "2026-04-21T18:00:00Z",
+  "source_skill": "layer1-autonomous-dev",
+  "council_type": "business",
+  "category": "implementation",
+  "category_fallback": false,
+  "question_to_answer": "dupdetect の F1 機能「バイト単位で完全一致するファイル群の検出」を、どのハッシュ戦略で実装すべきか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 2,
+    "開発者": 6,
+    "哲学者": 2
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案C: 段階的比較", "confidence": 0.7,  "dimension": "リスク" },
+    "開発者": { "stance": "案C: 段階的比較", "confidence": 0.9,  "dimension": "性能 / 保守性" },
+    "哲学者": { "stance": "案C + 前提明文化", "confidence": 0.6,  "dimension": "前提への問い" }
+  },
+  "judgment_confidence": 0.85,
+  "recommended": "案C: 段階的比較（サイズ → 先頭4KB SHA256 → 全体 SHA256）。最終段階を SHA256 一致 = バイト一致と扱う契約を SPEC に明記",
+  "minority_opinion": "哲学者の『最終段階はバイト直接比較が厳密』という問い。SHA256 衝突確率は実用上ゼロだが厳密性を追求するなら実バイト比較が正。SPEC に『ハッシュ一致 = バイト一致』の契約を明記することで minority を保持",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_with_modification",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-21T18:02:00Z",
+  "modification_note": "案C を採用し、哲学者 minority_opinion の mitigation（ハッシュ一致 = バイト一致契約の SPEC 明文化）を SPEC.md F1 記述の脚注として追記する方針",
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+dupdetect 実装時の step 4.5 で発動。layer1-autonomous-dev が F1 のハッシュ戦略 4 案（SHA256 全体 / MD5 全体 / 段階的比較 / xxhash）で迷い confidence 0.55 と自己評価して起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.85) の recommended を `agreed_with_modification` で合意：案C (段階的比較) 採用 + 哲学者の minority（ハッシュ一致 = バイト一致の契約明文化）を SPEC.md F1 に注記として統合。依存追加なし（hashlib 標準）。
+
+## council-2026-04-21T18:30:00Z-d9l3t2
+
+```json
+{
+  "invocation_id": "council-2026-04-21T18:30:00Z-d9l3t2",
+  "timestamp": "2026-04-21T18:30:00Z",
+  "source_skill": "layer1-autonomous-dev",
+  "council_type": "business",
+  "category": "operation",
+  "category_fallback": false,
+  "question_to_answer": "dupdetect の F3 安全削除（不可逆操作）をどの実装戦略で組むべきか。削除ライブラリ選定と --permanent/--yes 競合挙動の確定",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 4,
+    "開発者": 4,
+    "哲学者": 2
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A: send2trash + typed permanent confirmation", "confidence": 0.8,  "dimension": "リスク" },
+    "開発者": { "stance": "案A", "confidence": 0.92, "dimension": "保守性 / 可逆性" },
+    "哲学者": { "stance": "案A + 責務分離の明文化", "confidence": 0.75, "dimension": "意味 / 信頼" }
+  },
+  "judgment_confidence": 0.88,
+  "recommended": "案A: send2trash を採用。--permanent は --yes と独立して typed confirmation（'PERMANENT' 入力）を常に要求する責務分離を CLAUDE.md / SPEC.md に明記",
+  "minority_opinion": "哲学者の『typed confirmation 文言の国際化』『自動化スクリプトから --permanent を通せない制約』への懸念。本バージョンは仕様として受容、将来版で環境変数置換の検討余地を残す",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-21T18:32:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+dupdetect 実装時の step 5.5（不可逆操作直前）で発動。F3 安全削除の実装戦略と --permanent/--yes 競合挙動を確定するため起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.88) の recommended を `agreed_recommended` で合意：案A (send2trash + typed permanent confirmation)。実装は cli.py 内の `_confirm_permanent` (typed 'PERMANENT' 入力要求) で既に先行記述済みだったため、本 Council はその設計選択の事後妥当性確認として機能した。`--yes` は対話確認スキップ、`--permanent` は不可逆認可という責務分離を SPEC.md F3 / CLAUDE.md に明記する。pyproject.toml の send2trash 依存はこの Council 結果に基づく正式採用。

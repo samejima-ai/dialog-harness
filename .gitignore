@@ -17,6 +17,10 @@ scratch/
 # crosscut-council skill: 検証ワークスペース（subagent 出力の実データ。再現不能だが skill 本体ではない）
 .claude/skills/crosscut-council-workspace/
 
+# Sandbox: skill library の外側で動作検証用に組み立てた試作アプリ群
+# （council テスト等の一時プロジェクトを配置。skill 本体ではない）
+sandbox/
+
 # crosscut-council skill: ブリーフ原稿は design-history.md に要約転記済み（design-history.md §17: 本体に内包しない）
 Council system dev brief .md
 
