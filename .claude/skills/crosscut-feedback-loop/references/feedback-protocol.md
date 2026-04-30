@@ -30,6 +30,7 @@
 | `philosophy_violation` | crosscut-council | 設計層 / L0 | Council 判定 → 結果に応じて SPEC 修正 or L0 対話復帰 |
 | `interaction_cost_breach` | 実装層 | L0 | UX 修正 PR 自動作成、改善されない場合は L0 対話で要件再確認 |
 | `dont_violation` | 実装層 | crosscut-council | 即時 revert 候補。Council で重大度判定 |
+| `judgment_failed`（weight_calculation 検算不一致） | crosscut-council | L0 (prompt 改訂) | F1 集計で頻発時に L0 へ自動還流（PR1 では手動）。本還流種別は本ファイル末尾 §F1 振り返り儀式での weight_calculation 監査 を参照 |
 
 ## 還流処理フロー（共通）
 
@@ -76,3 +77,49 @@ category: maintenance
 - アクション: crosscut-issue-dispatcher 経由で Issue #126 自動生成
 - CTL: 2、Council 事前検証: PASS（confidence 0.71）
 ```
+
+## F1 振り返り儀式での weight_calculation 監査（PR1 新規）
+
+直近 N 件の COUNCIL-LOG エントリから `weight_calculation` の整合性を集計し、
+Judgment Agent の規定逸脱頻度を可視化する。設計契機: COUNCIL-LOG
+`council-2026-04-29T18-00-00Z-d1m4n5` で発生した weight 分割逸脱を、
+**振り返り儀式で機械的に検出可能にする**ための監査経路。
+
+### 監査手順
+
+1. `history/COUNCIL-LOG.md`（プロジェクトルート）と
+   `.claude/skills/crosscut-council/history/COUNCIL-LOG.md` 双方を対象に、
+   F1 期間（週次、直近 7 日）のエントリを抽出
+2. 各エントリの `weight_calculation` を `compute_weight_scores`
+   （[orchestrator.md](../../crosscut-council/references/orchestrator.md) §決定論検算プロトコル）に
+   再投入し、現行スキーマでの `max_score_stance` を再計算
+3. 以下を集計:
+   - **一致率**: `recommended` が `max_score_stance` で始まるエントリの割合
+   - **third_way_excluded 出現率**: `third_way_excluded` が空でないエントリの割合
+   - **retry 発生率**: `weight_calculation_retry_count > 0` のエントリの割合
+   - **judgment_failed 件数**: `status = judgment_failed` のエントリ数
+4. 集計結果を `delivery/F1-COUNCIL-AUDIT-<YYYY-WW>.md` に記録
+5. 一致率 < 95% の場合は L0 spec-architect に還流（`judgment-agent.md` prompt 改訂候補、
+   上記マトリクス §`judgment_failed` の還流フロー）
+
+### 集計フォーマット例
+
+```markdown
+### F1 Council Audit (週 2026-W18)
+- 対象エントリ数: 12
+- recommended ↔ max_score_stance 一致率: 11/12 = 91.7%
+- 不一致詳細:
+  - council-2026-04-29T18-00-00Z-d1m4n5: max="Option C" / recommended="Option A 採用..."
+    （事後合理化補注済み、append-only 例外条項 post_hoc_rationalization_note）
+- third_way_excluded 出現率: 1/12 = 8.3%（哲学者発のみ）
+- retry 発生率: 0/12 = 0%
+- judgment_failed: 0 件
+- 還流推奨: 一致率 < 95% のため judgment-agent.md prompt の few-shot 強化を検討
+```
+
+### 遡及適用の扱い
+
+施行時点（PR1 マージ）以前のエントリで `weight_calculation` フィールドが未記入のものは、
+`compute_weight_scores` を `persona_summary` から再構成して試算するが、
+集計結果には「**遡及試算**」マーカーを付ける（COUNCIL-LOG 例外条項施行前事象として
+F1 集計の分母から除外可能）。

@@ -21,6 +21,9 @@ Council 発動の append-only ログ。
 | `agreed_at` | ISO 8601 タイムスタンプ | 合意プロセス完了時 |
 | `modification_note` | 自由記述 | `agreed_with_modification` の場合のみ |
 | `escalation_reason` | 自由記述 | `escalated` の場合のみ |
+| `post_hoc_rationalization_note` | 自由記述（multi-line） | 過去エントリの規定逸脱を事後合理化する場合のみ。施行根拠と再発防止策を必ず併記。**一度埋めたら書き換え禁止**。本フィールドは PR1 weight_calculation 監査契機で追加 |
+| `post_hoc_added_at` | ISO 8601 | `post_hoc_rationalization_note` と同時に追記 |
+| `post_hoc_authority` | 自由記述 | 補注追加の権限根拠（PR / タスク名等）。`post_hoc_rationalization_note` と同時に追記 |
 
 **許容条件**: これらのフィールドが発動時点で **null として宣言されていた場合に限り**、単方向の埋め込み（null → 値）を認める。
 
@@ -39,6 +42,8 @@ Council 発動の append-only ログ。
 本例外条項は **PR1 マージ以降に発行されるエントリ**（施行時点以降）に対して適用する。
 
 施行時点より前に発行された既存エントリ（`r7k3t1` / `b7e2f1` / `m4t4q1`）には、Copilot 再レビュー指摘 (#11) を契機として後追記対象フィールドの **null プレースホルダを補完する遡及措置**を一度だけ実施した。これは「null 宣言されていないフィールドの新規追加禁止」ルールに対する **例外条項施行前事象への一度限りの遡及補完** として扱い、以降の遡及的書き換えは禁止する。
+
+PR1 weight_calculation 監査タスク（本ファイル §append-only の例外条項に `post_hoc_rationalization_note` 系 3 フィールドを追加）の施行に伴い、Judgment Agent の規定逸脱（weight 分割等）を事後合理化する経路が新設された。本機能は **PR1 マージ以降の新規エントリには適用しない**（規定逸脱は決定論検算で `judgment_failed` として人間エスカレーションされ、新エントリで処理される）。**例外条項施行前に発生していた個別の逸脱事例に対してのみ、当該プロジェクトの judgment 履歴で一度限りの遡及補完を許容する** 経路として位置付ける。複数回の遡及補完や、新規発生事例への適用は禁止する。
 
 ## エントリスキーマ（必須フィールド）
 

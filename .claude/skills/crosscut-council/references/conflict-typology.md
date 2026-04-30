@@ -30,18 +30,38 @@ def classify_conflict(persona_outputs):
 `reason` / `confidence` / `dimension` / `premise` は記録するが PR1 では判定に使わない。
 PR2 で完全類型判定に拡張する際、過去の COUNCIL-LOG エントリから類型分布を分析できるよう、データは取り続ける。
 
-## PR2 で決着させる未決事項
+## 第3の道 stance の PR1 暫定運用ルール
 
-### 第3の道 stance の扱い
+Persona（特に哲学者）が `options` 外の自由記述 stance（「第3の道」「前提自体への保留」「自由記述」等）を
+返した場合の取り扱い。COUNCIL-LOG `council-2026-04-29T18-00-00Z-d1m4n5` で Judgment Agent が
+哲学者の「第3の道（実質 A）」を任意の options に按分加算した事象を契機に、PR1 で以下の暫定ルールに固定する。
 
-PR1 では判定されず PR2 対立類型 A-G の設計と一緒に決着させる論点：
+### ルール
 
-- Persona（特に哲学者）が `options` 外の自由記述 stance（「第3の道」「前提自体への保留」等）を返した場合、`conflict_type` を何に分類するか
-- 候補: (a) 常に `simple_conflict` として扱う / (b) 意味的包含を判定し既存 options のいずれかに寄せる / (c) 新類型 `third_way` を導入する
-- 実運用では哲学者が third-way を出しやすく頻発し得る（本スキル PR1 実装中の COUNCIL-LOG `b7e2f1` が実例）
-- PR2 で対立類型 A-G の判定優先順位を決める際、この論点も同時に決着させる
+1. **weight 加算対象外**: options 外 stance には weight を加算しない
+2. **退避先**: `weight_calculation.third_way_excluded` に persona / stance / weight / confidence / reason を構造化記録（[output-format.md](../references/output-format.md) §4）
+3. **`minority_opinion` への転載**: 退避された意見は必ず `minority_opinion` 末尾に「【options 外 stance】<persona>: <stance>（理由: ...）」形式で転載する
+4. **`conflict_type` への影響なし**: PR1 簡略判定（`stance` 完全一致のみ `unanimous`）に third_way の有無は影響しない。third_way が混ざる時は `simple_conflict` として処理
+5. **`judgment_confidence` への影響**: `third_way_excluded` の weight 合計が全 weight の 30% 以上を占める場合、`judgment_confidence` は 0.5 以下が妥当（[judgment-agent.md](judgment-agent.md) §judgment_confidence の算出指針）
 
-決着前の暫定運用: PR1 の簡略判定（`stance` 文字列の完全一致で `unanimous` / `simple_conflict`）に従う。第3の道が混ざる時は `simple_conflict` に分類される。
+### 設計意図
+
+Judgment Agent の weight 分割裁量を構造的に排除する（哲学違反の予防）。
+第3の道を「上澄み」として保存しつつ、weight 計算は純粋関数で再現可能に保つ。
+意味的寄せを LLM 判定に委ねる従前の挙動は、d1m4n5 で実証された通り
+recommended の捏造を許してしまう。PR1 では退避一択とする。
+
+### PR2 移行パス
+
+PR2 で対立類型 A-G を完全実装する際、`weight_calculation.third_way_excluded` に蓄積されたデータから
+新類型 `third_way` を導入できる。判定ロジック候補（PR2 で決着）:
+
+- (a) `third_way` 単独で新類型化し、Judgment Agent が「止揚案」として再構成
+- (b) options に含まれる stance への意味的寄せを LLM 判定で行う（d1m4n5 の轍を踏まないよう
+  接頭辞一致検証等の構造的安全弁を併設すること）
+- (c) PR1 暫定ルール（weight 加算対象外）を継続し `minority_opinion` で扱う
+
+PR2 開発時は PR1 期間中の `third_way_excluded` ログ分布を集計して判断する。
 
 ## PR2 完全版の予告
 
@@ -135,5 +155,7 @@ PR1 では類型判定はしないが、後続 PR で類型分析できるよう
 
 - 各 Persona の `stance` / `confidence` / `dimension` / `premise`
 - conflict_type（unanimous / simple_conflict）
+- `weight_calculation.third_way_excluded`（PR1 新規、third_way 類型移行のための分布データ）
+- `weight_calculation_retry_count`（決定論検算リトライ回数、Judgment Agent の規定逸脱頻度の指標）
 
 PR2 開発時に過去の COUNCIL-LOG を分析し、類型分布を実データで検証する。
