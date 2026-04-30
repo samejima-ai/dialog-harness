@@ -184,14 +184,26 @@ layern_prefix:
   definition: "特定 Layer 専属 skill の命名規則"
   members: [layer0-spec-architect, layer0-onboarding, layer1-autonomous-dev, layer1-independent-reviewer, layer2-orchestrator, layer2-integration-verifier]
 
-# 5 本柱（philosophy.md）
+# 5 本柱（philosophy.md 第 1-5 条、行動原則）
+# 概念階層: P1-P5 は「行動原則」として 5 本柱を構成する
 philosophy_pillars:
   P1: "フラクタル原則"
   P2: "Shift Left 原則"
   P3: "情報純度原則"
   P4: "人間責務原則"
   P5: "献上哲学"
-  P6: "人間 ≒ Council"
+
+# 6 条憲法の構造（philosophy.md 第 1-6 条）
+# 概念階層: 第 1-5 条 = 5 本柱（行動原則）、第 6 条 = 関係性原則（次元間関係性原則）
+# 第 6 条は 5 本柱の延長ではなく、独立した「関係性原則」のカテゴリ
+# 議題 4（council-2026-04-30T09:03:00Z-d4at04, agreed_recommended）の確定
+philosophy_articles:
+  第1条: "フラクタル原則（P1 = 5 本柱）"
+  第2条: "Shift Left 原則（P2 = 5 本柱）"
+  第3条: "情報純度原則（P3 = 5 本柱）"
+  第4条: "人間責務原則（P4 = 5 本柱）"
+  第5条: "献上哲学（P5 = 5 本柱）"
+  第6条: "人間 ≒ Council 原則（関係性原則、5 本柱とは別カテゴリ）"
 
 # 禁則事項（誤用検出）
 #
