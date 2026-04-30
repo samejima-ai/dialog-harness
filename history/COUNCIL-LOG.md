@@ -152,6 +152,21 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
     開発者: { stance: "案A: 独立維持", confidence: 0.8, dimension: "保守性 / 可逆性" }
     哲学者: { stance: "案A: 独立維持", confidence: 0.6, dimension: "意味 / 階層性" }
   judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A: 独立維持"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.5
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.7 }
+          - { persona: "開発者", weight: 3, confidence: 0.8 }
+          - { persona: "哲学者", weight: 5, confidence: 0.6 }
+    third_way_excluded: []
+    max_score_stance: "案A: 独立維持"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
   recommended: "案A: 独立維持。3 つの S/U/R は射程が異なる（regime / Council 介入閾値 / hybrid）。共通用語表は M-4 で導入済"
   minority_opinion: "哲学者: 将来的な統合視点（案 B）を保持しつつ運用は独立で。glossary.yml の score_axes が単一典拠として機能"
   human_escalated: false
@@ -178,6 +193,21 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
     開発者: { stance: "案A: history/ 維持", confidence: 0.7, dimension: "YAGNI / 保守性" }
     哲学者: { stance: "案A: history/ 維持", confidence: 0.65, dimension: "意味 / 経緯記録" }
   judgment_confidence: 0.72
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A: history/ 維持"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 6.5
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.6 }
+          - { persona: "開発者", weight: 4, confidence: 0.7 }
+          - { persona: "哲学者", weight: 2, confidence: 0.65 }
+    third_way_excluded: []
+    max_score_stance: "案A: history/ 維持"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
   recommended: "案A: history/ 維持。INSIGHTS.md は経緯ドキュメントとして INTENT.md と並列扱い。仕様核取り込みは v6.0.0 major で扱う"
   minority_opinion: "哲学者: 将来 reference 頻度上昇時の再判断余地を残す。signal 条件として『INSIGHTS への参照 month 1 件以上』を mitigation で監視"
   human_escalated: false
@@ -204,6 +234,21 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
     開発者: { stance: "案A: v6.0.0 一括昇格", confidence: 0.75, dimension: "保守性 / バージョン境界" }
     哲学者: { stance: "案A: v6.0.0 一括昇格", confidence: 0.7, dimension: "意味 / 階層整合性" }
   judgment_confidence: 0.81
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A: v6.0.0 一括昇格"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.85
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.7 }
+          - { persona: "開発者", weight: 3, confidence: 0.75 }
+          - { persona: "哲学者", weight: 5, confidence: 0.7 }
+    third_way_excluded: []
+    max_score_stance: "案A: v6.0.0 一括昇格"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
   recommended: "案A: v6.0.0 major で一括昇格。minor 内では予告強化（M-6）のみ実施。DIMENSIONS.md §11 残タスク表の集約参照を強化する"
   minority_opinion: "哲学者: harness-verifier monthly report で『dimension 境界跨ぎ試行』『D5 escalate 件数』を集計するように記録項目を v5.4.0 で追加すべき（v5.3.0 では先送り）"
   human_escalated: false
@@ -230,6 +275,21 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
     開発者: { stance: "案A: P1-P5 統一", confidence: 0.85, dimension: "論理整合性 / 仕様核遵守" }
     哲学者: { stance: "案A: P1-P5 統一", confidence: 0.85, dimension: "意味 / 概念階層" }
   judgment_confidence: 0.88
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A: P1-P5 統一"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.9
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.7 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+          - { persona: "哲学者", weight: 5, confidence: 0.85 }
+    third_way_excluded: []
+    max_score_stance: "案A: P1-P5 統一"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
   recommended: "案A: P1-P5 統一。philosophy.md（不変対象）と DIMENSIONS.md §8.1 が確定済の構造（5 本柱 = P1-P5、第 6 条 = 別概念）に harness-verifier 系（glossary.yml + PHILOSOPHY.md）と REGIME-LOG.md v5.2.0 行を整合化。glossary.yml `philosophy_pillars` から P6 を移動し別キー `philosophy_articles: 第1-6条` を新設"
   minority_opinion: "なし（全会一致）。共通理解: 「5 本柱 = 行動原則 (P1-P5)」と「第 6 条 = 関係性原則」は概念階層が異なる。同一カテゴリ内にまとめる harness-verifier 表記は階層混合の罠"
   human_escalated: false
