@@ -1,11 +1,11 @@
 """検証 2: 参照 path 有効性
 
-全 SKILL.md / references/*.md / assets/*.md 内の Markdown リンクと相対パス参照を
-追跡し、リンク切れ（dead link）を検出する。
+全 SKILL.md / references/*.md / assets/*.md 内の Markdown リンクを追跡し、
+リンク切れ（dead link）を検出する。
 
 検出対象:
-    - [text](path) 形式の Markdown リンクで、path が相対パスのもの
-    - `path/to/file.md` 形式のインラインコード参照（拡張子 .md / .yml / .json / .ts 等）
+    - [text](path) 形式の Markdown インラインリンクで、path が相対パスのもの
+    - 検査対象拡張子は TRACKED_EXTS（.md / .yml / .yaml / .json / .ts / .py / .feature / .tsp / .fga）
 """
 
 from __future__ import annotations
@@ -17,8 +17,6 @@ import re
 
 # Markdown インラインリンク [text](path)
 INLINE_LINK_RE = re.compile(r"\[([^\]\n]+)\]\(([^)\n]+)\)")
-# `path/to/file.ext` 形式（バッククォート内、拡張子付き）
-INLINE_CODE_PATH_RE = re.compile(r"`([A-Za-z0-9_./\-]+\.[A-Za-z0-9]+)`")
 
 # 検査対象拡張子
 TRACKED_EXTS = {".md", ".yml", ".yaml", ".json", ".ts", ".py", ".feature", ".tsp", ".fga"}

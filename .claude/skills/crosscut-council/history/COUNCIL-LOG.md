@@ -43,7 +43,7 @@ Council 発動の append-only ログ。
 
 施行時点より前に発行された既存エントリ（`r7k3t1` / `b7e2f1` / `m4t4q1`）には、Copilot 再レビュー指摘 (#11) を契機として後追記対象フィールドの **null プレースホルダを補完する遡及措置**を一度だけ実施した。これは「null 宣言されていないフィールドの新規追加禁止」ルールに対する **例外条項施行前事象への一度限りの遡及補完** として扱い、以降の遡及的書き換えは禁止する。
 
-PR1 weight_calculation 監査タスク（本ファイル §append-only の例外条項に `post_hoc_rationalization_note` 系 3 フィールドを追加）の施行に伴い、Judgment Agent の規定逸脱（weight 分割等）を事後合理化する経路が新設された。本機能は **PR1 マージ以降の新規エントリには適用しない**（規定逸脱は決定論検算で `judgment_failed` として人間エスカレーションされ、新エントリで処理される）。**例外条項施行前に発生していた個別の逸脱事例に対してのみ、当該プロジェクトの judgment 履歴で一度限りの遡及補完を許容する** 経路として位置付ける。複数回の遡及補完や、新規発生事例への適用は禁止する。
+PR1 weight_calculation 監査タスク（本ファイル §append-only の例外条項に `post_hoc_rationalization_note` 系 3 フィールドを追加）の施行により、`post_hoc_rationalization_note` 系フィールドを用いた**遡及補完ルール自体**は PR1 マージ以降に有効化される。ただし、**適用対象は PR1 マージ時点より前に既に発行済みのエントリに限る**。すなわち、当該プロジェクトの judgment 履歴に属し、かつ `timestamp` が PR1 マージ時刻より前である既存エントリ（必要に応じてその時点以前に採番済みの `invocation_id` を持つエントリとして識別されるもの）についてのみ、**施行前に発生していた個別事例の一度限りの遡及補完**として `post_hoc_rationalization_note` 系 3 フィールドの **null → 値** 更新を許容する。PR1 マージ以降に新規発行されたエントリ、または PR1 マージ以降に新たに発生した規定逸脱事例には本機能を適用してはならない。これらは決定論検算で `judgment_failed` として人間エスカレーションし、新エントリで処理する。複数回の遡及補完、対象外エントリへの適用、既存値の再更新は禁止する。
 
 ## エントリスキーマ（必須フィールド）
 
@@ -277,7 +277,7 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
   "council_type": "business",
   "category": "implementation",
   "category_fallback": false,
-  "question_to_answer": "dupdetect の F1 機能「バイト単位で完全一致するファイル群の検出」を、どのハッシュ戦略で実装すべきか",
+  "question_to_answer": "F1 機能「バイト単位で完全一致するファイル群の検出」を、どのハッシュ戦略で実装すべきか",
   "phase_reached": "phase_3",
   "conflict_type": "unanimous",
   "final_weights": {
@@ -305,7 +305,7 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
 
 ### 合意プロセス記録
 
-dupdetect 実装時の step 4.5 で発動。layer1-autonomous-dev が F1 のハッシュ戦略 4 案（SHA256 全体 / MD5 全体 / 段階的比較 / xxhash）で迷い confidence 0.55 と自己評価して起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.85) の recommended を `agreed_with_modification` で合意：案C (段階的比較) 採用 + 哲学者の minority（ハッシュ一致 = バイト一致の契約明文化）を SPEC.md F1 に注記として統合。依存追加なし（hashlib 標準）。
+実装中の技術判断で不確実性が残ったため発動。layer1-autonomous-dev が F1 のハッシュ戦略 4 案で迷い confidence 0.55 と自己評価して起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.85) の recommended を `agreed_with_modification` で合意：案C (段階的比較) 採用 + 哲学者の minority（ハッシュ一致 = バイト一致の契約明文化）を SPEC に注記として統合。標準ライブラリのみで実装可能なため依存追加なし。
 
 ## council-2026-04-21T18:30:00Z-d9l3t2
 
@@ -317,7 +317,7 @@ dupdetect 実装時の step 4.5 で発動。layer1-autonomous-dev が F1 のハ�
   "council_type": "business",
   "category": "operation",
   "category_fallback": false,
-  "question_to_answer": "dupdetect の F3 安全削除（不可逆操作）をどの実装戦略で組むべきか。削除ライブラリ選定と --permanent/--yes 競合挙動の確定",
+  "question_to_answer": "F3 安全削除（不可逆操作）をどの実装戦略で組むべきか。削除支援ライブラリ選定と確認スキップ／不可逆認可フラグの責務分離の確定",
   "phase_reached": "phase_3",
   "conflict_type": "unanimous",
   "final_weights": {
@@ -326,12 +326,12 @@ dupdetect 実装時の step 4.5 で発動。layer1-autonomous-dev が F1 のハ�
     "哲学者": 2
   },
   "persona_summary": {
-    "経営者": { "stance": "案A: send2trash + typed permanent confirmation", "confidence": 0.8,  "dimension": "リスク" },
+    "経営者": { "stance": "案A: ゴミ箱経由削除 + typed permanent confirmation", "confidence": 0.8,  "dimension": "リスク" },
     "開発者": { "stance": "案A", "confidence": 0.92, "dimension": "保守性 / 可逆性" },
     "哲学者": { "stance": "案A + 責務分離の明文化", "confidence": 0.75, "dimension": "意味 / 信頼" }
   },
   "judgment_confidence": 0.88,
-  "recommended": "案A: send2trash を採用。--permanent は --yes と独立して typed confirmation（'PERMANENT' 入力）を常に要求する責務分離を CLAUDE.md / SPEC.md に明記",
+  "recommended": "案A: ゴミ箱経由削除ライブラリを採用。不可逆認可フラグは確認スキップフラグと独立して typed confirmation（特定文字列入力）を常に要求する責務分離を SPEC / 運用文書に明記",
   "minority_opinion": "哲学者の『typed confirmation 文言の国際化』『自動化スクリプトから --permanent を通せない制約』への懸念。本バージョンは仕様として受容、将来版で環境変数置換の検討余地を残す",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
@@ -345,4 +345,4 @@ dupdetect 実装時の step 4.5 で発動。layer1-autonomous-dev が F1 のハ�
 
 ### 合意プロセス記録
 
-dupdetect 実装時の step 5.5（不可逆操作直前）で発動。F3 安全削除の実装戦略と --permanent/--yes 競合挙動を確定するため起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.88) の recommended を `agreed_recommended` で合意：案A (send2trash + typed permanent confirmation)。実装は cli.py 内の `_confirm_permanent` (typed 'PERMANENT' 入力要求) で既に先行記述済みだったため、本 Council はその設計選択の事後妥当性確認として機能した。`--yes` は対話確認スキップ、`--permanent` は不可逆認可という責務分離を SPEC.md F3 / CLAUDE.md に明記する。pyproject.toml の send2trash 依存はこの Council 結果に基づく正式採用。
+実装中の不可逆操作判断（step 5.5 直前）で発動。F3 安全削除の実装戦略とフラグ間の責務分離を確定するため起動。consensus_mode=auto_agree を採用し、Judgment Agent 出力 (0.88) の recommended を `agreed_recommended` で合意：案A（ゴミ箱経由削除 + typed permanent confirmation）。CLI 実装の対話確認関数で既に先行記述済みだったため、本 Council はその設計選択の事後妥当性確認として機能した。確認スキップフラグは対話確認をスキップするのみ、不可逆認可フラグは別途 typed confirmation を要求するという責務分離を SPEC / 運用文書に明記する。依存定義への削除支援ライブラリ採用は本 Council 結果に基づく正式採用。

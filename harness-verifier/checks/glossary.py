@@ -224,7 +224,7 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                     issues.append({
                         "location": f"{md.relative_to(repo_root)}:{line_no}",
                         "message": f"forbidden term used: {term!r} (reason: {reason})",
-                        "severity": "WARN",
+                        "severity": "FAIL",
                     })
 
     # 2) crosscut_prefix.members / layern_prefix.members と実ディレクトリの整合

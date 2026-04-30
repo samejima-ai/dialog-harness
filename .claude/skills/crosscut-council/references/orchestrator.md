@@ -148,9 +148,12 @@ def compute_weight_scores(persona_outputs, final_weights, options):
         if stance == "malformed" or weight == 0:
             continue
 
-        # options 外 stance は third_way_excluded へ
+        # options 外 stance（「第3の道」「保留」「自由記述」等を含む）は
+        # third_way_excluded へ
         # (conflict-typology.md §第3の道 stance の PR1 暫定運用ルール)
-        if stance not in options and stance != "保留":
+        # judgment-agent.md §単純対立時の扱い 規則 2 と整合: 「保留」も options に
+        # 明示されない限り weight 加算対象外
+        if stance not in options:
             excluded.append({
                 "persona": persona, "stance": stance,
                 "weight": weight, "confidence": confidence,
@@ -209,6 +212,27 @@ def verify_weight_calculation(judgment_output, persona_outputs, final_weights, o
                     "同点（差 < 0.01）だが judgment_confidence ≥ 0.4。"
                     "0.4 未満で再提出すること")
 
+    # actual.tie_break_applied の一致検証（型チェック含む、truthy 偽装を防ぐ）
+    if "tie_break_applied" not in actual:
+        return ("retry", "weight_calculation.tie_break_applied フィールド欠落")
+
+    actual_tie_break_applied = actual.get("tie_break_applied")
+    if not isinstance(actual_tie_break_applied, bool):
+        return ("retry",
+                "weight_calculation.tie_break_applied は bool である必要がある "
+                f"(actual={actual_tie_break_applied!r})")
+
+    if actual_tie_break_applied != expected["tie_break_applied"]:
+        return ("retry",
+                f"tie_break_applied 不一致 "
+                f"actual={actual_tie_break_applied!r} expected={expected['tie_break_applied']!r}")
+
+    # actual.max_score_stance の一致検証
+    if actual.get("max_score_stance") != expected["max_score_stance"]:
+        return ("retry",
+                f"max_score_stance 不一致 "
+                f"actual={actual.get('max_score_stance')!r} expected={expected['max_score_stance']!r}")
+
     # max_score_stance と recommended の接頭辞一致検証
     # （recommended は「Option B（一文で）...」のような自然文付きで来るため、
     #  max_score_stance の文字列が recommended の先頭から完全一致すれば OK）
@@ -220,14 +244,32 @@ def verify_weight_calculation(judgment_output, persona_outputs, final_weights, o
                     f"recommended ('{recommended[:60]}...') が "
                     f"weight_calculation.max_score_stance ('{expected_stance}') と接頭辞不一致")
 
-    # スコア値検証（小数第2位丸めで一致）
+    # scores の stance 集合一致検証（按分・stance 捏造の検出）
+    expected_stances = sorted([s["stance"] for s in expected["scores"]])
+    actual_stances = sorted([s["stance"] for s in actual.get("scores", [])])
+    if expected_stances != actual_stances:
+        return ("retry",
+                f"scores stance 集合不一致 "
+                f"actual={actual_stances} expected={expected_stances}")
+
+    # スコア値検証（小数第2位へ丸めた値が厳密一致）
     expected_by_stance = {s["stance"]: round(s["weighted_score"], 2) for s in expected["scores"]}
     for s in actual.get("scores", []):
         e = expected_by_stance.get(s["stance"])
-        if e is None or abs(round(s["weighted_score"], 2) - e) > 0.01:
+        actual_rounded = round(s["weighted_score"], 2)
+        if e is None or actual_rounded != e:
             return ("retry",
                     f"weighted_score 不一致 stance={s['stance']} "
-                    f"actual={s['weighted_score']} expected={e}")
+                    f"actual={actual_rounded} expected={e}")
+
+    # weight_sum 検証（按分検出: persona の weight 合計が final_weights と一致するか）
+    expected_weight_sum_by_stance = {s["stance"]: s["weight_sum"] for s in expected["scores"]}
+    for s in actual.get("scores", []):
+        e_sum = expected_weight_sum_by_stance.get(s["stance"])
+        if e_sum is None or s.get("weight_sum") != e_sum:
+            return ("retry",
+                    f"weight_sum 不一致 stance={s['stance']} "
+                    f"actual={s.get('weight_sum')} expected={e_sum}")
 
     # third_way_excluded の persona 集合一致
     expected_excluded_personas = sorted([x["persona"] for x in expected["third_way_excluded"]])
@@ -236,6 +278,56 @@ def verify_weight_calculation(judgment_output, persona_outputs, final_weights, o
         return ("retry",
                 f"third_way_excluded persona 集合不一致 "
                 f"actual={actual_excluded_personas} expected={expected_excluded_personas}")
+
+    # components の整合性検証（按分隠蔽の構造的検出）
+    # supporters と components の persona 集合一致 + components の weight/confidence が
+    # 入力（final_weights / persona_outputs）と完全一致することを確認。
+    # これにより components を欠落させて weight_sum だけ合わせる隠蔽を防ぐ。
+    persona_outputs_by_persona = {p["persona"]: p for p in persona_outputs}
+    for s in actual.get("scores", []):
+        stance = s["stance"]
+        components = s.get("components", [])
+        component_personas = sorted(c.get("persona") for c in components)
+        supporter_set = sorted(s.get("supporters", []))
+        if component_personas != supporter_set:
+            return ("retry",
+                    f"components persona 集合 != supporters stance={stance} "
+                    f"components={component_personas} supporters={supporter_set}")
+        for c in components:
+            persona = c.get("persona")
+            expected_weight = final_weights.get(persona)
+            if c.get("weight") != expected_weight:
+                return ("retry",
+                        f"components[*].weight != final_weights stance={stance} "
+                        f"persona={persona} actual={c.get('weight')} expected={expected_weight}")
+            persona_output = persona_outputs_by_persona.get(persona)
+            if persona_output is None:
+                return ("retry",
+                        f"components persona が persona_outputs に存在しない "
+                        f"stance={stance} persona={persona}")
+            expected_conf = persona_output.get("confidence", 0.0)
+            if c.get("confidence") != expected_conf:
+                return ("retry",
+                        f"components[*].confidence != persona_outputs stance={stance} "
+                        f"persona={persona} actual={c.get('confidence')} expected={expected_conf}")
+
+    # 1 persona = 1 weight 不可分担保: 各 persona は scores または third_way_excluded
+    # のいずれか一箇所にのみ出現すべき（重複出現は按分の兆候）
+    # 上記 components 整合性検証で components persona ⊆ supporters が確定した後の二重防御
+    seen_personas: set[str] = set()
+    for s in actual.get("scores", []):
+        for c in s.get("components", []):
+            persona = c.get("persona")
+            if persona in seen_personas:
+                return ("retry",
+                        f"persona 重複出現 (按分の兆候): {persona!r}")
+            seen_personas.add(persona)
+    for x in actual.get("third_way_excluded", []):
+        persona = x.get("persona")
+        if persona in seen_personas:
+            return ("retry",
+                    f"persona が scores と third_way_excluded の両方に出現: {persona!r}")
+        seen_personas.add(persona)
 
     return ("ok", None)
 ```

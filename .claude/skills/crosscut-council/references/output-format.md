@@ -131,9 +131,13 @@ Orchestrator が `verify_weight_calculation`（[orchestrator.md](orchestrator.md
 人間エスカレーション（[consensus-protocol.md](consensus-protocol.md) §Step 8）。
 
 **設計意図**: Judgment Agent が weight を恣意的に分割する哲学違反
-（COUNCIL-LOG `council-2026-04-29T18-00-00Z-d1m4n5` で発生）を構造的に防ぐ。
-1 persona = 1 weight 不可分の制約をスキーマ層で明示する。`components` を persona 単位の
-配列にすることで、按分自体がスキーマ上書けない構造とする。
+（COUNCIL-LOG `council-2026-04-29T18-00-00Z-d1m4n5` で発生）を防ぐ。`components` を persona 単位の
+配列にするのは集計単位を明示するためであり、これだけでは同一 persona を複数 stance の
+`components` に重複出現させて weight を按分する表現までは禁止できない。したがって
+1 persona = 1 weight 不可分の担保は **Orchestrator 検算で行う**: 各 persona が `scores` または
+`third_way_excluded` のいずれか一箇所にのみ出現すること、かつ persona ごとの weight 合計が
+`final_weights` と一致することを `verify_weight_calculation` が検証する
+（[orchestrator.md](orchestrator.md) §決定論検算プロトコル）。
 
 **third_way_excluded**: options 外の自由記述 stance（「第3の道」「保留」等）は
 PR1 では weight 加算対象から外す暫定運用（[conflict-typology.md](conflict-typology.md)
@@ -310,7 +314,7 @@ Judgment Agent から実装者への delta 応答：
 | `final_decision` が null 以外 | エラー応答、再生成（哲学違反） |
 | follow-up が 3 回目 | 強制エスカレーション |
 | `weight_calculation` フィールド欠落 | スキーマ不適合扱い、1 回リトライ → 不一致継続なら `judgment_failed` |
-| `weight_calculation.max_score_stance` ≠ `recommended` 接頭辞 | 1 回リトライ → 不一致継続なら `judgment_failed` で人間エスカレーション |
+| `actual.weight_calculation.max_score_stance` または再計算した `expected.max_score_stance` が `recommended` 接頭辞と不一致、または `actual.weight_calculation.max_score_stance` と `expected.max_score_stance` が不一致 | 1 回リトライ → 不一致継続なら `judgment_failed` で人間エスカレーション |
 | `weight_calculation.scores[*].weighted_score` が `compute_weight_scores` 結果と不一致（小数第2位） | 1 回リトライ → 不一致継続なら `judgment_failed` |
 | `weight_calculation.tie_break_applied = true` かつ `judgment_confidence ≥ 0.4` | 1 回リトライ（同点処理の confidence 引き下げ要求）→ 不一致継続なら `judgment_failed` |
 

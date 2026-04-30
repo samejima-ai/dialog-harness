@@ -87,14 +87,19 @@ Judgment Agent の規定逸脱頻度を可視化する。設計契機: COUNCIL-L
 
 ### 監査手順
 
-1. `history/COUNCIL-LOG.md`（プロジェクトルート）と
-   `.claude/skills/crosscut-council/history/COUNCIL-LOG.md` 双方を対象に、
+1. `.claude/skills/crosscut-council/history/COUNCIL-LOG.md` を対象に、
    F1 期間（週次、直近 7 日）のエントリを抽出
-2. 各エントリの `weight_calculation` を `compute_weight_scores`
-   （[orchestrator.md](../../crosscut-council/references/orchestrator.md) §決定論検算プロトコル）に
-   再投入し、現行スキーマでの `max_score_stance` を再計算
+   （`history/COUNCIL-LOG.md` 等のリポジトリルート COUNCIL-LOG が存在する場合はそれも対象に追加）
+2. 各エントリの `weight_calculation.scores` を `weighted_score` 降順で並べ替え、
+   上位 2 件の差分から最大 stance を再計算する
+   （例: `sorted(scores, key=lambda s: s["weighted_score"], reverse=True)` を用い、
+   1 位と 2 位の `weighted_score` 差が `< 0.01` なら tie と判定）。
+   - tie でない場合: 1 位の stance がエントリ内の `max_score_stance` と一致し、
+     かつ `recommended` がその `max_score_stance` で始まることを確認
+   - tie の場合: `max_score_stance=null` かつ `tie_break_applied=true` を確認し、
+     このエントリでは `recommended` 接頭辞照合をスキップ
 3. 以下を集計:
-   - **一致率**: `recommended` が `max_score_stance` で始まるエントリの割合
+   - **一致率**: tie でないエントリのうち、`recommended` が `max_score_stance` で始まるエントリの割合
    - **third_way_excluded 出現率**: `third_way_excluded` が空でないエントリの割合
    - **retry 発生率**: `weight_calculation_retry_count > 0` のエントリの割合
    - **judgment_failed 件数**: `status = judgment_failed` のエントリ数
