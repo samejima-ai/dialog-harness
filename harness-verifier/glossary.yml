@@ -132,6 +132,23 @@ dev_modes:
   github_autonomous:
     definition: "claude-code-action 経由で自律実装、CTL 育成連動"
 
+# S/U/R 三軸スコア（規模・不確実性・リスク、複数箇所で使用される対応関係の集約宣言）
+# 用途: regime-assessment.md（モード判定）/ DH-PHILOSOPHY-INSIGHTS.md §4.4・§10.5（判断モーメント介入閾値）
+# / DIMENSIONS.md §7.5（hybrid 閾値、v5.5.0 候補）
+score_axes:
+  S:
+    name: "規模"
+    aliases: ["Scale", "scale"]
+    definition: "プロジェクト/判断モーメントの規模軸（影響範囲・対象数）"
+  U:
+    name: "不確実性"
+    aliases: ["Uncertainty", "uncertainty"]
+    definition: "プロジェクト/判断モーメントの不確実性軸（仕様・前提の確定度）"
+  R:
+    name: "リスク"
+    aliases: ["Risk", "risk"]
+    definition: "プロジェクト/判断モーメントのリスク軸（不可逆性・影響度）"
+
 # 5 層検出スタック（layer1-autonomous-dev/references/inferential-sensor-v2.md）
 five_layer_stack:
   layer_1:
@@ -167,14 +184,26 @@ layern_prefix:
   definition: "特定 Layer 専属 skill の命名規則"
   members: [layer0-spec-architect, layer0-onboarding, layer1-autonomous-dev, layer1-independent-reviewer, layer2-orchestrator, layer2-integration-verifier]
 
-# 5 本柱（philosophy.md）
+# 5 本柱（philosophy.md 第 1-5 条、行動原則）
+# 概念階層: P1-P5 は「行動原則」として 5 本柱を構成する
 philosophy_pillars:
   P1: "フラクタル原則"
   P2: "Shift Left 原則"
   P3: "情報純度原則"
   P4: "人間責務原則"
   P5: "献上哲学"
-  P6: "人間 ≒ Council"
+
+# 6 条憲法の構造（philosophy.md 第 1-6 条）
+# 概念階層: 第 1-5 条 = 5 本柱（行動原則）、第 6 条 = 関係性原則（次元間関係性原則）
+# 第 6 条は 5 本柱の延長ではなく、独立した「関係性原則」のカテゴリ
+# 議題 4（council-2026-04-30T09:03:00Z-d4at04, agreed_recommended）の確定
+philosophy_articles:
+  第1条: "フラクタル原則（P1 = 5 本柱）"
+  第2条: "Shift Left 原則（P2 = 5 本柱）"
+  第3条: "情報純度原則（P3 = 5 本柱）"
+  第4条: "人間責務原則（P4 = 5 本柱）"
+  第5条: "献上哲学（P5 = 5 本柱）"
+  第6条: "人間 ≒ Council 原則（関係性原則、5 本柱とは別カテゴリ）"
 
 # 禁則事項（誤用検出）
 #

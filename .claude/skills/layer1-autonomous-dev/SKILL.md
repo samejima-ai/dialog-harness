@@ -1,5 +1,6 @@
 ---
 name: layer1-autonomous-dev
+dimension: D4
 description: >
   Layer 0（spec-architect）が構築した仕様ドキュメントと開発環境を受け取り、
   AI単独で開発を完遂し成果物を人間に献上するスキル。
@@ -361,5 +362,5 @@ L0 で儀式がスキップされた場合、L1 は実装中に以下を暗黙�
 - `.claude/skills/crosscut-council/` — 判断点での合議制判定（既存、v5.0.0 でリネーム）
 - `.claude/skills/crosscut-issue-implementer/` — Issue → 実装の起動主体（L1 が呼ばれる側、Actions 経由ありえる）
 - `.claude/skills/crosscut-verifier-drift/` — PR 作成時の SPEC drift 検出（L1 自己検証を補完）
-- `.claude/skills/crosscut-verifier-philosophy/` — 5本柱整合検証（v5.1.0 で実装、現状 placeholder）
+- `.claude/skills/crosscut-verifier-philosophy/` — 5 本柱整合検証（v5.1.0 で実装、現状 placeholder）
 - `.claude/skills/crosscut-feedback-loop/` — 検証 FAIL / drift / 思想違反の還流先決定

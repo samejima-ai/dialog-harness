@@ -1,5 +1,6 @@
 ---
 name: rtk-integration
+dimension: D4
 description: >
   Claude Code 用の rtk (Rust Token Killer) 統合スキル。
   rtk は Rust 製 CLI プロキシで、Claude Code が Bash 経由で実行する

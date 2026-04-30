@@ -1,12 +1,13 @@
 ---
 name: crosscut-verifier-philosophy
+dimension: D4
 description: >
   **v5.0.0 では発動禁止 / DO NOT TRIGGER in v5.0.0**。
-  本 skill は仕様3-哲学（5本柱整合検証）の placeholder で、判定ロジックは v5.1.0 minor 改修で本実装される。
+  本 skill は仕様3-哲学（5 本柱整合検証）の placeholder で、判定ロジックは v5.1.0 minor 改修で本実装される。
   v5.0.0 環境でこの skill が選択された場合、即座に「未実装エラー」を返して人間に献上する以外の動作はしない。
   v5.0.0 では誤発動防止のため、いかなる発話でもこの skill を選択してはならない。
   v5.1.0 以降では CTL ≥ 2 で発動し、PR 内容を philosophy.md（6条憲法）と照合する。
-  v5.1.0 以降の想定トリガー語句（v5.0.0 では非トリガー）:「思想検証」「5本柱整合チェック」「philosophy 違反検出」等。
+  v5.1.0 以降の想定トリガー語句（v5.0.0 では非トリガー）:「思想検証」「5 本柱整合チェック」「philosophy 違反検出」等。
 ---
 
 # Philosophy Verifier (Placeholder)

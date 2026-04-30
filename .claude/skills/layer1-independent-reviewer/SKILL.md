@@ -1,5 +1,6 @@
 ---
 name: layer1-independent-reviewer
+dimension: D4
 description: >
   L1（autonomous-dev）の成果物を、実装コンテキストから隔離した状態で
   SPEC.md/DONT.md/HANDOFF.md/sensors と照合する汎用独立検証スキル。
@@ -181,5 +182,5 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 独立検証は本 skill の責務で完結するが、PR レベル / CI 上での補完層として以下を併用する：
 
 - `.claude/skills/crosscut-verifier-drift/` — PR 差分の SPEC drift 検出。本 skill の指摘と並列実行され、結果は VERIFICATION.md に統合
-- `.claude/skills/crosscut-verifier-philosophy/` — 5本柱整合検証（v5.1.0 で実装、現状 placeholder）
+- `.claude/skills/crosscut-verifier-philosophy/` — 5 本柱整合検証（v5.1.0 で実装、現状 placeholder）
 - `.claude/skills/crosscut-feedback-loop/` — 検出された FAIL / drift / 思想違反を実装層・設計層・L0 へ還流（独立検証から直接還流せず、本 skill 経由で feedback-loop に渡す）

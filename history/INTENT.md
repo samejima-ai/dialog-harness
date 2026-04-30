@@ -113,4 +113,4 @@ GitHub 連携前提の自律駆動開発を 3 段階で表現する軸。
 | 仕様 3 | crosscut-verifier-drift / -philosophy | drift 検知 + 思想検証（philosophy は v5.1.0 placeholder） |
 | 仕様 4 | crosscut-feedback-loop | 検証結果を設計層・実装層・L0 に還流 |
 
-4 仕様は同型構造（CTL 連動 / mode 別動作 / 還流ポイント明示）を持ち、5本柱 P1（フラクタル原則）を skill レベルで発現する。
+4 仕様は同型構造（CTL 連動 / mode 別動作 / 還流ポイント明示）を持ち、5 本柱 P1（フラクタル原則）を skill レベルで発現する。

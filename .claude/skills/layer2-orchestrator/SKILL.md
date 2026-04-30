@@ -1,5 +1,6 @@
 ---
 name: layer2-orchestrator
+dimension: D4
 description: >
   L2発動時のみトリガーされる統括指揮スキル（雛形）。
   **REGIME.md で L2 と判定されたプロジェクトでのみ起動する**（spec-architect の判定を経由必須）。

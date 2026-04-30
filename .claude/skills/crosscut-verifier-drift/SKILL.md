@@ -1,5 +1,6 @@
 ---
 name: crosscut-verifier-drift
+dimension: D4
 description: >
   実装が SPEC/ADR から逸脱していないかを検証する横断機構（仕様3-drift、v5.0.0 追加）。
   CTL ≥ 1 で発動。CI 上で自動実行され、PR 作成時の自動 drift 検出を担う。
@@ -42,7 +43,7 @@ description: >
 | 第4層 推論的センサー | 「仕様に合う・動く・使える」 |
 | 第5層 独立検証 | layer1-independent-reviewer |
 | **追加層 drift** | **SPEC/ADR との乖離（本 skill）** |
-| 追加層 思想 | 5本柱整合（crosscut-verifier-philosophy、v5.1.0） |
+| 追加層 思想 | 5 本柱整合（crosscut-verifier-philosophy、v5.1.0） |
 
 ## 関連
 
