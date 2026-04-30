@@ -1,5 +1,6 @@
 ---
 name: crosscut-feedback-loop
+dimension: D4
 description: >
   検証層で発覚した問題を設計層・実装層・L0 へ還流する横断機構（仕様4、v5.0.0 追加）。
   drift / 思想違反 / 形式 FAIL の種別ごとに還流先を判定する。

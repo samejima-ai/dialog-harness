@@ -3,6 +3,12 @@
 Layer 0（spec-architect）が開発モードを決定するためのスコアリングプロトコル。
 規模（S）・不確実性（U）・リスク（R）の3軸で評価する。
 
+> **S/U/R 用語対応**: `S = 規模 = Scale` / `U = 不確実性 = Uncertainty` / `R = リスク = Risk`。
+> 用語の正典宣言は `harness-verifier/glossary.yml` の `score_axes` キーを参照。
+> 同じ S/U/R 軸は本プロトコル（モード判定）以外でも使用される
+> （例: `history/DH-PHILOSOPHY-INSIGHTS.md` §4.4 / §10.5 の判断モーメント介入閾値、
+> `history/DIMENSIONS.md` §7.5 の hybrid 閾値）。射程・配点は文脈ごとに異なる。
+
 ---
 
 ## 判定原則

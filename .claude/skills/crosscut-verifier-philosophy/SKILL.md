@@ -1,5 +1,6 @@
 ---
 name: crosscut-verifier-philosophy
+dimension: D4
 description: >
   **v5.0.0 では発動禁止 / DO NOT TRIGGER in v5.0.0**。
   本 skill は仕様3-哲学（5 本柱整合検証）の placeholder で、判定ロジックは v5.1.0 minor 改修で本実装される。

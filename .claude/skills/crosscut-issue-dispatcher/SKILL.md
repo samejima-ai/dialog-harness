@@ -1,5 +1,6 @@
 ---
 name: crosscut-issue-dispatcher
+dimension: D4
 description: >
   SPEC/ADR 差分から GitHub Issue を生成する横断機構（仕様1、v5.0.0 追加）。
   REGIME.md の dev_mode が github_assisted 以上で発動。CTL 連動で自動化度が変化する。

@@ -1,5 +1,6 @@
 ---
 name: layer1-independent-reviewer
+dimension: D4
 description: >
   L1（autonomous-dev）の成果物を、実装コンテキストから隔離した状態で
   SPEC.md/DONT.md/HANDOFF.md/sensors と照合する汎用独立検証スキル。

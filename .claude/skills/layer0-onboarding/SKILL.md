@@ -1,5 +1,6 @@
 ---
 name: layer0-onboarding
+dimension: D4
 description: >
   既存プロジェクトから仕様書を抽出したい場合、または dialog-harness-layers を後付け導入して
   AI 自律開発に移行したい場合に起動する L0 兄弟スキル（reverse-spec & 後付け harness 化）。

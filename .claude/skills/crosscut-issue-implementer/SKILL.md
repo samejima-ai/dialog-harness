@@ -1,5 +1,6 @@
 ---
 name: crosscut-issue-implementer
+dimension: D4
 description: >
   GitHub Issue を起点に CC 実装を起動する横断機構（仕様2、v5.0.0 追加）。
   ローカル worktree または GitHub Actions 経由（claude-code-action 公式採用）で実行。

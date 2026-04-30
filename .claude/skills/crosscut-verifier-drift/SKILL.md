@@ -1,5 +1,6 @@
 ---
 name: crosscut-verifier-drift
+dimension: D4
 description: >
   実装が SPEC/ADR から逸脱していないかを検証する横断機構（仕様3-drift、v5.0.0 追加）。
   CTL ≥ 1 で発動。CI 上で自動実行され、PR 作成時の自動 drift 検出を担う。

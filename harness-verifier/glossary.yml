@@ -132,6 +132,23 @@ dev_modes:
   github_autonomous:
     definition: "claude-code-action 経由で自律実装、CTL 育成連動"
 
+# S/U/R 三軸スコア（規模・不確実性・リスク、複数箇所で使用される対応関係の集約宣言）
+# 用途: regime-assessment.md（モード判定）/ DH-PHILOSOPHY-INSIGHTS.md §4.4・§10.5（判断モーメント介入閾値）
+# / DIMENSIONS.md §7.5（hybrid 閾値、v5.5.0 候補）
+score_axes:
+  S:
+    name: "規模"
+    aliases: ["Scale", "scale"]
+    definition: "プロジェクト/判断モーメントの規模軸（影響範囲・対象数）"
+  U:
+    name: "不確実性"
+    aliases: ["Uncertainty", "uncertainty"]
+    definition: "プロジェクト/判断モーメントの不確実性軸（仕様・前提の確定度）"
+  R:
+    name: "リスク"
+    aliases: ["Risk", "risk"]
+    definition: "プロジェクト/判断モーメントのリスク軸（不可逆性・影響度）"
+
 # 5 層検出スタック（layer1-autonomous-dev/references/inferential-sensor-v2.md）
 five_layer_stack:
   layer_1:

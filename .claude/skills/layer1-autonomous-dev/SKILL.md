@@ -1,5 +1,6 @@
 ---
 name: layer1-autonomous-dev
+dimension: D4
 description: >
   Layer 0（spec-architect）が構築した仕様ドキュメントと開発環境を受け取り、
   AI単独で開発を完遂し成果物を人間に献上するスキル。
