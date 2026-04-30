@@ -2,6 +2,58 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.3.0（minor 昇格、後方互換維持）
+
+- 判定日: 2026-04-30
+- AI 能力バージョン: claude-opus-4-7
+- 改修主体: layer0-spec-architect → layer1-autonomous-dev（M2 体制、v5.0.0/v5.1.0/v5.2.0 と同一）
+- 起源: HANDOFF「1 機能完遂の自律駆動 WF 設計」2026-04-30 + Council 合議（invocation_id: `council-2026-04-30T14:30:00Z-wfsurf1` / `council-2026-04-30T14:50:00Z-wfbase1`）+ AD-015/AD-016/AD-017
+- 自己検証: `delivery/SELF-VERIFICATION-v5.3.0.md`
+
+### 非破壊追加（破壊項目なし）
+
+| 項目 | 内容 |
+|---|---|
+| WF 形状単一性 | layer1-autonomous-dev SKILL.md §原則に明文化（AD-015）。機能タイプ別 WF 群を作らない運用原則 |
+| 献上トリガー Type D | 異常献上（AI 自己解決不能な技術的例外）を新設（AD-016）。philosophy.md §5 / SKILL.md §8 / delivery-format.md に追加 |
+| WF 選択責任 | 設計差分ゼロ（AD-017）。WF 単一化により問題消失、既存メカニズム（Type C / 体制事後評価 / Type D）で吸収 |
+| `references/wf-baseline-rationale.md` | layer1-autonomous-dev に新設。観測閾値・厚化トリガー・第 3 の道（v6.0.0 候補）の温存記述 |
+| philosophy.md §5 | Type D 節と Type 二項分類の限界（v6.0.0 候補）を追加。第 8 条候補「献上 3 軸の存在論」を温存 |
+| バージョン記録 | INTENT / ARCH-DECISIONS / REGIME-LOG / CHANGELOG / COUNCIL-LOG（既存記載）|
+
+破壊項目なし。既存 SKILL.md セクション番号、既存 references の本文、crosscut-* / templates/ / harness-verifier/ は不変。
+利用者プロジェクトには配布されない（`harness-verifier/` 同様、本リリースは DH 本体の規約改訂）。
+
+### 移行方針
+
+v5.3.0 は **既存 Lifecycle ≥ 1 プロジェクトに対する強制適用なし**（v5.1.0 / v5.2.0 と同パターン）。
+利用者プロジェクト側には影響しない。dialog-harness リポジトリ自身の SK/RL 規約のみで動作する。
+v5.2.0 → v5.3.0 への upgrade は SKILL.md の v5.3.0 セクション読込で完結（個別の migration script は不要）。
+
+### 不変項目（spec §2 遵守確認）
+
+| 不変項目 | 遵守状況 |
+|---|---|
+| 5 本柱原則（P1-P5） | ○（特に P1 フラクタル原則を強化する方向の改訂） |
+| 履歴層規約 | ○（INTENT/ARCH-DECISIONS/REGIME-LOG/CHANGELOG 既存形式準拠） |
+| 献上プロトコル | ○（Type A/B/C を不変、Type D は明示拡張） |
+| Level A skill 本体不変 | ○（layer1-autonomous-dev SKILL.md は §原則 + §8 表 + §DELIVERY 抜粋への追記のみ、本体ロジック不変） |
+| 継承禁止項目の指定自体 | ○ |
+| 3 層 + 1 横断構造 | ○（新規 skill 追加なし） |
+
+### モード判定（DH 本体自身）
+
+DH 本体自身の REGIME.md は本改修スコープ外（メタ案件）。改修体制は以下：
+
+- Mode: M2 標準（S=小、U=低、R=低、N=低、単一ドメイン、L2 閾値未達）
+- 体制: L0（spec-architect）→ L1（autonomous-dev）+ layer1-independent-reviewer
+- AI 能力バージョン: claude-opus-4-7
+
+### 次バージョン予定
+
+- v5.3.x または v5.4.0: `crosscut-verifier-philosophy` 本実装（v5.1.0 / v5.2.0 から再々後送）
+- v6.0.0 候補: 第 3 の道（単一 WF + 動的 context 注入）/ 献上 3 軸構造 / 次元論の philosophy.md 第 7 条昇格
+
 ## v5.2.0（minor 昇格、後方互換維持）
 
 - 判定日: 2026-04-29

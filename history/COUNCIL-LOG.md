@@ -461,3 +461,90 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-04-30T11:25:00Z"
+
+- invocation_id: "council-2026-04-30T14:30:00Z-wfsurf1"
+  timestamp: "2026-04-30T14:30:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "1機能完遂の自律駆動WFにおける『献上トリガー』の分類構造をどう設計すべきか（HANDOFF 2026-04-30 論点2）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案D: 既存Type A/B/C保持 + 異常献上Type D新設", confidence: 0.65, dimension: "ROI" }
+    開発者: { stance: "案D: 既存Type A/B/C保持 + 異常献上Type D新設", confidence: 0.85, dimension: "情報純度 / 可逆性" }
+    哲学者: { stance: "第3の道: 案Cベース + 献上3軸構造（トリガー × 中身 × 権限）の哲学化", confidence: 0.6, dimension: "前提への問い" }
+  judgment_confidence: 0.72
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案D: 既存Type A/B/C保持 + 異常献上Type D新設"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.5
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第3の道: 案Cベース + 献上3軸構造の哲学化", weight: 5, confidence: 0.6, reason: "options 外 stance（第3の道）" }
+    max_score_stance: "案D: 既存Type A/B/C保持 + 異常献上Type D新設"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案D: 既存Type A/B/C保持 + 異常献上Type D新設。philosophy.md §5 への minor 追加（major 昇格不要）。Type D 発動条件は『AI 自己解決不能な技術的例外（依存破損・env 不能・想定外例外）』で SPEC 修正経路（Type A）から分離"
+  minority_opinion: "哲学者: 献上は『トリガー軸 × 中身軸 × 権限軸』の3軸構造で記述されるべき。Type D 単純追加は二項分類の罠（5年スパンで Type E/F/G 追加要求が再発する可能性）。philosophy 第8条候補（第7条＝次元論と D4 の独立性 と並列の『献上3軸の存在論』）として温存し、v6.0.0 major 昇格時に併合検討"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-04-30T14:35:00Z"
+
+- invocation_id: "council-2026-04-30T14:50:00Z-wfbase1"
+  timestamp: "2026-04-30T14:50:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "1機能完遂の自律駆動WFの基底構造をどう設計すべきか（HANDOFF 2026-04-30 論点1）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案H: Hybrid（薄い基底で開始、観測ベースで厚化）", confidence: 0.7, dimension: "ROI / オプション価値" }
+    開発者: { stance: "案H: Hybrid（薄い基底で開始、観測ベースで厚化）", confidence: 0.85, dimension: "可逆性 / 情報純度" }
+    哲学者: { stance: "案N: WF 多様化しない（フラクタル原則による形状単一化）", confidence: 0.65, dimension: "前提への問い / フラクタル原則" }
+  judgment_confidence: 0.75
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案H: Hybrid（薄い基底で開始、観測ベースで厚化）"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.7 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+      - stance: "案N: WF 多様化しない"
+        supporters: ["哲学者"]
+        weight_sum: 5
+        weighted_score: 3.25
+        components:
+          - { persona: "哲学者", weight: 5, confidence: 0.65 }
+    third_way_excluded: []
+    max_score_stance: "案H: Hybrid（薄い基底で開始、観測ベースで厚化）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案H: Hybrid（薄い基底で開始、観測ベースで厚化）。哲学者少数意見を運用原則として組み込み、『WF 形状単一性』を最優先、機能タイプ別 override は最小限・観測駆動に限定。観測閾値: 同一 override パターンが3機能タイプ以上で繰り返された時点で基底側引き上げを Council 経由で検討"
+  minority_opinion: "哲学者: HANDOFF の『機能タイプ別 WF 群』前提自体への問い。philosophy §1 フラクタル原則は形状単一性を要求し、機能タイプ軸分業は職種軸分業と同型の罠。案H採用後も WF 形状単一性を運用原則として保つ。極論として『単一 WF + 動的 context 注入』の第3の道も検討余地あり（v6.0.0 候補）"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-04-30T14:55:00Z"

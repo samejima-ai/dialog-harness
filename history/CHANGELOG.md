@@ -2,6 +2,62 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.3.0 (released 2026-04-30)
+
+minor 昇格。**1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定**し、献上トリガー Type D（異常献上）を新設。
+HANDOFF「1 機能完遂の自律駆動 WF 設計」2026-04-30 と Council 合議（`council-2026-04-30T14:30:00Z-wfsurf1` / `council-2026-04-30T14:50:00Z-wfbase1`）を起源とする。
+後方互換維持（v5.0.0 / v5.1.0 / v5.2.0 と同パターン）。利用者プロジェクトには配布されない。
+
+`crosscut-verifier-philosophy` 本実装は本リリース対象外（v5.3.x または v5.4.0 候補へ再々後送）。
+
+### Step 0: L0 設計献上の確認
+
+L0 (spec-architect) で 5 phase 完了（論点 1 / 2 / 3 + 認識ズレ確認 + 落とし込み）。
+献上物: `delivery/L0-WF-DESIGN-2026-04-30.md`。AD-015 / AD-016 / AD-017 で実装スコープを確定。
+
+### Step 1: philosophy.md §5 に Type D 追加
+
+`.claude/skills/layer0-spec-architect/references/philosophy.md`:
+- §タイプD（異常献上）節を追加（タイプC の後）
+- §タイプ対応表に Type D 行を追加
+- §タイプ二項分類の限界（v6.0.0 候補）を追加（第 8 条候補「献上 3 軸の存在論」温存記述）
+
+### Step 2: layer1-autonomous-dev SKILL.md 三点修正
+
+`.claude/skills/layer1-autonomous-dev/SKILL.md`:
+- §原則に「WF 形状単一性」原則を 1 項目追加
+- §8 献上の表を 2 種 → 4 種に拡張（Type A / B / C / D）
+- §DELIVERY.md 抜粋（イメージ）に Type D 行を追加
+
+### Step 3: delivery-format.md に Type D 節と表更新
+
+`.claude/skills/layer1-autonomous-dev/references/delivery-format.md`:
+- §献上物タイプ一覧表に Type D 行を追加
+- §タイプA と D の差異を明示
+- §献上物タイプD（異常献上）節を新設（プロトコル / 構造 / 記述ルール）
+
+### Step 4: wf-baseline-rationale.md 新設
+
+`.claude/skills/layer1-autonomous-dev/references/wf-baseline-rationale.md` を新設：
+- 採用方針（基底 WF / 機能タイプ別 WF 群を作らない理由 / 厚化閾値 / 観測対象外）
+- 第 3 の道（v6.0.0 候補）の温存記述
+- 関連レコードへのリンク（AD / INTENT / COUNCIL / philosophy）
+
+### Step 5: 履歴層更新
+
+- `history/ARCH-DECISIONS.md` の「v5.3.0 候補」→「v5.3.0」確定昇格
+- `history/INTENT.md` の同上
+- `history/REGIME-LOG.md` に v5.3.0 セクション追加
+- 本 CHANGELOG.md に v5.3.0 セクション追加（本セクション）
+
+### Step 6: 自己検証 + 独立検証 + 献上
+
+- harness-verifier 5 検査全 PASS（D4 整合性維持確認）
+- 計算的センサー: SKILL.md / references の構文整合・broken reference なし
+- 推論的センサー: 「仕様に合う・動く・使える」3 観点で自己評価 PASS
+- 独立検証 (layer1-independent-reviewer) スコープ: SK/RL/WF 規約整合
+- 献上物: `delivery/SELF-VERIFICATION-v5.3.0.md` + `delivery/L1-DELIVERY-v5.3.0.md`
+
 ## v5.2.0 (released 2026-04-30)
 
 minor 昇格。次元論（D1〜D5）導入と D4 検査機構（`harness-verifier/`）の独立配置。
