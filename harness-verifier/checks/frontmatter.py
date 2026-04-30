@@ -1,7 +1,7 @@
 """検証 1: frontmatter 整合性
 
 全 SKILL.md の YAML frontmatter から必須フィールド（name / description）を検査する。
-skill-creator 規約に基づき、name は kebab-case、description は 100-1024 chars。
+skill-creator 規約に基づき、name は kebab-case、description は 30-1024 chars。
 """
 
 from __future__ import annotations

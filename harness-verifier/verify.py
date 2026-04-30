@@ -39,7 +39,7 @@ from checks import (
 CHECK_REGISTRY: list[tuple[str, Any]] = [
     ("frontmatter 整合性", frontmatter),
     ("参照 path 有効性", references),
-    ("SK 間依存グラフ循環", dependency_graph),
+    ("SK 間参照の健全性", dependency_graph),
     ("5 層構造保全", five_layer_structure),
     ("用語辞書整合", glossary_check),
 ]
@@ -135,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     results: list[dict[str, Any]] = []
+    has_internal_error = False
     for name, module in CHECK_REGISTRY:
         try:
             issues = module.run(skills_dir=skills_dir, glossary_path=glossary_path)
@@ -149,7 +150,11 @@ def main(argv: list[str] | None = None) -> int:
         status = "PASS"
         for issue in issues:
             sev = issue.get("severity", "FAIL")
-            if sev == "FAIL" or sev == "ERROR":
+            if sev == "ERROR":
+                has_internal_error = True
+                status = "FAIL"
+                break
+            if sev == "FAIL":
                 status = "FAIL"
                 break
             if sev == "WARN" and args.strict:
@@ -169,6 +174,8 @@ def main(argv: list[str] | None = None) -> int:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(render_report(results, args.commit_sha), encoding="utf-8")
 
+    if has_internal_error:
+        return 2
     return 0 if overall_pass else 1
 
 

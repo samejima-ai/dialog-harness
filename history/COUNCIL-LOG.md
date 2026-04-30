@@ -3,6 +3,15 @@
 Council 発動の履歴（append-only）。
 スキーマは `.claude/skills/crosscut-council/references/output-format.md` §8 に準拠。
 
+## 訂正記録（PR #21 マージ後の一度限りの整合修正）
+
+PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を検出し、append-only の例外として一度限りの訂正を実施した（PR: chore/address-pr-21-22-23-reviews）:
+
+1. **invocation_id 重複**: `d4mtr1` を 4 entry で再利用していた（spec: 「1 invocation = 1 エントリ」違反）。4 論点それぞれに固有 ID を割当： `d4mtr1` (論点 1: 命名) / `d4mtr2` (論点 2: 機構名) / `d4mtr3` (論点 3: バージョン) / `d4mtr4` (論点 4: スコープ)。元々は同 timestamp での 4 sub-judgment を batch session として記録していたが、各エントリが独立 judgment 出力を持つ構造のため renumber が schema 整合に最も近い。
+2. **conflict_type schema 違反**: `unanimous_with_variance` は PR1 schema (`unanimous` / `simple_conflict`) に存在しない。`unanimous` に修正、variance は既に `persona_summary` に保持されている。
+
+これは crosscut-council/history/COUNCIL-LOG.md の m4t4q1 (`agreed` → `agreed_with_modification`) 訂正と同型の例外措置。本訂正以降、同種の renumber/schema 修正は行わない。
+
 ---
 
 - invocation_id: "council-2026-04-29T21:00:00Z-d4mtr1"
@@ -29,7 +38,7 @@ Council 発動の履歴（append-only）。
   follow_up_questions_count: 0
   agreed_at: "2026-04-29T21:30:00Z"
 
-- invocation_id: "council-2026-04-29T21:00:00Z-d4mtr1"
+- invocation_id: "council-2026-04-29T21:00:00Z-d4mtr2"
   timestamp: "2026-04-29T21:00:00Z"
   source_skill: "layer0-spec-architect"
   question_to_answer: "D4 検査機構の名称（meta-verifier / harness-verifier / dh-integrity / singularity）"
@@ -53,7 +62,7 @@ Council 発動の履歴（append-only）。
   follow_up_questions_count: 0
   agreed_at: "2026-04-29T21:30:00Z"
 
-- invocation_id: "council-2026-04-29T21:00:00Z-d4mtr1"
+- invocation_id: "council-2026-04-29T21:00:00Z-d4mtr3"
   timestamp: "2026-04-29T21:00:00Z"
   source_skill: "layer0-spec-architect"
   question_to_answer: "バージョン昇格区分（v5.2.0 minor / v6.0.0 major / v5.2.0 + v5.3.0 後送）"
@@ -77,7 +86,7 @@ Council 発動の履歴（append-only）。
   follow_up_questions_count: 0
   agreed_at: "2026-04-29T21:30:00Z"
 
-- invocation_id: "council-2026-04-29T21:00:00Z-d4mtr1"
+- invocation_id: "council-2026-04-29T21:00:00Z-d4mtr4"
   timestamp: "2026-04-29T21:00:00Z"
   source_skill: "layer0-spec-architect"
   question_to_answer: "検証スコープ 5 項目の D4 対象妥当性"
@@ -85,7 +94,7 @@ Council 発動の履歴（append-only）。
   category: "implementation"
   category_fallback: false
   phase_reached: "phase_3"
-  conflict_type: "unanimous_with_variance"
+  conflict_type: "unanimous"
   final_weights:
     経営者: 2
     開発者: 6
@@ -109,7 +118,7 @@ Council 発動の履歴（append-only）。
   category: "implementation"
   category_fallback: false
   phase_reached: "phase_3"
-  conflict_type: "unanimous_with_variance"
+  conflict_type: "unanimous"
   final_weights:
     経営者: 2
     開発者: 6

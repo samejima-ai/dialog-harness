@@ -25,7 +25,7 @@ D5（人間）が最外殻として `harness-verifier/` の出力を判定する
 |---|---|---|
 | 1 | frontmatter 整合性 | 全 SKILL.md の name / description 必須フィールドの linter 検査 |
 | 2 | 参照 path 有効性 | references/ 内および skill 間相対パスの dead link 検出 |
-| 3 | SK 間依存グラフ循環 | 関連スキル参照グラフの循環検出 |
+| 3 | SK 間参照の健全性 | 関連スキル参照の未知 skill 参照および直接自己参照の検出 |
 | 4 | 5 層構造保全 | `inferential-sensor-v2.md` 内の 5 層名と他 skill 引用の整合検査 |
 | 5 | 用語辞書整合 | `glossary.yml` 定義語が DH 全 skill で正しく使われているか |
 
