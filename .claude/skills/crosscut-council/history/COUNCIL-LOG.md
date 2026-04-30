@@ -406,3 +406,243 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
 ### 合意プロセス記録
 
 dialog-harness リポジトリの cleanup 判断（PR #24 マージ後の残務）でユーザーが直接 `councilで判断して` と要請して発動。3 Persona 全員が案B（.gitignore 追加）を支持し unanimous 成立。dimension は経営者=ROI/リスク、開発者=可逆性/保守性、哲学者=意味/長期影響と多様性あり。判定確度 0.85 で人間エスカレーション閾値（0.5）を上回り auto_agree モード適用。哲学者 minority（半年後再評価）は recommended テキストに統合済みのため `agreed_recommended`（modification 不要）で合意。本記録の 5 分後に commit 確定。
+
+## council-2026-04-30T09:00:00Z-d4at01
+
+```json
+{
+  "invocation_id": "council-2026-04-30T09:00:00Z-d4at01",
+  "timestamp": "2026-04-30T09:00:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "S/U/R 三軸スコア統合方針: regime-assessment.md（モード判定）/ INSIGHTS §4.4・§10.5（介入閾値）/ DIMENSIONS §7.5（hybrid 閾値）の 3 箇所で独立定義された S/U/R をどう整理するか",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A: 独立維持", "confidence": 0.7,  "dimension": "ROI / 機会損失" },
+    "開発者": { "stance": "案A: 独立維持", "confidence": 0.8,  "dimension": "保守性 / 可逆性" },
+    "哲学者": { "stance": "案A: 独立維持", "confidence": 0.6,  "dimension": "意味 / 階層性" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案A: 独立維持",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 7.5,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.7},
+          {"persona": "開発者", "weight": 3, "confidence": 0.8},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.6}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案A: 独立維持",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.78,
+  "recommended": "案A: 独立維持。3 つの S/U/R は射程が異なる（regime = プロジェクト全体、Council 介入閾値 = 個別判断モーメント、hybrid = 学習済み閾値）。共通用語表は M-4（glossary.yml score_axes）で導入済。各文脈の独立性を Russell タイプ理論的に保つ。将来 v5.5.0 hybrid 実装時に統合視点（哲学者 minority）を再検討する余地は残す",
+  "minority_opinion": "哲学者: 本質的には同じ S/U/R 概念を異なる射程で使っているため、将来的な統合視点（案 B）を保持しつつ運用は独立で。長期影響として『同名異義語による混乱』を懸念、glossary.yml の score_axes が単一典拠として機能することを mitigation として要請",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T09:00:30Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+D4 整合性監査（delivery/D4-AUDIT-2026-04-30.md）で検出された議題 1 として一括諮問。L0 spec-architect が起動した D4 改修 minor 段階での複数案 viable な judgment 案件。3 Persona 全員が案 A（独立維持）を支持し unanimous 成立。哲学者 minority（将来統合視点保持）は M-4 で既に glossary.yml score_axes として実装済のため `agreed_recommended`（modification 不要）で合意。
+
+## council-2026-04-30T09:01:00Z-d4at02
+
+```json
+{
+  "invocation_id": "council-2026-04-30T09:01:00Z-d4at02",
+  "timestamp": "2026-04-30T09:01:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "operation",
+  "category_fallback": false,
+  "question_to_answer": "DH-PHILOSOPHY-INSIGHTS.md の最終配置: history/ 維持か references/ 昇格か v6.0.0 で philosophy.md 統合か",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 4,
+    "開発者": 4,
+    "哲学者": 2
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A: history/ 維持", "confidence": 0.6,  "dimension": "ROI / 運用コスト" },
+    "開発者": { "stance": "案A: history/ 維持", "confidence": 0.7,  "dimension": "YAGNI / 保守性" },
+    "哲学者": { "stance": "案A: history/ 維持", "confidence": 0.65, "dimension": "意味 / 経緯記録" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案A: history/ 維持",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 10,
+        "weighted_score": 6.5,
+        "components": [
+          {"persona": "経営者", "weight": 4, "confidence": 0.6},
+          {"persona": "開発者", "weight": 4, "confidence": 0.7},
+          {"persona": "哲学者", "weight": 2, "confidence": 0.65}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案A: history/ 維持",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.72,
+  "recommended": "案A: history/ 維持。INSIGHTS.md は経緯ドキュメントとして INTENT.md と並列扱い。仕様核（philosophy.md）への取り込みは v6.0.0 major で扱う。minor では現状配置を維持し、cross-reference を強化する責務は INSIGHTS 自身の §関連ドキュメントで果たす",
+  "minority_opinion": "哲学者: 第 4 の思想ドキュメントとしての存在は許容するが、将来 reference 頻度が上がった場合（特に M-9 第 7 条昇格時）に再判断する余地を残すべき。signal 条件として「INSIGHTS への参照が L0/L1 SKILL.md から month 1 件以上」を mitigation で監視",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T09:01:30Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+D4 整合性監査議題 2 として諮問。3 Persona 全員が案 A（history/ 維持）を支持し unanimous 成立。哲学者 minority（signal 条件監視）は将来の判断余地として記録、現時点での実装は不要のため `agreed_recommended` で合意。INSIGHTS.md の現配置を確定。
+
+## council-2026-04-30T09:02:00Z-d4at03
+
+```json
+{
+  "invocation_id": "council-2026-04-30T09:02:00Z-d4at03",
+  "timestamp": "2026-04-30T09:02:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "philosophy.md 第 7 条「次元論と D4 の独立性」昇格スケジュール: v6.0.0 一括 / v5.x 段階的 / 現状維持",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A: v6.0.0 一括昇格", "confidence": 0.7,  "dimension": "計画性 / コミュニケーションコスト" },
+    "開発者": { "stance": "案A: v6.0.0 一括昇格", "confidence": 0.75, "dimension": "保守性 / バージョン境界" },
+    "哲学者": { "stance": "案A: v6.0.0 一括昇格", "confidence": 0.7,  "dimension": "意味 / 階層整合性" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案A: v6.0.0 一括昇格",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 7.85,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.7},
+          {"persona": "開発者", "weight": 3, "confidence": 0.75},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.7}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案A: v6.0.0 一括昇格",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.81,
+  "recommended": "案A: v6.0.0 major で一括昇格。現行予告通り、minor 内では「準・第 7 条」を作らず予告強化（M-6）のみ実施。DIMENSIONS.md §11 残タスク表の集約参照を強化することで予告の一貫性を保つ。v6.0.0 までに signal 条件（次元境界跨ぎ事例の蓄積）を harness-verifier reports/ で観測する",
+  "minority_opinion": "哲学者: v6.0.0 まで signal 条件を蓄積する余地として、harness-verifier monthly report で「dimension 境界跨ぎ試行」「D5 escalate 件数」を集計するように記録項目を v5.4.0 で追加すべき（v5.3.0 では先送り、v5.4.0 候補として記録）",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T09:02:30Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+D4 整合性監査議題 3 として諮問。3 Persona 全員が案 A（v6.0.0 一括昇格）を支持し unanimous 成立。哲学者 minority（signal 条件蓄積の v5.4.0 候補化）は v5.3.0 を超える別 minor 候補として記録、現時点では実装不要のため `agreed_recommended` で合意。M-6（予告強化）を patch 寄り改修として実施可能。
+
+## council-2026-04-30T09:03:00Z-d4at04
+
+```json
+{
+  "invocation_id": "council-2026-04-30T09:03:00Z-d4at04",
+  "timestamp": "2026-04-30T09:03:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "5 本柱 vs 5 本柱+第 6 条 表記統一: P1-P5 統一（DIMENSIONS / philosophy ベース）/ P1-P6 統一（harness-verifier ベース）/ 命名分離維持",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A: P1-P5 統一", "confidence": 0.7,  "dimension": "ROI / 後方互換" },
+    "開発者": { "stance": "案A: P1-P5 統一", "confidence": 0.85, "dimension": "論理整合性 / 仕様核遵守" },
+    "哲学者": { "stance": "案A: P1-P5 統一", "confidence": 0.85, "dimension": "意味 / 概念階層" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案A: P1-P5 統一",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 8.9,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.7},
+          {"persona": "開発者", "weight": 3, "confidence": 0.85},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.85}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案A: P1-P5 統一",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.88,
+  "recommended": "案A: P1-P5 統一。philosophy.md（6 条憲法、不変対象）と DIMENSIONS.md §8.1 が「5 本柱 = P1-P5、第 6 条 = 別概念（次元間関係性原則）」と確定済のため、harness-verifier 系（glossary.yml + PHILOSOPHY.md）と REGIME-LOG.md v5.2.0 行をこれに整合させる。glossary.yml `philosophy_pillars` から P6 を移動し、別キー `philosophy_articles: 第1-6条` を新設。minor PR で実施可能",
+  "minority_opinion": "なし（全会一致、dimension は経営者=ROI/開発者=論理整合性/哲学者=概念階層と多様性あり）。共通理解: 「5 本柱 = 行動原則 (P1-P5)」と「第 6 条 = 関係性原則 (人間 ≒ Council)」は概念階層が異なる。同一カテゴリ内にまとめる harness-verifier 表記は階層混合の罠",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T09:03:30Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+D4 整合性監査議題 4 として諮問（HIGH-1 思想統一案件）。3 Persona 全員が案 A（P1-P5 統一）を支持し unanimous 成立。confidence 0.85+ の高判定。philosophy.md（不変対象）と DIMENSIONS.md §8.1 の構造を仕様核として尊重し、harness-verifier 系（glossary.yml + PHILOSOPHY.md）と REGIME-LOG.md v5.2.0 行を minor PR で整合化する方向で `agreed_recommended` 合意。具体的な実装は PR-γ で扱う（M-6 として）。
