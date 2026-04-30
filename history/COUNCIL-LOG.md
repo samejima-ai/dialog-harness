@@ -335,9 +335,9 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "なし（全会一致、dimension は ROI/保守性/意味と多様性あり）"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-04-30T11:25:00Z"
 
 - invocation_id: "council-2026-04-30T11:01:00Z-l0agg2"
   timestamp: "2026-04-30T11:01:00Z"
@@ -376,9 +376,9 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "哲学者: F1 で『DH 自身の改修動向』を cross-project で見たいケースは将来出る可能性あり、v5.4.0 候補として B-2 (DH evolution 拡張) を温存"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-04-30T11:25:00Z"
 
 - invocation_id: "council-2026-04-30T11:02:00Z-l0agg3"
   timestamp: "2026-04-30T11:02:00Z"
@@ -417,9 +417,9 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "なし（全会一致）。共通理解: 自動匿名化 (C-3) は完全な匿名化が不可能で誤検出が安全感を生み逆に構造的甘さを生む罠"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-04-30T11:25:00Z"
 
 - invocation_id: "council-2026-04-30T11:03:00Z-l0agg4"
   timestamp: "2026-04-30T11:03:00Z"
@@ -458,6 +458,6 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "なし（全会一致）。共通理解: harness-verifier 統合は『検査機構が集計機構を兼ねる』論理階層混合の罠"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-04-30T11:25:00Z"

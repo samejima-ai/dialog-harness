@@ -695,9 +695,9 @@ D4 整合性監査議題 4 として諮問（HIGH-1 思想統一案件）。3 Pe
   "minority_opinion": "なし（全会一致、dimension は ROI/保守性/意味と多様性あり）。共通理解: Council のリアルタイム性と evolution の事後的性質は質が違うため、命名上分離するのは哲学的に正",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
-  "implementer_consent": null,
-  "follow_up_questions_count": null,
-  "agreed_at": null,
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T11:25:00Z",
   "modification_note": null,
   "escalation_reason": null
 }
@@ -705,7 +705,7 @@ D4 整合性監査議題 4 として諮問（HIGH-1 思想統一案件）。3 Pe
 
 ### 合意プロセス記録
 
-L0 spec-architect が cross-project ログ集約機構の設計 4 論点（議題 A/B/C/D）として一括諮問。本諮問は議題 A（Mirror 方式）。3 Persona 全員が案 A-3 を支持し unanimous 成立。既存 `~/.claude/council-data/` 投資を活用し新規概念追加なしで実現可能。implementer_consent は確定後 null → 値で埋める（合意プロセス進行中）。
+L0 spec-architect が cross-project ログ集約機構の設計 4 論点（議題 A/B/C/D）として一括諮問。本諮問は議題 A（Mirror 方式）。3 Persona 全員が案 A-3 を支持し unanimous 成立。既存 `~/.claude/council-data/` 投資を活用し新規概念追加なしで実現可能。PR #28 のユーザーコメント「OK.合意します」（2026-04-30T11:25:00Z）で `agreed_recommended` 確定。
 
 ## council-2026-04-30T11:01:00Z-l0agg2
 
@@ -755,9 +755,9 @@ L0 spec-architect が cross-project ログ集約機構の設計 4 論点（議�
   "minority_opinion": "哲学者: 振り返り儀式 F1 で『DH 自身の改修動向』を cross-project で見たいケースは将来出る可能性あり。v5.4.0 候補として B-2 (DH evolution 拡張) を温存。本案は MVP として B-1 で先行し、需要が顕在化した時点で B-2 へ拡張する path を予約",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
-  "implementer_consent": null,
-  "follow_up_questions_count": null,
-  "agreed_at": null,
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T11:25:00Z",
   "modification_note": null,
   "escalation_reason": null
 }
@@ -765,7 +765,7 @@ L0 spec-architect が cross-project ログ集約機構の設計 4 論点（議�
 
 ### 合意プロセス記録
 
-L0 議題 B として諮問。3 Persona 全員が案 B-1 (Council 判定のみ) を支持し unanimous 成立。哲学者 minority opinion (B-2 拡張余地) は v5.4.0 候補として記録、現時点では B-1 で先行する方針で `agreed_recommended` 候補。
+L0 議題 B として諮問。3 Persona 全員が案 B-1 (Council 判定のみ) を支持し unanimous 成立。哲学者 minority opinion (B-2 拡張余地) は v5.4.0 候補として記録、現時点では B-1 で先行する方針。PR #28 で `agreed_recommended` 確定。
 
 ## council-2026-04-30T11:02:00Z-l0agg3
 
@@ -815,9 +815,9 @@ L0 議題 B として諮問。3 Persona 全員が案 B-1 (Council 判定のみ) 
   "minority_opinion": "なし（全会一致、dimension は ROI/保守性/意味と多様性あり）。共通理解: 自動匿名化 (案 C-3) は『完全な匿名化は不可能』という根本制約があり、誤検出が安全感を生み逆に構造的甘さに繋がる罠。schema-only は『集約は構造抽出である』という哲学的純粋性を保つ",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
-  "implementer_consent": null,
-  "follow_up_questions_count": null,
-  "agreed_at": null,
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T11:25:00Z",
   "modification_note": null,
   "escalation_reason": null
 }
@@ -825,7 +825,7 @@ L0 議題 B として諮問。3 Persona 全員が案 B-1 (Council 判定のみ) 
 
 ### 合意プロセス記録
 
-L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持し unanimous 成立。confidence 0.85 の高判定。B-1 (council のみ) と組み合わせて純粋構造データ集約を実現。テキスト本文は project-scope に残し、user-scope は機械可読な構造データのみ保持。
+L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持し unanimous 成立。confidence 0.85 の高判定。B-1 (council のみ) と組み合わせて純粋構造データ集約を実現。テキスト本文は project-scope に残し、user-scope は機械可読な構造データのみ保持。PR #28 で `agreed_recommended` 確定。
 
 ## council-2026-04-30T11:03:00Z-l0agg4
 
@@ -875,9 +875,9 @@ L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持
   "minority_opinion": "なし（全会一致）。共通理解: harness-verifier 統合 (D-4) は『検査機構が集計機構を兼ねる』という論理階層混合の罠。集計責務は独立 module に切り出し、各 Consumer が import する形が DH 文化（ツール責務分離）と整合",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
-  "implementer_consent": null,
-  "follow_up_questions_count": null,
-  "agreed_at": null,
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-04-30T11:25:00Z",
   "modification_note": null,
   "escalation_reason": null
 }
@@ -885,4 +885,4 @@ L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持
 
 ### 合意プロセス記録
 
-L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ) を支持し unanimous 成立。confidence 0.90 の最高判定。開発者重み 6 (implementation category で最大化) で技術的実現性が支配的、Python 標準ライブラリのみで書ける薄い実装方針。harness-verifier との独立性原則を尊重。
+L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ) を支持し unanimous 成立。confidence 0.90 の最高判定。開発者重み 6 (implementation category で最大化) で技術的実現性が支配的、Python 標準ライブラリのみで書ける薄い実装方針。harness-verifier との独立性原則を尊重。PR #28 で `agreed_recommended` 確定。
