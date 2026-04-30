@@ -122,7 +122,7 @@ Judgment Agent は以下を考慮して `judgment_confidence` を 0.0-1.0 で自
 
 `conflict_type = "simple_conflict"` の場合：
 
-1. **weight 分割は禁止**。各 persona の `final_weight` は不可分の整数として扱う。1 persona = 1 stance = 1 weight 値。複数 stance への按分（例: 開発者 6 を A に 4 / C に 2）は哲学違反であり、Orchestrator の決定論検算で必ず `judgment_failed` 扱いとなる
+1. **weight 分割は禁止**。各 persona の `final_weight` は不可分の整数として扱う。1 persona = 1 stance = 1 weight 値。複数 stance への按分（例: 開発者 6 を A に 4 / C に 2）は哲学違反であり、Orchestrator の決定論検算で不一致となる。1 回目の不一致でリトライが要求され、2 回目も不一致なら `judgment_failed` 扱いとなる
 2. **options 外 stance（「第3の道」「保留」「自由記述」等）は weight 加算対象外**。これらは `weight_calculation.third_way_excluded` に退避し、`minority_opinion` にも転載する（暫定運用、PR2 で `third_way` 類型として正式化、[conflict-typology.md](conflict-typology.md) §第3の道 stance の PR1 暫定運用ルール）
 3. `options` に含まれる stance のみで `final_weights × confidence` の積を集計する
 4. 各 stance の `weighted_score = Σ (weight_i × confidence_i)`（同一 stance を支持する全 persona の積の合計）
