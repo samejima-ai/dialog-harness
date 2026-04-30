@@ -17,6 +17,11 @@ scratch/
 # crosscut-council skill: 検証ワークスペース（subagent 出力の実データ。再現不能だが skill 本体ではない）
 .claude/skills/crosscut-council-workspace/
 
+# Walking skeleton iteration-1 検証データ（PR #11 期、council/ → crosscut-council/ rename 前の旧名）
+# subagent 出力の実データ。再現不能。2026-10 頃に保持要否を再評価
+# （Council 判断 council-2026-04-30T03:50:00Z-cln1k7、哲学者 minority を統合）
+.claude/skills/council-workspace/
+
 # Sandbox: skill library の外側で動作検証用に組み立てた試作アプリ群
 # （council テスト等の一時プロジェクトを配置。skill 本体ではない）
 sandbox/
