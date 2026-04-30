@@ -371,6 +371,7 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
     "哲学者": { "stance": "案B + 半年後再評価併記", "confidence": 0.55, "dimension": "意味 / 長期影響" }
   },
   "weight_calculation": {
+    "method": "weight_times_confidence",
     "scores": [
       {
         "stance": "案B: .gitignore に追加",
@@ -388,6 +389,7 @@ Copilot 再レビュー (PR #11 commit 271a5bb) で検出された 7 件の不�
     "max_score_stance": "案B: .gitignore に追加",
     "tie_break_applied": false
   },
+  "weight_calculation_retry_count": 0,
   "judgment_confidence": 0.85,
   "recommended": "案B: `.gitignore` に旧名 `.claude/skills/council-workspace/` を追加。哲学者 minority を統合し、ignore コメントに walking skeleton 由来 + 再評価期日（2026-10）を明記",
   "minority_opinion": "全員一致だが dimension が ROI/可逆性/意味で多様。共通懸念は『永続放置による残骸化』『再評価の機械的トリガー不在』。哲学者は ignore コメントへの『walking skeleton iteration-1, 再評価予定 2026-10』記載を mitigation として要請",
