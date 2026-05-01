@@ -886,3 +886,79 @@ L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持
 ### 合意プロセス記録
 
 L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ) を支持し unanimous 成立。confidence 0.90 の最高判定。開発者重み 6 (implementation category で最大化) で技術的実現性が支配的、Python 標準ライブラリのみで書ける薄い実装方針。harness-verifier との独立性原則を尊重。PR #28 で `agreed_recommended` 確定。
+
+## council-2026-05-01T10:30:00Z-archeo01
+
+```json
+{
+  "invocation_id": "council-2026-05-01T10:30:00Z-archeo01",
+  "timestamp": "2026-05-01T10:30:00Z",
+  "source_skill": "human_direct_invocation",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ / ファウラー / ヘルマンズ / ストラングラー・フィグ / 承認テスト / 自動照合ループ / Git ホットスポット / DDD Bounded Context / AAR / 失敗アンチパターン）を archeo-architect Phase α (PR #30 draft) にどう取り込むか。選択肢 A: 軽微追加 / 選択肢 B: 現状維持 / 選択肢 C: Phase γ 前倒し",
+  "phase_reached": "phase_3",
+  "conflict_type": "simple_conflict",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "選択肢 B: 本 PR #30 はこのまま、Phase β 以降で順次取り込む", "confidence": 0.65, "dimension": "リスク管理" },
+    "開発者": { "stance": "選択肢 A: 軽微追加（Code Smells カノン対応表 + Git ホットスポット統合 + AAR 整合）", "confidence": 0.85, "dimension": "保守性 / 技術的実現性" },
+    "哲学者": { "stance": "第 4 の道: A の縮小版（Code Smells + Git ホットスポット）+ handoff-to-evaluator.md への Phase γ 伏線追加", "confidence": 0.7, "dimension": "前提への問い / 長期影響" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "選択肢 B: 現状維持",
+        "supporters": ["経営者"],
+        "weight_sum": 3,
+        "weighted_score": 1.95,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.65}
+        ]
+      },
+      {
+        "stance": "選択肢 A: 軽微追加",
+        "supporters": ["開発者"],
+        "weight_sum": 3,
+        "weighted_score": 2.55,
+        "components": [
+          {"persona": "開発者", "weight": 3, "confidence": 0.85}
+        ]
+      },
+      {
+        "stance": "第 4 の道: A 縮小版 + Phase γ 伏線",
+        "supporters": ["哲学者"],
+        "weight_sum": 5,
+        "weighted_score": 3.5,
+        "components": [
+          {"persona": "哲学者", "weight": 5, "confidence": 0.7}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "第 4 の道: A 縮小版 + Phase γ 伏線",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.7,
+  "recommended": "第 4 の道: 選択肢 A の縮小版（Phase α 取込）+ handoff-to-evaluator.md への Phase γ 伏線追加（合計 80-120 行）。具体的内容: (1) intent-hypothesis-protocol.md に Code Smells カノン対応表（巨大関数 / 重複コード / God Class / Feature Envy / Shotgun Surgery と既存 8 ヒントのマッピング）を追加。(2) intent-hypothesis-protocol.md の S 軸推定に Git ホットスポット指標（修正頻度×複雑性）を統合。(3) handoff-to-evaluator.md の Phase γ ロードマップ節に『承認テスト生成プロトコル』『自動照合ループ』『L1 評価軸への意図合致軸追加』を【先行宣言】として明記、本 PR では本実装しない旨を明示。(4) AAR 整合は本 PR では見送り（Code Smells / ホットスポットは事前検出、AAR は事後評価で階層が違うため思想的純度を保つ）",
+  "minority_opinion": "経営者の選択肢 B 推奨（PR スコープ厳守、観測駆動を 1〜2 ヶ月優先）。本 minority は観測駆動原則（INTENT.md v5.3.0、wf-baseline-rationale.md §3）の側面で妥当性が高い。経営者の confidence 0.65 は哲学者 0.7 / 開発者 0.85 を下回るため重み付きでも minority に留まる。哲学者の『5 年スパンで業界 best practice と整合する harness になるか』論で吸収。INTENT.md v5.4.0 セクションに『観測駆動原則との緊張』として記録予定",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-05-01T10:35:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+ひでさん直接起動の議題として諮問。category は conception（新規構想取込判断）で哲学者重み 5 が支配的。3 Persona の意見は simple_conflict（B / A / 第 4 の道）。Judgment Agent が哲学者の第 4 の道を採用し、開発者の A 推奨と部分一致する『縮小版 A + Phase γ 伏線』として再構成。confidence 0.7 で人間エスカレーション閾値（0.5）を超え自律判断成立。ひでさん即時 `agreed_recommended` 確定。本 PR #30 に追加実装する形で完結。Phase γ 伏線追加は『承認テスト・自動照合ループ・L1 評価軸への意図合致軸追加』を v5.5.0 候補として明示記録する目的で、archeo 哲学（P-Arch-1 忘却の制度化）と業界知見（フェザーズ「テストなし = レガシー」）の関係性を後続の Phase γ 実装時に参照可能な形で残す。

@@ -52,7 +52,29 @@ Phase γ（L1 自己検証/独立検証への意図合致軸追加、起点問�
 - harness-verifier 5 検査全 PASS（D4 整合性維持確認）
 - 計算的センサー: SKILL.md / references の構文整合・broken reference なし
 - archeo SK 6 ファイル + spec-architect 軽微修正の整合性確認
-- ルートに draft PR を作成し、ひでさんレビュー待ち
+- ルートに draft PR #30 を作成
+
+### Step 6: 業界知見統合（Council 諮問経由の追加実装）
+
+ひでさんから AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ / ファウラー / ヘルマンズ / ストラングラー・フィグ / Branch by Abstraction / 承認テスト / 自動照合ループ / Git ホットスポット / DDD Bounded Context / AAR / 失敗アンチパターン）が共有され、選択肢 A/B/C の拮抗のため Council 諮問。
+
+`crosscut-council` を直接起動（`council-2026-05-01T10:30:00Z-archeo01`、category: conception、哲学者重み 5 で支配的）。3 Persona で simple_conflict（経営者 B / 開発者 A / 哲学者 第 4 の道）。Judgment Agent confidence 0.7 で「**第 4 の道: A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。ひでさん即時合意。
+
+追加実装：
+
+- **`intent-hypothesis-protocol.md` に Code Smells カノン対応表追加**（12 種 Smells のマッピング、適用順序、注意事項）
+- **`intent-hypothesis-protocol.md` の S 軸推定に Git ホットスポット分析統合**（`hotspot_score = log(修正頻度) × 複雑性指標`、4 戦略象限、90 日の法則対応、計測制約）
+- **`handoff-to-evaluator.md` の Phase γ 詳細仕様先行宣言**（5 件: 承認テスト生成プロトコル / 自動照合ループ / L1 意図合致軸統合 / ストラングラー・フィグ射程外宣言 / 失敗アンチパターン早期検出）
+- **`crosscut-council/history/COUNCIL-LOG.md`** に invocation_id `council-2026-05-01T10:30:00Z-archeo01` のエントリ追加（implementer_consent: agreed_recommended）
+- **`history/INTENT.md`** v5.4.0 セクションに「Council 諮問による業界知見統合」「経営者の少数意見（観測駆動原則との緊張）」追記
+
+経営者の少数意見（選択肢 B、PR スコープ厳守）は minority_opinion として保持。観測駆動原則との緊張関係は Phase β/γ 設計時に再検討予定。
+
+### Step 7: 業界知見統合後の再検証
+
+- harness-verifier 5 検査全 PASS 維持（追加修正後も D4 整合性維持）
+- 拡張ファイル 3 件（intent-hypothesis-protocol.md / handoff-to-evaluator.md / COUNCIL-LOG.md）の broken reference なし
+- PR #30 に追加コミットを push、draft 状態のまま実装完了
 
 ### 本リリースの範囲外
 

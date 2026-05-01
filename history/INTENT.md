@@ -379,11 +379,27 @@ L0 は v5.0.0 までは spec-architect 単独、v5.0.0 で onboarding を「使�
 - **D4 改修レベル**: minor 確定。新規 SK 追加 + 後方互換維持 + philosophy.md 章追加なし。onboarding 追加時 (v5.0.0) と同形式
 - **1→5 フェーズでの起動**: オプション + 動的起動。標準装備化はしない（新規プロジェクトでの不要起動を避けるため）
 
+### Council 諮問による業界知見統合（追加実装、Council 経由）
+
+PR #30 draft 期間中にひでさんから AI を活用したレガシーコード・リファクタリング業界知見が共有され、Council 諮問 (`council-2026-05-01T10:30:00Z-archeo01`, conception カテゴリ、哲学者重み 5) で「**第 4 の道: 選択肢 A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。本 PR に追加実装：
+
+- **`intent-hypothesis-protocol.md` に Code Smells カノン対応表追加** — ファウラー / ヘルマンズの 12 種 Smells（Long Method / Duplicate Code / Large Class / Feature Envy / Shotgun Surgery / Divergent Change / Dead Code / Magic Number / Comments / Speculative Generality / Temporary Field / Refused Bequest）と本プロトコルの既存 8 ヒントのマッピング。仮説生成の信頼性向上と人間との対話精度向上に資する
+- **Git ホットスポット分析の S 軸統合** — Adam Tornhill「Your Code as a Crime Scene」に基づき `hotspot_score = log(修正頻度) × 複雑性指標` を S 軸に補正。アンチパターン「90 日の法則」（92% 失敗率）への対応として、上位 10% を archeo セッションの初期対話対象に優先する戦略
+- **`handoff-to-evaluator.md` の Phase γ 詳細仕様 5 件先行宣言** — (1) 承認テスト生成プロトコル（フェザーズ「テストなし = レガシー」を P-Arch-1 の系として実装）、(2) 自動照合ループ（VB6 事例 8,064 回ラン / 0.007% 不一致検出と同形）、(3) L1 意図合致軸統合（**起点問題の構造解決**）、(4) ストラングラー・フィグ / Branch by Abstraction の射程外宣言、(5) 失敗アンチパターン早期検出。Phase γ (v5.5.0 候補) で本実装
+
+### 経営者の少数意見（保持記録）
+
+Council で経営者は選択肢 B（PR スコープ厳守、観測駆動を 1〜2 ヶ月優先）を主張し、minority_opinion として保持された。本 minority は観測駆動原則（INTENT.md v5.3.0、`wf-baseline-rationale.md` §3）の側面で妥当性が高い：「Phase α 単独運用での取りこぼし削減効果を観測してから業界知見を選別取込する方が、効果測定の対照群として精度が高い」という主張。
+
+哲学者の「5 年スパンで業界 best practice と整合する harness になるか」論で吸収され重み付き計算で minority に留まったが、**観測駆動原則との緊張関係**は本 v5.4.0 リリース後の Phase β/γ 設計時に再検討する。具体的には、Phase β 着手時に「業界知見取込前 vs 取込後」の比較データが必要なら、Phase α リリース直後の archeo セッション（複数件）を取込前データとして保存する運用を検討する。
+
 ### v6.0.0 候補として温存される思想拡張
 
 `refactor-intent-map.md` の Islands スキーマを **AI 組織応用**（AI エージェント間引き継ぎへの拡張）に活用する案を v6.0.0 候補として温存する。v5.x 帯では「コードベース内の意図復元」に限定し、テンプレートに「拡張余地」コメントのみ残す（捏造防止規約と整合させるため、AI 組織応用は別の合議が必要）。
 
 `refactor_directive` の値域拡張（`partial_restructure` / `merge` / `split` 等）も v6.0.0 候補として温存する。Phase α では 3 値（preserve / restructure / discard_and_redesign）のみで運用し、観測駆動で拡張可否を判定する（`wf-baseline-rationale.md` §3「観測駆動でのみ拡張」原則と整合）。
+
+ストラングラー・フィグ / Branch by Abstraction を L1 / L2 のリファクタ実行プロトコルとして体系化する案、および DDD Bounded Context との Boundaries 統合（`subphase-l02-domain.md` との連携）も v6.0.0 候補（業界知見の本格的吸収を minor 範囲外とする判断、Council 哲学者の射程区分判定）。
 
 ## v5.3.0 で追加された概念
 

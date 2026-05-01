@@ -108,7 +108,99 @@ Phase γ で改修する L1 側ファイル（**本リリースでは触らな�
 | `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` | 第 4 層推論センサーに「意図合致軸」追加。`refactor-intent-map.md` 存在時のみ起動する条件分岐 | 10〜15 行 |
 | `../../layer1-autonomous-dev/SKILL.md` §6 自己検証 | 推論的センサー実行時、Islands.refactor_directive を評価軸として参照する 1 行追加 | 3〜5 行 |
 | `../../layer1-independent-reviewer/SKILL.md` | 独立検証時に同 map を参照、「意図保存軸」の独立判定を追加 | 5〜10 行 |
-| 本ファイル | I/O 規約を先行宣言版から完全版に拡充 | +50〜80 行 |
+| 本ファイル | I/O 規約を先行宣言版から完全版に拡充（後述 §Phase γ 詳細仕様の先行宣言） | +50〜80 行 |
+
+---
+
+## Phase γ 詳細仕様の先行宣言（業界知見統合）
+
+業界根拠: Council 諮問 `council-2026-05-01T10:30:00Z-archeo01` の agreed_recommended（哲学者の第 4 の道採用、Phase γ 伏線追加）。AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ「レガシー = テストなし」/ ファウラー「外部振る舞い不変」/ VB6 事例の自動照合ループ）と archeo 哲学（P-Arch-1 忘却の制度化）の関係性を Phase γ 実装時に参照可能な形で先行宣言する。
+
+**本セクションは仕様の先行宣言であり、Phase α では本実装しない**。Phase γ（v5.5.0 候補）で本実装される。
+
+### 先行宣言 1: 承認テスト生成プロトコル（refactor_directive: preserve 領域）
+
+**業界根拠**: フェザーズ「レガシーコードとはテストのないコードである」/ Approval Testing カノン / Qodo 等のテスト生成ツール群。
+
+**archeo 哲学との接続**: P-Arch-1（忘却の制度化）と P-Arch-3（譲渡構造維持）の系。承認テスト = 「振る舞いの記憶を外部化する」（archeo マップ = 「意図の記憶を外部化する」と同根）。
+
+**Phase γ で本実装する仕様**:
+
+`refactor_directive: preserve` の Island は、L1 が変更する前に**承認テストで現状を凍結**する。プロトコル：
+
+1. L1 は preserve Island の paths について、現状のコードを実行して入出力を **基準データ** として記録（`delivery/approval-tests/<island-id>.baseline.json`）
+2. リファクタ後のコードを同入力で実行し、出力差分を機械的に検証
+3. 差分検出時は L1 自力修正を試行、修正不能なら **意図逸脱 (intent_drift)** として Type C 献上
+4. 既存テストがある領域では既存テストを優先し、不足分のみ承認テストで補完
+
+**ツール統合は射程外**: Qodo / Byteable 等のツール選択は L1 実装者の裁量。プロトコルのみ規定する。
+
+**本実装時の改修対象**:
+- `../../layer1-autonomous-dev/SKILL.md` §6 に承認テスト生成ステップ追加
+- `delivery/approval-tests/` ディレクトリの配置規則を `dev-env-spec.md` に追加
+
+### 先行宣言 2: 自動照合ループ（refactor_directive: restructure 領域）
+
+**業界根拠**: VB6 価格エンジン移行事例（14 ヶ月で 8,064 回の自動照合ラン、1,240 万件のイベント比較で 0.007% の不一致検出、420 万ドルの見積もり不整合を未然防止） / ストラングラー・フィグパターン。
+
+**archeo 哲学との接続**: P-Arch-3（譲渡構造維持）の系。意図保持の **物理的検証**メカニズム。
+
+**Phase γ で本実装する仕様**:
+
+`refactor_directive: restructure` の Island は、L1 が**新旧並行実行 + 結果照合**で意図保持を機械的に検証する。プロトコル：
+
+1. リファクタ前の実装を「旧」、後の実装を「新」として両方を残す（Branch by Abstraction パターン）
+2. 抽象化レイヤー越しに同入力を両者に流し、結果を比較
+3. 不一致率の閾値（デフォルト 0.01%）を超えたら **意図逸脱** として Type C 献上
+4. 並行実行期間（L1 実装者裁量、典型は 1〜2 週間）後、新実装に切替
+
+**L2 統合検証との接続**: 複数 Island に渡る restructure では `layer2-integration-verifier` が照合結果を集約する（L2 発動時のみ）。
+
+**本実装時の改修対象**:
+- `../../layer1-autonomous-dev/SKILL.md` §6 に自動照合ループステップ追加
+- `../../layer2-integration-verifier/SKILL.md` に集約プロトコル追加（L2 のみ）
+- `delivery/reconciliation-logs/` ディレクトリの配置規則追加
+
+### 先行宣言 3: 意図合致軸の L1 評価軸統合（**起点問題の構造解決**）
+
+**業界根拠**: ファウラー「外部から見た振る舞いを保ったまま、内部構造を理解しやすく、修正が容易なものへと改善する」 / Code Smells カノン（intent-hypothesis-protocol.md §Code Smells カノンとの対応 と整合）。
+
+**archeo 哲学との接続**: 起点問題（取りこぼし 3〜4 個）の構造解決。L1 評価軸 3 軸（仕様適合・動作・ユーザビリティ）に「**意図合致軸**」を第 4 軸として注入する。
+
+**Phase γ で本実装する仕様**:
+
+`../../layer1-autonomous-dev/references/inferential-sensor-v2.md` 第 4 層推論センサーに以下を追加：
+
+```
+[現状] L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ)
+[Phase γ] L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致)
+
+意図合致 = 全 Island の refactor_directive に従う実装結果である
+  preserve: 承認テスト全件 PASS（先行宣言 1）
+  restructure: 不一致率 < 閾値（先行宣言 2）
+  discard_and_redesign: AbsentZone.redesign_directive に従う
+```
+
+`refactor-intent-map.md` 不在のプロジェクトでは意図合致軸は起動しない（後方互換完全維持）。
+
+### 先行宣言 4: ストラングラー・フィグ / Branch by Abstraction の射程外宣言
+
+業界知見の **ストラングラー・フィグパターン** と **Branch by Abstraction パターン** は、archeo の射程外（リファクタ実行戦略のレベル）。
+
+archeo は意図マップを生成するのみ。これらのパターンを**実行**するのは L1（autonomous-dev）の責務。Phase γ で `handoff-to-evaluator.md` がこれらのパターンを Phase γ 実装の参考として明示する。
+
+**v6.0.0 候補（温存）**: これらのパターンを L1 / L2 のリファクタ実行プロトコルとして体系化する案は v6.0.0 候補。Phase α / β / γ では実装しない。
+
+### 先行宣言 5: 失敗アンチパターンの早期検出
+
+業界ガイドの失敗アンチパターン（**UI 層からの着手 39% 失敗** / **セマンティック境界欠如 32% 失敗** / **DB 共有の罠** / **90 日の法則 92% 失敗**）に対する archeo の対応：
+
+| アンチパターン | archeo の対応（Phase α 実装済み） | Phase γ で強化される対応 |
+|---|---|---|
+| UI 層からの着手 | 直接対応なし | refactor-intent-map.md の Summary に「推奨着手順序」フィールド追加 |
+| セマンティック境界欠如 | Boundaries セクションで明示 | DDD Bounded Context との接続（`../layer0-spec-architect/references/subphase-l02-domain.md` との連携、v6.0.0 候補） |
+| DB 共有の罠 | 射程外 | 射程外（L1 実装パターン） |
+| 90 日の法則 | Git ホットスポット上位 10% を初期対話対象に優先 | 射程外（プロジェクト管理） |
 
 ---
 
