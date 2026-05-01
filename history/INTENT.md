@@ -2,6 +2,33 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## 保留中の長期計画
+
+### CI/CD 強化計画（2026-05-01 開始、保留中）
+
+- **起源**: 下流プロジェクト（Next.js + Supabase 系、`apps/platform` 等を持つ dev_mode=github_assisted 確定済プロジェクト）からの献上ブレスト
+- **保管場所**: `history/deliveries/2026-05-01-cicd-automation-brainstorm.md`
+- **DH 一般化候補**: 10 カテゴリ × 多数選択肢のうち、DH 本体に一般化可能な議題を以下 5 つに集約
+  1. **scaffold-checklist の CI 章追加**: `.github/workflows/ci.yml` 雛形（typecheck + lint + test の PR ゲート）を v5.1.0 標準 stack の必須生成ファイルに加える案
+  2. **crosscut-* 段階稼働プロトコル**: 未稼働の dispatcher / implementer / drift / feedback-loop について dev_mode × CTL ごとの推奨稼働順を reference 化する案
+  3. **「罠 → 検出器」一般化パターン**: プロジェクト固有の踏みやすい誤りを DONT.md に言語化し sensors/computational へ lint として陸げさせる汎用フローを reference 化する案
+  4. **自動化 LOC 予算ガイダンス**: 1 自動化 = 1 ファイル 200 行未満、自動化総量の本体 LOC × 1.5 上限等のガイダンスを philosophy or dev-env-spec に追加する案（Bus factor 軽減）
+  5. **sensor 自動実行化**: markdown 手順書としての sensor を実行可能スクリプト化し VERIFICATION.md に machine-readable 結果を残す案
+- **未消化の 7 質問（ブレスト原文 §5）**:
+  - Q1 テストフレームワーク方針（Vitest / Playwright / Cucumber の 3 層採否）
+  - Q2 自動化 LOC 上限の基準
+  - Q3 crosscut-* 稼働順序
+  - Q4 罠検出器の SPEC / docs / DONT 振り分け
+  - Q5 production 切替と down migration（プロジェクト固有、DH 採用外）
+  - Q6 Bus factor 対策と自動化増加の逆説
+  - Q7 v5.2.0/v5.3.0 で送られた philosophy verifier の取り扱い（既決：v5.3.0 候補から外し継続検討）
+- **保留理由**: 起点プロジェクトおよび harness 利用者側で「CI/CD で何のどこをチェックするか」の認識共有が未達。L0 spec-architect 原則「認識のズレがゼロになるまでレビューループを回す」に従い、ズレが残ったままの開発環境構築を避ける
+- **次サイクル発動条件**:
+  - (a) 利用者プロジェクト側で CI/CD の対象範囲（typecheck / lint / unit / E2E / drift / 罠検出 のいずれか以上）を具体化した HANDOFF が届く、または
+  - (b) PR #30（v5.4.0 archeo-architect）merge 後の安定期に DH 本体側でドッグフード対象として再起動
+- **PR #30 との関係**: 本計画は PR #30 と独立。両者ともに `history/INTENT.md` と他ファイルを触る場合は merge 後 rebase で整合させる。本サイクルでは PR #30 が予約した v5.4.0 を侵さないため版上げを行わない
+- **当面のリリース対象**: なし（記録のみ）。実体改修は次サイクル以降の minor or 別 PR に委ねる
+
 ## v5.3.0 で追加された概念
 
 ### 1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定
