@@ -155,7 +155,7 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 ## dev_mode（v5.0.0 追加）
 - mode: [local_only / github_assisted / github_autonomous]
 - ctl: [0 / 1 / 2 / 3]   # Council Trust Level（crosscut-council/references/ctl-calculation.md 参照）
-- 判定根拠: [GitHub 利用有無 + 規模 + Lifecycle の組み合わせ]
+- 判定根拠: [GitHub 利用有無 + 規模 + LC の組み合わせ]
 
 （判定プロトコルは `regime-assessment.md` §dev_mode 判定 参照。昇格・降格は手動 + ADR 記録必須。）
 
@@ -240,16 +240,16 @@ L2-subagents:
     scope: [cross-domain-invariants, e2e-scenarios, ...]
 ```
 
-## Lifecycle（1→5運用対応）
-- Lifecycle: [L=0 / L=1 / L=2]
+## LC（1→5運用対応）
+- LC: [LC=0 / LC=1 / LC=2]
 - 判定根拠: [history/ の有無、CHANGELOG.md 最終更新日]
 
-## 履歴層設定（Lifecycle ≥ 1 の場合のみ記載）
+## 履歴層設定（LC ≥ 1 の場合のみ記載）
 - archive 移動年数: 2 年（デフォルト、上書き可）
 - 儀式拒否連続警告閾値: 5 回
 - 儀式スキップ連続警告閾値: 5 回
 
-## 履歴更新承認設定（Lifecycle ≥ 1 の場合のみ記載）
+## 履歴更新承認設定（LC ≥ 1 の場合のみ記載）
 - レベルA（自動承認）: スキップ
 - レベルB（確認推奨）: 通知のみ、デフォルト承認
 - レベルC（必須承認）: 必ず確認
@@ -292,7 +292,7 @@ L2-subagents:
 
 ---
 
-## history/ 配下テンプレート（Lifecycle ≥ 1）
+## history/ 配下テンプレート（LC ≥ 1）
 
 既存プロジェクト継続時は `history/` 配下に以下を配置する。各ファイルの詳細テンプレートは `history-layer-spec.md` を参照。
 

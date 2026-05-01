@@ -35,7 +35,7 @@ description: >
 
 ```
 1. ドキュメント＋開発環境の受領
-1.5. Lifecycle ≥ 1 の場合: history/INTENT.md / CHANGELOG.md を読み込む
+1.5. LC ≥ 1 の場合: history/INTENT.md / CHANGELOG.md を読み込む
      儀式拒否（E2）時の背景照合タスクもここで受領
 2. REGIME.md 読み込み → モードに応じて実行フローを選択
    L2 → layer2-orchestrator に委譲してここで終了
@@ -59,7 +59,7 @@ description: >
 7. M2の場合: layer1-independent-reviewer を起動（常時必須）
    → PASS: 次へ
    → FAIL: 差戻し理由に従い6に戻る（自力修正上限内）
-7.5. Lifecycle ≥ 1 の場合: 履歴層更新差分を3段階承認で作成
+7.5. LC ≥ 1 の場合: 履歴層更新差分を3段階承認で作成
      - A（自動承認）: CHANGELOG.md 追記、SUMMARY.md 再生成
      - B（確認推奨）: INTENT.md 新規追加、REGIME-LOG.md 更新
      - C（必須承認）: INTENT.md 廃止・訂正、REGIME.md スコア変更
@@ -283,13 +283,13 @@ layer1-independent-reviewer の役割と設計原則は `.claude/skills/layer1-i
 
 ## DELIVERY.md 抜粋（イメージ）
 
-M2 モード・Lifecycle L=0 の成果物献上時の DELIVERY.md 冒頭部分:
+M2 モード・LC=0 の成果物献上時の DELIVERY.md 冒頭部分:
 
 ```markdown
 # DELIVERY.md
 
 ## 体制情報
-- Mode: M2 / Lifecycle: L=0 / Cycle: 1
+- Mode: M2 / LC=0 / Cycle: 1
 - 自律修正回数: 2 / 上限 3
 
 ## 実装済み機能
@@ -327,11 +327,11 @@ Type A（仕様レビュー結果）/ Type B（成果物）/ Type C（仕様改�
 | 人間へ報告 | 技術的実現不可能、要件矛盾、パフォーマンス要件未達 | フィードバックレポート |
 | 即献上 | 仕様不足で開発続行不可能 | 仕様レビュー結果 |
 | 上位委譲 | REGIME.md が L2 判定 | layer2-orchestrator に委譲 |
-| 履歴層更新 | Lifecycle ≥ 1 での INTENT/CHANGELOG/REGIME-LOG 更新 | 3段階承認で献上差分化 |
+| 履歴層更新 | LC ≥ 1 での INTENT/CHANGELOG/REGIME-LOG 更新 | 3段階承認で献上差分化 |
 
-## 履歴層更新の責務（Lifecycle ≥ 1）
+## 履歴層更新の責務（LC ≥ 1）
 
-既存プロジェクト（Lifecycle L=1/L=2）では、献上時に history/ 配下の更新差分を作成する。
+既存プロジェクト（LC=1/LC=2）では、献上時に history/ 配下の更新差分を作成する。
 詳細は `references/delivery-format.md` の「履歴層更新差分」セクション参照。
 
 ### 更新対象の3段階分類

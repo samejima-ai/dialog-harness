@@ -548,3 +548,44 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-04-30T14:55:00Z"
+
+- invocation_id: "council-2026-05-01T12:00:00Z-lcnm1"
+  timestamp: "2026-05-01T12:00:00Z"
+  source_skill: "layer1-autonomous-dev"
+  question_to_answer: "PR #30 (v5.4.0 archeo-architect) が open のまま LC 命名変更を進めるべきか、それとも PR #30 merge を待つべきか（PR #31 INTENT.md 記載の発動条件 (a)『PR #30 merge かつ PR #31 merge 両方完了後』との関係）"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 5
+    開発者: 5
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "条件付き進行（衝突 4 ファイルを別 commit 分離、後 rebase で機械的解決）", confidence: 0.8, dimension: "ROI / 機会費用" }
+    開発者: { stance: "段階的進行（コア部分先行、衝突 4 ファイルは PR #30 で追加された新規行に触れず既存行のみ置換）", confidence: 0.85, dimension: "実装容易性 / merge 衝突回避" }
+    哲学者: { stance: "条件記述更新後に進行（INTENT.md の発動条件を「並列実行・衝突は rebase で解消」に修正することで自身の保留メモへの整合を保つ）", confidence: 0.75, dimension: "自己整合性 / 記録の一貫性" }
+  judgment_confidence: 0.8
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "進行可、3 条件付き（条件記述更新 + 衝突 4 ファイル慎重対処 + harness-verifier PASS）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 13
+        weighted_score: 10.25
+        components:
+          - { persona: "経営者", weight: 5, confidence: 0.8 }
+          - { persona: "開発者", weight: 5, confidence: 0.85 }
+          - { persona: "哲学者", weight: 3, confidence: 0.75 }
+    third_way_excluded: []
+    max_score_stance: "進行可、3 条件付き"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "PR #30 が open (draft) のまま LC 命名変更を並列実行する。前提条件: (1) INTENT.md の発動条件記述を「PR #30 merge 後」から「並列実行・衝突は rebase で解消」に更新、(2) 衝突 4 ファイル（layer0-spec-architect/SKILL.md / dev-env-spec.md / history/INTENT.md / history/CHANGELOG.md）は PR #30 が追加する新規行に触れず既存 Lifecycle 言及行のみ置換、(3) 全置換完了後に harness-verifier を回し PASS を確認。3 条件全て満たすことを実装段階で保証し、PR #30 merge 時の rebase は機械的処理に留める"
+  minority_opinion: "哲学者: 自身の保留メモ（INTENT.md 記載の発動条件 (a)）を破る形での進行に対する懸念。記録の一貫性のため、INTENT.md 旧節を「✅ 完了」化し実施記録を追記する形で哲学的整合を保つ提案"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-01T12:05:00Z"

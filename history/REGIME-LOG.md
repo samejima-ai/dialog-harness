@@ -2,6 +2,31 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## 2026-05-01 命名整備サイクル: Lifecycle → LC（patch、no version bump）
+
+- 判定日: 2026-05-01
+- AI 能力バージョン: claude-opus-4-7
+- 改修主体: layer0-spec-architect → crosscut-council 諮問 → layer1-autonomous-dev（人間ひでさん指示で起動）
+- 起源: PR #31 (CI/CD 強化計画 merge 済) で記録された保留計画「Lifecycle → LC 命名変更計画」の発動。本来の発動条件 (a)「PR #30 merge かつ PR #31 merge 両方」のうち PR #30 が未 merge（draft）のまま発動したため、`crosscut-council` で並列実行の妥当性を諮問
+- Council 判定: 経営者（条件付き進行）/ 開発者（段階的進行）/ 哲学者（条件記述更新後に進行）→ 重み付き「進行可、3 条件付き」（`history/COUNCIL-LOG.md` 参照）
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS（実行記録は INTENT.md 実施記録に簡記）
+- 後方互換: glossary.yml で旧表記を全て aliases として保持。delivery/ / docs/ / dh-upgrades/ / 既存 CHANGELOG・REGIME-LOG・ARCH-DECISIONS エントリは不変
+
+### 非破壊変更（破壊項目なし、機能変更なし）
+
+| 項目 | 内容 |
+|---|---|
+| 命名統一 | `Lifecycle L=N` `L=N`（Lifecycle 文脈）`Lifecycle 軸` 等を `LC=N` `LC 軸` に統一。Layer (`L0/L1/L2`) は不変 |
+| 後方互換 alias | `harness-verifier/glossary.yml` の `lifecycle:` セクションで `L=0/L=1/L=2` `Lifecycle 0/1/2` `Lifecycle L=0/L=1/L=2` を旧表記 alias として保持 |
+| 履歴記録 | INTENT.md 旧「保留中」節を「✅ 完了」化、実施記録を追記。CHANGELOG.md / REGIME-LOG.md（本ファイル）/ COUNCIL-LOG.md にも記録 |
+| バージョン | 据え置き（v5.3.0）。命名整備のみ機能変更なし、minor 昇格不要 |
+
+破壊項目なし。利用者プロジェクトには配布されない（DH 本体の規約改訂）。
+
+### PR #30 との並列衝突回避
+
+PR #30（v5.4.0 archeo-architect）は `layer0-spec-architect/SKILL.md` `dev-env-spec.md` `history/INTENT.md` `history/CHANGELOG.md` を touch する。本 PR は同 4 ファイルで PR #30 が追加する archeo 行には触れず、既存 Lifecycle 言及行のみ置換した。merge 順序が前後しても rebase で機械的に解決可能。
+
 ## v5.3.0（minor 昇格、後方互換維持）
 
 - 判定日: 2026-04-30

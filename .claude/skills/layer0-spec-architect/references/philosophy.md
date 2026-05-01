@@ -153,7 +153,7 @@ L1 は開発中に人間へ質問しない。仕様不足は即献上（タイ�
 
 開発完了時の献上物。動作するコード + 自己検証結果 + 事後評価のセット。
 - 発生条件: ステップ7（独立検証）完了
-- 内容: DELIVERY.md + VERIFICATION.md (M2以上) + INTEGRATION.md (L2) + HISTORY-DIFF.md (Lifecycle ≥ 1)
+- 内容: DELIVERY.md + VERIFICATION.md (M2以上) + INTEGRATION.md (L2) + HISTORY-DIFF.md (LC ≥ 1)
 - 対応: 人間が受領して運用へ
 
 ### タイプC: 仕様改訂提案
