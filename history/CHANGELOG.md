@@ -76,6 +76,14 @@ Phase γ（L1 自己検証/独立検証への意図合致軸追加、起点問�
 - 拡張ファイル 3 件（intent-hypothesis-protocol.md / handoff-to-evaluator.md / COUNCIL-LOG.md）の broken reference なし
 - PR #30 に追加コミットを push、draft 状態のまま実装完了
 
+### Step 8: L1-refactor 新設提案の Council 諮問（archeo02、最小記録）
+
+ひでさんから L1-refactor スキル新設の提案。CC が D4 原則で機械的検査し 5 原則違反（wf-baseline-rationale.md / philosophy.md §1 / §3 / Phase γ 重複 / 観測駆動閾値未達）を指摘、不採用結論を提示。ひでさんが Council 諮問を選択。
+
+`crosscut-council` 直接起動（`council-2026-05-01T11:00:00Z-archeo02`、conception カテゴリ）。3 Persona unanimous で **B（L1-refactor 不採用、Phase γ 予定通り）** を支持、weighted_score 8.85、judgment_confidence 0.85 で agreed_recommended 確定。CC 機械的検査と Council 判断が完全整合し堅牢な決定。
+
+哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化』は最小記録方針で `history/INTENT.md` v5.4.0 セクション末尾に 1 段落追加（v5.x 帯 minor 改修を圧迫しないため）。`COUNCIL-LOG.md` に archeo02 エントリ追加。
+
 ### 本リリースの範囲外
 
 - **Phase γ（L1 改修）**: layer1-autonomous-dev SKILL.md §6 / inferential-sensor-v2.md / layer1-independent-reviewer SKILL.md への意図合致軸追加。**v5.5.0 候補**として継続検討

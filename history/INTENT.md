@@ -401,6 +401,8 @@ Council で経営者は選択肢 B（PR スコープ厳守、観測駆動を 1�
 
 ストラングラー・フィグ / Branch by Abstraction を L1 / L2 のリファクタ実行プロトコルとして体系化する案、および DDD Bounded Context との Boundaries 統合（`subphase-l02-domain.md` との連携）も v6.0.0 候補（業界知見の本格的吸収を minor 範囲外とする判断、Council 哲学者の射程区分判定）。
 
+**L1-refactor スキル新設の v6.0.0 拡張提案** — Council 諮問 `council-2026-05-01T11:00:00Z-archeo02`（ひでさん提案、CC 機械的検査で 5 原則違反指摘、Council 諮問で 3 ペルソナ unanimous B 採用）の哲学者拡張提案として、「v6.0.0 で **Level B プロジェクト固有 SK によるリファクタ支援** を明文化する」を温存。DH 本体（Level A、D4）は形状単一を保ち、機能タイプ特化はプロジェクト側（Level B）で吸収する設計。v5.x 帯で実装しない（archeo Phase β / γ / δ 他の minor 改修を圧迫しないため）。
+
 ## v5.3.0 で追加された概念
 
 ### 1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定
