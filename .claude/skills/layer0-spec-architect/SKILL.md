@@ -43,17 +43,21 @@ description: >
 
 ## L0 スキル間の責務分担
 
-L0 は spec-architect と onboarding の 2 スキルで構成される（いずれも L0 兄弟、L3 運用層ではない）。トリガーは排他的。
+L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成される（いずれも L0 兄弟、L3 運用層ではない）。トリガーは排他的。
 
 | ケース | 起動スキル | 判定条件 |
 |---|---|---|
 | 新規プロジェクト立ち上げ | **spec-architect** | SPEC/DONT/REGIME がいずれも未存在、かつコード未存在（空リポジトリ） |
 | 既存プロジェクトの継続開発・仕様追加・振り返り | **spec-architect** | REGIME.md 存在、LC ≥ 1 |
 | 既存プロジェクトへの harness 後付け導入 | **layer0-onboarding** | REGIME.md 未存在、かつ既存コード・既存ドキュメントが存在 |
+| 既存コードのリファクタ前 意図復元（v5.4.0 追加） | **layer0-archeo-architect** | REGIME.md 存在、LC ≥ 1、人間が「リファクタしたい / 意図がわからない / 整理したい」等を明示 |
 
 **排他ルール**:
-- REGIME.md に `onboarded_at` がある → onboarding 再起動禁止（spec-architect のみ）
+- REGIME.md に `onboarded_at` がある → onboarding 再起動禁止（spec-architect / archeo-architect のみ）
 - onboarding 完了時は必ず spec-architect へ handoff する（`layer0-onboarding/references/handoff-to-spec-architect.md` 準拠）
+- archeo-architect は **再利用可能**（onboarding と異なり使い捨てではない）。リファクタ着手の度に再起動可能。複数回の起動履歴は `delivery/refactor-intent-map-*.md` のタイムスタンプで識別する
+- archeo-architect は **自動起動しない**。人間明示トリガーのみで起動する。ritual-protocol レベル 3 でリファクタ示唆を検出した場合も、起動推奨提示にとどめる
+- spec-architect と archeo-architect は **同時起動禁止**（対話方向の混線を避けるため）。spec-architect が起動中に意図復元の必要性を検出した場合は、当該対話を完了させてから archeo-architect の起動を提案する
 - 疑わしい場合は spec-architect が引き受けて LC 判定で切り分ける
 
 ## 処理フロー

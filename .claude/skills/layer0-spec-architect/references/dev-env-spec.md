@@ -22,6 +22,7 @@ L0/L1/L2 の三層構造、フラクタル原則、人間⇄AI 協働プロト�
 
 - layer0-spec-architect
 - layer0-onboarding（使い捨て）
+- layer0-archeo-architect（再利用可能、v5.4.0 追加）
 - layer1-autonomous-dev
 - layer1-independent-reviewer
 - layer2-orchestrator

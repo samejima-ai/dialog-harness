@@ -340,6 +340,51 @@ DH の多くの設計判断は本調査の業界知見と一致しており、�
 - Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
 - 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
 
+## v5.4.0 で追加された概念
+
+### archeo-architect の追加（spec-architect の双対、L0 兄弟）
+
+ひでさん起点問題「自分で書いたコードのリファクタを依頼すると意図通りにならない。10 個の修正点を依頼して Evaluator ループを回しても 3〜4 個取りこぼす」の構造解決として、リファクタ前 Layer 0 を担う `layer0-archeo-architect` を新設した。HANDOFF「archeo-architect ブレスト → 実装」 2026-05-01 を起源とする。
+
+#### 設計意図の核
+
+**(a) spec-architect の双対**: spec-architect が「人間イメージ → 未来仕様」（未来志向）であるのに対し、archeo-architect は「既存コード → 意図復元」（過去志向）である。両者は **対話の方向が逆だが、構造は同型**（philosophy.md §1 フラクタル原則 P1 の自然な拡張）。
+
+L0 は v5.0.0 までは spec-architect 単独、v5.0.0 で onboarding を「使い捨て後付け化」として追加して兄弟スキル 2 つになり、v5.4.0 で archeo-architect を「再利用可能な意図復元」として追加して兄弟スキル 3 つになった。3 兄弟は責務分担表で**排他**に分離される（spec-architect SKILL.md §L0 スキル間の責務分担表）。
+
+**(b) 起点問題の構造的根因**: L1 (`layer1-autonomous-dev`) の自己検証/独立検証が「仕様適合・動作・ユーザビリティ」の 3 軸で評価しており、「**人間の元々の意図に合う**」軸が不在だった。archeo の出力 `refactor-intent-map.md` を L1 評価軸の第 4 軸として注入することで、3〜4 個取りこぼし問題が構造的に解消する。
+
+ただし L1 改修は v5.4.0 では実施しない（**Phase α と分離**、後述）。本リリースでは archeo SK 雛形のみ提供し、人間が手動で `refactor-intent-map.md` を参照しながらリファクタ指示を組み立てる運用を可能にする。
+
+**(c) 3 原則の制度化**: 3 原則を `archeo-architect/SKILL.md §原則` に明記する。
+
+- **P-Arch-1 忘却の制度化**: 人間は忘れる。これは欠陥ではなく前提。AI は仮説提示で認識合わせをドライブする
+- **P-Arch-2 意図なきコードの扱い**: 既存コードに意図が存在しない場合がある。AI は `absent` として記録する。**捏造は禁止**（テンプレ必須フィールドで物理的に阻止）
+- **P-Arch-3 譲渡構造の維持**: spec-architect が SPEC.md を L1 に譲渡するように、archeo は `refactor-intent-map.md` を L1 に譲渡する
+
+**(d) Phase 化による段階導入**: archeo の完全実装は 4 Phase に分割する：
+
+| Phase | スコープ | リリース |
+|---|---|---|
+| α | archeo SK 雛形のみ。人間が手動でマップ参照 | **v5.4.0（本リリース）** |
+| β | ritual-protocol レベル 3 統合・glossary 用語追加 | v5.4.x または v5.5.0 |
+| γ | L1 自己検証/独立検証への意図合致軸追加（**起点問題の構造解決**） | v5.5.0 候補 |
+| δ | spec-architect への逆輸入（運用データ 3 ヶ月後） | v6.0.0 候補（温存） |
+
+**(e) 自動起動禁止**: 本 skill は人間明示トリガーのみで起動する。ritual-protocol レベル 3 でリファクタ示唆を検出した場合も、起動推奨提示にとどめる（philosophy.md §6 H3「方向性発案」相当の人間専管判断と整合）。
+
+#### 議論済みで本リリースで決着しなかった論点
+
+- **配置案 A（独立 SK） vs 案 B（spec-architect 派生モード）**: 案 A 採用。理由は対話方向の反転（spec=人間→AI、archeo=AI→人間）と責務単一性。Plan agent / ハンドオフがいずれも案 A 推奨で、Explore agent の案 B 推奨（既存 spec-architect の多軸モード分岐への統合）は今回採用しない。理由詳細は HANDOFF「archeo-architect ブレスト → 実装」§配置案A・B 両論併記参照
+- **D4 改修レベル**: minor 確定。新規 SK 追加 + 後方互換維持 + philosophy.md 章追加なし。onboarding 追加時 (v5.0.0) と同形式
+- **1→5 フェーズでの起動**: オプション + 動的起動。標準装備化はしない（新規プロジェクトでの不要起動を避けるため）
+
+### v6.0.0 候補として温存される思想拡張
+
+`refactor-intent-map.md` の Islands スキーマを **AI 組織応用**（AI エージェント間引き継ぎへの拡張）に活用する案を v6.0.0 候補として温存する。v5.x 帯では「コードベース内の意図復元」に限定し、テンプレートに「拡張余地」コメントのみ残す（捏造防止規約と整合させるため、AI 組織応用は別の合議が必要）。
+
+`refactor_directive` の値域拡張（`partial_restructure` / `merge` / `split` 等）も v6.0.0 候補として温存する。Phase α では 3 値（preserve / restructure / discard_and_redesign）のみで運用し、観測駆動で拡張可否を判定する（`wf-baseline-rationale.md` §3「観測駆動でのみ拡張」原則と整合）。
+
 ## v5.3.0 で追加された概念
 
 ### 1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定
