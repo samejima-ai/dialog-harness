@@ -2,6 +2,309 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## 保留中の長期計画
+
+### CI/CD 強化計画（2026-05-01 開始、保留中）
+
+- **起源**: 下流プロジェクト（Next.js + Supabase 系、`apps/platform` 等を持つ dev_mode=github_assisted 確定済プロジェクト）からの献上ブレスト
+- **保管場所**: `history/deliveries/2026-05-01-cicd-automation-brainstorm.md`
+- **DH 一般化候補**: 10 カテゴリ × 多数選択肢のうち、DH 本体に一般化可能な議題を以下 5 つに集約
+  1. **scaffold-checklist の CI 章追加**: `.github/workflows/ci.yml` 雛形（typecheck + lint + test の PR ゲート）を v5.1.0 標準 stack の必須生成ファイルに加える案
+  2. **crosscut-* 段階稼働プロトコル**: 未稼働の dispatcher / implementer / drift / feedback-loop について dev_mode × CTL ごとの推奨稼働順を reference 化する案
+  3. **「罠 → 検出器」一般化パターン**: プロジェクト固有の踏みやすい誤りを DONT.md に言語化し sensors/computational.md へ lint として載せる汎用フローを reference 化する案
+  4. **自動化 LOC 予算ガイダンス**: 1 自動化 = 1 ファイル 200 行未満、自動化総量の本体 LOC × 1.5 上限等のガイダンスを philosophy or dev-env-spec に追加する案（Bus factor 軽減）
+  5. **sensor 自動実行化**: markdown 手順書としての sensor を実行可能スクリプト化し VERIFICATION.md に machine-readable 結果を残す案
+- **未消化の 7 質問（ブレスト原文 §5）**:
+  - Q1 テストフレームワーク方針（Vitest / Playwright / Cucumber の 3 層採否）
+  - Q2 自動化 LOC 上限の基準
+  - Q3 crosscut-* 稼働順序
+  - Q4 罠検出器の SPEC / docs / DONT 振り分け
+  - Q5 production 切替と down migration（プロジェクト固有、DH 採用外）
+  - Q6 Bus factor 対策と自動化増加の逆説
+  - Q7 v5.2.0/v5.3.0 で送られた philosophy verifier の取り扱い（既決：v5.3.0 候補から外し継続検討）
+- **保留理由**: 起点プロジェクトおよび harness 利用者側で「CI/CD で何のどこをチェックするか」の認識共有が未達。L0 spec-architect 原則「認識のズレがゼロになるまでレビューループを回す」に従い、ズレが残ったままの開発環境構築を避ける
+- **次サイクル発動条件**:
+  - (a) 利用者プロジェクト側で CI/CD の対象範囲（typecheck / lint / unit / E2E / drift / 罠検出 のいずれか以上）を具体化した HANDOFF が届く、または
+  - (b) PR #30（v5.4.0 archeo-architect）merge 後の安定期に DH 本体側でドッグフード対象として再起動
+- **PR #30 との関係**: 本計画は PR #30 と独立。両者ともに `history/INTENT.md` と他ファイルを触る場合は merge 後 rebase で整合させる。本サイクルでは PR #30 が予約した v5.4.0 を侵さないため版上げを行わない
+- **当面のリリース対象**: なし（記録のみ）。実体改修は次サイクル以降の minor or 別 PR に委ねる
+
+### Lifecycle → LC 命名変更計画（2026-05-01 開始、保留中）
+
+- **起源**: 2026-05-01 サイクル中の対話（PR #31 上で CI/CD 動的調整を議論する過程で表面化）
+- **問題**: DH 本体に 2 種類の `L` + 数字命名が共存し、文書内で衝突する
+  - **Layer**: 5 層論の階層（L0 = spec-architect, L1 = autonomous-dev, L2 = orchestrator/integration-verifier）
+  - **Lifecycle**: プロジェクトの成熟度（L=0 立ち上げ、L=1 機能拡張期、L=2 安定運用期、L=3+ 本番）
+- **混同の実例**: 「L=2 のプロジェクトで L2 が起動する」のような文に Layer 2 起動条件と Lifecycle 2 が同時に登場し、読み手が文脈で判別する負担が生じる
+- **改名提案**: `Lifecycle L=N` → `LC=N`（`LC` = LifeCycle 略記）
+  - Layer は `L0/L1/L2` のまま維持
+  - Lifecycle は `LC=0/LC=1/LC=2/LC=3` に統一
+- **影響範囲（暫定推定）**:
+  - `philosophy.md` Lifecycle 言及箇所
+  - `references/regime-assessment.md` Lifecycle 判定章
+  - `references/dev-env-spec.md` Lifecycle 別構成
+  - 各 SKILL.md の振り返り儀式条件（特に `layer0-spec-architect/SKILL.md`）
+  - `DIMENSIONS.md` Lifecycle 章（あれば）
+  - `references/scaffold-checklist.md` Lifecycle 別生成物
+- **保留理由**: 本 PR (#31) と並行 PR #30（v5.4.0 archeo-architect）はどちらも上記ファイル群の一部を触る、または触る可能性がある。命名変更は全 grep 系の横断改修であり、両 PR が merge される前に流すと conflict が大量発生する
+- **次サイクル発動条件**:
+  - (a) PR #30 merge **かつ** PR #31 merge の両方が完了し、master が安定状態になった後
+  - (b) 命名変更を「`Lifecycle` → `LC` 一括置換 + 用語表更新 + 後方互換注記」に絞り込んだ単独 PR として独立ブランチで実施
+- **PR スコープの予測**: 単独 PR、minor 昇格不要（命名整備のみ、機能変更なし）。CHANGELOG にメモ程度。
+- **当面のリリース対象**: なし（記録のみ）
+
+### scaffold-checklist CI 章 構造ドラフト（2026-05-01 起稿、保留中）
+
+CI/CD 強化計画 (1) の解像度を上げる**構造案**。`references/scaffold-checklist.md` への実装はまだ行わず、ここに叩き台として保管する。本節以降は LC 命名変更計画（前節）の決定に従い `LC=N` 表記を先行採用する。
+
+#### 設計原則
+
+1. **L0 は型と最小実装を渡す**: `.github/workflows/ci.yml` の最小 YAML を雛形として配布する。L1 が中身を埋める（テスト本体・キャッシュ最適化）
+2. **動的判定**: CI 構成は `(LC, dev_mode, stack)` の関数として決まる。`dev_mode = local_only` では物理的に CI 不在
+3. **三段構えの第 2 段専用**: 第 1 段（IDE / pre-commit）と第 3 段（AI reviewer）は別責務。CI 章は機械化可能なものだけを扱う
+4. **scaffold-checklist の §0 受け入れ基準を継承**: 「実体ファイルが存在しなければならない」原則を CI YAML にも適用
+
+#### 動的構成テーブル（dev_mode = `github_assisted` 以上）
+
+| LC | 検査セット | 実体ファイル要件 | jobs 数 |
+|---|---|---|---|
+| `LC=0`（立ち上げ初期） | typecheck のみ（PR ゲートとせず通知のみ） | `.github/workflows/typecheck.yml`（最小 15 行） | 1 |
+| `LC=1`（機能拡張期） | typecheck + lint + unit test（PR ゲート） | `.github/workflows/ci.yml`（30〜50 行） | 3 |
+| `LC=2`（安定運用期） | + drift 検出 + 罠検出器 + E2E（夜間 schedule） | `.github/workflows/ci.yml` + `.github/workflows/nightly.yml` | 5+ |
+| `LC=3+`（本番運用） | + security scan + perf budget + canary | 上記 + `.github/workflows/release.yml` | 8+ |
+
+`dev_mode = local_only` では本テーブルは適用されず、代わりに `git hooks/pre-commit` のみ規定（別章として将来追加）。
+
+#### LC=1 雛形（最低共通解の例示）
+
+```yaml
+# .github/workflows/ci.yml （L0 が配布する最小骨格）
+name: CI
+on:
+  pull_request:
+    branches: [master, main]
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+```
+
+備考: scaffold-checklist v5.1.0 標準 stack の `package.json` `scripts.dev/build/test` 規約と整合する。`pnpm typecheck` `pnpm lint` の存在は同 stack で既に必須生成物に内包されているため追加要件なし。
+
+#### スタック別差分（将来 minor で）
+
+scaffold-checklist 既存の「将来拡張ポイント」表（Next.js / Vue 3 / Node CLI / Astro / SvelteKit）と並走して、各 stack の CI 雛形差分を minor で追加：
+
+| stack | 主な差分 |
+|---|---|
+| Next.js (App Router) | `pnpm build` を job に追加（Edge runtime ビルド検証）、Vercel preview deploy 連携 |
+| Vue 3 + Vite | Vue 系 lint plugin の有無、E2E は Cypress も選択肢 |
+| Node CLI | jsdom 不要、`pnpm pack` の job 追加 |
+| Astro | `astro check` の job、image optimization 検証 |
+| SvelteKit | `svelte-check` の job、adapter-auto の build 検証 |
+
+#### 振り返り儀式での連動
+
+`spec-architect` の振り返り儀式（`ritual-protocol.md` 規定）に LC 遷移検出ステップを追加し、検出時に本ドラフトの動的構成テーブルと現行 `.github/workflows/` を diff して人間に提示する流れを構築する。これは別 reference（仮称 `references/ci-evolution-protocol.md`）として将来追加する想定。
+
+#### Smoke Test との関係
+
+scaffold-checklist 既存の **smoke test 手順**（`pnpm install / dev / build / test`）が CI で機械的に走る形になる。`§7.4 自己検証` の「scaffold smoke test」と CI の `test` job は同じスクリプトを呼ぶため、L0 自己検証と CI の検査内容が二重化されない。
+
+#### 残課題（次サイクル以降）
+
+- 現行 `.gitignore` に `.github/workflows/*.yml` の lint 規約がない → CI YAML 自身の linter（`actionlint` 等）採否の判断
+- `secrets` の扱い（ベースは secrets 不要だが、E2E で外部 API key が必要なケースの規約）
+- self-hosted runner の使用可否規約
+- workflow キャッシュ戦略の標準化（`actions/cache` 採否）
+
+### crosscut-verifier-drift の CI 降下診断（2026-05-01、保留中）
+
+CI/CD 強化計画 (2)「crosscut-* 段階稼働プロトコル」の解像度を上げる**診断結果**。現行 `crosscut-verifier-drift` skill（`.claude/skills/crosscut-verifier-drift/`）は CTL ≥ 1 で発動する追加層 verifier だが、その内部処理を「第 2 段（CI、AI 不要）」「第 3 段（AI reviewer）」に切り分けたときの分担を診断する。
+
+#### 現行 drift verifier の 5 種別
+
+| # | 種別 | 軽量モード (CTL-1) | フルモード (CTL-2/3) |
+|---|---|---|---|
+| 1 | `spec_unrecorded_addition` | キーワード grep | 機能境界 ast 解析 |
+| 2 | `adr_unapproved_removal` | （未明記、grep 想定） | （未明記、意味判定想定） |
+| 3 | `dont_violation` | DONT.md 文字列 grep | 意味的類似度判定 |
+| 4 | `signature_drift` | git diff のみ | TypeScript signature diff（型情報考慮） |
+| 5 | `ux_drift` | sensors/interaction-cost ログ参照 | 同左 + 統計的有意性チェック |
+
+#### CI 降下可否マトリクス（診断結果）
+
+| # | 種別 | 軽量 → CI? | フル → CI? | 残る AI 判定 |
+|---|---|---|---|---|
+| 1 | `spec_unrecorded_addition` | **○** SPEC.md 内の機能 ID と diff 内のシンボル名を grep 比較 | △ 「機能境界」は意味判定 → AI 残置 | 「機能の境界が同一か」 |
+| 2 | `adr_unapproved_removal` | **○** 削除行と ADR 内の決定 ID を grep 比較 | △ 「等価変更か破壊的削除か」は AI | 「削除の意味的影響」 |
+| 3 | `dont_violation` | **○** DONT.md の禁止パターン（正規表現化前提）と diff を照合 | × 意味的類似度は AI 必須 | 「DONT に書かれていないが趣旨に反するか」 |
+| 4 | `signature_drift` | **◎** TS なら `tsc --noEmit` + api-extractor、Rust なら `cargo public-api` で完全機械化 | **◎** 同上 | なし（完全 CI 化可能） |
+| 5 | `ux_drift` | **◎** sensors ログ + Lighthouse CI で完全機械化 | **◎** 統計検定スクリプト | なし（完全 CI 化可能） |
+
+凡例: **◎** 完全機械化可、**○** 軽量部分のみ機械化可、△ 一部機械化、× 機械化不可（AI 残置）
+
+#### 機械化に必要な前提条件（書式規約整備）
+
+軽量モードを CI に降ろすには、以下の書式規約が前提条件として整備されていなければならない（現状未整備または不完全）：
+
+| 規約 | 要件 | 現状 |
+|---|---|---|
+| SPEC.md の機能 ID 規約 | `FUNC-001` 形式等の機械可読 ID を機能ごとに付与 | 不明（プロジェクト依存） |
+| ADR の決定 ID 規約 | `ADR-NNN` 形式の決定 ID と「決定／却下」状態の機械可読化 | 不明（プロジェクト依存） |
+| DONT.md の禁止パターン規約 | 禁止項目に正規表現またはキーワードを併記（例: 「`console.log(` 禁止」） | 不明（多くは自然文） |
+| sensors/interaction-cost ログ形式 | UX メトリクス JSON 出力規約 | sensors/interaction-cost.md で規定（既存） |
+
+→ **drift verifier の CI 降下は、SPEC/ADR/DONT の書式規約整備を伴う構造改修**であり、軽率な機械化は誤検出を量産する。
+
+#### 提案する二段化構造（次サイクル以降の改修像）
+
+```
+PR push
+  ↓
+[第 2 段 CI]
+  ├── scripts/drift-check-lightweight.sh （pure shell, AI 不要）
+  │     ├── signature_drift（tsc --noEmit + api-extractor diff）
+  │     ├── ux_drift（Lighthouse CI + sensors ログ照合）
+  │     ├── spec_unrecorded_addition（軽量 grep）
+  │     ├── adr_unapproved_removal（軽量 grep）
+  │     └── dont_violation（軽量 grep、正規表現規約済の場合のみ）
+  │     → delivery/DRIFT-REPORT-LIGHT.md
+  ↓
+[第 3 段 AI reviewer]
+  ├── crosscut-verifier-drift skill 起動（CC runtime）
+  │     ├── 機能境界 ast 解析（spec_unrecorded_addition フル）
+  │     ├── 意味的類似度判定（dont_violation フル）
+  │     ├── ADR 意味判定（adr_unapproved_removal フル）
+  │     └── DRIFT-REPORT-LIGHT.md の擬陽性／真陽性判定
+  │     → delivery/DRIFT-REPORT.md（最終）
+  ↓
+[crosscut-feedback-loop へ還流]
+```
+
+利点:
+- CI 段で擬陽性を含めた**早期検出**、AI 段で擬陽性除去と意味判定（context 節約）
+- CTL-0 プロジェクト（drift skill 不発動）でも CI 段の軽量チェックは独立して走る選択肢が生じる
+- skill が CC runtime 不在の環境でも、CI 段の最低限は機能する
+
+#### 残課題
+
+- 現行 `templates/.github/workflows/spec-drift.yml` は「skill 起動を CI 上で行う前提」のテンプレで、CI runtime に CC を要求する。本診断の二段化案を採るなら、このテンプレを `spec-drift-lightweight.yml`（pure shell）と `spec-drift-full.yml`（CC runtime 必要）に分離する必要がある
+- DONT.md の正規表現化は全プロジェクトに義務付けるか、「機械検査用 DONT 拡張規約」として opt-in にするかの判断が残る
+- v5.0.0 既存仕様の改修となるため、minor 昇格 + Council 諮問の対象
+- 本診断は読み取りのみで `crosscut-verifier-drift` 本体には変更を加えていない。実装は別 PR
+
+### 外部 CI/CD 知見との整合分析（2026-05-01 調査、保留中）
+
+CI/CD 強化計画 (1)〜(5) の延長として、ひでさんが集めた **AI 主導型 CI/CD アーキテクチャに関する 2026 年時点の業界知見**を DH 既存原則と突き合わせた整合分析。本節は調査結果のスナップショットであり、採用判断は行わない。
+
+#### 入力源と要点（ひでさん経由）
+
+提供された AI 主導型 CI/CD ガイドの要点を 5 領域に整理：
+
+1. **ハーネス・エンジニアリング**: モデル知能より周辺インフラ（セッション管理／コンテキスト供給／ツール制限／ガードレール）の設計が成否を分ける
+2. **動的ルーティングとマルチエージェント**: Coordinator-first routing、PEV (Plan-Execute-Verify) ループ、用途別サブエージェント分離（Explore/Plan/Execute/Verify）、Git worktree による隔離
+3. **決定論的ガードレール**: Pre-Tool Hook（破壊的操作の強制終了）、Post-Tool Hook（生成直後の lint/SAST フィードバック）でプロンプト指示だけでは不十分な確率的 AI を制約
+4. **テストピラミッド 2.0 + DevSecOps シフトレフト**: AI 生成テスト・Record & Playback・SAST/DAST/SCA/Secret scanning の PR ゲート組み込み
+5. **アンチパターン**: コンテキスト肥大化／Generator-Evaluator 同一化／過剰権限によるサプライチェーン攻撃／DORA バッチサイズ増大による安定性低下
+
+#### DH 既存原則との一致点（外部証拠による補強）
+
+DH の多くの設計判断は本調査の業界知見と一致しており、外部証拠で正当性が補強される：
+
+| DH の原則 / 機構 | 外部知見の対応概念 | 補強される点 |
+|---|---|---|
+| **「dialog-harness」という命名** | ハーネス・エンジニアリング | 命名自体が業界用語と直結。DH の存在意義を外部用語で説明可能になる |
+| `references/` の遅延ロード機構（SKILL.md description / `name` ヒット時のみ詳細展開） | Progressive Disclosure（段階的開示） | コンテキスト肥大化アンチパターンへの予防が組み込み済 |
+| `layer1-autonomous-dev` と `layer1-independent-reviewer` の分離 | Generator/Evaluator 分離 | 「同一 AI に評価させると過大評価」アンチパターンへの予防が組み込み済 |
+| `history/INTENT.md` `history/CHANGELOG.md` `delivery/DELIVERY.md` 等のファイルベース記憶 | MEMORY.md / progress.txt パターン | セッションリセット耐性が組み込み済 |
+| `crosscut-council` の 3 ペルソナ独立判定 | コーディネーター + 専門エージェント分離 | 単一 AI の盲点問題に対する組織的対処 |
+| v5.3.0「1 機能完遂の自律駆動 WF」原則 | DORA 2024/2025: AI でバッチサイズ増大 → 変更失敗率悪化 | DH の小スコープ強制が DORA メトリクスの裏付けで正当化される |
+| `regime-assessment.md` の M1/M2/L2 動的判定 | Coordinator-first routing | 自然言語推論による振り分けが既に枠組みとして存在 |
+| `sensors/computational.md` `sensors/inferential.md` の段階検証 | テストピラミッド 2.0 の段階構造 | 第 1〜5 層の哲学が業界用語と整合 |
+
+→ **DH の哲学は 2026 年業界ベストプラクティスと独立に到達しており、命名（ハーネス）まで一致**している。これは v5.x 系の哲学的安定性の傍証として `history/DH-PHILOSOPHY-INSIGHTS.md` に補強記録する価値がある（次サイクル対応候補）。
+
+#### DH に欠けている／弱い領域
+
+外部知見と突き合わせて、DH 現行に**実装が薄い／無い領域**を 4 件特定：
+
+| # | 領域 | 外部の対策 | DH 現状 | 強化候補 |
+|---|---|---|---|---|
+| α | 機械的 Pre-Tool Hook | 破壊的操作（`rm -rf`、本番 DB 接続）を CI / runtime レベルで強制終了 | DONT.md の規範記述のみ。機械的ガードなし | sensors/computational.md に Pre-Tool 規約節を追加。`crosscut-issue-implementer` 起動時の hook として組み込み |
+| β | Post-Tool 自動フィードバック | 生成直後に lint/SAST/typecheck → AI に結果フィードバック | layer1-autonomous-dev の自己検証で間接的に実装 | **第 2 段 CI（scaffold-checklist CI 章）** で機械的補強。本 PR の (3) と統合可能 |
+| γ | OIDC / 短寿命トークン規約 | GitHub Actions OIDC で本番デプロイ／npm publish 時に長寿命トークンを排除 | dev_mode = github_full_auto で言及はあるが具体規約なし | `dev-env-spec.md` に dev_mode 別の secrets/トークン規約を追加 |
+| δ | DORA メトリクス計装 | Lead Time / Deploy Freq / Change Failure Rate / MTTR の自動計測 | 計測機構なし | `history/DORA-METRICS.md`（仮）として LC=2 以上で必須化を検討 |
+
+→ いずれも CI/CD 強化計画 (1)〜(5) の**追加候補 (6)〜(9)** として記録する：
+
+- **(6) 機械的 Pre-Tool Hook 規約**（α）
+- **(7) Post-Tool 自動フィードバック ↔ CI 第 2 段の連結**（β、(3) と一体化）
+- **(8) OIDC / 短寿命トークン規約**（γ）
+- **(9) DORA メトリクス計装規約**（δ）
+
+#### 重要な警告事例: Cline CLI 事件（2026）
+
+外部調査で言及された **Cline CLI が 2026 年に GitHub Issues 経由のプロンプトインジェクションで CI 環境を乗っ取られ、npm パッケージが乗っ取られた事件** は、DH の `crosscut-issue-implementer` 設計に対する直接的警告：
+
+- **設計時の前提**: `crosscut-issue-implementer` は GitHub Issue を起点に CC 実装を起動する横断機構（仕様2、v5.0.0）
+- **同型のリスク**: Issue 本文・コメントが AI への入力となるため、攻撃者が Issue にプロンプトインジェクションを仕込み、CI 環境で任意コード実行・パッケージ乗っ取りに繋げる可能性
+- **DH 既存の対策**:
+  - `dev_mode = local_only` では `crosscut-issue-*` 全般が無効（本リスクは発生しない）
+  - `github_assisted` では実行手段が worktree 主体で隔離される
+  - `github_full_auto` では Actions 経由となり、本リスクが顕在化
+- **追加すべき対策**（強化候補 (6) (8) と統合）:
+  - Issue 本文を AI に渡す前のサニタイザ規約（`<system>` 等の特殊タグ・大量 ASCII art の検出）
+  - OIDC + 短寿命トークン強制（npm publish / 本番 deploy で長寿命トークン禁止）
+  - 重要操作前の人間承認ゲート（manual approval を `github_full_auto` でも必須化）
+- **記録先**: `crosscut-issue-implementer/SKILL.md` または専用 reference に「外部事例: Cline 2026 事件」として追記する候補（次サイクル）
+
+#### crosscut-* skill との対応マッピング
+
+| 外部知見の概念 | DH 対応 skill | 対応状況 |
+|---|---|---|
+| Coordinator-first routing | `layer0-spec-architect`（モード判定 + dev-env 構築） | 既実装 |
+| PEV ループ | spec-architect → autonomous-dev → independent-reviewer | 既実装（v4.x 確立） |
+| Explore subagent | Claude Code の Explore agent（DH 外） | DH 直接対応なし、利用は推奨 |
+| Pre-Tool Hook | sensors/computational + DONT.md（規範のみ） | **機械的実装なし**（強化候補 α） |
+| Post-Tool Hook | layer1-autonomous-dev §7.4 自己検証 + 第 2 段 CI | **CI 連結が未確立**（強化候補 β） |
+| Generator/Evaluator 分離 | autonomous-dev / independent-reviewer | 既実装 |
+| Record & Playback | （対応なし） | scaffold-checklist 拡張候補（v5.x minor） |
+| OIDC / 短寿命トークン | （対応なし） | dev-env-spec 拡張候補（強化候補 γ） |
+| DORA メトリクス | （対応なし） | 追加層候補（強化候補 δ） |
+| プロンプトインジェクション対策 | crosscut-issue-dispatcher / implementer の自動起動制限 | **入力サニタイズ層なし**（Cline 事件への対応） |
+
+#### 残課題
+
+- 本節の量が膨らんだため、次サイクルで `history/research/2026-05-01-ai-cicd-survey.md` 等の独立ファイルに切り出す検討（`history/research/` は新規ディレクトリのため別途構造判断が必要）
+- 強化候補 (6)〜(9) のうち **(7) Post-Tool 自動フィードバック ↔ CI 第 2 段** は本 PR の (3) scaffold-checklist CI 章 構造ドラフトと**直接統合可能**。次サイクルで一体化した形で再起動する余地あり
+- Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
+- 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
+
 ## v5.3.0 で追加された概念
 
 ### 1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定
