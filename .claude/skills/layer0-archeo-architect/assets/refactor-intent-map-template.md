@@ -1,7 +1,7 @@
 # Refactor Intent Map
 
 archeo-architect が生成する意図マップテンプレート。
-本テンプレートを `delivery/refactor-intent-map.md`（複数回生成時は `refactor-intent-map-YYYY-MM-DD.md`）に複写・記入して使う。
+本テンプレートを `delivery/refactor-intent-map.md`（canonical filename）に複写・記入して使う。複数回生成時は新版で canonical を上書きし、旧版は `delivery/archive/refactor-intent-map-YYYY-MM-DD.md` にアーカイブ移動する（L1 は archive/ を参照しない）。
 
 **捏造防止規約（P-Arch-2 実装）**: `human_confirmation` が未入力（`pending`）の Island は §7.4 自己検証で FAIL。AI 単独での `corrected` / `absent` 確定は物理的に禁止する（必須フィールドで担保）。
 

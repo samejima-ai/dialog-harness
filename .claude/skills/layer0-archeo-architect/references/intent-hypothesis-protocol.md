@@ -191,7 +191,7 @@ Island-NNN の refactor_directive 推奨: <preserve | restructure | discard_and_
 ### 禁則
 
 - AI が `refactor_directive` を単独確定しない（人間レビュー必須）
-- `discard_and_redesign` 推奨時は必ず `absent_intent_protocol.md` の確定条件をクロスチェック
+- `discard_and_redesign` 推奨時は必ず `absent-intent-protocol.md` の確定条件をクロスチェック
 
 ---
 

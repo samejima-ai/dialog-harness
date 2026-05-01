@@ -1010,7 +1010,6 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
   "recommended": "選択肢 B: L1-refactor スキル新設は不採用。Phase γ (v5.5.0 候補) で layer1-autonomous-dev / layer1-independent-reviewer の評価軸を 3 軸（仕様適合・動作・使える）→ 4 軸（+ 意図合致）に拡張する予定通りの計画を進める。3 ペルソナ全員が独立に B を支持する unanimous。経営者の ROI 観点（重複投資回避、v5.3.0 確定方針覆しコスト）、開発者の Shift Left 原則（計算的解決最優先、可逆性確保）、哲学者の philosophy.md §1 違反指摘（双対 vs 内部分割の哲学的差異、INTENT.md v5.3.0 警告のタイプ N+1 罠）が同じ結論に収束。CC の機械的検査結果（5 原則違反）と完全整合",
   "minority_opinion": "なし（全会一致）。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化する』は minority ではなく『B の長期拡張提案』として保持。v5.x 帯では minor 改修が複数積まれており（archeo Phase β / γ / δ、crosscut-verifier-philosophy 本実装等）、v6.0.0 候補温存は最小記録（INTENT.md に 1-2 行）に留める方針でひでさん合意。本拡張提案は v6.0.0 議論時に再提起する候補",
   "weight_note": "category: conception → 経営者 3 / 開発者 3 / 哲学者 5（合計 11）。哲学者の重み 5 が支配的だが、本議題では 3 ペルソナが独立に B を支持したため重み配分の影響は限定的。3 ペルソナが異なる dimension（ROI / 保守性 / 前提への問い）から同一結論に到達したことが結論の堅牢性を示す",
-  "judgment_confidence": 0.85,
   "human_escalated": false,
   "consensus_mode": "auto_agree",
   "implementer_consent": "agreed_recommended",

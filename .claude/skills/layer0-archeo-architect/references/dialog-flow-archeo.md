@@ -62,7 +62,7 @@ archeo-architect の 7 ステップで使う対話文型と分離規約。
 | `confirmed` | AI 仮説が合っている | 「合ってる」「その通り」「OK」 | Island を確定し次の島へ |
 | `corrected` | 仮説は外れている、人間が修正 | 「違う、本当は X だった」 | `corrected_intent` フィールドに修正内容を記録 |
 | `forgotten` | 思い出せない | 「忘れた」「覚えてない」「うろ覚え」 | Step 5 へ持ち越し（pending 状態） |
-| `absent` | 当時から意図なし | 「特に考えてなかった」「意図なし」「混沌」 | `absent_intent_protocol.md` の確定条件参照 |
+| `absent` | 当時から意図なし | 「特に考えてなかった」「意図なし」「混沌」 | `absent-intent-protocol.md` の確定条件参照 |
 
 ### 確認文型
 

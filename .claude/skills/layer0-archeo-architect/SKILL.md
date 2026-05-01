@@ -167,7 +167,7 @@ Phase β（生成）。AI が `assets/refactor-intent-map-template.md` に従っ
 
 `refactor_directive` は人間が決定する。AI は推奨を提示できるが確定はしない。
 
-成果物の配置は `delivery/` 直下（`dev-env-spec.md` の参照権限マトリクスで A出力に該当）。複数回生成する場合はファイル名にタイムスタンプを付与（`refactor-intent-map-YYYY-MM-DD.md`）。
+成果物の配置は `delivery/refactor-intent-map.md`（canonical filename、`dev-env-spec.md` の参照権限マトリクスで A出力に該当）。複数回生成する場合は、新版で canonical 位置を上書きし、旧版を `delivery/archive/refactor-intent-map-YYYY-MM-DD.md` にアーカイブ移動する。L1 は archive/ を参照しない（canonical のみ参照、選択ロジック不要）。
 
 ### 7. 合意（縦方向）→ Layer 1 への譲渡
 

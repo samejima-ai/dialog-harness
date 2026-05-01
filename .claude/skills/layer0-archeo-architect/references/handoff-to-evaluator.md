@@ -45,10 +45,16 @@ L1 (`layer1-autonomous-dev`) の自己検証/独立検証は現状以下の 3 �
 L1 が読み込む対象：
 
 ```
-delivery/refactor-intent-map.md  # archeo の最新成果物
+delivery/refactor-intent-map.md  # canonical filename（最新版を常にここに置く）
 ```
 
-複数バージョンが存在する場合（`refactor-intent-map-YYYY-MM-DD.md`）は、`Meta.delivered_at` が最新の 1 ファイルのみ参照する。
+**ファイル名規約**:
+
+- canonical filename は `delivery/refactor-intent-map.md` に固定する
+- archeo を複数回起動して新版を生成する場合: 旧版を `delivery/archive/refactor-intent-map-YYYY-MM-DD.md` にアーカイブ移動し、canonical 位置（`delivery/refactor-intent-map.md`）を新版で上書きする
+- L1 は `delivery/archive/` を参照しない（canonical のみ参照、選択ロジック不要）
+
+これにより L1 側の選択アルゴリズムが不要となり、`exists("delivery/refactor-intent-map.md")` の単純チェックで済む。アーカイブは人間レビュー用の履歴であり L1 評価軸には影響しない。
 
 ### L1 側の参照ロジック（Phase γ で本実装）
 
