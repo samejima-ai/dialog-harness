@@ -32,9 +32,9 @@ onboarding 由来の REGIME.md は通常版と異なる以下の項目を最上�
 - **抽出不能領域**: 全体の XX%（DONT.md 参照）
 - **機密領域**: 存在のみ記録（DOMAIN-CONTEXT.secret.md 未生成）
 
-## Lifecycle
+## LC
 
-- **L=1**（既存プロジェクト、onboarding 経由で初期化）
+- **LC=1**（既存プロジェクト、onboarding 経由で初期化）
 
 ## モード判定（暫定）
 

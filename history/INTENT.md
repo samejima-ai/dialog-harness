@@ -29,7 +29,11 @@ DH 本体の設計意図・新規概念の記録。
 - **PR #30 との関係**: 本計画は PR #30 と独立。両者ともに `history/INTENT.md` と他ファイルを触る場合は merge 後 rebase で整合させる。本サイクルでは PR #30 が予約した v5.4.0 を侵さないため版上げを行わない
 - **当面のリリース対象**: なし（記録のみ）。実体改修は次サイクル以降の minor or 別 PR に委ねる
 
-### Lifecycle → LC 命名変更計画（2026-05-01 開始、保留中）
+### Lifecycle → LC 命名変更（2026-05-01、✅ 完了）
+
+> **完了サマリ（2026-05-01 追記）**: 本計画は branch `claude/rename-lifecycle-to-lc-2026-05-01` で実施。`crosscut-council` 諮問の結果「PR #30 open のまま並列実行・衝突は rebase で解消」という判定で進行を確定（`history/COUNCIL-LOG.md` 参照）。具体的な実施内容は本節末尾「実施記録」を参照。
+
+#### 元計画（2026-05-01 起稿時、保留中状態の記録）
 
 - **起源**: 2026-05-01 サイクル中の対話（PR #31 上で CI/CD 動的調整を議論する過程で表面化）
 - **問題**: DH 本体に 2 種類の `L` + 数字命名が共存し、文書内で衝突する
@@ -52,6 +56,37 @@ DH 本体の設計意図・新規概念の記録。
   - (b) 命名変更を「`Lifecycle` → `LC` 一括置換 + 用語表更新 + 後方互換注記」に絞り込んだ単独 PR として独立ブランチで実施
 - **PR スコープの予測**: 単独 PR、minor 昇格不要（命名整備のみ、機能変更なし）。CHANGELOG にメモ程度。
 - **当面のリリース対象**: なし（記録のみ）
+
+#### 実施記録（2026-05-01）
+
+- **発動契機**: ひでさんからの「LC 命名変更に進む」指示。本来の発動条件 (a)「PR #30 merge **かつ** PR #31 merge の両方完了」のうち PR #30 が未 merge のため、`crosscut-council` を諮問した
+- **Council 判定**: 経営者（条件付き進行）/ 開発者（段階的進行）/ 哲学者（条件記述更新後に進行）の 3 ペルソナで重み付き総合「進行可」判定。前提 3 条件を提示
+  1. INTENT.md の発動条件記述を「並列実行・衝突は rebase で解消」に更新（**本節がこれに該当**）
+  2. 衝突 4 ファイル（spec-architect SKILL / dev-env-spec / INTENT / CHANGELOG）は PR #30 で追加された新規行に触れず、既存 Lifecycle 言及行のみ置換
+  3. 全置換完了後に harness-verifier を回し整合性を確認
+- **置換規則**:
+  - `Lifecycle L=N` → `LC=N`
+  - `Lifecycle ≥ N` → `LC ≥ N`、`Lifecycle ≤ N` → `LC ≤ N`
+  - `L=N`（単独で Lifecycle 文脈の場合）→ `LC=N`
+  - `Lifecycle 0/1/2` → `LC=0/LC=1/LC=2`
+  - `Lifecycle` 単独語（DH 概念として）→ `LC`
+  - `Layer L0/L1/L2` は**変更しない**（5 層論用）
+  - glossary.yml `lifecycle:` セクションのキー `L=0/1/2` → `LC=0/1/2`、aliases に旧表記を全て含める形で後方互換維持
+- **触ったファイル群**:
+  - `harness-verifier/glossary.yml`（キー rename + 後方互換 alias）
+  - `.claude/skills/` 配下の markdown 群（sed による機械置換 + 残存の手動補正）
+  - `history/INTENT.md`（本節の追記）
+  - `history/CHANGELOG.md`（v5.3.x patch エントリ追加）
+  - `history/REGIME-LOG.md`（本サイクル記録）
+  - `history/COUNCIL-LOG.md`（本 Council 諮問記録）
+- **触らなかったファイル群（後方互換のため）**:
+  - `delivery/SELF-VERIFICATION-v5.0.0.md` 〜 `v5.2.0.md`、`L1-DELIVERY-v5.3.0.md`、`VERIFICATION*.md`（バージョン別スナップショット、歴史的記録）
+  - `dh-upgrades/upgrade-spec-v5.0.0.md`（過去のアップグレード計画）
+  - `docs/migration-guide-v5.1.0.md`（公開済み移行ガイド）
+  - `history/CHANGELOG.md` の v5.0〜v5.3 既存エントリ、`REGIME-LOG.md` の既存エントリ、`ARCH-DECISIONS.md` の全エントリ（時系列ログの歴史的事実は不変）
+- **PR #30 との衝突対処**: 本 PR は `layer0-spec-architect/SKILL.md` と `dev-env-spec.md` を **置換のみ**（新規行追加なし）。PR #30 はこれらに新規行追加（archeo-architect 行）。merge 順序が前後しても rebase で機械的に解決できる
+- **バージョン**: 据え置き（v5.3.0 のまま）。命名整備のみ、機能変更なし
+- **検証**: `harness-verifier/verify.py` を実行し全項目 PASS を確認（実行記録は `delivery/` 配下ではなく本節に簡記）
 
 ### scaffold-checklist CI 章 構造ドラフト（2026-05-01 起稿、保留中）
 

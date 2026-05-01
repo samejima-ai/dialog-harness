@@ -13,7 +13,7 @@ description: >
   本スキルで扱う）。
   具体的な技術名やコードの話が出る前の、目的・意図・イメージの段階で使う。
   仕様ドキュメントの作成、モード判定、RL/SK/センサー定義等の開発環境一式を生成するところまでが責務。
-  既存プロジェクト（Lifecycle L=1/L=2）では対話冒頭に振り返り儀式を実行する。
+  既存プロジェクト（LC=1/LC=2）では対話冒頭に振り返り儀式を実行する。
 ---
 
 # Spec Architect
@@ -39,7 +39,7 @@ description: >
 3. scaffold smoke test（最小起動コマンド）が通る、または通らない場合は理由を DELIVERY 等に明記
 4. §7.4 自己検証（broken reference / DONT 自己照合 / Pre-flight 充足）が PASS
 
-このいずれかが未達のまま L1 へ譲渡することは原則違反。Lifecycle ≥ 1 の既存プロジェクトでは、本基準は v5.1.0 以降に追加開始する機能・フェーズに段階適用する（既存成果物の遡及修正は要求しない）。
+このいずれかが未達のまま L1 へ譲渡することは原則違反。LC ≥ 1 の既存プロジェクトでは、本基準は v5.1.0 以降に追加開始する機能・フェーズに段階適用する（既存成果物の遡及修正は要求しない）。
 
 ## L0 スキル間の責務分担
 
@@ -48,21 +48,21 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 | ケース | 起動スキル | 判定条件 |
 |---|---|---|
 | 新規プロジェクト立ち上げ | **spec-architect** | SPEC/DONT/REGIME がいずれも未存在、かつコード未存在（空リポジトリ） |
-| 既存プロジェクトの継続開発・仕様追加・振り返り | **spec-architect** | REGIME.md 存在、Lifecycle ≥ 1 |
+| 既存プロジェクトの継続開発・仕様追加・振り返り | **spec-architect** | REGIME.md 存在、LC ≥ 1 |
 | 既存プロジェクトへの harness 後付け導入 | **layer0-onboarding** | REGIME.md 未存在、かつ既存コード・既存ドキュメントが存在 |
 
 **排他ルール**:
 - REGIME.md に `onboarded_at` がある → onboarding 再起動禁止（spec-architect のみ）
 - onboarding 完了時は必ず spec-architect へ handoff する（`layer0-onboarding/references/handoff-to-spec-architect.md` 準拠）
-- 疑わしい場合は spec-architect が引き受けて Lifecycle 判定で切り分ける
+- 疑わしい場合は spec-architect が引き受けて LC 判定で切り分ける
 
 ## 処理フロー
 
 ```
 1. 人間のイメージ受領
-1.5. 振り返り儀式（Lifecycle 判定 → 儀式レベル判定 → F1〜F3 実行）
-     新規プロジェクト（L=0）ではレベル0で完全スキップ
-     既存プロジェクト（L=1/L=2）では history/ を読み込み過去文脈と照合
+1.5. 振り返り儀式（LC 判定 → 儀式レベル判定 → F1〜F3 実行）
+     新規プロジェクト（LC=0）ではレベル0で完全スキップ
+     既存プロジェクト（LC=1/LC=2）では history/ を読み込み過去文脈と照合
 2. 対話による具体化（目的・機能・条件・制約の引き出し）
    並行してモード判定情報も取得（規模・不確実性・リスク・NFR・ARC・ドメイン文脈・権限レベル）
    儀式で検出した矛盾・復活要求・再提案はここで解消する
@@ -70,7 +70,7 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 3. ドキュメント化（メタ仕様に従い構造化）
 3.5. サブフェーズ選定と実行（基本5問で L0-2〜L0-6 を動的起動、`spec/` 配下に成果物生成）
      条件を満たさないプロジェクトは完全スキップ。詳細は `references/subphase-selection.md`
-4. モード判定（S/U/Rスコアリング + L2発動閾値チェック + Lifecycle記録）
+4. モード判定（S/U/Rスコアリング + L2発動閾値チェック + LC 記録）
 5. 人間レビュー → 認識ズレがあれば2に戻る
 6. 認識ズレなし → モードに応じた開発環境の設計・構築
 7. 開発環境一式を Layer 1（または L2）に渡せる状態で出力
@@ -79,7 +79,7 @@ L0 は spec-architect と onboarding の 2 スキルで構成される（いず�
 ```
 
 ステップ5→2のループが最も重要。ここを省略しない。
-ステップ1.5は Lifecycle ≥ 1 の場合のみ実行する。**Pre-flight (v5.1.0)**: 起動前に `references/ritual-protocol.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
+ステップ1.5は LC ≥ 1 の場合のみ実行する。**Pre-flight (v5.1.0)**: 起動前に `references/ritual-protocol.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
 ステップ3.5は DB/API/状態遷移/認可のいずれかが関与する場合に起動する。判定と実行のプロトコル詳細は `references/subphase-selection.md` を参照。
 
 ## ステップ詳細
@@ -273,10 +273,10 @@ GitHub 連携前提の自律駆動を 3 段階で表現する追加軸。規模�
 判定フロー：
 1. 質問1：「GitHub 使う？」
 2. No → `local_only` 確定
-3. Yes → 規模 + Lifecycle から推論（v5.0.0 時点）
+3. Yes → 規模 + LC から推論（v5.0.0 時点）
    - M1 → `github_assisted`
-   - M2, Lifecycle ≤ 1 → `github_assisted`
-   - M2-L2, Lifecycle ≥ 1 → `github_autonomous`
+   - M2, LC ≤ 1 → `github_assisted`
+   - M2-L2, LC ≥ 1 → `github_autonomous`
 4. 推論結果を 1 回のみ確認、ユーザー裁量で昇格・降格可
 
 dev_mode 昇格・降格は手動 + ADR 記録必須（spec §3.2.3）。「GitHub 無しでも DH ベースは完全動作」が原則。
@@ -358,7 +358,7 @@ project-root/
 - [ ] **Pre-flight 充足**: 本セッションで通過した §1.5 / §3.5 / §4 / §6 / §7 の各 Pre-flight 行が指定するリファレンスを実際に読んだ
 - [ ] **受け入れ基準充足**: §0 受け入れ基準の 4 条件（仕様充足 / scaffold 実体 / smoke test / 本 §7.4 PASS）を逐項チェック
 
-検証結果は `delivery/SELF-VERIFICATION-*.md`（任意ファイル名、L0 自己検証用）または DELIVERY.md の冒頭に記録する。Lifecycle ≥ 1 の既存プロジェクトでは、本ステップは v5.1.0 以降に追加開始する機能・フェーズに段階適用する（既存成果物の遡及検証は要求しない）。
+検証結果は `delivery/SELF-VERIFICATION-*.md`（任意ファイル名、L0 自己検証用）または DELIVERY.md の冒頭に記録する。LC ≥ 1 の既存プロジェクトでは、本ステップは v5.1.0 以降に追加開始する機能・フェーズに段階適用する（既存成果物の遡及検証は要求しない）。
 
 ### 7.5. ファイル配置規則に沿った初期化
 
@@ -370,7 +370,7 @@ project-root/
 - ルート直下は INDEX/SPEC/DONT/REGIME/CLAUDE/DOMAINS と README.md のみ許可
 - 違反（PLAN.md, TODO.md, MEMO.md 等のルート直下作業メモ）は **Phase B の自動修復対象** として DELIVERY.md にログ化
 
-本ステップは新規（Lifecycle L=0）のみ実施。既存プロジェクト（L=1/L=2）では現状配置を尊重し、違反検出時のみ L1 側で修復を提起する。
+本ステップは新規（LC=0）のみ実施。既存プロジェクト（LC=1/LC=2）では現状配置を尊重し、違反検出時のみ L1 側で修復を提起する。
 
 ### 7.6. README.md クレジット挿入
 
@@ -399,7 +399,7 @@ project-root/
 - Don'tリストは更新可能。AI能力の向上に伴い縮小する
 - L2発動閾値はAI能力バージョンに依存する。REGIME.md にバージョン記録必須
 
-## 廃止判断プロトコル（Lifecycle ≥ 1 で適用）
+## 廃止判断プロトコル（LC ≥ 1 で適用）
 
 既存機能の廃止は人間の一存では決めない。合議＋AI根拠提示で判断する。
 発動条件・プロトコル・拒否ケースの詳細は `references/deprecation-protocol.md` を参照する。
@@ -416,7 +416,7 @@ project-root/
 
 - `assets/meta-spec-template.md` — 仕様ドキュメントのテンプレートと記述ルール（REGIME.md テンプレ含む）※v4.2 で `references/` → `assets/` に再分類（skill-creator の progressive disclosure 規約準拠、内容は不変）
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
-- `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、Lifecycle判定）
+- `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、LC 判定）
 - `references/dialog-questions.md` — 非エンジニア向け対話質問例集（振り返り儀式テンプレ含む）
 - `references/model-recommendations.md` — 実行前の推奨モデル提示（モード別・ハイブリッド運用・AI能力バージョン別差分対策）
 - `references/history-layer-spec.md` — 履歴層（history/）のスキーマ・訂正・archive・承認レベル
@@ -476,7 +476,7 @@ DH 本体（D4: メタスキル層）の内部整合性を 5 項目で検査す�
 - `references/dev-env-spec.md` の「開発環境構築時の初期化」に scaffold-checklist.md への相互参照 1 行を追加
 - `assets/credit-template.md` のバージョン表記を v5.1.0 に更新
 
-`crosscut-verifier-philosophy` の本実装は本リリース対象外（v5.2.0 候補として継続検討）。Lifecycle ≥ 1 既存プロジェクトは新規開始機能・フェーズに段階適用、既存成果物への遡及修正は不要。
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（v5.2.0 候補として継続検討）。LC ≥ 1 既存プロジェクトは新規開始機能・フェーズに段階適用、既存成果物への遡及修正は不要。
 
 ### v5.0.0 追加（GitHub 連携前提化・crosscut prefix 確立・semver 化、major 昇格）
 
@@ -499,7 +499,7 @@ skill-creator 規約（`references/` = 読み参考の docs、`assets/` = 埋め
 
 ### v4.1 追加（廃止判断プロトコル分離）
 
-- `references/deprecation-protocol.md` — 廃止判断プロトコル（Lifecycle ≥ 1 で適用、発動条件・プロトコル・拒否ケース）。SKILL.md 本体から分離して参照化。
+- `references/deprecation-protocol.md` — 廃止判断プロトコル（LC ≥ 1 で適用、発動条件・プロトコル・拒否ケース）。SKILL.md 本体から分離して参照化。
 
 ### v4.0 追加（哲学原典化・5層エラー検出スタック・UX プロトコル）
 

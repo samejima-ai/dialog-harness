@@ -29,10 +29,10 @@ project-root/
 
 | ファイル | 書き手 | 読み手 | 形式 | 必須条件 |
 |---|---|---|---|---|
-| SUMMARY.md | AI（自動生成） | L0/L1/reviewer/人間 | 圧縮サマリ | Lifecycle ≥ 1 |
-| INTENT.md | L0（対話で抽出） | L0/L1/reviewer | 機能ID×意図のマッピング | Lifecycle ≥ 1 |
-| CHANGELOG.md | L1（献上時自動追記） | L0（次回対話時） | 時系列の機能変遷 | Lifecycle ≥ 1 |
-| REGIME-LOG.md | L1（事後評価から抽出） | L0（次回判定時） | 判定×実績の対応表 | Lifecycle ≥ 1 |
+| SUMMARY.md | AI（自動生成） | L0/L1/reviewer/人間 | 圧縮サマリ | LC ≥ 1 |
+| INTENT.md | L0（対話で抽出） | L0/L1/reviewer | 機能ID×意図のマッピング | LC ≥ 1 |
+| CHANGELOG.md | L1（献上時自動追記） | L0（次回対話時） | 時系列の機能変遷 | LC ≥ 1 |
+| REGIME-LOG.md | L1（事後評価から抽出） | L0（次回判定時） | 判定×実績の対応表 | LC ≥ 1 |
 | ARCH-DECISIONS.md | L1（実装時記録） | L1（次回拡張時） | ADR形式の軽量版 | 任意 |
 | PATTERNS.md | reviewer（検証時抽出） | L1（実装前参照） | 罠パターン集 | 任意 |
 
@@ -108,7 +108,7 @@ project-root/
 ```markdown
 # 変更履歴
 
-## 2026-04-18 (Lifecycle: L=1 拡張)
+## 2026-04-18 (LC=1 拡張)
 
 ### 追加
 - F010 通知機能（INTENT.md参照）
@@ -149,7 +149,7 @@ project-root/
 ## 第3回 (2026-04-18)
 
 - **判定**: M2 (S=4, U=1, R=2)
-- **Lifecycle**: L=1（拡張）
+- **LC**: LC=1（拡張）
 - **実績**: 妥当
 - **根拠**: layer1-independent-reviewer が2件指摘、自力修正1回ループ
 - **儀式レベル**: 2（動的格上げあり: 1→2、却下案再提案検出）
@@ -293,15 +293,15 @@ history/archive/
 
 ---
 
-## Lifecycle 軸との対応
+## LC 軸との対応
 
-Lifecycle の詳細判定は `regime-assessment.md` を参照。履歴層との関係のみここで規定。
+LC の詳細判定は `regime-assessment.md` を参照。履歴層との関係のみここで規定。
 
-| Lifecycle | 履歴層の扱い |
+| LC | 履歴層の扱い |
 |---|---|
-| L=0（新規） | 履歴層は新規作成のみ。儀式レベル 0（スキップ） |
-| L=1（拡張） | INTENT / CHANGELOG 参照を必須化。儀式はデフォルト レベル 1 |
-| L=2（保守） | 全履歴層参照必須、reviewer で整合性検証。儀式デフォルト レベル 2 |
+| LC=0（新規） | 履歴層は新規作成のみ。儀式レベル 0（スキップ） |
+| LC=1（拡張） | INTENT / CHANGELOG 参照を必須化。儀式はデフォルト レベル 1 |
+| LC=2（保守） | 全履歴層参照必須、reviewer で整合性検証。儀式デフォルト レベル 2 |
 
 ---
 
@@ -313,7 +313,7 @@ L1 献上時に履歴層の更新差分を `DELIVERY.md` に提示する。承�
 |---|---|---|
 | A（自動承認） | CHANGELOG追記、ARCH-DECISIONS追記、PATTERNS追記 | スキップ可、通知のみ |
 | B（確認推奨） | INTENT 新規追加、REGIME-LOG 事後評価 | 一覧確認、無修正で承認可 |
-| C（必須承認） | INTENT 廃止マーキング、却下案追加、Lifecycle 変更、取り消し線訂正 | 個別承認、修正可能 |
+| C（必須承認） | INTENT 廃止マーキング、却下案追加、LC 変更、取り消し線訂正 | 個別承認、修正可能 |
 
 ### 判定基準
 

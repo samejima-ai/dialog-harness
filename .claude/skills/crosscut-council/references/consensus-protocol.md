@@ -133,7 +133,7 @@ Judgment Agent は **delta（差分）のみ**を返す（再判定はしない�
 献上時の記録：
 
 - COUNCIL-LOG: `implementer_consent: "escalated"` + `human_escalated: true`
-- DELIVERY.md（Lifecycle ≥ 1 環境では）: 該当 invocation_id と escalation 理由を記録
+- DELIVERY.md（LC ≥ 1 環境では）: 該当 invocation_id と escalation 理由を記録
 - `judgment_failed`（検算不一致）の場合: `escalation_reason` に「weight_calculation 検算 2 回不一致: <verify_weight_calculation の reason>」を記録（PR1 新規）
 
 ### なぜ独自判断で進めないか
@@ -158,7 +158,7 @@ escalation_reason: "..." # escalated の場合のみ
 
 - 追加質問の delta 応答は最低限実装（Judgment Agent prompt に「delta のみ返す」を明記）
 - COUNCIL-LOG への後追記は手動（PR3 で自動化）
-- escalation 時の DELIVERY.md 連携は Lifecycle ≥ 1 環境でのみ
+- escalation 時の DELIVERY.md 連携は LC ≥ 1 環境でのみ
 
 ## PR2 以降の予告
 

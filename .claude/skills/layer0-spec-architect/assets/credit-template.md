@@ -44,7 +44,7 @@ v5.0.0 以降のバージョン記法は `vMAJOR.MINOR.PATCH`（semver）。v4.x
 以下は README.md クレジットには **含めない**（内部情報のため）：
 
 - モード（M1/M2/L2）
-- Lifecycle
+- LC
 - NFR スコア
 - 権限レベル
 

@@ -120,7 +120,7 @@ dialog-harness-layers は以下を前提に設計される：
 
 - **ルート直下規格ファイル**: INDEX.md, CLAUDE.md, SPEC.md, DONT.md, REGIME.md, DOMAIN-CONTEXT.md
 - **sensors/**: センサー定義
-- **history/**: 履歴層（Lifecycle ≥ 1）
+- **history/**: 履歴層（LC ≥ 1）
 - **.claude/**: スキル定義
 
 #### A出力（delivery/）
@@ -171,7 +171,7 @@ delivery/ 配下に置けるのは以下のみ：
 - DELIVERY.md（全モード必須）
 - VERIFICATION.md（M2 以上で必須）
 - INTEGRATION.md（L2 のみ）
-- HISTORY-DIFF.md（Lifecycle ≥ 1 で必須）
+- HISTORY-DIFF.md（LC ≥ 1 で必須）
 
 #### 成果物（任意）
 

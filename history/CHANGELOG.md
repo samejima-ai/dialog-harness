@@ -2,6 +2,30 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-05-01 命名整備: Lifecycle → LC（v5.3.0 patch、no version bump）
+
+DH 本体の `Lifecycle L=N` 表記を `LC=N` に統一する命名整備。Layer (`L0/L1/L2`) と Lifecycle (`L=0/L=1/L=2`) の `L` + 数字命名衝突を解消する。`crosscut-council` 諮問の結果、経営者/開発者/哲学者の 3 ペルソナで「進行可、ただし 3 条件付き」の重み付き判定（`history/COUNCIL-LOG.md` 参照）。
+
+機能変更なし、後方互換維持（`harness-verifier/glossary.yml` の `lifecycle:` セクションは旧表記 `L=0/L=1/L=2` `Lifecycle 0/1/2` `Lifecycle L=0/L=1/L=2` を全て alias として保持）。バージョンアップなし。
+
+### 変更内容
+
+- `harness-verifier/glossary.yml`: キー `L=0/1/2` を `LC=0/1/2` に変更、旧表記を aliases に保持
+- `.claude/skills/` 配下 markdown 群: `Lifecycle L=N` / `Lifecycle ≥N` / `Lifecycle ≤N` / `L=N` / `Lifecycle 別` / `Lifecycle 軸` / `Lifecycle 判定` / `Lifecycle記録` / 表ヘッダ `| Lifecycle |` 等を機械置換 + 残存手動補正
+- `history/INTENT.md`: 旧「Lifecycle → LC 命名変更計画（保留中）」節を「（✅ 完了）」に変更し、実施記録を追記
+- `history/REGIME-LOG.md`: 本サイクルを記録
+- `history/COUNCIL-LOG.md`: PR #30 open のまま進行する判定の Council 諮問を記録
+
+### 触らなかったファイル（後方互換のため）
+
+`delivery/` 配下の version snapshot、`dh-upgrades/upgrade-spec-v5.0.0.md`、`docs/migration-guide-v5.1.0.md`、`history/CHANGELOG.md` v5.0〜v5.3 既存エントリ、`history/REGIME-LOG.md` 既存エントリ、`history/ARCH-DECISIONS.md` 全エントリは時系列の歴史的事実として保持。
+
+### Council 判定の前提条件 3 件
+
+1. INTENT.md の発動条件記述を「並列実行・衝突は rebase で解消」に更新 ✓
+2. PR #30 衝突 4 ファイル（`layer0-spec-architect/SKILL.md` / `dev-env-spec.md` / `INTENT.md` / `CHANGELOG.md`）は PR #30 新規行に触れず、既存 Lifecycle 言及行のみ置換 ✓
+3. harness-verifier 全項目 PASS ✓
+
 ## v5.3.0 (released 2026-04-30)
 
 minor 昇格。**1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定**し、献上トリガー Type D（異常献上）を新設。

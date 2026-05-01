@@ -104,41 +104,41 @@ L0 対話ステップ 2.5（UX 3問プロトコル）で取得した Must 閾値
 
 ---
 
-## 軸5：Lifecycle軸（1→5運用対応）
+## 軸5：LC 軸（1→5運用対応）
 
 プロジェクトが新規か継続かを示す軸。`history/` の有無と経過日数で自動判定。
 S/U/R スコアには影響しないが、**振り返り儀式のレベル判定**と **L0 処理フロー分岐**に使う。
 
-| Lifecycle | 値 | 判定条件 | 履歴層の扱い |
+| LC | 値 | 判定条件 | 履歴層の扱い |
 |---|---|---|---|
-| L=0 | 新規 | `history/` なし | 新規作成のみ、儀式完全スキップ |
-| L=1 | 拡張 | `history/` あり、CHANGELOG.md 最終更新が30日以内 | INTENT/CHANGELOG 参照を必須化、儀式デフォルト レベル1 |
-| L=2 | 保守 | `history/` あり、CHANGELOG.md 最終更新が30日超 | 全履歴参照必須、儀式デフォルト レベル2以上 |
+| LC=0 | 新規 | `history/` なし | 新規作成のみ、儀式完全スキップ |
+| LC=1 | 拡張 | `history/` あり、CHANGELOG.md 最終更新が30日以内 | INTENT/CHANGELOG 参照を必須化、儀式デフォルト レベル1 |
+| LC=2 | 保守 | `history/` あり、CHANGELOG.md 最終更新が30日超 | 全履歴参照必須、儀式デフォルト レベル2以上 |
 
-### Lifecycle 判定ロジック
+### LC 判定ロジック
 
 ```
 1. history/ 存在確認
-   なし → L=0
+   なし → LC=0
 2. history/CHANGELOG.md 最終更新日確認
-   30日以内 → L=1
-   30日超 → L=2
+   30日以内 → LC=1
+   30日超 → LC=2
 ```
 
-Lifecycle 判定は AI が履歴層から自動抽出する。人間に問わない。
+LC 判定は AI が履歴層から自動抽出する。人間に問わない。
 
 ---
 
-## 儀式レベル判定（Lifecycle ≥ 1 で適用）
+## 儀式レベル判定（LC ≥ 1 で適用）
 
-振り返り儀式のレベル（0〜3）を Lifecycle と対話発話から決定する。
+振り返り儀式のレベル（0〜3）を LC と対話発話から決定する。
 
 | レベル | 条件 | 処理 |
 |---|---|---|
-| 0 | Lifecycle L=0、または前回ループから経過なし | 完全スキップ |
-| 1 | Lifecycle L=1、機能変更なしの対話 | SUMMARY.md のみ、1問確認 |
+| 0 | LC=0、または前回ループから経過なし | 完全スキップ |
+| 1 | LC=1、機能変更なしの対話 | SUMMARY.md のみ、1問確認 |
 | 2 | 機能追加・変更・廃止を含む対話 | SUMMARY + 関連 INTENT、2〜3問 |
-| 3 | Lifecycle L=2、90日超、規模変動±2以上 | history/ 全層、5〜10問 |
+| 3 | LC=2、90日超、規模変動±2以上 | history/ 全層、5〜10問 |
 
 動的格上げ/格下げ、3フェーズ実行（F1/F2/F3）、E1（曖昧応答）/E2（儀式拒否）対応の詳細は `ritual-protocol.md` を参照。
 
@@ -427,26 +427,26 @@ L0 対話の 2.0〜2.5 ターン目で 1 回だけ質問する：
 - **No** → `local_only` 確定（追加質問なし）
 - **Yes** → 質問2 へ
 
-#### 質問2：規模 + Lifecycle からの推論（ユーザー確認）
+#### 質問2：規模 + LC からの推論（ユーザー確認）
 
 判定マトリクス（v5.0.0 時点）：
 
-| 規模 | Lifecycle | 推論 dev_mode |
+| 規模 | LC | 推論 dev_mode |
 |---|---|---|
 | M1 | * | `github_assisted` |
-| M2 | L=0 | `github_assisted` |
+| M2 | LC=0 | `github_assisted` |
 | M2 | L≥1 | `github_assisted`（運用実績で `github_autonomous` 昇格判断） |
 | L2 | * | `github_autonomous`（並列実装が前提） |
 
 推論結果を提示してユーザー確認（1 回のみ）：
 
-> 「dev_mode は `[推論結果]` を推奨します。理由：[規模 + Lifecycle の根拠]。このまま採用しますか？」
+> 「dev_mode は `[推論結果]` を推奨します。理由：[規模 + LC の根拠]。このまま採用しますか？」
 
 ユーザーが推奨と異なる選択をした場合はそのまま採用し、ADR に根拠を記録する（spec §3.2.3）。
 
 ### チーム軸（T1-T5）について
 
-spec §3.1.1 / §3.2.2 では dev_mode 推論にチーム軸（T1: 個人 〜 T5: 大規模分散チーム）を含める設計だが、v5.0.0 時点では既存軸（規模・Lifecycle）のみで運用する。チーム軸の operational 化は v5.x の minor 改修で扱う予定（INTENT.md 参照）。
+spec §3.1.1 / §3.2.2 では dev_mode 推論にチーム軸（T1: 個人 〜 T5: 大規模分散チーム）を含める設計だが、v5.0.0 時点では既存軸（規模・LC）のみで運用する。チーム軸の operational 化は v5.x の minor 改修で扱う予定（INTENT.md 参照）。
 
 ### REGIME.md への記録
 
@@ -457,7 +457,7 @@ REGIME.md の `## dev_mode` セクションに以下を記録：
 
 - mode: github_assisted   # local_only / github_assisted / github_autonomous
 - ctl: 0                  # CTL段階（0-3）。crosscut-council/references/ctl-calculation.md 参照
-- 判定根拠: GitHub 利用、規模 M2、Lifecycle L=1
+- 判定根拠: GitHub 利用、規模 M2、LC=1
 ```
 
 ### 昇格・降格（手動 + ADR 記録必須）

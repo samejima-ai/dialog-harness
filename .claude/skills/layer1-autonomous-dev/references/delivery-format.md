@@ -69,7 +69,7 @@ delivery/
 ├── HANDOFF.md           # 人間向け引き渡しサマリー（v4.2、全モード必須）
 ├── VERIFICATION.md      # 独立検証レポート（M2以上で必須）
 ├── INTEGRATION.md       # 統合レポート（L2のみ。L2オーケストレータが生成）
-├── HISTORY-DIFF.md      # 履歴層更新差分（Lifecycle ≥ 1 で必須）
+├── HISTORY-DIFF.md      # 履歴層更新差分（LC ≥ 1 で必須）
 ├── src/                 # ソースコード
 ├── tests/               # テストコード
 └── (その他プロジェクトファイル)
@@ -417,9 +417,9 @@ PASS / FAIL
 
 ---
 
-## HISTORY-DIFF.md（Lifecycle ≥ 1 で必須）
+## HISTORY-DIFF.md（LC ≥ 1 で必須）
 
-既存プロジェクト（L=1/L=2）の献上時に、L1 が生成する履歴層更新差分。
+既存プロジェクト（LC=1/LC=2）の献上時に、L1 が生成する履歴層更新差分。
 人間は承認レベル（A/B/C）ごとにレビューする。
 
 ### テンプレート
@@ -427,8 +427,8 @@ PASS / FAIL
 ```markdown
 # 履歴層更新差分
 
-## Lifecycle
-- 現在の Lifecycle: [L=1 / L=2]
+## LC
+- 現在の LC=1 / LC=2
 - 儀式レベル: [0 / 1 / 2 / 3]（L0 儀式で採用された値、スキップ時は「スキップ」）
 - 儀式スキップの有無: [あり（E2 拒否） / なし]
 
@@ -552,5 +552,5 @@ DELIVERY.md の「体制事後評価」セクションは HANDOFF.md には含�
 `history/SUMMARY.md`（L0 振り返り儀式エントリポイント / 圧縮履歴サマリ）と
 本 HANDOFF.md は完全に別ファイル。役割も配置場所も異なる:
 
-- `history/SUMMARY.md`: AI 用、L0 ritual 用、Lifecycle ≥ 1 で再生成
-- `delivery/HANDOFF.md`: 人間用、献上時に毎回生成、Lifecycle 不問
+- `history/SUMMARY.md`: AI 用、L0 ritual 用、LC ≥ 1 で再生成
+- `delivery/HANDOFF.md`: 人間用、献上時に毎回生成、LC 不問

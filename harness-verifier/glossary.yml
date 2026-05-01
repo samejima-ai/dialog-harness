@@ -68,16 +68,16 @@ modes:
     aliases: ["layer2"]
     definition: "orchestrator / integration-verifier（大規模統括層）"
 
-# Lifecycle
+# Lifecycle (v5.x で `Lifecycle L=N` から `LC=N` に名称変更。Layer L0/L1/L2 との混同回避)
 lifecycle:
-  L=0:
-    aliases: ["L=0", "Lifecycle 0"]
+  LC=0:
+    aliases: ["LC=0", "L=0", "Lifecycle 0", "Lifecycle L=0"]
     definition: "新規プロジェクト"
-  L=1:
-    aliases: ["L=1", "Lifecycle 1"]
+  LC=1:
+    aliases: ["LC=1", "L=1", "Lifecycle 1", "Lifecycle L=1"]
     definition: "既存プロジェクト、最初の献上完了済"
-  L=2:
-    aliases: ["L=2", "Lifecycle 2"]
+  LC=2:
+    aliases: ["LC=2", "L=2", "Lifecycle 2", "Lifecycle L=2"]
     definition: "保守フェーズ"
 
 # 構成要素（既存 DH 用語）

@@ -36,7 +36,7 @@ description: >
 
 **発動してはいけないケース**:
 
-- 上記規格ファイルのいずれかが既に存在する → spec-architect へ差し戻し（Lifecycle ≥ 1 として処理）
+- 上記規格ファイルのいずれかが既に存在する → spec-architect へ差し戻し（LC ≥ 1 として処理）
 - REGIME.md に `onboarded_at` 記録がある → 既に onboarding 済み、再起動禁止
 - 新規プロジェクト（コードが空） → spec-architect へ差し戻し
 
@@ -56,7 +56,7 @@ description: >
    4.2. F 番号採番（既存機能を F1 から順番に）
    4.3. 確度メタデータ付与（AI 推定 / コード確認 / 人間確定）
 5. DONT.md 生成（凍結線・抽出不能領域・既存バグ許容範囲）
-6. REGIME.md 生成（初期 Lifecycle L=1・onboarded_at 記録・モードは暫定 M2）
+6. REGIME.md 生成（初期 LC=1・onboarded_at 記録・モードは暫定 M2）
 7. 人間承認（SPEC/DONT/REGIME のレビュー）
 8. spec-architect への引き継ぎ（handoff-to-spec-architect.md 準拠）
 9. 自身の停止（onboarded_at 記録により再起動禁止）
@@ -74,7 +74,7 @@ description: >
 
 - `SPEC.md` — 逆仕様化された機能仕様（as-is 中心、to-be は最小限）
 - `DONT.md` — 凍結線と抽出不能領域
-- `REGIME.md` — `onboarded_at`, `Lifecycle: L=1`, 暫定モード, Archaeology 深度記録
+- `REGIME.md` — `onboarded_at`, `LC=1`, 暫定モード, Archaeology 深度記録
 - `INTENT.md`（history/ 配下） — F 番号ごとの意図・条件・確度メタデータ
 - `CLAUDE.md`（最小版） — 以降の spec-architect が拡張する土台
 - README.md 末尾のクレジット（credit-template.md 準拠、拒否権あり）
