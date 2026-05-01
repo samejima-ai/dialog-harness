@@ -218,6 +218,93 @@ PR push
 - v5.0.0 既存仕様の改修となるため、minor 昇格 + Council 諮問の対象
 - 本診断は読み取りのみで `crosscut-verifier-drift` 本体には変更を加えていない。実装は別 PR
 
+### 外部 CI/CD 知見との整合分析（2026-05-01 調査、保留中）
+
+CI/CD 強化計画 (1)〜(5) の延長として、ひでさんが集めた **AI 主導型 CI/CD アーキテクチャに関する 2026 年時点の業界知見**を DH 既存原則と突き合わせた整合分析。本節は調査結果のスナップショットであり、採用判断は行わない。
+
+#### 入力源と要点（ひでさん経由）
+
+提供された AI 主導型 CI/CD ガイドの要点を 5 領域に整理：
+
+1. **ハーネス・エンジニアリング**: モデル知能より周辺インフラ（セッション管理／コンテキスト供給／ツール制限／ガードレール）の設計が成否を分ける
+2. **動的ルーティングとマルチエージェント**: Coordinator-first routing、PEV (Plan-Execute-Verify) ループ、用途別サブエージェント分離（Explore/Plan/Execute/Verify）、Git worktree による隔離
+3. **決定論的ガードレール**: Pre-Tool Hook（破壊的操作の強制終了）、Post-Tool Hook（生成直後の lint/SAST フィードバック）でプロンプト指示だけでは不十分な確率的 AI を制約
+4. **テストピラミッド 2.0 + DevSecOps シフトレフト**: AI 生成テスト・Record & Playback・SAST/DAST/SCA/Secret scanning の PR ゲート組み込み
+5. **アンチパターン**: コンテキスト肥大化／Generator-Evaluator 同一化／過剰権限によるサプライチェーン攻撃／DORA バッチサイズ増大による安定性低下
+
+#### DH 既存原則との一致点（外部証拠による補強）
+
+DH の多くの設計判断は本調査の業界知見と一致しており、外部証拠で正当性が補強される：
+
+| DH の原則 / 機構 | 外部知見の対応概念 | 補強される点 |
+|---|---|---|
+| **「dialog-harness」という命名** | ハーネス・エンジニアリング | 命名自体が業界用語と直結。DH の存在意義を外部用語で説明可能になる |
+| `references/` の遅延ロード機構（SKILL.md description / `name` ヒット時のみ詳細展開） | Progressive Disclosure（段階的開示） | コンテキスト肥大化アンチパターンへの予防が組み込み済 |
+| `layer1-autonomous-dev` と `layer1-independent-reviewer` の分離 | Generator/Evaluator 分離 | 「同一 AI に評価させると過大評価」アンチパターンへの予防が組み込み済 |
+| `history/INTENT.md` `history/CHANGELOG.md` `delivery/DELIVERY.md` 等のファイルベース記憶 | MEMORY.md / progress.txt パターン | セッションリセット耐性が組み込み済 |
+| `crosscut-council` の 3 ペルソナ独立判定 | コーディネーター + 専門エージェント分離 | 単一 AI の盲点問題に対する組織的対処 |
+| v5.3.0「1 機能完遂の自律駆動 WF」原則 | DORA 2024/2025: AI でバッチサイズ増大 → 変更失敗率悪化 | DH の小スコープ強制が DORA メトリクスの裏付けで正当化される |
+| `regime-assessment.md` の M1/M2/L2 動的判定 | Coordinator-first routing | 自然言語推論による振り分けが既に枠組みとして存在 |
+| `sensors/computational.md` `sensors/inferential.md` の段階検証 | テストピラミッド 2.0 の段階構造 | 第 1〜5 層の哲学が業界用語と整合 |
+
+→ **DH の哲学は 2026 年業界ベストプラクティスと独立に到達しており、命名（ハーネス）まで一致**している。これは v5.x 系の哲学的安定性の傍証として `history/DH-PHILOSOPHY-INSIGHTS.md` に補強記録する価値がある（次サイクル対応候補）。
+
+#### DH に欠けている／弱い領域
+
+外部知見と突き合わせて、DH 現行に**実装が薄い／無い領域**を 4 件特定：
+
+| # | 領域 | 外部の対策 | DH 現状 | 強化候補 |
+|---|---|---|---|---|
+| α | 機械的 Pre-Tool Hook | 破壊的操作（`rm -rf`、本番 DB 接続）を CI / runtime レベルで強制終了 | DONT.md の規範記述のみ。機械的ガードなし | sensors/computational.md に Pre-Tool 規約節を追加。`crosscut-issue-implementer` 起動時の hook として組み込み |
+| β | Post-Tool 自動フィードバック | 生成直後に lint/SAST/typecheck → AI に結果フィードバック | layer1-autonomous-dev の自己検証で間接的に実装 | **第 2 段 CI（scaffold-checklist CI 章）** で機械的補強。本 PR の (3) と統合可能 |
+| γ | OIDC / 短寿命トークン規約 | GitHub Actions OIDC で本番デプロイ／npm publish 時に長寿命トークンを排除 | dev_mode = github_full_auto で言及はあるが具体規約なし | `dev-env-spec.md` に dev_mode 別の secrets/トークン規約を追加 |
+| δ | DORA メトリクス計装 | Lead Time / Deploy Freq / Change Failure Rate / MTTR の自動計測 | 計測機構なし | `history/DORA-METRICS.md`（仮）として LC=2 以上で必須化を検討 |
+
+→ いずれも CI/CD 強化計画 (1)〜(5) の**追加候補 (6)〜(9)** として記録する：
+
+- **(6) 機械的 Pre-Tool Hook 規約**（α）
+- **(7) Post-Tool 自動フィードバック ↔ CI 第 2 段の連結**（β、(3) と一体化）
+- **(8) OIDC / 短寿命トークン規約**（γ）
+- **(9) DORA メトリクス計装規約**（δ）
+
+#### 重要な警告事例: Cline CLI 事件（2026）
+
+外部調査で言及された **Cline CLI が 2026 年に GitHub Issues 経由のプロンプトインジェクションで CI 環境を乗っ取られ、npm パッケージが乗っ取られた事件** は、DH の `crosscut-issue-implementer` 設計に対する直接的警告：
+
+- **設計時の前提**: `crosscut-issue-implementer` は GitHub Issue を起点に CC 実装を起動する横断機構（仕様2、v5.0.0）
+- **同型のリスク**: Issue 本文・コメントが AI への入力となるため、攻撃者が Issue にプロンプトインジェクションを仕込み、CI 環境で任意コード実行・パッケージ乗っ取りに繋げる可能性
+- **DH 既存の対策**:
+  - `dev_mode = local_only` では `crosscut-issue-*` 全般が無効（本リスクは発生しない）
+  - `github_assisted` では実行手段が worktree 主体で隔離される
+  - `github_full_auto` では Actions 経由となり、本リスクが顕在化
+- **追加すべき対策**（強化候補 (6) (8) と統合）:
+  - Issue 本文を AI に渡す前のサニタイザ規約（`<system>` 等の特殊タグ・大量 ASCII art の検出）
+  - OIDC + 短寿命トークン強制（npm publish / 本番 deploy で長寿命トークン禁止）
+  - 重要操作前の人間承認ゲート（manual approval を `github_full_auto` でも必須化）
+- **記録先**: `crosscut-issue-implementer/SKILL.md` または専用 reference に「外部事例: Cline 2026 事件」として追記する候補（次サイクル）
+
+#### crosscut-* skill との対応マッピング
+
+| 外部知見の概念 | DH 対応 skill | 対応状況 |
+|---|---|---|
+| Coordinator-first routing | `layer0-spec-architect`（モード判定 + dev-env 構築） | 既実装 |
+| PEV ループ | spec-architect → autonomous-dev → independent-reviewer | 既実装（v4.x 確立） |
+| Explore subagent | Claude Code の Explore agent（DH 外） | DH 直接対応なし、利用は推奨 |
+| Pre-Tool Hook | sensors/computational + DONT.md（規範のみ） | **機械的実装なし**（強化候補 α） |
+| Post-Tool Hook | layer1-autonomous-dev §7.4 自己検証 + 第 2 段 CI | **CI 連結が未確立**（強化候補 β） |
+| Generator/Evaluator 分離 | autonomous-dev / independent-reviewer | 既実装 |
+| Record & Playback | （対応なし） | scaffold-checklist 拡張候補（v5.x minor） |
+| OIDC / 短寿命トークン | （対応なし） | dev-env-spec 拡張候補（強化候補 γ） |
+| DORA メトリクス | （対応なし） | 追加層候補（強化候補 δ） |
+| プロンプトインジェクション対策 | crosscut-issue-dispatcher / implementer の自動起動制限 | **入力サニタイズ層なし**（Cline 事件への対応） |
+
+#### 残課題
+
+- 本節の量が膨らんだため、次サイクルで `history/research/2026-05-01-ai-cicd-survey.md` 等の独立ファイルに切り出す検討（`history/research/` は新規ディレクトリのため別途構造判断が必要）
+- 強化候補 (6)〜(9) のうち **(7) Post-Tool 自動フィードバック ↔ CI 第 2 段** は本 PR の (3) scaffold-checklist CI 章 構造ドラフトと**直接統合可能**。次サイクルで一体化した形で再起動する余地あり
+- Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
+- 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
+
 ## v5.3.0 で追加された概念
 
 ### 1 機能完遂の自律駆動 WF を「形状単一・薄い基底」として確定
