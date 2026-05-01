@@ -182,7 +182,7 @@ crosscut_prefix:
 layern_prefix:
   pattern: "layer[0-9]+-"
   definition: "特定 Layer 専属 skill の命名規則"
-  members: [layer0-spec-architect, layer0-onboarding, layer1-autonomous-dev, layer1-independent-reviewer, layer2-orchestrator, layer2-integration-verifier]
+  members: [layer0-spec-architect, layer0-onboarding, layer0-archeo-architect, layer1-autonomous-dev, layer1-independent-reviewer, layer2-orchestrator, layer2-integration-verifier]
 
 # 5 本柱（philosophy.md 第 1-5 条、行動原則）
 # 概念階層: P1-P5 は「行動原則」として 5 本柱を構成する

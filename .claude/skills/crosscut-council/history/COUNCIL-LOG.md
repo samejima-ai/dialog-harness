@@ -886,3 +886,140 @@ L0 議題 C として諮問。3 Persona 全員が案 C-2 (schema-only) を支持
 ### 合意プロセス記録
 
 L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ) を支持し unanimous 成立。confidence 0.90 の最高判定。開発者重み 6 (implementation category で最大化) で技術的実現性が支配的、Python 標準ライブラリのみで書ける薄い実装方針。harness-verifier との独立性原則を尊重。PR #28 で `agreed_recommended` 確定。
+
+## council-2026-05-01T10:30:00Z-archeo01
+
+```json
+{
+  "invocation_id": "council-2026-05-01T10:30:00Z-archeo01",
+  "timestamp": "2026-05-01T10:30:00Z",
+  "source_skill": "human_direct_invocation",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ / ファウラー / ヘルマンズ / ストラングラー・フィグ / 承認テスト / 自動照合ループ / Git ホットスポット / DDD Bounded Context / AAR / 失敗アンチパターン）を archeo-architect Phase α (PR #30 draft) にどう取り込むか。選択肢 A: 軽微追加 / 選択肢 B: 現状維持 / 選択肢 C: Phase γ 前倒し",
+  "phase_reached": "phase_3",
+  "conflict_type": "simple_conflict",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "選択肢 B: 本 PR #30 はこのまま、Phase β 以降で順次取り込む", "confidence": 0.65, "dimension": "リスク管理" },
+    "開発者": { "stance": "選択肢 A: 軽微追加（Code Smells カノン対応表 + Git ホットスポット統合 + AAR 整合）", "confidence": 0.85, "dimension": "保守性 / 技術的実現性" },
+    "哲学者": { "stance": "第 4 の道: A の縮小版（Code Smells + Git ホットスポット）+ handoff-to-evaluator.md への Phase γ 伏線追加", "confidence": 0.7, "dimension": "前提への問い / 長期影響" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "選択肢 B: 現状維持",
+        "supporters": ["経営者"],
+        "weight_sum": 3,
+        "weighted_score": 1.95,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.65}
+        ]
+      },
+      {
+        "stance": "選択肢 A: 軽微追加",
+        "supporters": ["開発者"],
+        "weight_sum": 3,
+        "weighted_score": 2.55,
+        "components": [
+          {"persona": "開発者", "weight": 3, "confidence": 0.85}
+        ]
+      },
+      {
+        "stance": "第 4 の道: A 縮小版 + Phase γ 伏線",
+        "supporters": ["哲学者"],
+        "weight_sum": 5,
+        "weighted_score": 3.5,
+        "components": [
+          {"persona": "哲学者", "weight": 5, "confidence": 0.7}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "第 4 の道: A 縮小版 + Phase γ 伏線",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.7,
+  "recommended": "第 4 の道: 選択肢 A の縮小版（Phase α 取込）+ handoff-to-evaluator.md への Phase γ 伏線追加（合計 80-120 行）。具体的内容: (1) intent-hypothesis-protocol.md に Code Smells カノン対応表（巨大関数 / 重複コード / God Class / Feature Envy / Shotgun Surgery と既存 8 ヒントのマッピング）を追加。(2) intent-hypothesis-protocol.md の S 軸推定に Git ホットスポット指標（修正頻度×複雑性）を統合。(3) handoff-to-evaluator.md の Phase γ ロードマップ節に『承認テスト生成プロトコル』『自動照合ループ』『L1 評価軸への意図合致軸追加』を【先行宣言】として明記、本 PR では本実装しない旨を明示。(4) AAR 整合は本 PR では見送り（Code Smells / ホットスポットは事前検出、AAR は事後評価で階層が違うため思想的純度を保つ）",
+  "minority_opinion": "経営者の選択肢 B 推奨（PR スコープ厳守、観測駆動を 1〜2 ヶ月優先）。本 minority は観測駆動原則（INTENT.md v5.3.0、wf-baseline-rationale.md §3）の側面で妥当性が高い。経営者の confidence 0.65 は哲学者 0.7 / 開発者 0.85 を下回るため重み付きでも minority に留まる。哲学者の『5 年スパンで業界 best practice と整合する harness になるか』論で吸収。INTENT.md v5.4.0 セクションに『観測駆動原則との緊張』として記録予定",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-05-01T10:35:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+ひでさん直接起動の議題として諮問。category は conception（新規構想取込判断）で哲学者重み 5 が支配的。3 Persona の意見は simple_conflict（B / A / 第 4 の道）。Judgment Agent が哲学者の第 4 の道を採用し、開発者の A 推奨と部分一致する『縮小版 A + Phase γ 伏線』として再構成。confidence 0.7 で人間エスカレーション閾値（0.5）を超え自律判断成立。ひでさん即時 `agreed_recommended` 確定。本 PR #30 に追加実装する形で完結。Phase γ 伏線追加は『承認テスト・自動照合ループ・L1 評価軸への意図合致軸追加』を v5.5.0 候補として明示記録する目的で、archeo 哲学（P-Arch-1 忘却の制度化）と業界知見（フェザーズ「テストなし = レガシー」）の関係性を後続の Phase γ 実装時に参照可能な形で残す。
+
+## council-2026-05-01T11:00:00Z-archeo02
+
+```json
+{
+  "invocation_id": "council-2026-05-01T11:00:00Z-archeo02",
+  "timestamp": "2026-05-01T11:00:00Z",
+  "source_skill": "human_direct_invocation",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "L1-refactor スキルを新設すべきか？ ひでさん提案、CC 機械的検査で 5 原則違反指摘 (wf-baseline-rationale.md / philosophy.md §1 / philosophy.md §3 / Phase γ 重複 / 観測駆動閾値未達) のため Council 諮問。選択肢 A: 新設、B: 不採用 + Phase γ 予定通り、C: archeo Phase α 観測後に再判断",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "選択肢 B: L1-refactor 不採用、Phase γ 予定通り", "confidence": 0.8, "dimension": "ROI" },
+    "開発者": { "stance": "選択肢 B: L1-refactor 不採用", "confidence": 0.9, "dimension": "保守性 / 技術的実現性" },
+    "哲学者": { "stance": "選択肢 B + 拡張提案（v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化）", "confidence": 0.75, "dimension": "前提への問い / 長期影響" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "選択肢 B: L1-refactor 不採用",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 8.85,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.8},
+          {"persona": "開発者", "weight": 3, "confidence": 0.9},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.75}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "選択肢 B: L1-refactor 不採用",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.85,
+  "recommended": "選択肢 B: L1-refactor スキル新設は不採用。Phase γ (v5.5.0 候補) で layer1-autonomous-dev / layer1-independent-reviewer の評価軸を 3 軸（仕様適合・動作・使える）→ 4 軸（+ 意図合致）に拡張する予定通りの計画を進める。3 ペルソナ全員が独立に B を支持する unanimous。経営者の ROI 観点（重複投資回避、v5.3.0 確定方針覆しコスト）、開発者の Shift Left 原則（計算的解決最優先、可逆性確保）、哲学者の philosophy.md §1 違反指摘（双対 vs 内部分割の哲学的差異、INTENT.md v5.3.0 警告のタイプ N+1 罠）が同じ結論に収束。CC の機械的検査結果（5 原則違反）と完全整合",
+  "minority_opinion": "なし（全会一致）。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化する』は minority ではなく『B の長期拡張提案』として保持。v5.x 帯では minor 改修が複数積まれており（archeo Phase β / γ / δ、crosscut-verifier-philosophy 本実装等）、v6.0.0 候補温存は最小記録（INTENT.md に 1-2 行）に留める方針でひでさん合意。本拡張提案は v6.0.0 議論時に再提起する候補",
+  "weight_note": "category: conception → 経営者 3 / 開発者 3 / 哲学者 5（合計 11）。哲学者の重み 5 が支配的だが、本議題では 3 ペルソナが独立に B を支持したため重み配分の影響は限定的。3 ペルソナが異なる dimension（ROI / 保守性 / 前提への問い）から同一結論に到達したことが結論の堅牢性を示す",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-05-01T11:30:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+ひでさん直接起動の議題として諮問。CC が機械的検査で「作らない」結論（5 原則違反）を提示済み、ひでさんが Council 諮問を選択し再評価。3 Persona 全員が独立に B（L1-refactor 不採用）を支持し unanimous 成立。weighted_score 8.85（11 点満点中）、judgment_confidence 0.85 の高判定。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK 許容を明文化』は minority ではなく長期拡張提案として保持。ひでさんから「v6.0.0 まではまだ v5.x 帯 minor 改修が複数あり、v6.0.0 候補を膨らませると圧力になる」との指摘を受け、最小記録方針（INTENT.md に 1-2 行追加、handoff-to-evaluator.md への追記なし）で agreed_recommended 確定。Council 諮問の結果、CC の機械的検査と Council 判断が完全整合し、L1-refactor 新設は v5.x 帯で実施しないことが堅牢に決定された。

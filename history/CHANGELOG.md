@@ -2,6 +2,94 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.4.0 (released 2026-05-01)
+
+minor 昇格。**archeo-architect（意図復元 L0 兄弟スキル）を新設**し、spec-architect の双対として L0 を 3 兄弟体制に拡張。
+HANDOFF「archeo-architect ブレスト → 実装」 2026-05-01 を起源とする。
+後方互換維持（v5.0.0 / v5.1.0 / v5.2.0 / v5.3.0 と同パターン）。利用者プロジェクトには配布されない。
+
+`crosscut-verifier-philosophy` 本実装は本リリース対象外（v5.4.x または v5.5.0 候補へ再々後送）。
+Phase γ（L1 自己検証/独立検証への意図合致軸追加、起点問題の構造解決）は本リリース対象外（v5.5.0 候補）。
+
+### Step 0: HANDOFF 受領と最終ブレスト
+
+ひでさんから Claude.ai 上の archeo-architect ブレスト結晶 HANDOFF を受領。CC 側で Phase 1〜3（探索・設計・確認）を実行：
+
+- 既存 spec-architect / onboarding の内部構造を Explore で把握
+- DH 哲学ドキュメント群（DH-PHILOSOPHY-INSIGHTS / INTENT.md / DIMENSIONS.md / philosophy.md / council-philosophy.md）の参照箇所整合性検証
+- Plan agent で配置案A/B 両論併記の実装計画立案
+- AskUserQuestion で 4 論点を確定（配置 A / Phase γ 分離 / 動的起動オプション / minor 判定）
+
+### Step 1: archeo-architect SK 雛形の新設
+
+`.claude/skills/layer0-archeo-architect/` を新設、6 ファイル：
+
+- `SKILL.md` — frontmatter `dimension: D4`、3 原則 (P-Arch-1/2/3)、7 ステップ対話フロー、§7.4 自己検証
+- `assets/refactor-intent-map-template.md` — Meta / Islands / Boundaries / Absent-Intent Zones の 4 セクション、4 値必須フィールド
+- `references/dialog-flow-archeo.md` — Step 1〜7 の対話文型、Step 3 horizontal vs Step 7 vertical の分離規約、5 問上限自己制限規約
+- `references/intent-hypothesis-protocol.md` — 仮説生成ヒューリスティック（コメント不在 / 命名混乱 / 重複ロジック / git log 不在 / テスト不在 / マジックナンバー / TODO/FIXME / deprecated 痕跡）と確度規約 3 段階（code_check / git_log_check / ai_inference）
+- `references/absent-intent-protocol.md` — `absent` 確定条件（人間明示宣言必須）と捏造防止規約（P-Arch-2 物理実装、3 メカニズム）
+- `references/handoff-to-evaluator.md` — `refactor-intent-map.md` の I/O 規約（Phase γ 先行宣言版）
+
+### Step 2: spec-architect SKILL.md 責務分担表の更新
+
+`.claude/skills/layer0-spec-architect/SKILL.md`:
+- §L0 スキル間の責務分担表に「リファクタ前 意図復元」行を追加（archeo-architect、4 行目）
+- 排他ルールに 4 項目追加（archeo は再利用可能 / archeo は自動起動しない / spec-architect と同時起動禁止 / 既存ルール維持）
+
+### Step 3: dev-env-spec.md Level A 一覧の更新
+
+`.claude/skills/layer0-spec-architect/references/dev-env-spec.md`:
+- Level A（共通スキル）一覧に `layer0-archeo-architect（再利用可能、v5.4.0 追加）` を追加
+
+### Step 4: 履歴層更新
+
+- `history/INTENT.md` に v5.4.0 セクションを追加（archeo-architect 設計意図 / Phase 化 / 配置論点 / v6.0.0 候補温存）
+- 本 CHANGELOG.md に v5.4.0 セクション追加（本セクション）
+
+### Step 5: 自己検証 + 献上
+
+- harness-verifier 5 検査全 PASS（D4 整合性維持確認）
+- 計算的センサー: SKILL.md / references の構文整合・broken reference なし
+- archeo SK 6 ファイル + spec-architect 軽微修正の整合性確認
+- ルートに draft PR #30 を作成
+
+### Step 6: 業界知見統合（Council 諮問経由の追加実装）
+
+ひでさんから AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ / ファウラー / ヘルマンズ / ストラングラー・フィグ / Branch by Abstraction / 承認テスト / 自動照合ループ / Git ホットスポット / DDD Bounded Context / AAR / 失敗アンチパターン）が共有され、選択肢 A/B/C の拮抗のため Council 諮問。
+
+`crosscut-council` を直接起動（`council-2026-05-01T10:30:00Z-archeo01`、category: conception、哲学者重み 5 で支配的）。3 Persona で simple_conflict（経営者 B / 開発者 A / 哲学者 第 4 の道）。Judgment Agent confidence 0.7 で「**第 4 の道: A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。ひでさん即時合意。
+
+追加実装：
+
+- **`intent-hypothesis-protocol.md` に Code Smells カノン対応表追加**（12 種 Smells のマッピング、適用順序、注意事項）
+- **`intent-hypothesis-protocol.md` の S 軸推定に Git ホットスポット分析統合**（`hotspot_score = log(修正頻度) × 複雑性指標`、4 戦略象限、90 日の法則対応、計測制約）
+- **`handoff-to-evaluator.md` の Phase γ 詳細仕様先行宣言**（5 件: 承認テスト生成プロトコル / 自動照合ループ / L1 意図合致軸統合 / ストラングラー・フィグ射程外宣言 / 失敗アンチパターン早期検出）
+- **`crosscut-council/history/COUNCIL-LOG.md`** に invocation_id `council-2026-05-01T10:30:00Z-archeo01` のエントリ追加（implementer_consent: agreed_recommended）
+- **`history/INTENT.md`** v5.4.0 セクションに「Council 諮問による業界知見統合」「経営者の少数意見（観測駆動原則との緊張）」追記
+
+経営者の少数意見（選択肢 B、PR スコープ厳守）は minority_opinion として保持。観測駆動原則との緊張関係は Phase β/γ 設計時に再検討予定。
+
+### Step 7: 業界知見統合後の再検証
+
+- harness-verifier 5 検査全 PASS 維持（追加修正後も D4 整合性維持）
+- 拡張ファイル 3 件（intent-hypothesis-protocol.md / handoff-to-evaluator.md / COUNCIL-LOG.md）の broken reference なし
+- PR #30 に追加コミットを push、draft 状態のまま実装完了
+
+### Step 8: L1-refactor 新設提案の Council 諮問（archeo02、最小記録）
+
+ひでさんから L1-refactor スキル新設の提案。CC が D4 原則で機械的検査し 5 原則違反（wf-baseline-rationale.md / philosophy.md §1 / §3 / Phase γ 重複 / 観測駆動閾値未達）を指摘、不採用結論を提示。ひでさんが Council 諮問を選択。
+
+`crosscut-council` 直接起動（`council-2026-05-01T11:00:00Z-archeo02`、conception カテゴリ）。3 Persona unanimous で **B（L1-refactor 不採用、Phase γ 予定通り）** を支持、weighted_score 8.85、judgment_confidence 0.85 で agreed_recommended 確定。CC 機械的検査と Council 判断が完全整合し堅牢な決定。
+
+哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化』は最小記録方針で `history/INTENT.md` v5.4.0 セクション末尾に 1 段落追加（v5.x 帯 minor 改修を圧迫しないため）。`COUNCIL-LOG.md` に archeo02 エントリ追加。
+
+### 本リリースの範囲外
+
+- **Phase γ（L1 改修）**: layer1-autonomous-dev SKILL.md §6 / inferential-sensor-v2.md / layer1-independent-reviewer SKILL.md への意図合致軸追加。**v5.5.0 候補**として継続検討
+- **Phase β（ritual-protocol 統合・glossary 用語追加）**: 本リリースに同梱しない（α 完了後の用語確定を待つ）。**v5.4.x 候補**
+- **Phase δ（spec-architect 逆輸入）**: 運用データ 3 ヶ月蓄積後、Council 諮問で実施可否判定。**v6.0.0 候補**として温存
+
 ## 2026-05-01 命名整備: Lifecycle → LC（v5.3.0 patch、no version bump）
 
 DH 本体の `Lifecycle L=N` 表記を `LC=N` に統一する命名整備。Layer (`L0/L1/L2`) と Lifecycle (`L=0/L=1/L=2`) の `L` + 数字命名衝突を解消する。`crosscut-council` 諮問の結果、経営者/開発者/哲学者の 3 ペルソナで「進行可、ただし 3 条件付き」の重み付き判定（`history/COUNCIL-LOG.md` 参照）。
