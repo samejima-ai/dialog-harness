@@ -435,7 +435,7 @@ L0 対話の 2.0〜2.5 ターン目で 1 回だけ質問する：
 |---|---|---|
 | M1 | * | `github_assisted` |
 | M2 | LC=0 | `github_assisted` |
-| M2 | L≥1 | `github_assisted`（運用実績で `github_autonomous` 昇格判断） |
+| M2 | LC≥1 | `github_assisted`（運用実績で `github_autonomous` 昇格判断） |
 | L2 | * | `github_autonomous`（並列実装が前提） |
 
 推論結果を提示してユーザー確認（1 回のみ）：

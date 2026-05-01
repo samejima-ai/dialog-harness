@@ -554,10 +554,10 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   source_skill: "layer1-autonomous-dev"
   question_to_answer: "PR #30 (v5.4.0 archeo-architect) が open のまま LC 命名変更を進めるべきか、それとも PR #30 merge を待つべきか（PR #31 INTENT.md 記載の発動条件 (a)『PR #30 merge かつ PR #31 merge 両方完了後』との関係）"
   council_type: "business"
-  category: "trade_off"
+  category: "judgment"
   category_fallback: false
   phase_reached: "phase_3"
-  conflict_type: "unanimous_with_modification"
+  conflict_type: "unanimous"
   final_weights:
     経営者: 5
     開発者: 5
@@ -589,4 +589,3 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-05-01T12:05:00Z"
-  final_decision: null
