@@ -5,6 +5,7 @@
 > - DH 本体は `apps/` 等のディレクトリを持たないため、本文中のパス参照は下流プロジェクトの文脈で読むこと。
 > - 採用判断は別途 DH 側の `history/INTENT.md` および `references/scaffold-checklist.md` 等に反映される（2026-05-01 サイクル、branch `claude/enhance-l0-cicd-xXM4h`）。
 > - 本文中の `[SPEC.md](http://SPEC.md)` 等の自己参照リンクは送信時に自動付与された壊れたリンクだが、保管時の改変を避けるため原文ママとする。
+> - **原文保管原則**: 本ファイルは下流プロジェクト発のブレスト原文を編集せず保管する（archeo-architect の意図保全原則に準ずる）。したがって、本文中には以下が含まれうる：(a) 当時の DH 計画認識（例: `crosscut-verifier-philosophy` を「v5.1.0 minor 改修で本実装」と記述）が現行ロードマップと乖離する箇所、(b) markdown 構文の不備（先頭 `||` の表記 等）、(c) 用語の表記ゆれ（`sensors/computational` 等の拡張子省略）。これらは「ブレストが書かれた時点でのスナップショット」として保持され、現行 DH の正しい状態は `docs/migration-guide-v5.x.md` および各 SKILL.md の最新版を参照すること。
 
 ---
 
