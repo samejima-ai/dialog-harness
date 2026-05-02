@@ -2,6 +2,28 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.5.0
+
+以下 2 件は PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md`（adrv01/02/03 全合意成立）を起源とする L0 設計判断 + L1 実装。確定ロードマップ「v5.5.0 = adrv01-Ph1 + Phase γ」に従い、v5.4.0 リリース翌日に L0 spec-architect で SPEC 化し、同セッション内で L1 が minor として実装。
+
+### AD-018: AI 自己申告閾値の Council 連動明文化（adrv01-Ph1）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | HANDOFF v0.1.0「自律駆動機構の哲学的座標」§2.2「拮抗判定検出主体」の Council 諮問 `council-2026-05-02T11:00:00Z-adrv01` で「(b) 独立観測機構 + 哲学者第3の道（メタ層構造）統合」が recommended、`agreed_with_modification`（段階的組み込みで止揚 Phase 1-3）。Phase 1 = AI 自己申告のみ運用（既存 Council confidence < 0.6 機構流用、コスト 0）の本実装が v5.5.0 スコープ |
+| 判断 | `crosscut-council/SKILL.md §自己申告プロトコル` を新節として追加。confidence < 0.6 自己評価を Council 起動の正式トリガーとして明文化し、内部完結による回避を禁止。`pre-check.md` に scope/PR 境界 vs 新規思想 の判別シナリオ例追加（Copilot review feedback 由来）。`consensus-protocol.md` に escalated → 後付け合意のエッジケースと v5.6.0 Ph2 の hook 経路先行宣言を追加 |
+| 根拠 | adrv01 Council 結果 + Council `vrfy01` 事例（category 誤選択が confidence 降下→escalation を連鎖した実例）。明文化のみで機構強化（hook 本実装）は v5.6.0 Ph2 へ温存。adrv01 の段階的組み込みで止揚パターンに整合 |
+| 影響 | 既存 confidence < 0.6 機構の挙動は不変。新規実装ゼロ、明文化のみ。利用者プロジェクトには影響しない（DH 本体の規約改訂） |
+
+### AD-019: Phase γ コア 3 件の本実装（archeo-architect 起点問題解決）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | v5.4.0 で archeo-architect Phase α 雛形のみリリースされ、`handoff-to-evaluator.md` に Phase γ 詳細仕様 5 件が先行宣言された。起点問題（リファクタ依頼で 3〜4 個取りこぼす）の構造解決には L1 評価軸を「仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致」の 4 軸化が必須 |
+| 判断 | 5 件中コア 3 件（先行宣言 1: 承認テスト生成プロトコル / 先行宣言 2: 自動照合ループ / 先行宣言 3: L1 意図合致軸統合）を v5.5.0 で本実装。先行宣言 4（ストラングラー射程外宣言）+ 5（失敗アンチパターン早期検出）は v5.5.x patch / v5.6.0 へ温存 |
+| 根拠 | コア 3 件で起点問題は構造的に解決可能（refactor_directive: preserve / restructure / 評価軸 4 軸化の 3 領域カバー）。先行宣言 4/5 は周辺案件で minor 1 本のスコープを膨張させずに本リリースに集中できる |
+| 影響 | `inferential-sensor-v2.md` 第 4 層に意図合致軸追加、`layer1-autonomous-dev/SKILL.md` §6 に承認テスト + 自動照合ループ追加、`layer1-independent-reviewer/SKILL.md` の評価軸 4 軸化、`delivery-format.md` に意図合致検証セクション追加、`handoff-to-evaluator.md` を先行宣言版から完全版（コア 3 件本実装）化。後方互換完全維持: `refactor-intent-map.md` 不在時は意図合致軸不発動 |
+
 ## v5.3.0
 
 以下 3 件は HANDOFF「1 機能完遂の自律駆動 WF 設計」2026-04-30 を起源とする L0 設計判断 + L1 実装。

@@ -67,6 +67,39 @@ Dialog Harness 本体から**独立**した構造で設計され、将来切り�
 - (c) 不可逆操作を行う直前
 - (d) 自己評価 confidence < 0.6（明示的に自問して採点）
 
+### 自己申告プロトコル（v5.5.0 adrv01-Ph1 で明文化）
+
+実装者の自己 confidence < 0.6 自己評価は **Council 起動の正式トリガー**である。「自己評価しただけ」「自分で考えてみる」等で内部完結させてはならず、該当条件を検出した時点で本 skill を起動する義務を負う。
+
+**自己申告 → Council 起動の正式経路**:
+
+```
+実装者が (a)〜(d) のいずれかを検出
+  ↓
+self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番前の素材を記録）
+  ↓
+本 skill 起動（context + options + question_to_answer + source_skill + category）
+  → category 選択は references/pre-check.md L70-78 を参照（迷ったら judgment にフォールバック）
+  ↓
+[Phase 0〜3 + 合意プロセス]
+```
+
+**self-report の最低限フィールド**:
+
+- `self_reported_confidence`: 0.0〜1.0（実装者の自己評価値）
+- `trigger`: (a) / (b) / (c) / (d) のいずれか
+- `reason`: なぜ confidence が低いと判断したか（1〜2 文）
+
+これらは Council 起動時の `context` に含めて受け渡す（PR1 では構造化フィールドではなく自然文として埋め込む。PR2 で `output-format.md` の発動要請スキーマに正式追加候補）。
+
+**Council 起動を内部完結で代替してはならない理由**:
+
+実装者の自己 confidence は内側からしか見えない（self-感知の特性）が、判断の正当性は外側からの観測で補強する必要がある（philosophy.md §3 情報純度・§5 献上哲学）。Council は「自己申告 = 一次入力 + 重み付き判定 = 二次検証」の二相構造で、自己申告だけでは情報純度が確保されない。adrv01-Ph2（v5.6.0 候補）で予告される独立観測機構（harness-verifier 同型）はこの構造のメタ層検証として位置づけられる。
+
+**スコープ**:
+
+本プロトコルは layer1-autonomous-dev / layer1-independent-reviewer / layer0-spec-architect / layer0-archeo-architect から起動される全 Council 呼び出しに適用される。crosscut-issue-implementer 等の crosscut-* skill からの起動も同形（v5.6.0 Ph2 で hook 経路を本実装）。
+
 ## 処理フロー（PR1: Phase 0 + 1 + 3、Phase 2 のみスキップ）
 
 ```
