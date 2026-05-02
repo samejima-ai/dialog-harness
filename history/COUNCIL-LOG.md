@@ -636,7 +636,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "(a) 経営者: 既存 Council confidence < 0.6 機構流用で開発コスト 0、Lifecycle 0/1 機会損失最小。第3の道(哲学者): 自己申告は否定せず観測対象とする法廷モデル、b 実装時の設計指針として統合推奨。"
   human_escalated: true
   consensus_mode: "escalate_to_human"
-  # 後追記（合意プロセス完了時）
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  # 後追記（合意プロセス完了時）— 実装者 = 人間（ひでさん）= エスカレーション先で同一人物のため、(B) 合意が Step 8 解決と等価
+  implementer_consent: "agreed_with_modification"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-02T11:30:00Z"
+  modification_note: "段階的組み込みで止揚。Phase 1: (a) AI 自己申告のみ運用（既存 Council confidence 機構流用、コスト 0）→ Phase 2: (b) 独立観測機構を後付け（autonomous-dev 出力 / 試行回数 / 往復パターンの客観観測）→ Phase 3: 階層構造として止揚（自己申告は一次入力、独立機構は申告事実の検証メタ層、哲学者第3の道の統合）。a 派の現実的実装可能性懸念と b 派の Shift Left 整合を時間軸で両立する。"
