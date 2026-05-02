@@ -589,3 +589,54 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-05-01T12:05:00Z"
+
+- invocation_id: "council-2026-05-02T11:00:00Z-adrv01"
+  timestamp: "2026-05-02T11:00:00Z"
+  source_skill: "human_direct (L0 ブレスト中、ひでさん指示で起動)"
+  question_to_answer: "HANDOFF §2.2「拮抗した判定」検出主体を a/b/c のどれにすべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "(a) AI 自己申告", confidence: 0.65, dimension: "ROI" }
+    開発者: { stance: "(b) 独立観測機構", confidence: 0.85, dimension: "技術的実現性 / 可逆性" }
+    哲学者: { stance: "メタ層構造（自己申告は一次入力、独立機構が申告の真偽を事後検証）", confidence: 0.55, dimension: "前提への問い" }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(a) AI 自己申告"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 1.95
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+      - stance: "(b) 独立観測機構"
+        supporters: ["開発者"]
+        weight_sum: 3
+        weighted_score: 2.55
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "メタ層構造（自己申告は一次入力、独立機構が申告の真偽を事後検証）"
+        weight: 5
+        confidence: 0.55
+        reason: "options 外 stance のため weight 加算対象外（PR1 暫定運用）"
+    max_score_stance: "(b) 独立観測機構"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(b) 独立観測機構（当事者ではない skill / agent が autonomous-dev の出力履歴・試行回数・往復パターンから客観検出）。哲学者の第3の道『自己申告は一次入力、独立機構は申告事実の検証メタ層』を b 実装時に統合することで a 派の懸念（既存機構流用・コスト最小）にも応答可能。"
+  minority_opinion: "(a) 経営者: 既存 Council confidence < 0.6 機構流用で開発コスト 0、Lifecycle 0/1 機会損失最小。第3の道(哲学者): 自己申告は否定せず観測対象とする法廷モデル、b 実装時の設計指針として統合推奨。"
+  human_escalated: true
+  consensus_mode: "escalate_to_human"
+  # 後追記（合意プロセス完了時）
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
