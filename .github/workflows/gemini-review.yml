@@ -8,6 +8,13 @@
 # Google Gemini API は無料 tier（Google AI Studio、Flash で 60 RPM/1500 RPD）が
 # 提供されるため本 PR では Gemini を採用。
 #
+# モデルは gemini-2.5-flash を明示指定（コスト予測性確保）:
+# - 無料 tier 1,500 RPD は本 repo PR 量に対して大幅な余裕（20 PR/日 × 30 = 600/月で十分内側）
+# - Pro デフォルトに委ねると 100 RPD 制限 + 5 RPM で quota 圧迫リスク
+# - gemini-cli のデフォルト変動でモデルが勝手に切り替わるのを防ぐ
+# - DH レビュー用途（line-level 検出、cross-file 契約確認）には Flash で品質十分
+# - Pro が必要になった場合は CTL 観測後に昇格判断、または on-demand mention 経由で別起動
+#
 # Generator/Evaluator 同一化アンチパターンへの構造的対処:
 # - DH 本体 PR の多くは Claude (Anthropic) で書かれる
 # - Gemini (Google) は完全に異質なモデル → 真の独立観測機構として機能
@@ -94,10 +101,13 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          # モデル明示指定（コスト予測性 + 無料 tier quota 余裕、本ファイル冒頭コメント参照）
+          gemini_model: gemini-2.5-flash
           github_pr_number: ${{ github.event.pull_request.number }}
           settings: |
             {
               "model": {
+                "name": "gemini-2.5-flash",
                 "maxSessionTurns": 25
               },
               "mcpServers": {
