@@ -683,10 +683,9 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "哲学者の第3の道（subagent isolation による context 分離）— Phase 2 移行検討時に再評価する設計指針として保持。Claude Agent SDK 標準機能で追加コスト 0 で実現可能。"
   human_escalated: false
   consensus_mode: "auto_agree"
-  # 後追記（合意プロセス完了時）
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-02T12:00:00Z"
 
 - invocation_id: "council-2026-05-02T11:40:00Z-adrv03"
   timestamp: "2026-05-02T11:40:00Z"
@@ -729,7 +728,6 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "哲学者の第3の道 — 破壊変更基準で version 再配置（adrv01-Ph1 を v5.4.x patch 先出し）。L1 領域同梱より破壊単位の version 切り出しが長期保守性に貢献。SPEC 化時に再評価。"
   human_escalated: false
   consensus_mode: "auto_agree"
-  # 後追記（合意プロセス完了時）
-  implementer_consent: null
-  follow_up_questions_count: null
-  agreed_at: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-02T12:00:00Z"
