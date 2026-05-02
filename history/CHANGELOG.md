@@ -2,9 +2,9 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.5.0 (in progress, target 2026-05-02)
+## v5.5.0 (released 2026-05-02)
 
-> **記録規約**: 本セクションは PR #34 が draft 中に書かれている。`(in progress)` のまま PR #34 マージ時に `(released YYYY-MM-DD)` へ更新する規約（旧監査 D4-AUDIT-2026-04-30.md M-1 で確立されたフロー、Copilot review #34 line 8 の指摘で再確認）。マージ前の history は本 PR の HEAD を反映し、PR 状態と整合する。
+> **記録規約**: 本セクションは PR #34 が draft 中に書かれ、`(in progress, target 2026-05-02)` で記録されていた（旧監査 D4-AUDIT-2026-04-30.md M-1 で確立されたフロー、Copilot review #34 line 8 の指摘で再確認）。本 patch（PR #34 マージ後）で `(released 2026-05-02)` へ更新。マージ前後の history が PR 状態と整合する。
 
 minor 昇格。**(I) adrv01-Ph1 = AI 自己申告閾値の Council 連動明文化**（既存 `confidence < 0.6` 機構流用、コスト 0）+ **(II) Phase γ コア 3 件 = L1 自己検証/独立検証への意図合致軸追加**（4 軸化、起点問題=リファクタ取りこぼしの構造解決）。
 PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md`（adrv01/02/03 全合意成立）を起源とする。後方互換維持（v5.0.0〜v5.4.0 と同パターン）。利用者プロジェクトには配布されない。
