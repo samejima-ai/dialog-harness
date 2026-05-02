@@ -340,6 +340,80 @@ DH の多くの設計判断は本調査の業界知見と一致しており、�
 - Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
 - 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
 
+## v5.5.0 で追加された概念
+
+### adrv01-Ph1: AI 自己申告閾値の Council 連動明文化
+
+PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md` で確定したロードマップ「v5.5.0 = adrv01-Ph1 + Phase γ」の adrv01-Ph1 部分を本リリースで本実装。HANDOFF v0.1.0「自律駆動機構の哲学的座標」§2.2「拮抗判定検出主体」の Council 結果（`council-2026-05-02T11:00:00Z-adrv01`、`agreed_with_modification` 段階的組み込みで止揚）の Phase 1 部分。
+
+#### 設計意図の核
+
+**(a) 既存機構の流用、コスト 0**: `crosscut-council/SKILL.md` L16/L47/L68 で既に定義されている「自己評価 confidence < 0.6」の三箇所を Council 起動の正式トリガーとして明文化するのみ。新規実装ゼロ、機構強化（hook 本実装）は v5.6.0 adrv01-Ph2 へ温存。
+
+**(b) 自己申告 = 一次入力 + Council = 二次検証**: 実装者の自己 confidence は内側からしか見えない（self-感知の特性）が、判断の正当性は外側からの観測で補強する必要がある（philosophy.md §3 情報純度・§5 献上哲学）。Council は「自己申告 + 重み付き判定」の二相構造で情報純度を確保する。
+
+**(c) 内部完結による回避の禁止**: 自己 confidence < 0.6 検出時に「自己評価しただけ」「自分で考えてみる」等で内部完結させてはならず、該当条件を検出した時点で本 skill を起動する義務を負う（明文化）。
+
+**(d) Council `vrfy01` 事例による補強**: 本リリースの開発過程で、L0 spec-architect の振り返り儀式 F2 から発生した Council 諮問 `vrfy01` で `category: conception` の誤選択（Copilot review #34 で指摘）が哲学者重みを過剰にして escalation 経路に乗せた連鎖を発見。`pre-check.md` に「scope/PR 境界 vs 新規思想」の判別シナリオ例を追加し、`consensus-protocol.md` に「escalated 経路での合意成立」エッジケースを明文化することで再発防止を Shift Left で実装。
+
+#### 改修内容
+
+- `crosscut-council/SKILL.md §自己申告プロトコル` 新節（`confidence < 0.6` を Council 起動の正式トリガーとして明文化、内部完結禁止）
+- `crosscut-council/references/pre-check.md` §scope/PR 境界 vs 新規思想 の判別シナリオ（Copilot review feedback、category 誤選択の Shift Left 防止）
+- `crosscut-council/references/consensus-protocol.md` §エッジケース「escalated 経路での合意成立」+ §自己申告 → Council 起動の hook 経路（v5.6.0 Ph2 で本実装の先行宣言）
+
+#### v5.6.0 / v6.0.0 候補として温存される拡張
+
+- **adrv01-Ph2**（v5.6.0 候補）: 独立観測機構（harness-verifier 同型の新規 crosscut-* skill）。autonomous-dev 出力 / 試行回数 / 往復パターンの客観観測、stats.json への自己申告イベントスキーマ拡張、`crosscut-feedback-loop` への自己申告イベント還流ルート新設
+- **adrv01-Ph3**（v6.0.0 候補）: 階層構造として止揚 — 自己申告 = 一次入力、独立機構 = 申告事実の検証メタ層（哲学者法廷モデル）
+
+### Phase γ コア 3 件: L1 評価軸 4 軸化（起点問題の構造解決）
+
+v5.4.0 archeo-architect Phase α でリリースされた `handoff-to-evaluator.md` 先行宣言 5 件のうち、コア 3 件（先行宣言 1: 承認テスト生成プロトコル / 先行宣言 2: 自動照合ループ / 先行宣言 3: L1 意図合致軸統合）を本リリースで本実装。
+
+#### 設計意図の核
+
+**(a) 起点問題の構造解決**: ひでさんの起点問題「自分で書いたコードのリファクタを依頼すると意図通りにならない、10 個の修正点を依頼して 3〜4 個取りこぼす」を構造的に解決する。L1 (`layer1-autonomous-dev`) の自己検証/独立検証は v5.4.0 まで「仕様適合・動作・ユーザビリティ」の 3 軸評価で「意図合致軸」が不在だった。archeo の `delivery/refactor-intent-map.md` を L1 評価軸の **第 4 軸**として注入する。
+
+```
+[v5.4.0 まで] L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ)
+[v5.5.0]      L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致)
+```
+
+**(b) refactor_directive 別の検証メカニズム**: 各 Island の `refactor_directive` に応じて 3 系統の検証を実行：
+
+- **preserve**: 承認テスト生成プロトコル（フェザーズ「レガシー = テストなし」/ Approval Testing カノン由来）。現状コードの入出力を `delivery/approval-tests/<island-id>.baseline.json` として基準データ化、リファクタ後との差分検出
+- **restructure**: 自動照合ループ（VB6 価格エンジン移行事例 8,064 回ラン / 0.007% 不一致検出 / 420 万ドル損失防止 / Branch by Abstraction 由来）。新旧並行実行 + 結果照合で不一致率 < 閾値（デフォルト 0.01%）を機械的に検証
+- **discard_and_redesign**: `AbsentZone.redesign_directive` 適合確認、意図保存制約は解除
+
+**(c) 後方互換完全維持**: `refactor-intent-map.md` 不在時は意図合致軸が完全スキップされ、従来 3 軸動作と同一になる。LC ≥ 1 既存プロジェクトには遡及適用なし。archeo を一度も起動していないプロジェクトには一切影響しない。
+
+**(d) archeo Phase α からの双対完成**: archeo（過去→意図復元、L0）と autonomous-dev / independent-reviewer（未来→実装、L1）の双対構造が、Phase γ コア 3 件で「意図譲渡 → 評価軸内蔵」として完成する。philosophy.md §1 フラクタル原則 P1 の自然な拡張（spec-architect → L1 の譲渡構造と同型）。
+
+#### 改修内容
+
+- `layer0-archeo-architect/references/handoff-to-evaluator.md`: 先行宣言版 → コア 3 件本実装版へ拡充
+- `layer1-autonomous-dev/references/inferential-sensor-v2.md` §第4層: 意図合致軸の起動条件 + 判定ルール追加
+- `layer1-autonomous-dev/SKILL.md §6 自己検証`: 承認テスト生成 + 自動照合ループプロトコル追加
+- `layer1-independent-reviewer/SKILL.md`: 評価軸 3→4 軸化、§5.4 意図合致チェック追加
+- `layer1-autonomous-dev/references/delivery-format.md`: 意図合致検証セクション追加（refactor-intent-map.md 存在時のみ）
+
+#### 5 件中 2 件温存（v5.5.x patch / v5.6.0 候補）
+
+- **先行宣言 4: ストラングラー・フィグ / Branch by Abstraction の射程外宣言** — v5.5.x patch で `handoff-to-evaluator.md` に簡記、本格的な L1 / L2 リファクタ実行プロトコル化は v6.0.0 候補
+- **先行宣言 5: 失敗アンチパターン早期検出** — Phase β（ritual-protocol レベル 3 統合）と一体化して v5.5.x patch / v5.6.0 へ後送
+
+### β止揚運用の制度化（Council `vrfy01` から派生）
+
+PR #33 adrv01 の「段階的組み込みで止揚」パターンを本リリースの Council `vrfy01`（v5.5.0 着手前検証スコープ判定）で再採用し、「V-1 狭義 + 第3の道（検証を v5.5.0 SPEC 化に内包）」の止揚運用を実施。残ドリフト検査が SPEC 化過程で「既存機構の SPEC ↔ 実装照合」として自然に内包され、独立フェーズ化による情報損失を回避する運用パターンを `delivery/SELF-VERIFICATION-v5.5.0.md` に記録。adrv01-Ph2（v5.6.0 独立観測機構）への自然な前段としても整合。
+
+### v6.0.0 候補として温存される思想拡張
+
+- **adrv01-Ph3 哲学者法廷モデル**: 階層構造として止揚（自己申告 = 一次入力、独立機構 = 申告事実の検証メタ層）。adrv01-Ph2 の運用観測データ蓄積後に再評価
+- **adrv02-Ph2 ハイブリッド段階移行**: subagent isolation 統合の本実装。「context 共有 vs context 分離」評価軸での本格運用
+- **第3の道 + crosscut-verifier-philosophy 大統合**: 哲学整合検証の本実装と autonomous-drive 機構の統合判定機構化（v5.0.0 から複数 minor 後送中、v6.0.0 major で大統合）
+- **L1-refactor スキル新設（Level B）**: archeo01 哲学者拡張提案、プロジェクト固有 SK によるリファクタ支援の本実装
+
 ## v5.4.0 で追加された概念
 
 ### archeo-architect の追加（spec-architect の双対、L0 兄弟）

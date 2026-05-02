@@ -2,6 +2,52 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.5.0 (released 2026-05-02)
+
+minor 昇格。**(I) adrv01-Ph1 = AI 自己申告閾値の Council 連動明文化**（既存 `confidence < 0.6` 機構流用、コスト 0）+ **(II) Phase γ コア 3 件 = L1 自己検証/独立検証への意図合致軸追加**（4 軸化、起点問題=リファクタ取りこぼしの構造解決）。
+PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md`（adrv01/02/03 全合意成立）を起源とする。後方互換維持（v5.0.0〜v5.4.0 と同パターン）。利用者プロジェクトには配布されない。
+
+`crosscut-verifier-philosophy` 本実装は本リリース対象外（v5.5.x patch / v5.6.0 へ再々々後送、v5.0.0 から累計 5 リリース後送中）。
+Phase γ 先行宣言 4（ストラングラー射程外宣言）+ 5（失敗アンチパターン早期検出）は本リリース対象外（v5.5.x patch / v5.6.0 候補）。
+adrv01-Ph2（独立観測機構新設、新規 crosscut-* skill）は v5.6.0 候補。
+
+### Step 0: L0 spec-architect 起動 + 振り返り儀式 + Council 諮問
+
+- LC=1（v5.4.0 リリースから 1 日経過、CHANGELOG 更新 < 30 日）/ M2 標準モード判定
+- 振り返り儀式レベル 2（機能追加示唆検出）/ F1 過去文脈サマリ提示 / F2 認識ズレ検出 / F3 履歴更新予告
+- Council `vrfy01`（v5.5.0 着手前 DH 自体実装妥当性検証スコープ判定）: V-1 狭義 / V-2 中庸 / V-3 広義 の 3 候補拮抗 → recommended V-1、`agreed_with_modification`（β止揚採用：V-1 + 検証を v5.5.0 SPEC 化に内包）
+- V-1 検証完了: adrv01-Ph1 / Phase γ 双方の依存機構（Council confidence 機構 / L1 §自己検証構造）が構造的に完備、拡張ポイント特定済み
+
+### Step 1: Phase A — adrv01-Ph1 改修
+
+- `crosscut-council/SKILL.md §自己申告プロトコル` 新節（confidence < 0.6 を Council 起動の正式トリガーとして明文化、内部完結禁止、自己申告 = 一次入力 + Council = 二次検証の二相構造）
+- `crosscut-council/references/pre-check.md` §scope/PR 境界 vs 新規思想 の判別シナリオ（Copilot review #34 feedback、category 誤選択の Shift Left 防止、判別チェックリスト追加）
+- `crosscut-council/references/consensus-protocol.md` §エッジケース「escalated 経路での合意成立」明文化（vrfy01 事例由来）+ §自己申告 → Council 起動の hook 経路（v5.6.0 Ph2 で本実装の先行宣言）
+
+### Step 2: Phase B — Phase γ コア 3 件本実装
+
+- `layer0-archeo-architect/references/handoff-to-evaluator.md`: 先行宣言版 → コア 3 件本実装版へ拡充（ロードマップ表 / I/O 契約 / 改修対象ファイル状態を ✅ 実施済みに更新）
+- `layer1-autonomous-dev/references/inferential-sensor-v2.md` §第4層: 意図合致軸の起動条件（`refactor-intent-map.md` 存在時のみ）+ refactor_directive 別判定ルール（preserve 承認テスト / restructure 自動照合ループ / discard_and_redesign）追加
+- `layer1-autonomous-dev/SKILL.md §6 自己検証`: 承認テスト生成プロトコル + 自動照合ループプロトコル追加
+- `layer1-independent-reviewer/SKILL.md`: 評価軸 3→4 軸化、§5.4 意図合致チェックステップ追加、判定ルール 4 軸対応
+- `layer1-autonomous-dev/references/delivery-format.md`: 推論的センサー判定に意図合致追加 + 意図合致検証セクション（refactor-intent-map.md 存在時のみ）
+
+### Step 3: Phase C — 履歴層更新 + ARCH-DECISIONS
+
+- `history/INTENT.md` v5.5.0 セクション追加（adrv01-Ph1 / Phase γ コア 3 件 / β止揚運用記録 / v5.6.0 / v6.0.0 候補温存）
+- `history/CHANGELOG.md` 本セクション
+- `history/REGIME-LOG.md` v5.5.0 minor 昇格判定記録（M2 / LC=1 / dev_mode=github_assisted / claude-opus-4-7）
+- `history/ARCH-DECISIONS.md` AD-018（adrv01-Ph1）+ AD-019（Phase γ コア 3 件）追加
+- `history/COUNCIL-LOG.md` `vrfy01` エントリは Step 0 で append-only 追記済み（PR 内同梱）
+
+### Step 4: 自己検証 + 献上
+
+- `python harness-verifier/verify.py --strict` 全 PASS（D4 整合性維持確認、5 検査全項目）
+- `harness-verifier/reports/2026-05.md` 上書き（最新実行記録）
+- `delivery/SELF-VERIFICATION-v5.5.0.md` 作成（L0 §7.4 の 5 項目 + harness-verifier 5 検査 + β止揚運用の SPEC 化過程内包記録）
+- 計算的センサー: SKILL.md / references の構文整合・broken reference なし
+- ルートに draft PR #34 を作成、Copilot review #34 で発見された category 誤選択の連鎖は本リリースで Shift Left 修正
+
 ## v5.4.0 (released 2026-05-01)
 
 minor 昇格。**archeo-architect（意図復元 L0 兄弟スキル）を新設**し、spec-architect の双対として L0 を 3 兄弟体制に拡張。

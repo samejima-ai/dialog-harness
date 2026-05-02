@@ -27,6 +27,68 @@ DH 本体のモード判定・major/minor 昇格の記録。
 
 PR #30（v5.4.0 archeo-architect）は `layer0-spec-architect/SKILL.md` `dev-env-spec.md` `history/INTENT.md` `history/CHANGELOG.md` を touch する。本 PR は同 4 ファイルで PR #30 が追加する archeo 行には触れず、既存 Lifecycle 言及行のみ置換した。merge 順序が前後しても rebase で機械的に解決可能。
 
+## v5.5.0（minor 昇格、後方互換維持）
+
+- 判定日: 2026-05-02
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect → layer1-autonomous-dev（M2 体制、v5.0.0/v5.1.0/v5.2.0/v5.3.0/v5.4.0 と同一）
+- 起源: PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md`（adrv01/02/03 全合意成立、確定ロードマップ「v5.5.0 = adrv01-Ph1 + Phase γ」）+ Council 合議（`council-2026-05-02T11:00:00Z-adrv01` / `council-2026-05-02T12:30:00Z-vrfy01`）+ AD-018/AD-019
+- 自己検証: `delivery/SELF-VERIFICATION-v5.5.0.md`
+
+### 非破壊追加（破壊項目なし）
+
+| 項目 | 内容 |
+|---|---|
+| adrv01-Ph1 自己申告プロトコル | `crosscut-council/SKILL.md §自己申告プロトコル` 新節（AD-018）。confidence < 0.6 を Council 起動の正式トリガーとして明文化、内部完結禁止 |
+| Council category 分類例追加 | `pre-check.md` §scope/PR 境界 vs 新規思想 の判別シナリオ（Copilot review #34 feedback、category 誤選択の Shift Left 防止）|
+| escalated エッジケース | `consensus-protocol.md` §escalated 経路での合意成立（vrfy01 事例由来）+ §自己申告 hook 経路（v5.6.0 Ph2 で本実装の先行宣言）|
+| Phase γ コア 3 件本実装 | `inferential-sensor-v2.md` 第4層 / `layer1-autonomous-dev/SKILL.md` §6 / `layer1-independent-reviewer/SKILL.md` / `delivery-format.md` / `handoff-to-evaluator.md` 5 ファイル改修（AD-019）|
+| L1 評価軸 4 軸化 | 仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ **意図合致**（refactor-intent-map.md 存在時のみ起動、後方互換完全維持）|
+| バージョン記録 | INTENT / ARCH-DECISIONS / REGIME-LOG / CHANGELOG / COUNCIL-LOG（vrfy01 既追記）|
+
+破壊項目なし。既存 SKILL.md セクション番号、既存 references の本文（追記のみ）、crosscut-* / templates/ / harness-verifier/ は機能不変。
+利用者プロジェクトには配布されない（v5.0.0〜v5.4.0 と同パターン）。
+
+### 移行方針
+
+v5.5.0 は **既存 LC ≥ 1 プロジェクトに対する強制適用なし**（v5.1.0 / v5.2.0 / v5.3.0 / v5.4.0 と同パターン）。
+利用者プロジェクト側には影響しない。dialog-harness リポジトリ自身の SK/RL 規約のみで動作する。
+v5.4.0 → v5.5.0 への upgrade は SKILL.md の v5.5.0 セクション読込で完結（個別の migration script は不要）。
+**Phase γ 意図合致軸は `delivery/refactor-intent-map.md` 存在時のみ起動**（後方互換完全維持）。archeo を一度も起動していないプロジェクトには一切影響しない。
+
+### 不変項目（spec §2 遵守確認）
+
+| 不変項目 | 遵守状況 |
+|---|---|
+| 5 本柱原則（P1-P5） | ○（特に P3 情報純度・P5 献上哲学を補強する方向の改訂）|
+| 第 6 条 人間 ≒ Council 原則 | ○（adrv01-Ph1 が第 6 条の Phase 1 実装、自己申告 = 一次入力 + Council = 二次検証）|
+| 履歴層規約 | ○（INTENT/ARCH-DECISIONS/REGIME-LOG/CHANGELOG/COUNCIL-LOG 既存形式準拠）|
+| 献上プロトコル | ○（Type A/B/C/D 不変、意図合致逸脱時は intent_drift として Type C/D に分類）|
+| Level A skill 本体不変 | ○（追記のみ、本体ロジック不変）|
+| 継承禁止項目の指定自体 | ○ |
+| 3 層 + 1 横断構造 | ○（新規 skill 追加なし、Phase γ コア 3 件は既存 skill への追記）|
+
+### β止揚運用の制度化（vrfy01 由来）
+
+Council `vrfy01` で「V-1 狭義 + 第3の道（検証を v5.5.0 SPEC 化に内包）」の止揚採用（`agreed_with_modification`）を実施。adrv01 と同じ「段階的組み込みで止揚」パターンの再採用。残ドリフト検査が SPEC 化過程で「既存機構の SPEC ↔ 実装照合」として自然に内包され、`delivery/SELF-VERIFICATION-v5.5.0.md` に運用記録を残す。adrv01-Ph2（v5.6.0 独立観測機構）への自然な前段としても整合。
+
+### モード判定（DH 本体自身）
+
+DH 本体自身の REGIME.md は本改修スコープ外（メタ案件）。改修体制は以下：
+
+- Mode: M2 標準（S=2、U=1、R=2、N=0、合計 5、L2 閾値未達）
+- LC: LC=1（v5.4.0 リリースから 1 日経過、CHANGELOG 更新 < 30 日）
+- dev_mode: github_assisted（PR 駆動、worktree 隔離、merge 前 review）
+- 体制: L0（spec-architect）→ L1（autonomous-dev）+ layer1-independent-reviewer + crosscut-council 諮問
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- Council 起動回数: 2 件（adrv01 in PR #33, vrfy01 in PR #34）
+
+### 次バージョン予定
+
+- v5.5.x patch: Phase γ 先行宣言 4（ストラングラー射程外宣言）+ 5（失敗アンチパターン早期検出）の本実装、`crosscut-verifier-philosophy` 本実装の再々々後送（v5.6.0 候補）
+- v5.6.0: adrv01-Ph2（独立観測機構新設、新規 crosscut-* skill = harness-verifier 同型）
+- v6.0.0 候補: adrv01-Ph3（哲学者法廷モデル）+ adrv02-Ph2（ハイブリッド段階移行 + subagent isolation）+ 第 3 の道 + crosscut-verifier-philosophy 大統合 + 第 7 条昇格
+
 ## v5.3.0（minor 昇格、後方互換維持）
 
 - 判定日: 2026-04-30
