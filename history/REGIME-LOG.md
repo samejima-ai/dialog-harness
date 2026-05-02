@@ -15,7 +15,7 @@ DH 本体のモード判定・major/minor 昇格の記録。
 
 | 項目 | 内容 |
 |---|---|
-| 先行宣言 4 本実装 | `layer0-archeo-architect/references/handoff-to-evaluator.md` のステータスヘッダ / ロードマップ表 / 先行宣言 4 セクションを本実装版へ拡充。射程外要素列挙 + 援用と全体採用の境界線 + L1/L2 禁止規約 + v6.0.0 昇格の観測トリガー + 整合性ガード を 5 サブセクションで明文化 |
+| 先行宣言 4 本実装 | `layer0-archeo-architect/references/handoff-to-evaluator.md` の **4 箇所**（ステータスヘッダ / ロードマップ表 / 実装ステータス記述 / 先行宣言 4 セクション本体）を本実装版へ拡充。射程外要素列挙 + 援用と全体採用の境界線 + L1/L2 禁止規約 + v6.0.0 昇格の観測トリガー + 整合性ガード を 5 サブセクションで明文化 |
 | 履歴記録 | CHANGELOG.md / INTENT.md / REGIME-LOG.md（本ファイル）/ ARCH-DECISIONS.md（AD-020）に記録 |
 | バージョン | 据え置き → v5.5.1（patch のみ昇格）。明文化追加で機能変更なし、minor 昇格不要 |
 | 副次目的 | gemini-review GitHub Action 運用テスト（`.claude/skills/**` + `history/**` を touch、non-draft PR で発火） |
