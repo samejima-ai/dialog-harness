@@ -4,7 +4,7 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 
 ## v5.5.0 (released 2026-05-02)
 
-> **記録規約**: 本セクションは PR #34 が draft 中に書かれ、`(in progress, target 2026-05-02)` で記録されていた（旧監査 D4-AUDIT-2026-04-30.md M-1 で確立されたフロー、Copilot review #34 line 8 の指摘で再確認）。本 patch（PR #34 マージ後）で `(released 2026-05-02)` へ更新。マージ前後の history が PR 状態と整合する。
+> **記録規約**: 本セクションは PR #34 が draft 中に書かれ、`(in progress, target 2026-05-02)` で記録されていた（Copilot review #34 line 8 の指摘で recorded-during-draft の妥当性が再確認された）。本 patch（PR #34 マージ後）で `(released 2026-05-02)` へ更新。「PR draft 中は `(in progress)` / マージ時に `(released YYYY-MM-DD)` 化」フローは旧監査 `delivery/D4-AUDIT-2026-04-30.md` M-1 で**問題提起**され（同節「ルールが未定義」と明示）、v5.4.0 リリース時に過去エントリ（v5.0.0〜v5.3.0）一括正規化として**実装**されて以降の運用慣行として確立。本 v5.5.0 patch はその慣行の最初の正規適用例にあたる。マージ前後の history が PR 状態と整合する。
 
 minor 昇格。**(I) adrv01-Ph1 = AI 自己申告閾値の Council 連動明文化**（既存 `confidence < 0.6` 機構流用、コスト 0）+ **(II) Phase γ コア 3 件 = L1 自己検証/独立検証への意図合致軸追加**（4 軸化、起点問題=リファクタ取りこぼしの構造解決）。
 PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md`（adrv01/02/03 全合意成立）を起源とする。後方互換維持（v5.0.0〜v5.4.0 と同パターン）。利用者プロジェクトには配布されない。
