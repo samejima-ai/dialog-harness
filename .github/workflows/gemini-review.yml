@@ -5,8 +5,18 @@
 # 多層防御（Reason Swiss Cheese model 同型）の追加層として配置する。
 #
 # Anthropic claude-code-action（PR #36 で検討、Anthropic API 課金）に対し、
-# Google Gemini API は無料 tier（Google AI Studio、Flash で 60 RPM/1500 RPD）が
-# 提供されるため本 PR では Gemini を採用。
+# Google Gemini API は無料 tier（Google AI Studio）が提供されるため本 PR では Gemini を採用。
+# 最新の rate limit / quota は公式ドキュメントを参照:
+# https://ai.google.dev/gemini-api/docs/rate-limits
+# (本ファイル記載の数値は as of 2026-05、参考値として扱うこと。Google 側変更で陳腐化し得る)
+#
+# モデルは gemini-2.5-flash を明示指定（コスト予測性確保）:
+# - Flash の無料 tier RPD は本 repo PR 量（20 PR/日想定）に対して大幅な余裕がある
+#   （as of 2026-05: Flash 1,500 RPD vs Pro 100 RPD、最新は上記公式 URL 参照）
+# - Pro デフォルトに委ねると quota 圧迫 + 同時 PR queue リスクあり
+# - gemini-cli のデフォルト変動でモデルが勝手に切り替わるのを防ぐ
+# - DH レビュー用途（line-level 検出、cross-file 契約確認）には Flash で品質十分
+# - Pro が必要になった場合は CTL 観測後に昇格判断、または on-demand mention 経由で別起動
 #
 # Generator/Evaluator 同一化アンチパターンへの構造的対処:
 # - DH 本体 PR の多くは Claude (Anthropic) で書かれる
@@ -22,6 +32,11 @@
 # - 任意: branch protection の required status check に追加（推奨は決定論検査のみ必須化）
 
 name: gemini-review
+
+# モデル名を一元管理（Copilot review #38 line 110、重複定義の乖離リスク回避）
+# action input と settings JSON の両方が同じ値を参照する
+env:
+  GEMINI_MODEL: gemini-2.5-flash
 
 on:
   pull_request:
@@ -94,10 +109,13 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          # モデルは workflow level env.GEMINI_MODEL から参照（単一情報源、本ファイル冒頭コメント参照）
+          gemini_model: ${{ env.GEMINI_MODEL }}
           github_pr_number: ${{ github.event.pull_request.number }}
           settings: |
             {
               "model": {
+                "name": "${{ env.GEMINI_MODEL }}",
                 "maxSessionTurns": 25
               },
               "mcpServers": {
