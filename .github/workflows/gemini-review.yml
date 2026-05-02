@@ -25,7 +25,7 @@ name: gemini-review
 
 on:
   pull_request:
-    types: [opened, ready_for_review]
+    types: [opened, ready_for_review, synchronize, reopened]
     paths:
       - ".claude/skills/**"
       - "harness-verifier/**"
@@ -49,25 +49,48 @@ jobs:
       github.event.pull_request.user.login != 'copilot-pull-request-reviewer'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Least privilege: gemini_api_key 認証のため id-token は不要（Copilot review #37 line 56）
     permissions:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
     steps:
       - name: Checkout repository
+        # SHA pin 推奨（Copilot review #37 line 90、supply-chain hardening）
+        # tag のまま運用は許容、deployment 時に maintainer が SHA pin することを推奨
         uses: actions/checkout@v4
         with:
           persist-credentials: false
 
+      # GEMINI_API_KEY が設定されているか早期チェック（Copilot review #37 line 75）
+      # secrets は if 式で直接参照できないため env 経由で空文字判定する
+      # fork PR では secrets が渡されないので skip により noisy red CI を防ぐ
+      - name: Check GEMINI_API_KEY availability
+        id: check_key
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::notice::GEMINI_API_KEY secret 未設定または空。gemini-review をスキップします（fork PR では正常な挙動）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # google-github-actions/run-gemini-cli 公式 action
       # 公式: https://github.com/google-github-actions/run-gemini-cli
       # 無料 tier 動作可（Google AI Studio API key）
+      # SHA pin 推奨（Copilot review #37 line 90）が、本 commit では @v0 タグのまま。
+      # deployment 時に maintainer が `pinact` 等で SHA pin することを推奨
       - name: Run Gemini PR review
+        if: steps.check_key.outputs.available == 'true'
         uses: google-github-actions/run-gemini-cli@v0
         env:
           GEMINI_CLI_TRUST_WORKSPACE: "true"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GitHub MCP server の Docker container に渡す PAT 名と完全一致させる
+          # （Copilot review #37 line 99: 環境変数展開の曖昧さを排除）
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
@@ -94,7 +117,7 @@ jobs:
                     "pull_request_review_write"
                   ],
                   "env": {
-                    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+                    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
                   }
                 }
               },
