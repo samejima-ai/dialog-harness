@@ -42,6 +42,17 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
 3. 仕様合致チェック（機能ごとにPASS/FAIL）
 4. 動作確認（起動・主要操作・エラーハンドリング）
 5. 使用確認（ユーザー操作で期待結果が得られるか）
+5.4. 意図合致チェック（v5.5.0 Phase γ コア 3 件、AND 結合の起動条件）
+     - 起動条件: `exists("delivery/refactor-intent-map.md") AND map.Meta.self_verification == "passed"`
+       両条件成立時のみ起動。`Meta.self_verification` が "passed" 以外（"failed" / "partial" / 未記録）なら本ステップ完全スキップ
+     - L1 の DELIVERY.md「意図合致検証」セクションを独立コンテキストで再評価
+     - 各 Island の refactor_directive + 各 Boundaries の human_decision を AND 結合で再照合
+     - preserve 一次条件: 該当 paths の `git diff` が空（`assertion: no_modification`、archeo handoff §73-76）。変更検出 → 即 FAIL（構造変更でも禁止）
+     - preserve 二次条件: 一次 PASS 時のみ、既存テスト + 承認テスト全件 PASS の独立確認
+     - restructure: 不一致率 < 閾値（デフォルト 0.01%）の独立確認
+     - discard_and_redesign: AbsentZone.redesign_directive 適合の独立確認
+     - Boundaries.human_decision: `both` → 両 Island 制約を AND 結合（より厳しい方を採用）/ `new_island` → 新島 directive / `undecided` → 当該境界変更を保留して Type C 献上を要請
+     - 不在時または self_verification ≠ "passed" 時は本ステップをスキップ（後方互換完全維持、3 軸動作）
 5.5. 配置規則違反チェック（dev-env-spec.md「ファイル配置規則」に照合）
      - delivery/ 配下の許可/禁止リスト適用
      - ルート直下の作業メモ混入検出（PLAN.md, TODO.md 等）
@@ -88,9 +99,26 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 
 ## 判定ルール
 
-- 全機能PASS かつ 動作確認・使用確認すべてPASS → **PASS**
+- 全機能PASS かつ 動作確認・使用確認すべてPASS（**`refactor-intent-map.md` 存在時は意図合致チェックも全 Island PASS**）→ **PASS**
 - 1項目でもFAIL → **FAIL** として差戻し
 - 判定が割れる（L1の自己検証とagentの判定が一致しない）場合は FAIL 扱いにして L1 に原因調査を要求
+
+### 評価軸（v5.5.0 Phase γ コア 3 件本実装）
+
+通常 3 軸（仕様適合 ∩ 動作 ∩ ユーザビリティ）。`delivery/refactor-intent-map.md` 存在時かつ archeo 自己検証 PASS 時は **第 4 軸「意図合致」**を起動：
+
+```
+[新規開発・通常修正]    評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ)
+[リファクタ (archeo)]   評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致)
+```
+
+**起動条件は AND 結合**: `exists("delivery/refactor-intent-map.md") AND map.Meta.self_verification == "passed"`。`Meta.self_verification` が "passed" 以外（"failed" / "partial" / 未記録）の場合、不完全 / 自己検証失敗の archeo 出力が独立検証の judgment に影響することを防ぐため、本軸は起動しない。これにより partial map / failed map で reviewer 側が誤って FAIL を返すこともない（archeo handoff contract 準拠、`../layer0-archeo-architect/references/handoff-to-evaluator.md` §I/O 契約 L64-68）。
+
+**preserve 領域の判定は 2 段階**: 一次条件として `git diff` で変更ゼロ（`assertion: no_modification`）を独立確認、変更検出時は構造変更でも即 FAIL。一次 PASS 時のみ二次条件（既存テスト + 承認テスト全件 PASS の独立確認）に進む（archeo handoff §73-76 準拠）。
+
+**Boundaries.human_decision の AND 結合判定**: 各境界で `both` → 両 Island 制約を AND 結合（より厳しい方を採用）/ `new_island` → 新島 directive / `undecided` → 当該境界変更を保留して Type C 献上を要請（archeo handoff §79-84 準拠）。
+
+意図合致軸の判定詳細は `../layer1-autonomous-dev/references/inferential-sensor-v2.md` §評価軸 / `../layer0-archeo-architect/references/handoff-to-evaluator.md` §I/O 契約 を参照。条件未成立時（map 不在 or self_verification ≠ "passed"）は本軸が完全スキップされ、従来動作（3 軸評価）と同一になる（後方互換完全維持）。
 - **過去 INTENT 矛盾・廃止機能回帰・却下案再実装の検出**（LC ≥ 1、処理フロー 5.8）:
   - 廃止機能の復活に REGIME.md の復活条件適用がない → **FAIL**
   - 過去条件と矛盾する実装で理由説明なし → **FAIL**

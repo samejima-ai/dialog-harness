@@ -136,6 +136,40 @@ Judgment Agent は **delta（差分）のみ**を返す（再判定はしない�
 - DELIVERY.md（LC ≥ 1 環境では）: 該当 invocation_id と escalation 理由を記録
 - `judgment_failed`（検算不一致）の場合: `escalation_reason` に「weight_calculation 検算 2 回不一致: <verify_weight_calculation の reason>」を記録（PR1 新規）
 
+### エッジケース: escalated 経路での合意成立（v5.5.0 adrv01-Ph1 で明文化）
+
+`judgment_confidence < 0.5` で escalation が発火した後、人間（実装者）が献上を受けて合意内容を回答した場合、protocol 上の `implementer_consent` は **`"escalated"` を維持し、合意内容は `escalation_reason` に記録する**。`agreed_with_modification` を採用してはならない（後者は escalation を経由しない経路のための値）。
+
+**正しい記録パターン**:
+
+```yaml
+implementer_consent: "escalated"
+human_escalated: true
+escalation_reason: "judgment_confidence 0.45 < 0.5 + third_way_excluded weight 比率 45% > 30% の二重トリガーで escalation 経路。人間は recommended（V-1）を採用しつつ哲学者の第3の道を併用する止揚案で合意（β）。記録のみ、判定は人間が引き受け"
+follow_up_questions_count: 0
+agreed_at: "..."
+```
+
+`escalated` を維持する理由:
+
+- protocol §Step 8 の値域は 3 値択一であり、escalated は escalated のまま記録するのが schema-strict（`output-format.md` §8 COUNCIL-LOG エントリのフィールド定義）
+- 後付けで実装者が合意したとしても、**Council 自体は自信を持っていなかった**事実は不変（`judgment_confidence < 0.5` の歴史的記録を尊重）
+- 振り返り儀式（PR3 の F1）で「どのカテゴリで escalation が多いか」「escalation 経路の合意品質」を分析する際、`agreed_with_modification` で塗りつぶすと escalation の頻度が見えなくなる
+
+**根本原因への対処**:
+
+escalation の多くは `category` 誤選択（特に scope/PR 境界判断を `conception` と分類）が哲学者重みを過剰にして連鎖する構造（COUNCIL-LOG `vrfy01` の事例）。本エッジケースを記録する場合は、同時に [pre-check.md](pre-check.md) §scope/PR 境界 vs 新規思想 の判別シナリオ で再発防止のフィードバックを行う。
+
+### 自己申告 → Council 起動の hook 経路（v5.6.0 Ph2 で本実装）
+
+実装者の自己 confidence < 0.6 自己評価から Council 起動までの経路は v5.5.0 adrv01-Ph1 で **明文化のみ**（[crosscut-council/SKILL.md](../SKILL.md) §自己申告プロトコル）。v5.6.0 adrv01-Ph2 で以下を本実装する予定：
+
+- `crosscut-feedback-loop` への自己申告イベント還流ルートの新設
+- `~/.claude/council-data/stats.json` への自己申告イベントスキーマ拡張
+- 独立観測機構（harness-verifier 同型の新規 crosscut-* skill）による自己申告事実の事後検証
+
+v5.5.0 段階では本節は先行宣言。実装は v5.6.0 まで延期する（philosophy.md §5 献上哲学と adrv01 の段階的組み込みで止揚パターンに整合）。
+
 ### なぜ独自判断で進めないか
 
 実装者が Council 判断を無視して独自実装することは `philosophy.md` §5 献上哲学に反する。

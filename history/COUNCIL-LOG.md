@@ -589,3 +589,49 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-05-01T12:05:00Z"
+
+- invocation_id: "council-2026-05-02T12:30:00Z-vrfy01"
+  timestamp: "2026-05-02T12:30:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "v5.5.0（adrv01-Ph1 + Phase γ）着手前に、DH 本体の実装妥当性をどの深度で再検証すべきか（V-1 狭義 / V-2 中庸 / V-3 広義 の 3 候補）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "V-1: 狭義 / blocker のみ", confidence: 0.7, dimension: "ROI / 機会損失" }
+    開発者: { stance: "V-1: 狭義 / blocker のみ", confidence: 0.85, dimension: "Shift Left / 保守性" }
+    哲学者: { stance: "第3の道: V-1 を本セッションで実施 + ドリフト検査を v5.5.0 SPEC 化フェーズに内包", confidence: 0.65, dimension: "長期影響 / 意味" }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "V-1: 狭義 / blocker のみ"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "第3の道: V-1 を本セッションで実施 + ドリフト検査を v5.5.0 SPEC 化フェーズに内包"
+        weight: 5
+        confidence: 0.65
+        reason: "options 外 stance のため weight 加算対象外（PR1 暫定運用）"
+    max_score_stance: "V-1: 狭義 / blocker のみ"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "V-1: 狭義 / blocker のみ — 経営者 + 開発者の合意 weighted_score 4.65、ただし哲学者の第3の道 weight 5/11 (45%) が options 外で除外され human_escalation 経路"
+  minority_opinion: "哲学者の第3の道（V-1 を本セッションで実施 + ドリフト検査を v5.5.0 SPEC 化フェーズ adrv01-Ph1 / Phase γ の SPEC 化過程に内包させる）は、harness の再帰構造（philosophy.md §1）と adrv01-Ph2 が予告する独立観測機構の時間整合の観点で哲学的に強い。V-2/V-3 は本 Council では支持を得なかった"
+  human_escalated: true
+  consensus_mode: "escalate_to_human"
+  implementer_consent: "agreed_with_modification"
+  modification_note: "β 止揚採用 — V-1 を本セッションで実施しつつ、哲学者の第3の道（検証を v5.5.0 adrv01-Ph1 / Phase γ の SPEC 化過程に内包）を併用。adrv01 と同じ『段階的組み込みで止揚』パターン。adrv01-Ph2（v5.6.0 独立観測機構）への自然な前段としても整合"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-02T12:35:00Z"

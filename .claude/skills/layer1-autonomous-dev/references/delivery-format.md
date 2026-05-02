@@ -131,6 +131,28 @@ delivery/
 - 仕様合致: PASS / FAIL
 - 動作確認: PASS / FAIL
 - 使用確認: PASS / FAIL
+- 意図合致: PASS / FAIL / N/A（refactor-intent-map.md 不在時は N/A）
+
+### 意図合致検証（v5.5.0 Phase γ コア 3 件、`delivery/refactor-intent-map.md` 存在時のみ追加）
+
+`refactor-intent-map.md` 不在時は本セクション全体を**省略**する（後方互換完全維持、3 軸動作）。存在時は以下を記載：
+
+```markdown
+## 意図合致検証（archeo-architect 由来、Phase γ 本実装）
+
+参照した意図マップ: delivery/refactor-intent-map.md (delivered_at: <timestamp>)
+
+| Island | refactor_directive | 実装結果 | 判定根拠 | 判定 |
+|---|---|---|---|---|
+| Island-001 | preserve | 変更なし | 承認テスト 12/12 PASS（`delivery/approval-tests/island-001.baseline.json`） | PASS |
+| Island-002 | restructure | 再構造化（意図保持） | 不一致率 0.003% < 0.01% 閾値（`delivery/reconciliation-logs/island-002.log`） | PASS |
+| Island-003 | discard_and_redesign | 新規設計 | AbsentZone.redesign_directive 適合 | PASS |
+| ... | ... | ... | ... | ... |
+
+意図逸脱検出: 0 件 / N 件
+```
+
+意図逸脱検出があった場合は `failure: intent_drift` として L1 自力修正を試行する。修正不能なら **Type C 献上**（仕様改訂提案）または **Type D 献上**（技術例外）に分類する。
 
 ### 独立検証（M2以上で必須）
 - 検証レポート: VERIFICATION.md参照

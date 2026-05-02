@@ -2,7 +2,7 @@
 
 archeo-architect が生成する `refactor-intent-map.md` を Layer 1 (autonomous-dev / independent-reviewer) の評価軸に統合するための I/O 規約。
 
-**ステータス**: Phase α では先行宣言版（仕様の事前公開）。**Phase γ で本実装**される。
+**ステータス**: **Phase γ コア 3 件本実装版**（v5.5.0、先行宣言 1/2/3 を本実装、先行宣言 4/5 は v5.5.x patch / v5.6.0 へ温存）。
 
 ---
 
@@ -10,9 +10,10 @@ archeo-architect が生成する `refactor-intent-map.md` を Layer 1 (autonomou
 
 | Phase | スコープ | 本ファイルのバージョン |
 |---|---|---|
-| **α** (本リリース) | archeo-architect SK 雛形のみ。L1 改修なし。`refactor-intent-map.md` は人間が手動参照してリファクタ指示を組み立てる | **先行宣言版**（本ファイル） |
+| α (v5.4.0) | archeo-architect SK 雛形のみ。L1 改修なし。`refactor-intent-map.md` は人間が手動参照してリファクタ指示を組み立てる | 先行宣言版 |
 | β | ritual-protocol レベル 3 統合・glossary 用語追加 | 変更なし |
-| γ | L1 自己検証/独立検証に「意図合致軸」追加。`refactor-intent-map.md` を評価軸として自動参照 | **完全版に拡充**（+50〜80 行） |
+| **γ コア 3 件 (v5.5.0、本リリース)** | **L1 自己検証/独立検証に「意図合致軸」追加（先行宣言 1/2/3 を本実装）**。`refactor-intent-map.md` を評価軸として自動参照 | **完全版（コア 3 件）** ← 本ファイル |
+| γ 残 2 件 (v5.5.x or v5.6.0) | 先行宣言 4（ストラングラー射程外宣言）+ 先行宣言 5（失敗アンチパターン早期検出）の本実装 | 拡張 |
 | δ | spec-architect への逆輸入（運用データ 3 ヶ月後） | 変更なし or 拡張 |
 
 ---
@@ -38,7 +39,7 @@ L1 (`layer1-autonomous-dev`) の自己検証/独立検証は現状以下の 3 �
 
 ---
 
-## I/O 契約（先行宣言）
+## I/O 契約（v5.5.0 で本実装、コア 3 件）
 
 ### 入力（archeo → L1）
 
@@ -56,7 +57,7 @@ delivery/refactor-intent-map.md  # canonical filename（最新版を常にここ
 
 これにより L1 側の選択アルゴリズムが不要となり、`exists("delivery/refactor-intent-map.md")` の単純チェックで済む。アーカイブは人間レビュー用の履歴であり L1 評価軸には影響しない。
 
-### L1 側の参照ロジック（Phase γ で本実装）
+### L1 側の参照ロジック（v5.5.0 で本実装、コア 3 件）
 
 `refactor-intent-map.md` の存在チェック：
 
@@ -84,7 +85,7 @@ else:
 
 ### 出力（L1 → DELIVERY.md）
 
-L1 が `delivery/DELIVERY.md` に追記するセクション（Phase γ で正式化）：
+L1 が `delivery/DELIVERY.md` に追記するセクション（v5.5.0 で本実装）：
 
 ```markdown
 ## 意図合致検証（archeo-architect 由来、Phase γ で追加）
@@ -105,24 +106,25 @@ L1 が `delivery/DELIVERY.md` に追記するセクション（Phase γ で正�
 
 ---
 
-## 改修対象ファイル（Phase γ で実施、本リリースでは未着手）
+## 改修対象ファイル（v5.5.0 で実施済み、コア 3 件）
 
-Phase γ で改修する L1 側ファイル（**本リリースでは触らない**、先行宣言のみ）：
+v5.5.0 で改修した L1 側ファイル（先行宣言 1/2/3 を本実装）：
 
-| パス | 修正内容 | 行数感 |
+| パス | 修正内容 | 状態 |
 |---|---|---|
-| `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` | 第 4 層推論センサーに「意図合致軸」追加。`refactor-intent-map.md` 存在時のみ起動する条件分岐 | 10〜15 行 |
-| `../../layer1-autonomous-dev/SKILL.md` §6 自己検証 | 推論的センサー実行時、Islands.refactor_directive を評価軸として参照する 1 行追加 | 3〜5 行 |
-| `../../layer1-independent-reviewer/SKILL.md` | 独立検証時に同 map を参照、「意図保存軸」の独立判定を追加 | 5〜10 行 |
-| 本ファイル | I/O 規約を先行宣言版から完全版に拡充（後述 §Phase γ 詳細仕様の先行宣言） | +50〜80 行 |
+| `../../layer1-autonomous-dev/references/inferential-sensor-v2.md` | 第 4 層推論センサーに「意図合致軸」追加。`refactor-intent-map.md` 存在時のみ起動する条件分岐 | ✅ v5.5.0 実施 |
+| `../../layer1-autonomous-dev/SKILL.md` §6 自己検証 | 承認テスト生成ステップ + 自動照合ループステップ追加（refactor_directive: preserve / restructure 領域） | ✅ v5.5.0 実施 |
+| `../../layer1-independent-reviewer/SKILL.md` | 評価軸を 3 軸 → 4 軸（仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致）に拡張 | ✅ v5.5.0 実施 |
+| `../../layer1-autonomous-dev/references/delivery-format.md` | DELIVERY.md 構造に「意図合致検証」セクション追加 | ✅ v5.5.0 実施 |
+| 本ファイル | 先行宣言版 → コア 3 件本実装版へ拡充 | ✅ v5.5.0 実施 |
 
 ---
 
-## Phase γ 詳細仕様の先行宣言（業界知見統合）
+## Phase γ 詳細仕様（業界知見統合）
 
-業界根拠: Council 諮問 `council-2026-05-01T10:30:00Z-archeo01` の agreed_recommended（哲学者の第 4 の道採用、Phase γ 伏線追加）。AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ「レガシー = テストなし」/ ファウラー「外部振る舞い不変」/ VB6 事例の自動照合ループ）と archeo 哲学（P-Arch-1 忘却の制度化）の関係性を Phase γ 実装時に参照可能な形で先行宣言する。
+業界根拠: Council 諮問 `council-2026-05-01T10:30:00Z-archeo01` の agreed_recommended（哲学者の第 4 の道採用、Phase γ 伏線追加）。AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ「レガシー = テストなし」/ ファウラー「外部振る舞い不変」/ VB6 事例の自動照合ループ）と archeo 哲学（P-Arch-1 忘却の制度化）の関係性を本ファイルで明文化する。
 
-**本セクションは仕様の先行宣言であり、Phase α では本実装しない**。Phase γ（v5.5.0 候補）で本実装される。
+**実装ステータス（v5.5.0）**: コア 3 件（先行宣言 1/2/3）を本実装済み。残 2 件（先行宣言 4/5）は v5.5.x patch / v5.6.0 へ温存。
 
 ### 先行宣言 1: 承認テスト生成プロトコル（refactor_directive: preserve 領域）
 
