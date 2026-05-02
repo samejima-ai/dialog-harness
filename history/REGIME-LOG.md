@@ -2,6 +2,30 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.5.1（patch、no minor bump）
+
+- 判定日: 2026-05-02
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 起源: v5.5.0 で温存された Phase γ 残 2 件のうち先行宣言 4 を本実装する patch（v5.5.0 CHANGELOG / INTENT.md に v5.5.x patch 候補として明記済みの項目を消化）。副次目的として gemini-review GitHub Action（PR #37/#38 で導入）の独立レビュー機能を実運用で初めてテストする
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS（実行記録は本 patch CHANGELOG Step 3 に簡記）
+- 後方互換: 機能変更ゼロ（明文化のみ）。SKILL.md セクション番号・既存 references 本文（追記のみ）・crosscut-* / templates/ / harness-verifier/ は機能不変。`refactor-intent-map.md` の I/O 契約も不変
+
+### 非破壊変更（破壊項目なし、機能変更なし）
+
+| 項目 | 内容 |
+|---|---|
+| 先行宣言 4 本実装 | `layer0-archeo-architect/references/handoff-to-evaluator.md` のステータスヘッダ / ロードマップ表 / 先行宣言 4 セクションを本実装版へ拡充。射程外要素列挙 + 援用と全体採用の境界線 + L1/L2 禁止規約 + v6.0.0 昇格の観測トリガー + 整合性ガード を 5 サブセクションで明文化 |
+| 履歴記録 | CHANGELOG.md / INTENT.md / REGIME-LOG.md（本ファイル）/ ARCH-DECISIONS.md（AD-020）に記録 |
+| バージョン | 据え置き → v5.5.1（patch のみ昇格）。明文化追加で機能変更なし、minor 昇格不要 |
+| 副次目的 | gemini-review GitHub Action 運用テスト（`.claude/skills/**` + `history/**` を touch、non-draft PR で発火） |
+
+破壊項目なし。利用者プロジェクトには配布されない（v5.0.0〜v5.5.0 と同パターン）。
+
+### Council 諮問の有無
+
+本 patch は Council 諮問なしで実施（AD-020 §根拠参照）。理由: (a) v5.5.0 CHANGELOG / INTENT.md / ARCH-DECISIONS.md AD-019 で「先行宣言 4 を v5.5.x patch / v5.6.0 候補」として既に明示済み、(b) 本実装は明文化のみで機能変更なし、(c) 実装者 confidence ≥ 0.6（複数案拮抗なし）、(d) `crosscut-council` 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しない。
+
 ## 2026-05-01 命名整備サイクル: Lifecycle → LC（patch、no version bump）
 
 - 判定日: 2026-05-01

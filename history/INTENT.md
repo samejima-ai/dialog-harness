@@ -340,6 +340,36 @@ DH の多くの設計判断は本調査の業界知見と一致しており、�
 - Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
 - 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
 
+## v5.5.1 で追加された概念
+
+### Phase γ 先行宣言 4 本実装: ストラングラー・フィグ / Branch by Abstraction の射程外正式宣言
+
+v5.5.0 で温存された Phase γ 残 2 件のうち、先行宣言 4 を v5.5.1 patch で本実装。先行宣言版（4 行記述）から本実装版（射程外要素列挙 + 援用と全体採用の境界線 + L1/L2 禁止規約 + v6.0.0 昇格の観測トリガー + 整合性ガード）へ昇格。
+
+#### 設計意図の核
+
+**(a) 「射程外」を明示宣言する哲学的必要性**: archeo は「意図復元」（L0 = 過去→意図）の射程であり、ストラングラー・フィグ / Branch by Abstraction は「リファクタ実行戦略」（L1/L2 = 未来→実装の段階制御）の射程である。両者は抽象階層が異なる。Phase γ コア 3 件の実装過程で `handoff-to-evaluator.md` が VB6 移行事例（ストラングラー類似）と Branch by Abstraction に言及したため、L1 実装者が「先行宣言 2 → BBA 全パターン採用」と拡大解釈する誤りリスクが生じた。本宣言で境界線を明文化することで Shift Left 防止する。
+
+**(b) 「援用」と「全体採用」の区別の制度化**: 先行宣言 2 は VB6 事例の「結果照合メカニズム」と BBA の「抽象化レイヤー越しの並列実行」を **概念として援用**しているが、ストラングラー全体（ルーティング層 / facade / 段階的トラフィック切替 / decommissioning）や BBA 全体（feature flag / 段階的切替プロトコル / 旧実装 cleanup）は **採用していない**。この区別を本宣言 (b) で表形式で厳密化する。
+
+**(c) L1 / L2 への禁止規約の明文化**: archeo 由来情報からストラングラー/BBA パターンを **自動導出してはならない**ことを禁止規約として制度化。例: 「Island-002 が restructure だから自動的に feature flag を導入する」「複数 Island に渡るから自動的にルーティング層を作る」等は archeo 起点では禁止し、別 SK / 別 minor で別途設計する経路に振り分ける。
+
+**(d) 観測駆動原則との整合**: `wf-baseline-rationale.md` §3「観測駆動でのみ拡張」原則に従い、本宣言の v6.0.0 昇格条件を「≥ 3 異なる利用者プロジェクトでストラングラー/BBA パターンの archeo 連動採用要請が観測された場合」と明示。現状（観測ゼロ）では仮説扱いとして温存。
+
+**(e) 整合性ガード（schema priority）**: 本宣言（先行宣言 4）と先行宣言 2/3 の記述に矛盾がある場合は本宣言が優先する schema priority を制度化。今後先行宣言 2 を更新する際の整合確認義務を発生させる。
+
+#### 改修内容
+
+- `layer0-archeo-architect/references/handoff-to-evaluator.md`: ステータスヘッダ更新 / ロードマップ表 v5.5.1 行追加 / 先行宣言 4 セクション本体を本実装版に拡充
+
+#### 5 件中 1 件が引き続き温存（v5.5.x patch / v5.6.0 候補）
+
+- **先行宣言 5: 失敗アンチパターン早期検出** — Phase β（ritual-protocol レベル 3 統合）と一体化して v5.5.x patch / v5.6.0 へ後送（v5.5.0 から継続温存）
+
+#### 副次的副作用: gemini-review GitHub Action の運用テスト
+
+PR #37 (gemini-review 導入) / PR #38 (model pin) で導入された gemini-review GitHub Action の独立レビュー機能を、本 patch PR が初めて実運用でテストする。`.claude/skills/**` + `history/**` 改変 + non-draft PR の発火条件を満たし、gemini-review がレビュー指摘を返した場合は本 PR 内で応答する自動往復ループを実証する。テスト結果は `delivery/SELF-VERIFICATION-v5.5.1.md` に記録予定。
+
 ## v5.5.0 で追加された概念
 
 ### adrv01-Ph1: AI 自己申告閾値の Council 連動明文化
