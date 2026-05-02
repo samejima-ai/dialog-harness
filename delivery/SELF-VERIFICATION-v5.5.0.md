@@ -161,7 +161,7 @@ Council `vrfy01` 記録（PR #34 内 history/COUNCIL-LOG.md 追記）に対す�
 | 項目 | 評価 |
 |---|---|
 | 判定モード（M2）の妥当性 | ○ 適切。S=2/U=1/R=2 で M2 標準が自然。L2 閾値（>15k tok / >80 files / >10k 行）未達 |
-| 改修ファイル数（10 ファイル）| ○ 妥当。adrv01-Ph1 = 4 ファイル / Phase γ コア 3 件 = 5 ファイル / 履歴 3 ファイル |
+| 改修ファイル数（実 PR ファイル数 = 15 ファイル）| ○ 妥当。Phase A adrv01-Ph1 = 4 ファイル（crosscut-council SKILL.md / pre-check.md / consensus-protocol.md / ARCH-DECISIONS.md）+ Phase B Phase γ コア 3 件 = 5 ファイル（handoff-to-evaluator / inferential-sensor-v2 / autonomous-dev SKILL / independent-reviewer SKILL / delivery-format）+ Phase C 履歴 + 自己検証 = 5 ファイル（INTENT / CHANGELOG / REGIME-LOG / SELF-VERIFICATION-v5.5.0 / harness-verifier reports）+ Phase D Copilot review #34 fixup = 1 ファイル追加（dev-env-spec.md、配置規則拡張）。計 15 ファイル（4+5+5+1=15、Copilot review #34 line 164 で指摘の "10 files vs 4+5+3" 不整合を訂正） |
 | 想定行数 vs 実績 | 想定 400 行前後、実績 ~350 行（適正範囲）|
 | Council 諮問 2 件（adrv01 in PR #33 + vrfy01）| ○ 妥当。両件とも human_escalation 経路で `agreed_with_modification`、段階的組み込みで止揚パターンを再採用 |
 | Copilot review #34 の対処速度 | ○ Shift Left 解決、本リリース内に吸収（後送なし） |

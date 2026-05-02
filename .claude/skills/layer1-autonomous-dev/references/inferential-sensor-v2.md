@@ -157,31 +157,45 @@ L0 が SPEC.md で Must 閾値（UX 3問 Q1）を定義する。L1 はこれを 
 
 ### 評価軸（v5.5.0 Phase γ コア 3 件本実装）
 
-L1 評価軸は通常 3 軸（仕様適合 ∩ 動作 ∩ ユーザビリティ）だが、`delivery/refactor-intent-map.md` 存在時は **第 4 軸「意図合致」**が起動する：
+L1 評価軸は通常 3 軸（仕様適合 ∩ 動作 ∩ ユーザビリティ）だが、`delivery/refactor-intent-map.md` 存在時かつ archeo 自己検証 PASS 時は **第 4 軸「意図合致」**が起動する：
 
 ```
 [新規開発・通常修正]    L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ)
 [リファクタ (archeo)]   L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致)
 ```
 
-**意図合致軸の起動条件**:
+**意図合致軸の起動条件** (`../../layer0-archeo-architect/references/handoff-to-evaluator.md` §I/O 契約 L64-68 と同期):
 
 ```python
-if exists("delivery/refactor-intent-map.md"):
+# AND 結合: ファイル存在 + archeo 自己検証 PASS の両方が必須
+if exists("delivery/refactor-intent-map.md") and map.Meta.self_verification == "passed":
     activate_intent_evaluation_axis(map)   # 4 軸動作
 else:
     skip_intent_axis()                      # 3 軸動作（後方互換）
 ```
 
-**意図合致軸の判定ルール** (`refactor-intent-map.md` 各 Island の `refactor_directive` を参照):
+`Meta.self_verification` が `"passed"` 以外（`"failed"` / `"partial"` / 未記録）の場合、意図合致軸は起動しない。これにより不完全 / 自己検証失敗の archeo 出力が L1 評価軸に影響することを構造的に防ぐ（archeo handoff contract 準拠）。
+
+**意図合致軸の判定ルール** (Islands.refactor_directive + Boundaries.human_decision の AND 結合):
+
+各 Island の判定（refactor_directive）:
 
 | `refactor_directive` | 判定 |
 |---|---|
-| `preserve` | 該当 paths のコード変更禁止。承認テスト全件 PASS で意図合致 PASS（`../../layer0-archeo-architect/references/handoff-to-evaluator.md` §先行宣言 1 承認テスト生成プロトコル） |
-| `restructure` | 新旧並行実行 + 結果照合で不一致率 < 閾値（デフォルト 0.01%）なら意図合致 PASS（同 §先行宣言 2 自動照合ループ） |
+| `preserve` | **一次条件**: 該当 paths のコード変更ゼロ（`assertion: no_modification`、archeo handoff §73-76 準拠）。git diff で paths が空なら PASS。**二次条件**: 既存テストがある領域は既存テスト全件 PASS、不足分のみ承認テスト全件 PASS（`../../layer0-archeo-architect/references/handoff-to-evaluator.md` §先行宣言 1 承認テスト生成プロトコル）。一次条件 FAIL → 即 FAIL（構造変更でも禁止）|
+| `restructure` | 新旧並行実行 + 結果照合で不一致率 < 閾値（デフォルト 0.01%）なら意図合致 PASS（同 §先行宣言 2 自動照合ループ）|
 | `discard_and_redesign` | `AbsentZone.redesign_directive` に従う、意図保存制約は解除 |
 
-意図逸脱検出時は L1 自力修正を試行、修正不能なら **`failure: intent_drift`** として Type C 献上（仕様改訂提案）または Type D 献上（技術例外）に分類する。
+各 Boundaries.human_decision の判定（archeo handoff §79-84 準拠）:
+
+| `human_decision` | 判定 |
+|---|---|
+| `Island-XXX` 単独帰属 | 当該 Island の `refactor_directive` に従う |
+| `both` | 両 Island の制約を **AND で適用**（より厳しい方を採用、例: 一方が preserve なら全体 preserve 扱い）|
+| `new_island` | 新島の `refactor_directive` に従う |
+| `undecided` | 当該境界に触れる変更を **保留**（人間判定要請、L1 自己検証は automatic FAIL せず Type C 献上で人間判定を要請）|
+
+意図逸脱検出時（preserve 一次条件違反 / restructure 不一致率超過 / undecided 境界触り）は L1 自力修正を試行、修正不能なら **`failure: intent_drift`** として Type C 献上（仕様改訂提案）または Type D 献上（技術例外）に分類する。
 
 ### 実行条件
 

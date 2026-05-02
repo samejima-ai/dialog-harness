@@ -240,22 +240,37 @@ sensors/ の定義に従い、成果物を検証する。
 - 不合格なら自力修正を試みる
 - 修正不可能な場合はフィードバックレポートに記載
 
-#### 意図合致検証（v5.5.0 Phase γ コア 3 件、`refactor-intent-map.md` 存在時のみ起動）
+#### 意図合致検証（v5.5.0 Phase γ コア 3 件、起動条件は AND 結合）
 
-`delivery/refactor-intent-map.md` 存在時、第 4 軸「意図合致」を起動する。`refactor-intent-map.md` 不在のプロジェクトでは本ステップは完全スキップ（後方互換完全維持）。
+**起動条件** (`../layer0-archeo-architect/references/handoff-to-evaluator.md` §I/O 契約 L64-68 と同期):
 
-各 Island の `refactor_directive` に応じて以下を実行：
+```
+exists("delivery/refactor-intent-map.md") AND map.Meta.self_verification == "passed"
+```
 
-##### preserve 領域 — 承認テスト生成プロトコル（先行宣言 1 本実装）
+両条件成立時のみ第 4 軸「意図合致」を起動する。`refactor-intent-map.md` 不在 / archeo 自己検証 FAIL のいずれかなら本ステップは完全スキップ（後方互換完全維持、3 軸動作）。
+
+各 Island の `refactor_directive` と Boundaries の `human_decision` を **AND 結合**で評価する（archeo handoff contract 準拠、§79-84）:
+
+##### preserve 領域 — `assertion: no_modification` 一次条件 + 承認テスト二次条件（先行宣言 1 本実装）
 
 業界根拠: フェザーズ「レガシーコードとはテストのないコードである」/ Approval Testing カノン。
 
-`refactor_directive: preserve` の Island は、変更前に **承認テストで現状を凍結**する：
+`refactor_directive: preserve` の Island は upstream 規約で「現状維持（リファクタ対象外）」= `assertion: no_modification`（archeo handoff §73-76 / refactor-intent-map-template.md §61-64）。検証は二段階：
 
-1. preserve Island の paths について、現状のコードを実行して入出力を **基準データ**として記録: `delivery/approval-tests/<island-id>.baseline.json`
-2. リファクタ後のコードを同入力で実行し、出力差分を機械的に検証
-3. 差分検出時は L1 自力修正を試行、修正不能なら **`failure: intent_drift`** として Type C 献上
-4. 既存テストがある領域では既存テストを優先し、不足分のみ承認テストで補完
+**一次条件: コード変更ゼロの assertion 検査**
+
+1. preserve Island の paths について `git diff` を実行
+2. 変更行数 > 0（行追加・削除・編集のいずれか）→ **即 FAIL**（構造変更だけでもダメ、振る舞い同等でも禁止）
+3. 変更ゼロ → 一次条件 PASS、二次条件へ
+
+**二次条件: 既存テスト + 承認テストの振る舞い検証**（一次条件 PASS 時のみ実行）
+
+1. 既存テストがある領域では既存テスト全件 PASS を確認
+2. 既存テスト不足分のみ承認テストで補完: 現状のコードの入出力を `delivery/approval-tests/<island-id>.baseline.json` として基準データ化
+3. 既存テストおよび承認テスト全件 PASS で二次条件 PASS
+
+二次条件は「将来の仕様変更時の振る舞い記録」として運用される（一次条件で構造変更が禁止されているため、本来は冗長だが、preserve 領域に依存する他箇所の変更が間接的影響を与えないかの保険）。一次条件 / 二次条件のいずれか FAIL → **`failure: intent_drift`** として Type C 献上。
 
 ツール選択（Qodo / Byteable 等）は L1 実装者の裁量。
 

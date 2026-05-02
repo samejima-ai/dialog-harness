@@ -178,6 +178,16 @@ delivery/ 配下に置けるのは以下のみ：
 
 - src/ / tests/ 等の実装ディレクトリ（プロジェクト方針による）
 
+#### Phase γ 由来の検証データ（v5.5.0 追加、`refactor-intent-map.md` 存在時のみ）
+
+- `delivery/refactor-intent-map.md` — archeo-architect 出力の意図マップ（canonical 配置、`layer0-archeo-architect/references/handoff-to-evaluator.md` §I/O 契約準拠）
+- `delivery/archive/refactor-intent-map-YYYY-MM-DD.md` — 旧版意図マップのアーカイブ（archeo 再起動時、L1 は参照しない）
+- `delivery/approval-tests/<island-id>.baseline.json` — preserve Island 用承認テスト基準データ（先行宣言 1 由来、`layer1-autonomous-dev/SKILL.md §6 意図合致検証` 参照）
+- `delivery/reconciliation-logs/<island-id>.log` — restructure Island 用新旧並行実行照合ログ（先行宣言 2 由来、同上）
+- `delivery/intent-archive/` — 意図合致検証の中間生成物（任意、プロジェクト方針による）
+
+これらは `refactor-intent-map.md` 存在時のみ生成される（archeo を一度も起動していないプロジェクトには現れない）。`layer1-independent-reviewer` §5.5 配置規則チェックは本ディレクトリ群を許可リストに含める（`refactor-intent-map.md` の同梱が条件）。
+
 #### 禁止
 
 - PLAN.md / PHASE*.md / TODO.md 等の進行管理ファイル
