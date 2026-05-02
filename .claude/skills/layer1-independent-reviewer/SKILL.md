@@ -42,6 +42,13 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
 3. 仕様合致チェック（機能ごとにPASS/FAIL）
 4. 動作確認（起動・主要操作・エラーハンドリング）
 5. 使用確認（ユーザー操作で期待結果が得られるか）
+5.4. 意図合致チェック（v5.5.0 Phase γ コア 3 件、`delivery/refactor-intent-map.md` 存在時のみ起動）
+     - L1 の DELIVERY.md「意図合致検証」セクションを独立コンテキストで再評価
+     - 各 Island の refactor_directive と実装結果を再照合
+     - preserve: 承認テスト全件 PASS の独立確認
+     - restructure: 不一致率 < 閾値（デフォルト 0.01%）の独立確認
+     - discard_and_redesign: AbsentZone.redesign_directive 適合の独立確認
+     - 不在時は本ステップをスキップ（後方互換完全維持、3 軸動作）
 5.5. 配置規則違反チェック（dev-env-spec.md「ファイル配置規則」に照合）
      - delivery/ 配下の許可/禁止リスト適用
      - ルート直下の作業メモ混入検出（PLAN.md, TODO.md 等）
@@ -88,9 +95,20 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 
 ## 判定ルール
 
-- 全機能PASS かつ 動作確認・使用確認すべてPASS → **PASS**
+- 全機能PASS かつ 動作確認・使用確認すべてPASS（**`refactor-intent-map.md` 存在時は意図合致チェックも全 Island PASS**）→ **PASS**
 - 1項目でもFAIL → **FAIL** として差戻し
 - 判定が割れる（L1の自己検証とagentの判定が一致しない）場合は FAIL 扱いにして L1 に原因調査を要求
+
+### 評価軸（v5.5.0 Phase γ コア 3 件本実装）
+
+通常 3 軸（仕様適合 ∩ 動作 ∩ ユーザビリティ）。`delivery/refactor-intent-map.md` 存在時は **第 4 軸「意図合致」**を起動：
+
+```
+[新規開発・通常修正]    評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ)
+[リファクタ (archeo)]   評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ ∩ 意図合致)
+```
+
+意図合致軸の判定詳細は `../layer1-autonomous-dev/references/inferential-sensor-v2.md` §評価軸 / `../layer0-archeo-architect/references/handoff-to-evaluator.md` §I/O 契約 を参照。`refactor-intent-map.md` 不在時は本軸が完全スキップされ、従来動作（3 軸評価）と同一になる（後方互換完全維持）。
 - **過去 INTENT 矛盾・廃止機能回帰・却下案再実装の検出**（LC ≥ 1、処理フロー 5.8）:
   - 廃止機能の復活に REGIME.md の復活条件適用がない → **FAIL**
   - 過去条件と矛盾する実装で理由説明なし → **FAIL**
