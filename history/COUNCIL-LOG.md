@@ -641,3 +641,95 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-02T11:30:00Z"
   modification_note: "段階的組み込みで止揚。Phase 1: (a) AI 自己申告のみ運用（既存 Council confidence 機構流用、コスト 0）→ Phase 2: (b) 独立観測機構を後付け（autonomous-dev 出力 / 試行回数 / 往復パターンの客観観測）→ Phase 3: 階層構造として止揚（自己申告は一次入力、独立機構は申告事実の検証メタ層、哲学者第3の道の統合）。a 派の現実的実装可能性懸念と b 派の Shift Left 整合を時間軸で両立する。"
+
+- invocation_id: "council-2026-05-02T11:35:00Z-adrv02"
+  timestamp: "2026-05-02T11:35:00Z"
+  source_skill: "human_direct (L0 ブレスト中、ひでさん指示で起動)"
+  question_to_answer: "動的ドメイン組織化 (INSIGHTS 第10.10) × 連鎖駆動 (HANDOFF §4) の接続設計を a/b/c のどれにすべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "(c) ハイブリッド段階移行", confidence: 0.70, dimension: "ROI / リスク" }
+    開発者: { stance: "(c) ハイブリッド段階移行", confidence: 0.85, dimension: "技術的実現性 / 可逆性" }
+    哲学者: { stance: "第3の道: subagent isolation による疑似主従集約", confidence: 0.60, dimension: "前提への問い" }
+  judgment_confidence: 0.55
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(c) ハイブリッド段階移行"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "第3の道: subagent isolation による疑似主従集約"
+        weight: 5
+        confidence: 0.60
+        reason: "options 外 stance のため weight 加算対象外（PR1 暫定運用）"
+    max_score_stance: "(c) ハイブリッド段階移行"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(c) ハイブリッド段階移行（Phase 1 全派生常駐維持 → Phase 2 で運用データを基に主従集約 or context 分離モデルへの移行判断）。哲学者の第3の道『subagent isolation による context 分離』を Phase 2 移行検討時の評価軸として統合（『常駐 vs on-demand』ではなく『context 共有 vs context 分離』の軸再構成）。"
+  minority_opinion: "哲学者の第3の道（subagent isolation による context 分離）— Phase 2 移行検討時に再評価する設計指針として保持。Claude Agent SDK 標準機能で追加コスト 0 で実現可能。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  # 後追記（合意プロセス完了時）
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
+
+- invocation_id: "council-2026-05-02T11:40:00Z-adrv03"
+  timestamp: "2026-05-02T11:40:00Z"
+  source_skill: "human_direct (L0 ブレスト中、ひでさん指示で起動)"
+  question_to_answer: "adrv01/adrv02 Phase 群を既存ロードマップに吸収する戦略を a/b/c のどれにすべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "(a) autonomous-drive 独立 minor 路線", confidence: 0.70, dimension: "ROI / 機会損失" }
+    開発者: { stance: "(a) autonomous-drive 独立 minor 路線", confidence: 0.85, dimension: "技術的実現性 / 保守性" }
+    哲学者: { stance: "第3の道: 破壊変更基準で version 再配置", confidence: 0.55, dimension: "前提への問い / 長期影響" }
+  judgment_confidence: 0.55
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(a) autonomous-drive 独立 minor 路線"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "第3の道: 破壊変更基準で version 再配置（adrv01-Ph1 を v5.4.x patch 先出し / Phase γ 単独 v5.5.0 / adrv01-Ph2 を v5.6.0 / 思想統合 v6.0.0）"
+        weight: 5
+        confidence: 0.55
+        reason: "options 外 stance のため weight 加算対象外（PR1 暫定運用）"
+    max_score_stance: "(a) autonomous-drive 独立 minor 路線"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(a) autonomous-drive 独立 minor 路線（v5.5.0 = adrv01-Ph1 + Phase γ / v5.6.0 = adrv01-Ph2 新規 crosscut-* skill / v6.0.0 = adrv01-Ph3 + adrv02-Ph2 + 第3の道 + crosscut-verifier-philosophy 大統合、adrv02-Ph1 は version bump なし）。哲学者の第3の道『破壊変更基準で version 再配置』を SPEC 化時の再評価軸として保持。"
+  minority_opinion: "哲学者の第3の道 — 破壊変更基準で version 再配置（adrv01-Ph1 を v5.4.x patch 先出し）。L1 領域同梱より破壊単位の version 切り出しが長期保守性に貢献。SPEC 化時に再評価。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  # 後追記（合意プロセス完了時）
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
