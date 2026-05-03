@@ -168,6 +168,14 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 
 （判定プロトコルは `regime-assessment.md` §autonomous_scope 判定 参照。詳細は `dev-env-spec.md` Level C 参照。Person 責務 P1〜P4 と autonomous_scope の対応は `philosophy.md` 第 7 条参照。）
 
+## current_focus（v5.7.0 追加、autonomous-drive 入口側 Issue pickup で参照）
+- type: [bug-fix / feature / refactor / docs / chore]   # 今このプロジェクトで何に集中しているか
+- target: [master / develop / 等のブランチ名]
+- since: [YYYY-MM-DD]
+- priority: [critical / standard / low]
+
+（判定プロトコルは `regime-assessment.md` §current_focus 判定 参照。β 半自動: spec-architect 対話で更新、γ ブランチ命名フォールバック: `fix/*` `feat/*` `refactor/*` から推論。Issue pickup 時の整合判定で参照される。dev_mode `autonomous` でなくても記録可能だが、active 機能として効くのは autonomous-drive 入口側稼働時）
+
 ## 判定根拠
 
 ### 規模スコアの内訳

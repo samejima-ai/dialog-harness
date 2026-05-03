@@ -2,6 +2,63 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v5.7.0 で追加された概念
+
+### autonomous-drive 入口側本格稼働 + Issue 選別機構
+
+ユーザー（ひでさん）の根源要請「Bを考えよう」+ 「Issue 選択は開発品質を決めると言って過言ではない」を起源として、v5.6.0 で温存された「パス B（crosscut-issue-implementer workflow 実装）」を本格仕様化する minor リリース。L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.0-issue-pickup.md`) に従い L1 autonomous-dev で実装。
+
+#### 設計意図の核
+
+**(a) gemini-cli 流用による Anthropic API 回避**: ユーザー要望「自前開発で低コスト、API 課金避けたい」を満たすため、既存 GEMINI_API_KEY を実装エージェント用途に転用。追加コスト 0、ただし PR レビューから「実装」への拡張は未踏領域で品質懸念あり。Council 起動可能性を保留しつつ観測駆動で運用判断。
+
+**(b) Issue 選別 3 段階フィルター**: 「全 Issue を picking up」は NG（ユーザー明示）。
+- 一次: label `ready-for-ai` opt-in（人間 P2 の明示 GO サイン）
+- 二次: author allowlist + 本文必須項目（再現手順 / 期待動作 / 受入条件）
+- 三次: AI triage（gemini-cli が Issue 内容を読んで pickup 可否判定、SPEC/DONT/current_focus と照合）
+philosophy 第 3 条情報純度 + 第 7 条 P2 ブレスト責務との整合。
+
+**(c) current_focus 軸新設による開発集中の保護**: 「master のバグ修正中なら新機能 Issue を pickup しない」(ユーザー観点) を機械可読化。REGIME.md `current_focus` フィールド (type / target / since / priority) で表現、β 半自動更新（spec-architect 対話）+ γ ブランチ命名フォールバック（fix/* feat/* refactor/*）。philosophy 第 4 条「モード判定は L0」と整合（自動推論ではなく対話で更新）。
+
+**(d) Circuit Breaker による経済的暴走防止 (P4 機構)**: 日次 5 / 月次 50 Issue 上限を workflow に hardcode、上限到達で workflow 全停止 + label `circuit-broken` 付与 + notice 通知。GEMINI_API_KEY は無料 tier で API 課金は発生しないが、Issue 多発時の rate limit 圧迫を防ぐ。philosophy 第 7 条 P4「暴走時介入」の AI 兆候提示の実装。
+
+**(e) bootstrap パターン**: v5.7.0 自身は手動セッションで実装（L0 → HANDOFF → L1 → PR）。merge 後に dialog-harness 自身に issue-pickup.yml がデプロイされ、v5.7.x 以降の DH 開発は「Issue → 自動実装 → 自動 merge」のフル自律 loop へ移行する。これがユーザー指摘「対話 → Issue → 自動実装」のパターン実装。
+
+**(f) 後方互換完全維持**: dev_mode `autonomous` + `autonomous_scope: full` 以外では本機構は起動しない。利用者プロジェクトへの強制配布なし（template 配置のみ、起動は spec-architect 対話で確認）。
+
+#### 改修内容
+
+- `spec-architect/SKILL.md` 等 4 ファイル: current_focus 軸追加（β 半自動 + γ フォールバック）
+- `crosscut-issue-implementer/SKILL.md` 全面改訂 + references 3 件新設（issue-filter / triage / circuit-breaker）
+- `.github/workflows/issue-pickup.yml` 新設（dialog-harness 自身に deploy）
+- `templates/github-workflows/issue-pickup.yml.template` 新設（利用者展開用）
+- `harness-verifier/glossary.yml` 新用語追加 (`current_focus`, `triage`, `circuit_breaker`, `pickup`, `release`)
+
+#### Person 責務 (P1〜P4) との対応強化
+
+| 段階 | 主体 | 行為 |
+|---|---|---|
+| Issue 着想 | 人間 P1 | 発案（思考） |
+| Issue 化 | AI (P2 補助) | 対話で具体化 → AI が Issue 作成 |
+| 一次 GO サイン | 人間 P2 | label `ready-for-ai` 付与（発話レベル） |
+| 二次選別 | AI (issue-implementer) | filter + AI triage |
+| 実装 | AI (gemini-cli) | branch 作成 + 実装 + PR |
+| レビュー | AI (gemini-review + Copilot) | 多層 critic |
+| Merge | AI (auto-merge) | 自動 |
+| 事後評価 | 人間 P3 | 振り返り |
+| 暴走介入 | 人間 P4 | `do-not-merge` / `circuit-broken` 解除 |
+
+人間関与は P1〜P4 の 4 場面に集約（philosophy 第 7 条と整合）、AI が手を動かす全工程を自動化。
+
+#### v5.7.x / v6.0.0 候補として温存
+
+- gemini-cli 実装エージェントの品質観測 → fail 率測定で必要なら Council 起動でフォールバック判断（ローカル Claude / Copilot Workspace / 一時的 Anthropic API）
+- 新 sub-skill `crosscut-issue-drafter`（ブレスト → Issue 化支援、philosophy 第 7 条 P2 強化）
+- destructive change detector / circuit breaker の実機構（v5.6.0 から累計後送中）
+- ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）
+- adrv01-Ph2（独立観測機構）— 第 7 条 + Issue 選別機構の運用観測データを蓄積
+- crosscut-verifier-philosophy 本実装
+
 ## v5.6.0 で追加された概念
 
 ### autonomous-drive 標準化 + DH AI 組織論明文化（メタスキル開発）

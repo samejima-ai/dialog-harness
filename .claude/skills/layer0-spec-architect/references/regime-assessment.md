@@ -526,3 +526,54 @@ v5.0.0〜v5.5.x で記録された REGIME.md は `dev_mode: github_autonomous` �
 ### ADR 記録要請
 
 `autonomous_scope` の昇格・降格（例: `merge_gated` → `full`）は手動 + ADR 記録必須（dev_mode 変更と同形式）。観測駆動: 数 PR の運用観測後に降格 / 昇格を判断（v5.5.3 AD-022 の観測駆動原則を継承）。
+
+---
+
+## current_focus 判定（v5.7.0 追加、autonomous-drive 入口側 Issue pickup で参照）
+
+REGIME.md の `## current_focus` セクションは、autonomous-drive 入口側（Issue → AI pickup）で「pickup すべき Issue か」を判定する基準として使われる。
+
+### フィールド規約
+
+```yaml
+## current_focus
+- type: bug-fix          # bug-fix / feature / refactor / docs / chore
+- target: master         # 対象ブランチ
+- since: 2026-05-03      # 開始日
+- priority: critical     # critical / standard / low
+```
+
+### β 半自動更新（推奨パス）
+
+spec-architect が対話で「今このプロジェクトで何に集中？」を確認し、AI が REGIME.md を更新する。philosophy.md 第 4 条「モード判定は L0」+ 第 7 条 P1/P2「人間 = 頭と口、AI = 手」と整合：
+
+- 例: ユーザー「v5.7.0 のバグを直したい」→ spec-architect が `current_focus.type: bug-fix` と更新
+- 例: ユーザー「次は新機能の v5.8.0 に集中したい」→ `current_focus.type: feature` + `since: <today>` 更新
+- 更新タイミング: 新規機能着手時、フェーズ切替時、振り返り儀式時
+
+### γ ブランチ命名フォールバック
+
+REGIME.md `current_focus` 未設定時、ブランチ命名から自動推論する（人間に確認しない）：
+
+| ブランチ命名 | 推論 type |
+|---|---|
+| `fix/*` `bugfix/*` `hotfix/*` | bug-fix |
+| `feat/*` `feature/*` | feature |
+| `refactor/*` `chore/refactor/*` | refactor |
+| `docs/*` | docs |
+| `chore/*` | chore |
+
+優先順位: REGIME.md 値 > ブランチ命名推論。両者が衝突する場合は REGIME.md 値を採用。
+
+### Issue pickup 時の照合
+
+`crosscut-issue-implementer` の AI triage 段階で参照（詳細は `crosscut-issue-implementer/references/triage-protocol.md`）：
+
+- Issue label `type:bug` + current_focus.type: `bug-fix` → 整合 → pickup 候補
+- Issue label `type:feature` + current_focus.type: `bug-fix` → 不整合 → skip + label `focus-mismatch` 自動付与
+- Issue label 未指定 + current_focus.type: `bug-fix` → AI が Issue 本文から推論
+
+### 後方互換性
+
+- 既存 REGIME.md に `current_focus` セクションがない場合 → 全 Issue を pickup 対象として扱う（filter 前提なし）
+- 利用者プロジェクトへの遡及適用なし、新規追加のみ
