@@ -293,6 +293,87 @@ L0 対話完了後、L1/L2 実行中は Council 事後評価のための質問�
 
 ---
 
+## 第7条 AI組織論（4役割 + サポート構造）
+
+**dialog-harness の AI 組織は 4 役割属性のみで構成される**。それ以外の skill (crosscut-* 非 council 系) と sub-agent はこれら 4 役割を補助するサポートとして位置づく。
+
+### 4役割属性
+
+| 属性 | 実装 skill | 責務 |
+|---|---|---|
+| **L0 設計** | `layer0-spec-architect` / `layer0-onboarding` / `layer0-archeo-architect` | 仕様策定・振り返り・意図復元 |
+| **L1 実装** | `layer1-autonomous-dev` / `layer1-independent-reviewer` | 実装・自己検証・独立検証 |
+| **L2 統括** | `layer2-orchestrator` / `layer2-integration-verifier` | サブドメイン分割・統合検証（L2 発動時のみ） |
+| **Council 判断** | `crosscut-council` | 拮抗判定・合議制判断（人間 ≒ Council 原則の機構実装） |
+
+### 役割境界の根拠
+
+- **L0** = 未来→仕様（spec-architect）/ 過去→意図復元（archeo-architect）/ 既存→harness 化（onboarding）
+- **L1** = 仕様→コード（autonomous-dev）+ コード→仕様照合（independent-reviewer）
+- **L2** = 統括→サブドメイン分割（orchestrator）+ 統合検証（integration-verifier）
+- **Council** = 4 役割いずれかから献上された判断点で合議（人間 ≒ Council 原則の機構実装）
+
+### サポートの定義
+
+サポート skill / sub-agent は **単独で完結せず、必ず 4 役割のいずれかから呼ばれる**:
+
+- crosscut-* 非 council 系（issue-dispatcher / issue-implementer / verifier-drift / verifier-philosophy / feedback-loop / autonomous-drive 等）
+- sub-agent（template 適用 / 検証専用エージェント等）
+
+サポート skill 自身が献上を発生させる場合（例: feedback-loop の drift 還流）も、献上先は 4 役割のいずれか（多くは L0 spec-architect への差し戻し）。
+
+### crosscut prefix の意味
+
+「全 layer をまたぐ横断機構」のうち：
+- **Council は判断主体**（4 役割の 1 つ）
+- **非 council 系はサポートヘルパー**
+
+第 1 条フラクタル原則「L3 を新設しない」と整合する。crosscut prefix は新たな運用層を意味せず、4 役割いずれかへの還流前提のヘルパー群を示す。
+
+### 「あらゆる開発に対応」の汎化性主張
+
+4 役割の責務組み合わせと連携プロトコルで、本 dialog-harness の射程内のあらゆる開発を完遂可能。新たな職種軸分業（FE/BE/QA 等）や層追加は採用しない（第 1 条フラクタル原則と整合）。汎化性はメタスキルとして他プロジェクトへの展開可能性を含む（具体的な展開機構は v5.6.0 で `templates/github-workflows/` + `crosscut-autonomous-drive` 経由）。
+
+### Person 責務（P1〜P4）
+
+人間が担う責務を以下 4 区分で明示する。これは第 6 条 H カテゴリ（人間専管「判断」）の補完軸であり、行為レベルの責務分類である：
+
+| # | Person 責務 | 行為 | AI 関与 |
+|---|---|---|---|
+| **P1 発案** | プロジェクト方向性、新機能アイデア | 思考 | ❌ AI 不可 |
+| **P2 ブレスト** | 対話で方向性を具体化（**Issue 化は AI 担当**、人間は手を動かさない） | 発話 | △ AI が応答・整理・Issue 作成 |
+| **P3 事後確認・評価** | merge 済 PR の振り返り、autonomous loop の健全性監視 | 思考 | ❌ AI 不可 |
+| **P4 暴走時介入** | `do-not-merge` label、`ALLOWED_AUTHORS` 縮退、circuit breaker | 発話 | △ AI は notice/warning で兆候提示まで |
+
+**原則**: 人間 = 頭と口を動かす / AI = 手を動かす（第 4 条と整合）。
+
+#### 第 6 条 H カテゴリとの関係
+
+| 軸 | 第 6 条 H | 第 7 条 P |
+|---|---|---|
+| 分類対象 | **判断種別**（何を判断するか） | **責務種別**（どんな行為を担うか） |
+| H1 | 哲学変更（philosophy.md 改訂） | (P1) 発案 |
+| H2 | ルール変更（CLAUDE.md / SPEC.md / DONT.md 根本書き換え） | (P2) ブレスト |
+| H3 | 方向性発案（新プロジェクト立ち上げ等） | (P3) 事後確認・評価 |
+| H4 | 根本設計見直し（ARC 切替、モード昇格・降格、L2 発動） | (P4) 暴走時介入 |
+
+H と P は **直交 2 軸** で、ラベル番号の符合は偶然的な一致（両軸とも 4 区分が DH の現在規模で適切）。両カテゴリは補完関係：H は「判断境界」、P は「行為境界」。
+
+### autonomous-drive 機構との位置づけ
+
+autonomous_scope = `full` の運用では、AI は P 範囲外の以下を完遂する：
+- Issue 精査（粒度確認、refactor-intent-map 起動判断 等）
+- 実装（layer1-autonomous-dev）
+- PR 作成
+- 多層検証ループ（harness-verify / gemini-review / Copilot review / drift-verifier）
+- 検証 fail 時の修正ループ
+- 自動 merge（auto-merge workflow）
+- 次 Issue 着手（crosscut-issue-implementer の自動 pickup）
+
+人間関与は P1〜P4 の 4 点に集約され、それ以外の操作は AI が担う。
+
+---
+
 ## 参照関係
 
 本philosophy.md は L0 配下に原典を置き、他skillは**参照のみ**する。内容転記は禁止（散逸の原因）。
@@ -325,4 +406,4 @@ L0 対話完了後、L1/L2 実行中は Council 事後評価のための質問�
 - 「情報純度原則については philosophy.md §3 を参照」
 - 「Shift Left の詳細は philosophy.md §2 を参照」
 
-本ファイルの**既存条**の責務再定義・削除は major 昇格（vN.0 → v(N+1).0）案件として扱う（後方互換破壊を伴うため）。新規条の追加は後方互換破壊を伴わない場合に限り minor 昇格で扱う（v4.2 第6条追加が該当）。
+本ファイルの**既存条**の責務再定義・削除は major 昇格（vN.0 → v(N+1).0）案件として扱う（後方互換破壊を伴うため）。新規条の追加は後方互換破壊を伴わない場合に限り minor 昇格で扱う（v4.2 第6条追加 / v5.6.0 第7条追加が該当）。

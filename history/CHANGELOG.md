@@ -2,9 +2,75 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.5.3 (in progress, target 2026-05-03)
+## v5.6.0 (in progress, target 2026-05-03)
 
-> **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.5.3 が 4 例目正規適用）。本 PR では併せて v5.5.2（前回 PR #41 で merge 後 in-progress 化のままだった）も `(released 2026-05-03)` 化する（housekeeping、独立 PR を増やさず本 PR に同梱）。
+> **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.6.0 が 5 例目正規適用）。同 PR で v5.5.3 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
+
+**minor 昇格**。**autonomous-drive 標準化 + DH AI 組織論明文化**。
+
+L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に基づく実装。ユーザー（ひでさん）の根源要請「自律駆動を L0 に記録、メタスキル開発」と「DH AI 組織は 4 役割 + サポートのみで完遂可能」の宣言を制度化する。
+
+Council 諮問 `council-2026-05-03T08:30:00Z-adrv02` で β 止揚採用：deployment skill 1 つのみ新設、guardian は v5.6.x patch 温存。
+
+**後方互換完全維持**: philosophy.md 既存 6 条改訂なし（第 7 条追加のみ）、既存 spec-architect 対話フロー不変、利用者プロジェクトへの強制配布なし。利用者プロジェクト本体には配布されない（DH 自身の運用標準化）。
+
+### Step 1: philosophy.md 第 7 条新設「AI 組織論（4 役割 + サポート構造）」
+
+`.claude/skills/layer0-spec-architect/references/philosophy.md` 第 7 条追加：
+- **4 役割属性**: L0 設計 / L1 実装 / L2 統括 / Council 判断
+- **サポート定義**: crosscut-* 非 council 系 + sub-agent は 4 役割のいずれかから呼ばれる
+- **Person 責務 (P1〜P4)**: 発案 / ブレスト / 事後確認・評価 / 暴走時介入
+- **第 6 条 H カテゴリとの関係**: H = 判断種別、P = 責務種別、両者は直交 2 軸（ラベル番号は偶然一致）
+- **「あらゆる開発に対応」汎化性主張**: メタスキルとして他プロジェクトへ展開可能
+
+既存 6 条は不変。
+
+### Step 2: spec-architect 改修（autonomous_scope 軸 + Level C 追加）
+
+- `SKILL.md`: dev_mode `autonomous` 本格定義 + `autonomous_scope`（full / merge_gated / custom）追加、§6 開発環境構築に Level C 追記
+- `references/dialog-questions.md`: 自律駆動の度合い質問追加（フルオートデフォルト）
+- `references/regime-assessment.md`: dev_mode `autonomous` 発動条件 + LC 連動規則
+- `references/dev-env-spec.md`: 「Level C: AI 自律運用」新設
+- `assets/meta-spec-template.md`: REGIME.md テンプレに `## autonomous_scope` セクション追加
+- `references/autonomous-drive-deployment.md` 新設: deployment 対話レベルガイド + crosscut-autonomous-drive 起動タイミング規定
+
+### Step 3: template 配置 + crosscut skill 新設（β 止揚採用）
+
+- `templates/github-workflows/` 新設
+  - `gemini-review.yml.template`（dialog-harness 自身の `.github/workflows/gemini-review.yml` から汎化）
+  - `auto-merge.yml.template`（同上、`auto-merge.yml` から汎化）
+  - placeholder 規約: `${REPO_OWNER}` / `${REPO_NAME}` / `${ALLOWED_AUTHORS}` / `${VERIFIER_JOB_NAME}` / `${SCOPE_PATHS}`
+- `.claude/skills/crosscut-autonomous-drive/` 新設（deployment 専念）
+  - `SKILL.md`: サポート skill としての責務定義（template 取得 → placeholder 置換 → `.github/workflows/` 配置 → label 作成 → secrets 確認）
+  - `references/placeholder-spec.md`: placeholder 一覧 + 規約
+  - `references/setup-checklist.md`: label / secret / PAT 設定手順
+
+### Step 4: 履歴層更新
+
+- `history/CHANGELOG.md` 本セクション + v5.5.3 (released 2026-05-03) 化
+- `history/INTENT.md` v5.6.0 設計意図セクション
+- `history/REGIME-LOG.md` v5.6.0 minor 昇格判定（M2 / LC=2 / claude-opus-4-7）
+- `history/ARCH-DECISIONS.md` AD-023（autonomous-drive 標準化）/ AD-024（philosophy 第 7 条新設）/ AD-025（autonomous_scope 軸）
+- `history/COUNCIL-LOG.md` `council-2026-05-03T08:30:00Z-adrv02` エントリ append
+
+### Step 5: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 5 検査 PASS（D4 整合性維持確認、新 skill `crosscut-autonomous-drive` の frontmatter 検査 +1 を含む）
+- `delivery/SELF-VERIFICATION-v5.6.0.md` 作成（L0 §7.4 自己検証の 5 項目 + philosophy 第 7 条と既存 6 条の整合性確認 + 4 役割組織論と既存 skill 配置の整合性確認）
+- 本 PR は ready-for-review + `auto-merge` label で自律 loop に投入（PR #42 で実証された経路の再運用）
+
+### v5.6.x / v6.0.0 候補として温存
+
+- destructive change detector（diff threshold / DELETE-heavy）
+- circuit breaker（5 連続 fail 自動停止）
+- ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）
+- adrv01-Ph2（独立観測機構、harness-verifier 同型 crosscut skill）
+- crosscut-verifier-philosophy 本実装（v5.0.0 から累計後送中、第 7 条で組織論が確定したので連動可能）
+- DH AI 組織論の汎化性主張テスト（4 役割で実 N=3 別プロジェクトをカバーできるか観測）
+
+## v5.5.3 (released 2026-05-03)
+
+> **記録規約**: PR #42 で merge され、本 v5.6.0 patch（PR 想定）に同梱する形で `(in progress)` → `(released 2026-05-03)` 化。5 例目正規適用に該当。本 PR ハンドリング規約の確立（v5.5.0 起源）後、housekeeping を本リリースに同梱して独立 PR を増やさない運用が定着しつつある（v5.5.2 → v5.5.3 にて 1 例、本 v5.5.3 → v5.6.0 にて 2 例目）。
 
 patch 昇格。**autonomous-drive 機構の出口側として label opt-in による PR 自動 merge workflow を新設**。
 
