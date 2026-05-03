@@ -2,6 +2,17 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.7.1
+
+### AD-029: 実装エージェントを Claude Code CLI へ切替（AD-026 訂正）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | v5.7.0 で AD-026「gemini-cli を実装エージェント採用（Anthropic API 回避）」が確定、当時のユーザー要望「自前開発で低コスト、API 課金避けたい」に応じた判断だった。本 patch で **新事実発見**: Anthropic Pro/Max サブスクリプション + `CLAUDE_CODE_OAUTH_TOKEN` 経由で `anthropics/claude-code-action` を **追加 API 課金なし** で稼働可能（OAuth token は Anthropic Console から発行）。前提変化により最良案が gemini-cli → Claude Code CLI に移行 |
+| 判断 | **(a) Claude Code CLI をメイン実装エージェントに採用**: `anthropics/claude-code-action@v0` + `CLAUDE_CODE_OAUTH_TOKEN` 認証。**(b) gemini-cli 用途を分離維持**: AI triage（軽量、無料 tier）+ 実装フォールバック（人間 P4 判断発動）+ PR レビュー（gemini-review.yml、変更なし）。**(c) AD-026 historical 維持**: 削除せず、本 AD-029 で訂正記録。**(d) フォールバック自動化なし**: Claude Code 失敗時は label `pickup-failed` + notice → 人間 P4 判断（philosophy 第 4 条 + 第 7 条 P4 整合）。**(e) 認証方式の限定**: `CLAUDE_CODE_OAUTH_TOKEN` のみ使用、`ANTHROPIC_API_KEY` 経路（従量課金）は使用しない |
+| 根拠 | (a) ユーザー方針「実装は Claude Code で L1 実行を基本とする」+ 「サブスクで稼働、API 課金避けたい」と整合、(b) Claude Code は実装品質で gemini-2.5-pro を上回る（DH での実証済み運用、autonomous-drive 出口側で自身が動作）、(c) 異質モデル併走（philosophy.md §3 情報純度）は triage / 実装フォールバック / PR レビューの 3 場面で gemini を維持することで保全、(d) 自動フォールバックは観測駆動で v5.7.x 以降に判断（fail パターン蓄積後）、(e) 後方互換: v5.7.0 で deploy 済プロジェクトは旧 workflow のまま動作可、(f) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当せず Council 諮問は不要 |
+| 影響 | `crosscut-issue-implementer/SKILL.md` 改訂（実装エージェント記述更新）、`references/setup-checklist.md` `CLAUDE_CODE_OAUTH_TOKEN` 取得手順追加、`.github/workflows/issue-pickup.yml` + template に `claude-code-action@v0` 統合。philosophy.md / 既存 6+1 条 / 4 役割組織論への影響ゼロ。harness-verifier 全 PASS 維持（新用語不要、既存用語の組み合わせのみ）。**訂正対象**: AD-026 (gemini-cli 採用) は historical 記録維持、本 AD-029 で「前提変化により訂正」を明示。**温存項目**: 実装本体の MVP → 完全実装（v5.7.x）、gemini 自動フォールバック導入（観測駆動、v5.7.x or v5.8.0）、claude-code-action SHA pin（supply-chain hardening、v5.7.x） |
+
 ## v5.7.0
 
 ### AD-026: gemini-cli を実装エージェントとして採用（Anthropic API 回避）

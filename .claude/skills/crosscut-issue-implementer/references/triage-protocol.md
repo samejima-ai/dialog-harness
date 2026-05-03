@@ -1,12 +1,13 @@
 # AI Triage Protocol
 
-`crosscut-issue-implementer` の三次フィルター（AI triage）詳細プロトコル。gemini-cli が Issue 内容を読んで pickup 可否を判定する。
+`crosscut-issue-implementer` の三次フィルター（AI triage）詳細プロトコル。**triage は gemini-cli メイン継続**（v5.7.1 以降も変更なし）— 軽量処理 + 無料 tier 活用 + 異質モデル併走（philosophy 第 3 条）の観点から、実装本体を Claude Code CLI に切り替えた v5.7.1 でも triage 部分は gemini-cli のまま維持する。
 
 ## 設計原則
 
 - 二次フィルター（label + 本文必須項目）通過後の品質確認層
 - gemini-cli が SPEC.md / DONT.md / REGIME.md `current_focus` と Issue 内容を照合
 - 判定 = pickup_yes / skip_<理由> の二値、skip 時は理由 label を自動付与
+- **v5.7.1 で実装本体は Claude Code CLI に変更されたが、triage は gemini-cli 維持**（理由: 軽量、無料 tier、異質モデル併走による情報純度保全）
 
 ## Triage 入力
 
@@ -109,7 +110,7 @@ confidence < 0.5 の場合は skip_other を返し、Issue コメントで人間
 
 ## 観測ポイント
 
-triage の精度は v5.7.0 運用初期の核心観測項目：
+triage の精度は v5.7.0 / v5.7.1 運用初期の核心観測項目（v5.7.1 でも triage 機構は変更なし）：
 
 - false positive（pickup_yes だが実装失敗）
 - false negative（skip だが本来は pickup 可能だった）

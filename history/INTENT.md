@@ -2,6 +2,44 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v5.7.1 で追加された概念
+
+### 実装エージェント方式の見直し（Claude Code CLI メイン化、AD-026 訂正）
+
+ユーザー要請「実装は Claude Code CLI で、サブスクで稼働、Gemini はフォールバック」を起源として、v5.7.0 AD-026 (gemini-cli 採用) の判断見直しを実施する patch リリース。
+
+#### 設計意図の核
+
+**(a) 新事実発見による前提変化**: v5.7.0 当時「Anthropic API 回避」のために gemini-cli を採用したが、Anthropic Pro/Max サブスクリプション + `CLAUDE_CODE_OAUTH_TOKEN` 経由で Claude Code CLI を **追加 API 課金なし** で GitHub Actions で稼働可能と判明。前提変化により最良案が gemini-cli → Claude Code CLI に移行。
+
+**(b) AD-026 historical 維持での訂正記録**: AD-026 は削除せず、AD-029 で「v5.7.0 当時の判断、新事実発見で v5.7.1 で訂正」と historical 記録維持。philosophy.md 第 5 条「献上哲学」のタイプ C（仕様改訂提案）の audit trail を尊重。
+
+**(c) gemini-cli の継続用途明確化**: 完全切替ではなく役割分担：
+- AI triage（Issue 内容判定）: gemini-cli **メイン継続**（軽量、無料 tier 余裕）
+- 実装本体（コード生成、PR 作成）: Claude Code CLI **メイン**、gemini-cli **フォールバック**
+- PR レビュー (gemini-review.yml): gemini-cli **メイン継続**（変更なし）
+これにより gemini と Claude の異質モデル併走（philosophy.md §3 情報純度）が維持される。
+
+**(d) フォールバック発動は人間 P4 判断**: Claude Code action 失敗時に gemini-cli への自動フォールバックは実装しない。label `pickup-failed` 付与 + notice 通知 → 人間 P4 が判断（gemini で再 trigger or 別アプローチ or 一時停止）。philosophy.md 第 4 条「人間が判断する場面」+ 第 7 条 P4「暴走時介入」と整合。
+
+**(e) 後方互換完全維持**: philosophy.md 改訂なし、既存 SKILL.md セクション番号不変、利用者プロジェクトへの強制配布なし。v5.7.0 で deploy 済の利用者プロジェクトは旧 issue-pickup.yml (gemini-cli 前提) のまま動作可、新規 deploy で Claude Code CLI 経路採用。
+
+#### 改修内容
+
+- `crosscut-issue-implementer/SKILL.md` 改訂（実装エージェント記述更新）
+- `references/triage-protocol.md` 軽微改訂（triage は gemini 維持を明文化）
+- `references/setup-checklist.md` `CLAUDE_CODE_OAUTH_TOKEN` 取得手順追加
+- `.github/workflows/issue-pickup.yml` claude-code-action 統合
+- `templates/github-workflows/issue-pickup.yml.template` 同等改訂
+- 履歴層 4 ファイル (CHANGELOG / INTENT / REGIME-LOG / ARCH-DECISIONS AD-029)
+
+#### v5.7.x / v5.8.0 候補として温存
+
+- 実装本体の MVP → 完全実装（branch / clone / 実装 / commit / PR 作成）。v5.7.0 で MVP 投入、v5.7.1 で action 切替、次の v5.7.x で完全実装する 3 段階設計
+- gemini-cli 自動フォールバックの導入判断（observation で fail パターン蓄積後）
+- claude-code-action SHA pin（supply-chain hardening、v5.7.x で対応）
+- 既存 v5.7.0 deploy プロジェクトの migration ガイド（v5.8.0 で template + 手順整備）
+
 ## v5.7.0 で追加された概念
 
 ### autonomous-drive 入口側本格稼働 + Issue 選別機構

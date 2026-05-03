@@ -2,10 +2,11 @@
 name: crosscut-issue-implementer
 dimension: D4
 description: >
-  GitHub Issue を起点に AI 実装を起動する横断機構（仕様2、v5.0.0 追加 / v5.7.0 で gemini-cli base に全面改訂）。
+  GitHub Issue を起点に AI 実装を起動する横断機構（仕様2、v5.0.0 追加 / v5.7.0 改訂 / v5.7.1 で Claude Code CLI メイン化）。
   GitHub Actions workflow (issue-pickup.yml) 経由で起動、3 段階フィルター + AI triage で Issue 選別。
   Issue label `ready-for-ai` 付与で自動発動、または明示コマンドで起動。
-  実装エージェント: gemini-cli (Anthropic API 回避、既存 GEMINI_API_KEY 流用)。
+  実装エージェント: **Claude Code CLI** (anthropics/claude-code-action + CLAUDE_CODE_OAUTH_TOKEN、Pro/Max サブスクリプション、追加 API 課金なし)。
+  AI triage は **gemini-cli** 維持（軽量、無料 tier）、実装失敗時のフォールバックも gemini-cli（人間 P4 判断発動）。
   philosophy.md 第 7 条「AI 組織論」の「サポート skill」枠（4 役割を補助、L3 運用層ではない）。
   dev_mode `autonomous` + `autonomous_scope: full` のみで active 化。
 ---
@@ -16,12 +17,12 @@ description: >
 
 - Issue に label `ready-for-ai` が付与された（人間 P2 の明示 GO サイン、philosophy 第 7 条）
 - REGIME.md `dev_mode: autonomous` + `autonomous_scope: full` （local_only / github_assisted では起動しない）
-- Repository Secrets: GEMINI_API_KEY + GH_REVIEW_PAT が設定済
+- Repository Secrets: **CLAUDE_CODE_OAUTH_TOKEN + GEMINI_API_KEY + GH_REVIEW_PAT** が設定済（v5.7.1〜、詳細は `references/setup-checklist.md`）
 
-## 処理フロー（v5.7.0 改訂版）
+## 処理フロー（v5.7.1 改訂版）
 
 ```
-1. Pre-check: GEMINI_API_KEY + GH_REVIEW_PAT availability
+1. Pre-check: CLAUDE_CODE_OAUTH_TOKEN + GEMINI_API_KEY + GH_REVIEW_PAT availability
 2. Circuit Breaker check: 日次/月次 Issue pickup 上限の確認 (references/circuit-breaker-spec.md)
 3. 3 段階フィルター実行 (references/issue-filter-spec.md):
    一次: label `ready-for-ai` 確認（trigger 条件で既に通過）
@@ -31,22 +32,43 @@ description: >
         - skip 時は理由 label を自動付与（needs-clarification / out-of-scope / focus-mismatch）
         - Issue は close せず人間差し戻し
 4. Pickup 確定: label `in-progress` 自動付与、Issue 番号で branch 作成（feat/<issue-num>-<slug>）
-5. 実装: gemini-cli が repo を clone + Issue + SPEC を読み込み + 実装 + commit
+5. 実装: **Claude Code CLI** (anthropics/claude-code-action) が repo を clone + Issue + SPEC を読み込み + 実装 + commit
 6. PR 作成: gh pr create + ready-for-review + (autonomous_scope: full なら) `auto-merge` label 自動付与
 7. 後段委譲: 既存 gemini-review.yml + auto-merge.yml が引き継ぎ
-8. 統計記録: .gemini/issue-pickup-stats.json に pickup 結果を append (Circuit Breaker 用)
+8. 統計記録: .gemini/issue-pickup-stats.json に pickup 結果を append (Circuit Breaker 用、v5.7.x で永続化完成予定)
 ```
 
-## 実装エージェント: gemini-cli (v5.7.0)
+## 実装エージェント: Claude Code CLI (v5.7.1 で改訂)
 
-旧版（v5.0.0）は Anthropic 公式 claude-code-action 前提だったが、ユーザー要望「Anthropic API 回避、低コスト」に応じて **gemini-cli を実装エージェントとして転用**。既存 GEMINI_API_KEY を流用（追加コスト 0、Google AI Studio 無料 tier）。
+### v5.7.1 メイン: Claude Code CLI
 
-**未踏領域**: PR レビュー（gemini-review.yml で実証済）から「実装」への拡張は未検証。失敗時のフォールバック候補：
-- ローカル Claude Code セッション（手動運用継続）
-- Copilot Workspace 切替
-- 一時的 Anthropic API 使用
+`anthropics/claude-code-action@v0` を採用、`CLAUDE_CODE_OAUTH_TOKEN`（Anthropic Pro/Max サブスクリプションから発行）で認証。**追加 API 課金なし**（サブスクリプション内で稼働）。
 
-実装段階で品質懸念が顕在化した場合は autonomous-dev が独自 Council 起動可（adrv01-Ph1 自己申告プロトコル経由）。
+旧版経緯：
+- v5.0.0: claude-code-action 前提（API key、未稼働）
+- v5.7.0: gemini-cli 採用（API 回避目的、AD-026）
+- **v5.7.1**: Pro/Max サブスクリプション + OAuth token 経路の発見で Claude Code CLI を再採用（AD-029、AD-026 訂正）
+
+### gemini-cli の継続用途（v5.7.1）
+
+| 用途 | エージェント |
+|---|---|
+| AI triage（Issue 内容判定、軽量処理） | **gemini-cli** メイン継続（GEMINI_API_KEY 無料 tier）|
+| 実装本体（コード生成、PR 作成）| **Claude Code CLI** メイン、gemini-cli はフォールバック |
+| PR レビュー (gemini-review.yml) | **gemini-cli** メイン継続（変更なし）|
+
+異質モデル併走（philosophy 第 3 条「情報純度」）は triage / 実装フォールバック / PR レビューの 3 場面で gemini を維持することで保全。
+
+### Claude Code 失敗時のフォールバック
+
+`anthropics/claude-code-action@v0` 失敗時の挙動（**自動フォールバックなし、人間 P4 判断**）：
+
+1. workflow が Issue に label `pickup-failed` 自動付与
+2. Issue コメントで notice: 「Claude Code 実装失敗。人間判断要請: gemini-cli で再 trigger するか、`do-not-pickup` で block するか」
+3. 人間 P4 が判断（philosophy.md 第 4 条「人間が判断する場面」+ 第 7 条 P4「暴走時介入」と整合）
+4. gemini で再 trigger する場合: 別 workflow 起動（v5.7.x で実装、現状は手動運用）
+
+自動フォールバック導入は v5.7.x 以降に観測駆動で判断（fail パターン蓄積後）。
 
 ## 失敗時の挙動
 
@@ -56,7 +78,7 @@ description: >
 | Circuit Breaker 上限超過 | label `circuit-broken` 自動付与 + workflow 全停止 + notice |
 | 二次フィルター FAIL (本文不足) | label `needs-clarification` + Issue は close せず人間差し戻し |
 | 三次フィルター FAIL (out-of-scope / focus-mismatch) | 該当 label 自動付与 + 人間判断要請 |
-| 実装中の致命的エラー (gemini-cli 失敗) | label `pickup-failed` + Issue に notice コメント + branch 削除 |
+| 実装中の致命的エラー (Claude Code CLI 失敗) | label `pickup-failed` + Issue に notice コメント + 自動フォールバックなし（人間 P4 判断、philosophy 第 4 条 + 第 7 条）|
 | PR 作成後 24h 以内に変更なし | 自動 release（label `in-progress` 削除）+ notice |
 
 ## CTL との関係

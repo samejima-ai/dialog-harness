@@ -6,8 +6,11 @@
 
 | Secret 名 | 用途 | 取得元 | 必要権限 |
 |---|---|---|---|
-| `GH_REVIEW_PAT` | gemini-review が GitHub MCP server 経由で PR review を投稿、auto-merge.yml が PR を merge | https://github.com/settings/personal-access-tokens で Fine-grained PAT 発行 | Repository access: 対象 repo / Permissions: Pull requests: Read+Write, Contents: Read, Metadata: Read |
-| `GEMINI_API_KEY` | gemini-review が Google Gemini API を呼び出して semantic レビューを実行 | https://aistudio.google.com/ で発行（無料 tier 可、課金カード不要） | API key 単独 |
+| `GH_REVIEW_PAT` | gemini-review が GitHub MCP server 経由で PR review を投稿、auto-merge.yml が PR を merge、issue-pickup.yml で Claude Code が commit/push | https://github.com/settings/personal-access-tokens で Fine-grained PAT 発行 | Repository access: 対象 repo / Permissions: **Contents: Read+Write**（v5.7.1〜、Claude Code commit 用）, Pull requests: Read+Write, **Issues: Read+Write**（v5.7.0〜、issue-pickup label 操作用）, Metadata: Read |
+| `GEMINI_API_KEY` | gemini-review が Google Gemini API を呼び出して semantic レビューを実行 + issue-pickup の AI triage（v5.7.0〜）| https://aistudio.google.com/ で発行（無料 tier 可、課金カード不要） | API key 単独 |
+| `CLAUDE_CODE_OAUTH_TOKEN` | issue-pickup.yml で Claude Code CLI が実装本体を実行（v5.7.1〜、anthropics/claude-code-action）| ローカル `claude setup-token` で発行（Anthropic Pro/Max サブスクリプションでログイン後） | OAuth token 単独、追加 API 課金なし |
+
+**重要 (v5.7.1)**: issue-pickup.yml が deploy された場合、`CLAUDE_CODE_OAUTH_TOKEN` 必須。未設定だと workflow が `notice::skip` で実装を起動しない。詳細: `.claude/skills/crosscut-issue-implementer/references/setup-checklist.md`
 
 ## 必須 GitHub Labels
 

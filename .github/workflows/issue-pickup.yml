@@ -1,15 +1,24 @@
 # issue-pickup — Issue → AI 実装 → PR 作成 (autonomous-drive 入口側)
 #
-# v5.7.0 で新設。dialog-harness の crosscut-issue-implementer skill 実装。
+# v5.7.0 で新設、v5.7.1 で実装エージェントを Claude Code CLI に切替。
+# dialog-harness の crosscut-issue-implementer skill 実装。
 # Issue label `ready-for-ai` 付与で発火、3 段階フィルター + AI triage で選別、
-# pickup 確定なら gemini-cli が実装、PR 作成、`auto-merge` label 自動付与で
+# pickup 確定なら Claude Code CLI が実装、PR 作成、`auto-merge` label 自動付与で
 # 既存 gemini-review.yml + auto-merge.yml に引き継ぐ。
 #
 # 詳細は .claude/skills/crosscut-issue-implementer/SKILL.md 参照。
 #
-# 重要: gemini-cli を実装エージェントとして使うのは未踏領域。
-# 失敗時のフォールバック: ローカル Claude / Copilot Workspace / 一時的 Anthropic API。
-# 観測駆動で品質判断、Council 起動可（adrv01-Ph1 自己申告）。
+# v5.7.1 改訂点:
+# - 実装エージェント: gemini-cli → Claude Code CLI (anthropics/claude-code-action@v0)
+# - 認証: CLAUDE_CODE_OAUTH_TOKEN（Anthropic Pro/Max サブスクリプション、追加 API 課金なし）
+# - AI triage は gemini-cli メイン継続（軽量、無料 tier、異質モデル併走）
+# - 失敗時のフォールバックは自動化しない（人間 P4 判断、`pickup-failed` label 付与）
+#
+# 注意: 本 workflow は autonomous_scope: full 専用。
+#   prompt 内の `--label auto-merge` も full 専用前提。
+#   merge_gated / custom スコープで利用する場合は SKILL.md「CTL との関係」表に従い
+#   `--label auto-merge` を取り除いた派生 workflow を別途用意すること（auto-merge 自動付与は merge_gated では禁止）。
+#   crosscut-issue-implementer/SKILL.md 「発動条件」も `autonomous_scope: full` のみ active 化と明記。
 
 name: issue-pickup
 
@@ -42,7 +51,7 @@ jobs:
       github.event.issue.user.login != 'dependabot[bot]' &&
       github.event.issue.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     env:
       GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
       GH_REPO: ${{ github.repository }}
@@ -51,11 +60,22 @@ jobs:
       - name: Pre-check secrets availability
         id: check_secrets
         env:
+          CLAUDE_CODE_OAUTH_TOKEN_PROBE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           GEMINI_API_KEY_PROBE: ${{ secrets.GEMINI_API_KEY }}
           GH_REVIEW_PAT_PROBE: ${{ secrets.GH_REVIEW_PAT }}
         run: |
-          if [ -z "$GEMINI_API_KEY_PROBE" ] || [ -z "$GH_REVIEW_PAT_PROBE" ]; then
-            echo "::notice::GEMINI_API_KEY or GH_REVIEW_PAT not set. Skipping pickup."
+          MISSING=()
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN_PROBE" ]; then
+            MISSING+=("CLAUDE_CODE_OAUTH_TOKEN")
+          fi
+          if [ -z "$GEMINI_API_KEY_PROBE" ]; then
+            MISSING+=("GEMINI_API_KEY")
+          fi
+          if [ -z "$GH_REVIEW_PAT_PROBE" ]; then
+            MISSING+=("GH_REVIEW_PAT")
+          fi
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "::notice::Required secrets not set: ${MISSING[*]}. Skipping pickup. See .claude/skills/crosscut-issue-implementer/references/setup-checklist.md"
             echo "available=false" >> "$GITHUB_OUTPUT"
           else
             echo "available=true" >> "$GITHUB_OUTPUT"
@@ -90,7 +110,7 @@ jobs:
           STATS_FILE=".gemini/issue-pickup-stats.json"
           mkdir -p .gemini
           if [ ! -f "$STATS_FILE" ]; then
-            echo '{"version":"v5.7.0","issues":[]}' > "$STATS_FILE"
+            echo '{"version":"v5.7.1","issues":[]}' > "$STATS_FILE"
           fi
           TODAY=$(date -u +%Y-%m-%d)
           MONTH=$(date -u +%Y-%m)
@@ -157,7 +177,7 @@ jobs:
             echo "passed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: AI Triage (gemini-cli)
+      - name: AI Triage (gemini-cli, v5.7.1 では引き続き MVP placeholder)
         if: |
           steps.check_secrets.outputs.available == 'true' &&
           steps.do_not_pickup_check.outputs.blocked != 'true' &&
@@ -169,11 +189,10 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           set -uo pipefail
-          # Triage 実装は v5.7.0 初版では minimum viable な assertion のみ
-          # （Issue 内容 + SPEC + DONT + current_focus を gemini-cli に渡して JSON 判定）
-          # フル実装は v5.7.x patch で gemini-cli インストール + prompt template 整備後
-          echo "::notice::AI Triage (v5.7.0 minimum viable): pickup_yes と仮定して進行"
-          echo "::notice::フル実装: references/triage-protocol.md 参照、v5.7.x patch で gemini-cli 経由 triage を完全実装予定"
+          # v5.7.1: triage は gemini-cli メイン継続（軽量、無料 tier、異質モデル併走）
+          # 現状は v5.7.0 から引き継ぎの MVP placeholder。フル実装は後続の v5.7.x で対応
+          # 詳細プロトコル: .claude/skills/crosscut-issue-implementer/references/triage-protocol.md
+          echo "::notice::AI Triage (gemini-cli, MVP placeholder): pickup_yes と仮定して進行"
           echo "verdict=pickup_yes" >> "$GITHUB_OUTPUT"
 
       - name: Pickup confirmation + label `in-progress`
@@ -181,23 +200,55 @@ jobs:
         run: |
           set -euo pipefail
           gh issue edit "$ISSUE_NUMBER" --add-label "in-progress" || true
-          gh issue comment "$ISSUE_NUMBER" --body "Issue pickup を開始しました（v5.7.0 issue-pickup workflow）。実装エージェント: gemini-cli。フル実装は v5.7.x patch で完全稼働予定。" || true
+          gh issue comment "$ISSUE_NUMBER" --body "Issue pickup を開始しました（v5.7.1 issue-pickup workflow）。実装エージェント: **Claude Code CLI** (anthropics/claude-code-action + Anthropic Pro/Max サブスクリプション)。" || true
 
-      - name: Implementation (gemini-cli, placeholder for v5.7.0 MVP)
+      - name: Implementation (Claude Code CLI)
         if: steps.triage.outputs.verdict == 'pickup_yes'
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        id: claude_impl
+        continue-on-error: true
+        uses: anthropics/claude-code-action@v0
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          timeout_minutes: "30"
+          direct_prompt: |
+            あなたは dialog-harness の autonomous-drive L1 実装者です。
+            GitHub Issue #${{ env.ISSUE_NUMBER }} の実装を行ってください。
+
+            ## 前提
+            - dev_mode: autonomous + autonomous_scope: full
+            - layer1-autonomous-dev skill のフローに従う（SPEC.md / DONT.md / REGIME.md / sensors/ 読み込み + 実装 + 自己検証 + commit + PR）
+            - 開発中に人間に質問しない（自走して献上、philosophy.md 第 7 条「AI 組織論」P1〜P4）
+            - DONT.md の領域に踏み込まない
+
+            ## 手順
+            1. 作業 branch を作成: `feat/issue-${{ env.ISSUE_NUMBER }}-<slug>`（master / main から分岐）
+            2. SPEC.md / DONT.md / REGIME.md を読み込み、実装方針を確認
+            3. Issue 本文の「再現手順」「期待動作」「受入条件」を満たす実装
+            4. 自己検証（sensors/ に従い、計算的 + 推論的）
+            5. commit + push（ブランチ名と一致）
+            6. PR 作成: `gh pr create --title <descriptive title> --body <Closes #${{ env.ISSUE_NUMBER }} 含む詳細> --label auto-merge`
+            7. PR description に必ず `Closes #${{ env.ISSUE_NUMBER }}` を含める
+            8. `auto-merge` label を付与（後段 auto-merge.yml + gemini-review.yml が引き継ぐ）
+
+            ## 失敗時
+            自力修正上限（同一エラー 3 回）を超えた場合は、Issue にコメントで報告し、`pickup-failed` label 付与の判断を行うこと。
+
+      - name: Handle Claude Code failure
+        if: |
+          steps.triage.outputs.verdict == 'pickup_yes' &&
+          steps.claude_impl.outcome == 'failure'
         run: |
           set -uo pipefail
-          # v5.7.0 minimum viable: 実装本体は placeholder
-          # 本番実装は v5.7.x patch で以下を実装:
-          # 1. gemini-cli インストール (gemini-review.yml から流用)
-          # 2. branch 作成 (feat/<issue-num>-<slug>)
-          # 3. gemini-cli が repo + Issue を読み実装 + commit
-          # 4. PR 作成 (gh pr create + ready-for-review + auto-merge label 自動付与)
-          # 5. 後段は既存 gemini-review.yml + auto-merge.yml が引き継ぎ
-          echo "::notice::Implementation (v5.7.0 MVP): placeholder。フル実装は v5.7.x patch で対応"
-          echo "::notice::現状は workflow 骨格と filter 機構の検証のみ。Issue は in-progress label 付き、人間が手動で実装移行"
+          gh issue edit "$ISSUE_NUMBER" --add-label "pickup-failed" || true
+          gh issue edit "$ISSUE_NUMBER" --remove-label "in-progress" || true
+          gh issue comment "$ISSUE_NUMBER" --body "Claude Code CLI による実装が失敗しました。**自動フォールバックは行いません**（人間 P4 判断、philosophy.md 第 4 条「人間が判断する場面」+ 第 7 条 AI 組織論 P4「暴走時介入」）。
+
+          選択肢:
+          - gemini-cli で再 trigger する（手動運用、v5.7.x で workflow 化予定）
+          - \`do-not-pickup\` label で block する
+          - Issue 本文を更新して \`ready-for-ai\` を再付与する（再 pickup）
+
+          Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" || true
 
       - name: Update statistics
         if: |
@@ -207,10 +258,10 @@ jobs:
           STATS_FILE=".gemini/issue-pickup-stats.json"
           if [ ! -f "$STATS_FILE" ]; then
             mkdir -p .gemini
-            echo '{"version":"v5.7.0","issues":[]}' > "$STATS_FILE"
+            echo '{"version":"v5.7.1","issues":[]}' > "$STATS_FILE"
           fi
           # append-only 統計記録（merge 時は別 commit で更新を推奨、本 workflow では artifact upload で観測）
-          echo "::notice::Stats record skipped in MVP (artifact upload で観測可能化は v5.7.x で対応)"
+          echo "::notice::Stats record: artifact upload で観測可能化（v5.7.x で commit 自動化を検討）"
 
       - name: Upload pickup-stats artifact
         if: always()
