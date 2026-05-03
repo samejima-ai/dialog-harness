@@ -102,13 +102,29 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # GH_REVIEW_PAT が設定されているか早期チェック（v5.5.2 Copilot review #41 line 121）
+      # v5.5.2 で continue-on-error: true を削除したため、PAT 未設定で MCP server に空 token を
+      # 渡す → review_write が「Resource not accessible」で fail → job が hard-fail red になる。
+      # GEMINI_API_KEY と同形式の早期チェックでクリーンに skip する
+      - name: Check GH_REVIEW_PAT availability
+        id: check_pat
+        env:
+          GH_REVIEW_PAT: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          if [ -z "$GH_REVIEW_PAT" ]; then
+            echo "::notice::GH_REVIEW_PAT secret 未設定または空。gemini-review をスキップします（review_write には Pull requests: Write 権限の PAT が必要）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # google-github-actions/run-gemini-cli 公式 action
       # 公式: https://github.com/google-github-actions/run-gemini-cli
       # 無料 tier 動作可（Google AI Studio API key）
       # SHA pin 推奨（Copilot review #37 line 90）が、本 commit では @v0 タグのまま。
       # deployment 時に maintainer が `pinact` 等で SHA pin することを推奨
       - name: Run Gemini PR review
-        if: steps.check_key.outputs.available == 'true'
+        if: steps.check_key.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
         uses: google-github-actions/run-gemini-cli@v0
         env:
           GEMINI_CLI_TRUST_WORKSPACE: "true"
@@ -171,17 +187,12 @@ jobs:
             files / diff / 既存 review コメントを取得し、それを基にレビューしてください。
             その後、レビュー観点に従って分析し、最後に必ず verdict を `mcp_github_pull_request_review_write` で投稿してください。
 
-            ## 重要: self-PR 制約（GitHub 仕様）
+            ## self-PR エラーハンドリング（GitHub 仕様）
 
-            本 repo の PR は GH_REVIEW_PAT のオーナーと同一人物が作成しているため、
-            `pull_request_review_write` で **event="APPROVE" は GitHub API レベルで常に拒否**されます
-            （"Cannot approve your own pull request" エラー）。これは構造的制約であり回避不能です。
-
-            したがって verdict は以下のように選択してください：
-            - 問題なし → **event="COMMENT"** + body に承認趣旨を明記（"独立 Gemini レビュアーとして確認、問題なし。" 等）
-            - 問題あり（軽微） → **event="COMMENT"** + body に指摘列挙
-            - 問題あり（要修正） → **event="REQUEST_CHANGES"** + body に必須修正点
-            - **APPROVE は試みず、COMMENT を直接使用してください**（試行すれば必ず fail し、quota の無駄）
+            **PR author と GH_REVIEW_PAT オーナーが同一人物**の場合、`pull_request_review_write` で
+            event="APPROVE" は GitHub API が "Cannot approve your own pull request" で拒否します。
+            その場合は **event="COMMENT" に fallback** し、body に承認趣旨を明記してください。
+            異なる人物が author の場合は通常通り APPROVE が使えます（ハードコード禁止、API 応答で判別）。
 
             ## 構造的位置づけ
 
@@ -241,21 +252,22 @@ jobs:
             ## 出力形式
 
             line comment で具体問題を指摘する（github MCP の `add_comment_to_pending_review`）。
-            最後に必ず `pull_request_review_write` で verdict を投稿してください
-            （**self-PR 制約により event は "COMMENT" or "REQUEST_CHANGES" のみ使用可、APPROVE は不可**）。
+            問題ゼロなら全体サマリのみで approve（`pull_request_review_write` で event=APPROVE）。
+            self-PR で APPROVE が API 拒否された場合は event=COMMENT に fallback してください。
+            review verdict は "REQUEST_CHANGES" / "COMMENT" / "APPROVE" のいずれかを明示。
 
             ## 必須実行プロトコル
 
             **必ず最後に `pull_request_review_write` を呼び出し、verdict を投稿してください**。
             問題が見つかった場合 → 各問題に対し `add_comment_to_pending_review` で line comment 追加 → 最後に `pull_request_review_write` で event="REQUEST_CHANGES" or "COMMENT" 確定。
-            問題が見つからなかった場合 → `pull_request_review_write` で event="COMMENT" + body="独立 Gemini レビュアーとして確認、問題なし" を投稿（self-PR 制約により APPROVE は使用不可）。
+            問題が見つからなかった場合 → `pull_request_review_write` で event="APPROVE" + body="本 PR を独立 Gemini レビュアーとして確認、問題なし" を投稿（**self-PR で API 拒否された場合は event="COMMENT" に fallback**）。
             **ツール呼び出しなしで完了することは禁止します**。tool 呼び出しに失敗した場合は最終応答にその旨を明示してください。
 
       # gemini-artifacts/ を明示的に Actions Artifacts として upload。
       # action 内部の `cp ... gemini-artifacts/...` だけでは job 終了時にディスクから消えるため、
       # 外部 step で upload して将来 debug 必要時に download 可能にする（low cost で有用性高い）
       - name: Upload gemini-artifacts (stdout / stderr / telemetry)
-        if: steps.check_key.outputs.available == 'true' && always()
+        if: steps.check_key.outputs.available == 'true' && steps.check_pat.outputs.available == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
           name: gemini-artifacts-pr-${{ github.event.pull_request.number }}-run-${{ github.run_id }}
