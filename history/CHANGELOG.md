@@ -26,12 +26,15 @@ DH の crosscut-issue-implementer から続く autonomous-drive 機構（issue �
 | 1 | label `auto-merge` 付き | 明示的な人間の GO サイン（opt-in） |
 | 2 | non-draft | 編集途中を merge しない |
 | 3 | author が `ALLOWED_AUTHORS` (env) に含まれる | 信頼境界（現状: `samejima-ai` のみ） |
-| 4 | `harness-verify` (job: verify) が SUCCESS | 構造的検証通過 |
+| 4 | `harness-verify` (job: verify) が走った場合 SUCCESS、走らなかった場合（paths 外）skip 扱い | 構造的検証通過（paths filter 起因の永久 pending 回避） |
+| 4.5 | 最低 1 つの verifier (harness-verify or gemini-review) が SUCCESS で走っている | zero-check auto-merge を防ぐ guard |
 | 5 | `gemini-review` (job: review) が走った場合 SUCCESS、走らなかった場合（paths 外）skip 扱い | 異質モデル独立 critic の通過 |
 | 6 | `reviewDecision` が CHANGES_REQUESTED でない | 指摘解消待ちで block |
 | 7 | PR state が OPEN | closed / merged を再 merge しない |
 
 非該当 PR は notice 出力で skip（red CI にしない）、merge 時は `--squash --delete-branch`。
+
+加えて pre-check として `GH_REVIEW_PAT` availability check を実装（fork PR / secret 欠落環境で red CI を防ぐ）。check_suite event 経由で SHA に複数 open PR が紐付く場合は merge target 曖昧として skip + warning（非決定性回避）。
 
 ### Step 2: 設計判断の記録
 
@@ -39,8 +42,9 @@ DH の crosscut-issue-implementer から続く autonomous-drive 機構（issue �
 |---|---|
 | GitHub native auto-merge ではなく workflow で直接 merge | branch protection 設定変更不要、ロジック一元管理、運用観測（notice ログ）が一元化 |
 | PAT (`GH_REVIEW_PAT`) を使用 | workflow の auto GITHUB_TOKEN は別 workflow を trigger できない（無限ループ防止）が、本 workflow は別 workflow を起動しない用途 + PAT で post-merge 動作観測を統一 |
-| `ALLOWED_AUTHORS` env で hardcode | spec 改修扱い、変更時は L0 spec-architect 経由で REGIME.md と整合確認 |
-| `gemini-review` を「走った場合のみ必須」 | paths filter で発火しない PR（例: `.github/workflows/**` のみ変更）でも auto-merge 可能にする |
+| `ALLOWED_AUTHORS` env に明示 hardcode | spec 改修扱い、変更時は L0 spec-architect 経由で REGIME.md と整合確認、不可視拡張防止 |
+| harness-verify / gemini-review 両者を「走った場合のみ必須」+ 最低 1 verifier guard | 両 workflow とも paths filter があり全 PR では走らない。永久 pending を回避しつつ zero-check auto-merge も防ぐ（Copilot review #42 で初版「harness-verify は paths filter なし」事実誤認を訂正） |
+| GH_REVIEW_PAT availability pre-check + multi-PR 検出 skip | fork PR / secret 欠落で red CI 化を防ぐ + check_suite head SHA に複数 PR 紐付き時の非決定性回避（Copilot review #42 line 89 対応） |
 
 ### Step 3: 履歴層更新
 

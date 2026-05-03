@@ -360,9 +360,9 @@ DH の crosscut-issue-implementer から続く autonomous-drive 機構（issue �
 
 各層が独立して fail を表明できる設計で、philosophy.md §3「情報純度」（Generator/Evaluator 分離）と §5「献上哲学」（自律内部完結禁止、独立観測機構の通過）を実装。
 
-**(d) ハードコードを避けた author allowlist**: `ALLOWED_AUTHORS` を workflow env に hardcode する形を採用（外部 secret や別 config file に逃さない）。理由: contributor の追加は spec 改修扱いとし、L0 spec-architect 経由で REGIME.md との整合確認を必須化する設計判断。これにより allowlist の不可視拡張（誰かが secret を追加して invisible に信頼境界が広がる）を防ぐ。
+**(d) Workflow env への明示 hardcode による author allowlist**: `ALLOWED_AUTHORS` を **workflow env に hardcode** する形を採用（外部 secret や別 config file に逃さない、Copilot review #42 line 363 で初版の heading 矛盾「ハードコードを避けた」を訂正）。理由: contributor の追加は spec 改修扱いとし、L0 spec-architect 経由で REGIME.md との整合確認を必須化する設計判断。これにより allowlist の不可視拡張（誰かが secret を追加して invisible に信頼境界が広がる）を防ぐ。
 
-**(e) gemini-review 「走った場合のみ必須」設計**: gemini-review は paths filter で発火しない PR（例: `.github/workflows/**` のみ変更）が存在する。「常に必須」とすると発火しない PR が永久 pending になるため、「走った場合のみ SUCCESS 必須」と条件化。一方 harness-verify は paths filter なしで全 PR 走るため、無条件必須として設計。
+**(e) verifier 全て「走った場合のみ必須」+ 最低 1 verifier guard**: harness-verify と gemini-review はいずれも paths filter で発火しない PR が存在する（harness-verify は `.claude/skills/**` `harness-verifier/**` `.github/workflows/harness-verify.yml` のみ、gemini-review は `.claude/skills/**` `harness-verifier/**` `history/**` 等）。両 verifier を「走った場合のみ SUCCESS 必須」とし、永久 pending を回避。ただし両 verifier 共に paths filter 外の PR は **zero-check** で auto-merge されてしまうため、**最低 1 つの verifier が SUCCESS で走っていること**を別途 guard 条件として追加（Copilot review #42 line 145 で初版「harness-verify は paths filter なしで全 PR 走る」事実誤認を訂正、line 89 の robustness 指摘も含めて統合修正）。
 
 #### 改修内容
 
