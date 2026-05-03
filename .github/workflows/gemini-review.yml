@@ -83,6 +83,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          # full clone（v5.5.1）。gemini-cli が内部で diff 計算を試みた場合の
+          # shallow clone (default depth=1) 起因の silent fail を排除する
+          fetch-depth: 0
 
       # GEMINI_API_KEY が設定されているか早期チェック（Copilot review #37 line 75）
       # secrets は if 式で直接参照できないため env 経由で空文字判定する
@@ -183,6 +186,11 @@ jobs:
           # モデルは workflow level env.GEMINI_MODEL から参照（単一情報源、本ファイル冒頭コメント参照）
           gemini_model: ${{ env.GEMINI_MODEL }}
           github_pr_number: ${{ github.event.pull_request.number }}
+          # v5.5.1: settings JSON 簡素化（tool exposure 阻害仮説の検証）
+          # - `tools.core: []` 削除: built-in tool 制限が MCP tool 発見も阻害する可能性
+          # - `includeTools` filter 削除: tool 名 mismatch / 過剰 filter で全 MCP tool が
+          #   model に届かない可能性。diagnostic log で MCP server 起動済 + tool 登録済を
+          #   確認しているが、cli が API request の tools field に乗せない症状が出ている
           settings: |
             {
               "model": {
@@ -200,18 +208,10 @@ jobs:
                     "GITHUB_PERSONAL_ACCESS_TOKEN",
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
-                  "includeTools": [
-                    "add_comment_to_pending_review",
-                    "pull_request_read",
-                    "pull_request_review_write"
-                  ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
                   }
                 }
-              },
-              "tools": {
-                "core": []
               }
             }
           prompt: |
