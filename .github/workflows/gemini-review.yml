@@ -211,6 +211,19 @@ jobs:
             あなたは dialog-harness 本体への **独立 PR レビュアー** です。
             Copilot review（GitHub 標準）と並列で動作する追加層として、本 PR を critically レビューしてください。
 
+            ## レビュー対象（v5.5.1 で追加、PR 番号と取得手順を明示）
+
+            - **対象 repository**: `samejima-ai/dialog-harness`
+            - **対象 PR 番号**: **#${{ github.event.pull_request.number }}**
+            - **head SHA**: `${{ github.event.pull_request.head.sha }}`
+            - **base branch**: `${{ github.event.pull_request.base.ref }}`
+            - **head branch**: `${{ github.event.pull_request.head.ref }}`
+
+            PR 番号は上記で確定済みです。**人間に PR 番号を質問してはいけません**。
+            最初に `mcp_github_pull_request_read` ツールで PR #${{ github.event.pull_request.number }} の
+            files / diff / 既存 review コメントを取得し、それを基にレビューしてください。
+            その後、レビュー観点に従って分析し、最後に必ず verdict を `mcp_github_pull_request_review_write` で投稿してください。
+
             ## 構造的位置づけ
 
             DH 本体 PR の多くは Claude (Anthropic) で書かれています。あなたは Gemini (Google) として
