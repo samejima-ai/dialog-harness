@@ -2,9 +2,9 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.5.1 (in progress, target 2026-05-02)
+## v5.5.1 (released 2026-05-02)
 
-> **記録規約**: 本セクションは PR draft / ready-for-review 中に書かれる際は `(in progress, target YYYY-MM-DD)` で記録し、merge 時に `(released YYYY-MM-DD)` へ更新する（v5.5.0 で確立した運用慣行に従う）。
+> **記録規約**: 本セクションは PR #39 の draft 中（実際は ready-for-review 開始）に書かれ、`(in progress, target 2026-05-02)` で記録されていた。本 patch（PR #39 マージ後）で `(released 2026-05-02)` へ更新。「PR draft 中は `(in progress)` / マージ時に `(released YYYY-MM-DD)` 化」フローは v5.5.0 で正規適用が確立し、本 v5.5.1 は **2 例目の正規適用**にあたる。
 
 patch 昇格。**v5.5.0 で温存された Phase γ 残 2 件のうち、先行宣言 4（ストラングラー・フィグ / Branch by Abstraction の射程外宣言）を本実装**。先行宣言版（4 行記述）から本実装版（射程外要素列挙 / 援用と全体採用の境界線 / L1/L2 禁止規約 / v6.0.0 昇格の観測トリガー / 整合性ガード）へ昇格。先行宣言 5（失敗アンチパターン早期検出）は引き続き温存（v5.5.x patch / v5.6.0 候補）。
 
@@ -28,7 +28,18 @@ CHANGELOG/INTENT/REGIME-LOG/ARCH-DECISIONS の各履歴記録を伴うが、SK �
 
 - `python harness-verifier/verify.py` 全 PASS（D4 整合性維持確認、5 検査全項目）
 - gemini-review GitHub Action の発火条件（`.claude/skills/**` + `history/**` 改変、non-draft PR）を満たす最初の PR として運用テストを兼ねる
-- ルートに ready-for-review PR を作成、gemini-review からのレビュー指摘に応答する自動往復ループを実証する
+- ルートに ready-for-review PR (#39) を作成、Copilot review からの 2 件指摘（(b) テーブル矛盾 / AD-020 「3 箇所」事実誤認）に commit `fce6b9d` で応答
+
+### Step 4: 副次目的の運用テスト結果と PR 内追加対処（gemini-review）
+
+PR #39 内で gemini-review GitHub Action の独立レビュー機能を 4 run（commit `1275e70` / `fce6b9d` / `cb72f0e` / `6969a21`）に渡って実行。**全 4 run で `review` job は `success` 終了したが、レビュー投稿は 0 件**（webhook 監視 + `pull_request_read get_reviews` API 確認）。Copilot review は同期間に正常稼働しており、PR 機能側の問題ではない。
+
+PR 内で以下の Shift Left 対処を実施：
+
+- commit `cb72f0e`: `gemini-review.yml` に診断機構追加（runner / docker / GitHub MCP server reachability の事前確認、`GEMINI_CLI_VERBOSE` / `DEBUG` env、`continue-on-error: true` + `id: gemini_review`、prompt 末尾「必須実行プロトコル」、post-step outcome 出力）
+- commit `6969a21`: MCP server に渡す `GITHUB_PERSONAL_ACCESS_TOKEN` を auto `secrets.GITHUB_TOKEN`（`ghs_*` GitHub Apps token）から `secrets.GH_REVIEW_PAT`（Fine-grained PAT, Pull requests: read+write / Contents: read）に切替（原因 A: GitHub Apps token の write 制限仮説への対処）
+
+PAT 切替（commit `6969a21`）の効果検証は merge 前に webhook で確認できず、本 v5.5.1 release 時点で **未検証**。検証は次 PR（本 `(released)` 化 patch 自身）で実施し、結果を patch 内 `## v5.5.x` 節または `delivery/SELF-VERIFICATION-v5.5.x.md` に追記する。診断機構（`continue-on-error` / verbose env / 診断 step 群）は **PAT で 1 度の正常投稿を確認した後** に縮退または削除する。
 
 ## v5.5.0 (released 2026-05-02)
 

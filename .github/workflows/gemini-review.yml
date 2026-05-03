@@ -10,13 +10,20 @@
 # https://ai.google.dev/gemini-api/docs/rate-limits
 # (本ファイル記載の数値は as of 2026-05、参考値として扱うこと。Google 側変更で陳腐化し得る)
 #
-# モデルは gemini-2.5-flash を明示指定（コスト予測性確保）:
-# - Flash の無料 tier RPD は本 repo PR 量（20 PR/日想定）に対して大幅な余裕がある
-#   （as of 2026-05: Flash 1,500 RPD vs Pro 100 RPD、最新は上記公式 URL 参照）
-# - Pro デフォルトに委ねると quota 圧迫 + 同時 PR queue リスクあり
-# - gemini-cli のデフォルト変動でモデルが勝手に切り替わるのを防ぐ
-# - DH レビュー用途（line-level 検出、cross-file 契約確認）には Flash で品質十分
-# - Pro が必要になった場合は CTL 観測後に昇格判断、または on-demand mention 経由で別起動
+# モデルは gemini-2.5-pro を明示指定（v5.5.1 で flash → pro 昇格）:
+# - **昇格理由**: PR #40 run 25269847621 stdout.log で flash の tool-calling
+#   hallucination が確定（"stats.tools.totalCalls": 0、code block 内に
+#   `print(mcp_github_pull_request_read(...))` を text 出力するだけで実 invoke なし）
+#   3 LLM round-trip にわたって narrative で「これから call する」と書き続け終了
+# - PR #38 で flash に pin した「コスト予測性」前提は tool-calling 不安定により崩壊
+#   （tool が呼べないなら quota 余裕も意味をなさない）
+# - Pro 無料 tier RPD: 100 RPD（DH PR 量 < 5 PR/日に対して大幅な余裕、利用率 5%）
+# - Pro は MCP tool 呼び出しが flash より大幅に堅牢（公式 + 観測実績）
+# - gemini-cli のデフォルト変動でモデルが勝手に切り替わるのを防ぐ点は維持（明示指定）
+#
+# 旧 flash 採用根拠（参考、v5.5.1 で否定された）:
+# - flash 1,500 RPD の余裕 → 採用しない（quota 余裕より tool-calling 動作が先）
+# - DH レビュー用途は flash で品質十分 → 否定（tool-calling 不能で品質ゼロ）
 #
 # Generator/Evaluator 同一化アンチパターンへの構造的対処:
 # - DH 本体 PR の多くは Claude (Anthropic) で書かれる
@@ -36,7 +43,7 @@ name: gemini-review
 # モデル名を一元管理（Copilot review #38 line 110、重複定義の乖離リスク回避）
 # action input と settings JSON の両方が同じ値を参照する
 env:
-  GEMINI_MODEL: gemini-2.5-flash
+  GEMINI_MODEL: gemini-2.5-pro
 
 on:
   pull_request:
@@ -76,6 +83,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          # full clone（v5.5.1）。gemini-cli が内部で diff 計算を試みた場合の
+          # shallow clone (default depth=1) 起因の silent fail を排除する
+          fetch-depth: 0
 
       # GEMINI_API_KEY が設定されているか早期チェック（Copilot review #37 line 75）
       # secrets は if 式で直接参照できないため env 経由で空文字判定する
@@ -136,11 +146,13 @@ jobs:
           fi
 
           echo "::group::Smoke test: github-mcp-server initialize with ${mcp_token_label}"
+          # init リクエスト送信後 stdin を 2 秒持続させ、サーバが応答を stdout に書く時間を確保する
+          # （v5.5.1 旧版は echo | docker で stdin が即 close し JSON-RPC response を取りこぼしていた）
           init_req='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
-          response=$(echo "$init_req" | timeout 10 docker run -i --rm \
+          response=$( (echo "$init_req"; sleep 2) | timeout 10 docker run -i --rm \
             -e GITHUB_PERSONAL_ACCESS_TOKEN="${mcp_token}" \
-            ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | head -20 || true)
-          echo "MCP server response (first 20 lines):"
+            ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | head -40 || true)
+          echo "MCP server response (first 40 lines):"
           echo "${response}"
           echo "::endgroup::"
 
@@ -165,14 +177,20 @@ jobs:
           # 起こしたため、Fine-grained PAT (Pull requests: read+write, Contents: read) に切替
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 診断用 verbose log（v5.5.1）。gemini-cli が tool 呼び出しと turn を stderr に詳細出力する
-          GEMINI_CLI_VERBOSE: "true"
-          DEBUG: "gemini-cli:*,mcp:*"
+          # 診断用 debug log（v5.5.1）。action 内部の `if [[ "${GEMINI_DEBUG}" = true ]]`
+          # 分岐に入り、gemini --debug --yolo で詳細出力 + tee で console にも stream される
+          # （PR #40 で旧 GEMINI_CLI_VERBOSE / DEBUG env 名は action が見ていなかったと判明）
+          GEMINI_DEBUG: "true"
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           # モデルは workflow level env.GEMINI_MODEL から参照（単一情報源、本ファイル冒頭コメント参照）
           gemini_model: ${{ env.GEMINI_MODEL }}
           github_pr_number: ${{ github.event.pull_request.number }}
+          # v5.5.1: settings JSON 簡素化（tool exposure 阻害仮説の検証）
+          # - `tools.core: []` 削除: built-in tool 制限が MCP tool 発見も阻害する可能性
+          # - `includeTools` filter 削除: tool 名 mismatch / 過剰 filter で全 MCP tool が
+          #   model に届かない可能性。diagnostic log で MCP server 起動済 + tool 登録済を
+          #   確認しているが、cli が API request の tools field に乗せない症状が出ている
           settings: |
             {
               "model": {
@@ -190,23 +208,28 @@ jobs:
                     "GITHUB_PERSONAL_ACCESS_TOKEN",
                     "ghcr.io/github/github-mcp-server:v0.27.0"
                   ],
-                  "includeTools": [
-                    "add_comment_to_pending_review",
-                    "pull_request_read",
-                    "pull_request_review_write"
-                  ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
                   }
                 }
-              },
-              "tools": {
-                "core": []
               }
             }
           prompt: |
             あなたは dialog-harness 本体への **独立 PR レビュアー** です。
             Copilot review（GitHub 標準）と並列で動作する追加層として、本 PR を critically レビューしてください。
+
+            ## レビュー対象（v5.5.1 で追加、PR 番号と取得手順を明示）
+
+            - **対象 repository**: `samejima-ai/dialog-harness`
+            - **対象 PR 番号**: **#${{ github.event.pull_request.number }}**
+            - **head SHA**: `${{ github.event.pull_request.head.sha }}`
+            - **base branch**: `${{ github.event.pull_request.base.ref }}`
+            - **head branch**: `${{ github.event.pull_request.head.ref }}`
+
+            PR 番号は上記で確定済みです。**人間に PR 番号を質問してはいけません**。
+            最初に `mcp_github_pull_request_read` ツールで PR #${{ github.event.pull_request.number }} の
+            files / diff / 既存 review コメントを取得し、それを基にレビューしてください。
+            その後、レビュー観点に従って分析し、最後に必ず verdict を `mcp_github_pull_request_review_write` で投稿してください。
 
             ## 構造的位置づけ
 
@@ -285,3 +308,17 @@ jobs:
           echo "gemini_review step conclusion: ${{ steps.gemini_review.conclusion }}"
           # outcome=success でも実際に review が posted されたかは別問題
           # PR の review 一覧は Diagnostics 後段で別途確認すること（手動 or 後続 PR の機械観測）
+
+      # gemini-artifacts/ を明示的に Actions Artifacts として upload（v5.5.1）
+      # action 内部の `cp ... gemini-artifacts/...` だけでは job 終了時にディスクから消える
+      # ため、外部 step で upload して download 可能にする
+      - name: Upload gemini-artifacts (stdout / stderr / telemetry)
+        if: steps.check_key.outputs.available == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-artifacts-pr-${{ github.event.pull_request.number }}-run-${{ github.run_id }}
+          path: |
+            gemini-artifacts/
+            .gemini/
+          if-no-files-found: warn
+          retention-days: 7
