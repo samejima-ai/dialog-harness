@@ -136,11 +136,13 @@ jobs:
           fi
 
           echo "::group::Smoke test: github-mcp-server initialize with ${mcp_token_label}"
+          # init リクエスト送信後 stdin を 2 秒持続させ、サーバが応答を stdout に書く時間を確保する
+          # （v5.5.1 旧版は echo | docker で stdin が即 close し JSON-RPC response を取りこぼしていた）
           init_req='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
-          response=$(echo "$init_req" | timeout 10 docker run -i --rm \
+          response=$( (echo "$init_req"; sleep 2) | timeout 10 docker run -i --rm \
             -e GITHUB_PERSONAL_ACCESS_TOKEN="${mcp_token}" \
-            ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | head -20 || true)
-          echo "MCP server response (first 20 lines):"
+            ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | head -40 || true)
+          echo "MCP server response (first 40 lines):"
           echo "${response}"
           echo "::endgroup::"
 
@@ -165,9 +167,10 @@ jobs:
           # 起こしたため、Fine-grained PAT (Pull requests: read+write, Contents: read) に切替
           GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 診断用 verbose log（v5.5.1）。gemini-cli が tool 呼び出しと turn を stderr に詳細出力する
-          GEMINI_CLI_VERBOSE: "true"
-          DEBUG: "gemini-cli:*,mcp:*"
+          # 診断用 debug log（v5.5.1）。action 内部の `if [[ "${GEMINI_DEBUG}" = true ]]`
+          # 分岐に入り、gemini --debug --yolo で詳細出力 + tee で console にも stream される
+          # （PR #40 で旧 GEMINI_CLI_VERBOSE / DEBUG env 名は action が見ていなかったと判明）
+          GEMINI_DEBUG: "true"
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           # モデルは workflow level env.GEMINI_MODEL から参照（単一情報源、本ファイル冒頭コメント参照）
@@ -285,3 +288,17 @@ jobs:
           echo "gemini_review step conclusion: ${{ steps.gemini_review.conclusion }}"
           # outcome=success でも実際に review が posted されたかは別問題
           # PR の review 一覧は Diagnostics 後段で別途確認すること（手動 or 後続 PR の機械観測）
+
+      # gemini-artifacts/ を明示的に Actions Artifacts として upload（v5.5.1）
+      # action 内部の `cp ... gemini-artifacts/...` だけでは job 終了時にディスクから消える
+      # ため、外部 step で upload して download 可能にする
+      - name: Upload gemini-artifacts (stdout / stderr / telemetry)
+        if: steps.check_key.outputs.available == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-artifacts-pr-${{ github.event.pull_request.number }}-run-${{ github.run_id }}
+          path: |
+            gemini-artifacts/
+            .gemini/
+          if-no-files-found: warn
+          retention-days: 7
