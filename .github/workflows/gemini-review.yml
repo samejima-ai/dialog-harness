@@ -92,6 +92,58 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # 診断ステップ（v5.5.1 で追加、PR #39 で gemini-review が無投稿で完了した
+      # 事象を切り分けるための観測機構）。runner 環境 / Docker / GitHub MCP server
+      # 到達性 / GITHUB_TOKEN 形式を確認する。原因特定後に縮退または削除を検討
+      - name: Diagnostics — runner / docker / GitHub MCP server reachability
+        if: steps.check_key.outputs.available == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REVIEW_PAT: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          set -uo pipefail
+          echo "::group::Runner environment"
+          uname -a || true
+          docker --version || echo "::warning::docker not available"
+          echo "::endgroup::"
+
+          echo "::group::Token format check (ghs_ = GitHub Apps, ghp_/github_pat_ = PAT)"
+          gh_token_prefix="${GITHUB_TOKEN:0:4}"
+          gh_token_len="${#GITHUB_TOKEN}"
+          echo "GITHUB_TOKEN prefix: ${gh_token_prefix}*** (length: ${gh_token_len})"
+          if [ -z "${GH_REVIEW_PAT}" ]; then
+            echo "::warning::GH_REVIEW_PAT secret is not set. Falling back to GITHUB_TOKEN for MCP server."
+            pat_prefix="(unset)"
+            pat_len=0
+          else
+            pat_prefix="${GH_REVIEW_PAT:0:4}"
+            pat_len="${#GH_REVIEW_PAT}"
+          fi
+          echo "GH_REVIEW_PAT prefix: ${pat_prefix}*** (length: ${pat_len})"
+          echo "::endgroup::"
+
+          echo "::group::Pull github-mcp-server image"
+          docker pull ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | tail -5 || echo "::warning::docker pull failed"
+          echo "::endgroup::"
+
+          # MCP server を実際に動かす token を選ぶ：PAT があれば PAT、無ければ auto token
+          if [ -n "${GH_REVIEW_PAT}" ]; then
+            mcp_token="${GH_REVIEW_PAT}"
+            mcp_token_label="GH_REVIEW_PAT"
+          else
+            mcp_token="${GITHUB_TOKEN}"
+            mcp_token_label="GITHUB_TOKEN (auto)"
+          fi
+
+          echo "::group::Smoke test: github-mcp-server initialize with ${mcp_token_label}"
+          init_req='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
+          response=$(echo "$init_req" | timeout 10 docker run -i --rm \
+            -e GITHUB_PERSONAL_ACCESS_TOKEN="${mcp_token}" \
+            ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | head -20 || true)
+          echo "MCP server response (first 20 lines):"
+          echo "${response}"
+          echo "::endgroup::"
+
       # google-github-actions/run-gemini-cli 公式 action
       # 公式: https://github.com/google-github-actions/run-gemini-cli
       # 無料 tier 動作可（Google AI Studio API key）
@@ -99,14 +151,23 @@ jobs:
       # deployment 時に maintainer が `pinact` 等で SHA pin することを推奨
       - name: Run Gemini PR review
         if: steps.check_key.outputs.available == 'true'
+        # 診断目的で continue-on-error を一時的に true に（v5.5.1）。
+        # 失敗時も後続の Post-run diagnostics を回せるようにする。原因特定後に削除
+        continue-on-error: true
+        id: gemini_review
         uses: google-github-actions/run-gemini-cli@v0
         env:
           GEMINI_CLI_TRUST_WORKSPACE: "true"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # GitHub MCP server の Docker container に渡す PAT 名と完全一致させる
-          # （Copilot review #37 line 99: 環境変数展開の曖昧さを排除）
-          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GitHub MCP server には Fine-grained PAT (GH_REVIEW_PAT) を渡す（v5.5.1）。
+          # 自動の secrets.GITHUB_TOKEN（ghs_* 形式の GitHub Apps token）では PR #39 の
+          # diagnostic run で gemini-review が success かつ投稿 0 件のサイレント終了を
+          # 起こしたため、Fine-grained PAT (Pull requests: read+write, Contents: read) に切替
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # 診断用 verbose log（v5.5.1）。gemini-cli が tool 呼び出しと turn を stderr に詳細出力する
+          GEMINI_CLI_VERBOSE: "true"
+          DEBUG: "gemini-cli:*,mcp:*"
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           # モデルは workflow level env.GEMINI_MODEL から参照（単一情報源、本ファイル冒頭コメント参照）
@@ -207,3 +268,20 @@ jobs:
             line comment で具体問題を指摘する（github MCP の `add_comment_to_pending_review`）。
             問題ゼロなら全体サマリのみで approve（`pull_request_review_write` で event=APPROVE）。
             review verdict は "REQUEST_CHANGES" / "COMMENT" / "APPROVE" のいずれかを明示。
+
+            ## 必須実行プロトコル（v5.5.1 で追加、無投稿問題の対処）
+
+            **必ず最後に `pull_request_review_write` を呼び出し、verdict を投稿してください**。
+            問題が見つかった場合 → 各問題に対し `add_comment_to_pending_review` で line comment 追加 → 最後に `pull_request_review_write` で event="REQUEST_CHANGES" or "COMMENT" 確定。
+            問題が見つからなかった場合 → `pull_request_review_write` で event="APPROVE" + body="本 PR を独立 Gemini レビュアーとして確認、問題なし" を投稿。
+            **ツール呼び出しなしで完了することは禁止します**。tool 呼び出しに失敗した場合は最終応答にその旨を明示してください。
+
+      # 診断ステップ: gemini-cli の outcome / outputs を runner log に明示
+      # （v5.5.1 で追加、Run Gemini PR review が success でも投稿していない場合の切り分け用）
+      - name: Diagnostics — gemini_review step outcome
+        if: steps.check_key.outputs.available == 'true' && always()
+        run: |
+          echo "gemini_review step outcome: ${{ steps.gemini_review.outcome }}"
+          echo "gemini_review step conclusion: ${{ steps.gemini_review.conclusion }}"
+          # outcome=success でも実際に review が posted されたかは別問題
+          # PR の review 一覧は Diagnostics 後段で別途確認すること（手動 or 後続 PR の機械観測）

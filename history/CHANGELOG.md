@@ -2,6 +2,34 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.5.1 (in progress, target 2026-05-02)
+
+> **記録規約**: 本セクションは PR draft / ready-for-review 中に書かれる際は `(in progress, target YYYY-MM-DD)` で記録し、merge 時に `(released YYYY-MM-DD)` へ更新する（v5.5.0 で確立した運用慣行に従う）。
+
+patch 昇格。**v5.5.0 で温存された Phase γ 残 2 件のうち、先行宣言 4（ストラングラー・フィグ / Branch by Abstraction の射程外宣言）を本実装**。先行宣言版（4 行記述）から本実装版（射程外要素列挙 / 援用と全体採用の境界線 / L1/L2 禁止規約 / v6.0.0 昇格の観測トリガー / 整合性ガード）へ昇格。先行宣言 5（失敗アンチパターン早期検出）は引き続き温存（v5.5.x patch / v5.6.0 候補）。
+
+CHANGELOG/INTENT/REGIME-LOG/ARCH-DECISIONS の各履歴記録を伴うが、SK 本文の機能変更ゼロ（明文化のみ、後方互換完全維持）。利用者プロジェクトには配布されない。本 patch は gemini-review GitHub Action（PR #37/#38 で導入）の独立レビュー機能を実運用で初めてテストする副次目的を兼ねる。
+
+### Step 1: handoff-to-evaluator.md 拡充
+
+- ステータスヘッダ: 「Phase γ コア 3 件本実装版」→「Phase γ コア 3 件 + 先行宣言 4 本実装版」
+- ロードマップ表: γ 残 2 件 → γ 残 1 件（先行宣言 5 のみ）+ v5.5.1 patch 行を新規追加
+- 実装ステータス記述: コア 3 件 + 先行宣言 4 を v5.5.1 で本実装と明記
+- 先行宣言 4 セクション本体: 4 行記述 → 5 サブセクション（(a) 射程外要素の明示列挙 / (b) 援用と全体採用の境界線 / (c) L1/L2 禁止規約 / (d) v6.0.0 昇格の観測トリガー / (e) 整合性ガード）
+
+### Step 2: 履歴層更新
+
+- `history/CHANGELOG.md` 本セクション
+- `history/INTENT.md` v5.5.1 セクション追加（先行宣言 4 本実装の設計意図）
+- `history/REGIME-LOG.md` v5.5.1 patch 判定記録（M2 / LC=1 / claude-opus-4-7、minor 昇格不要）
+- `history/ARCH-DECISIONS.md` AD-020 追加（先行宣言 4 本実装、明文化のみ機能変更なし）
+
+### Step 3: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 PASS（D4 整合性維持確認、5 検査全項目）
+- gemini-review GitHub Action の発火条件（`.claude/skills/**` + `history/**` 改変、non-draft PR）を満たす最初の PR として運用テストを兼ねる
+- ルートに ready-for-review PR を作成、gemini-review からのレビュー指摘に応答する自動往復ループを実証する
+
 ## v5.5.0 (released 2026-05-02)
 
 > **記録規約**: 本セクションは PR #34 が draft 中に書かれ、`(in progress, target 2026-05-02)` で記録されていた（Copilot review #34 line 8 の指摘で recorded-during-draft の妥当性が再確認された）。本 patch（PR #34 マージ後）で `(released 2026-05-02)` へ更新。「PR draft 中は `(in progress)` / マージ時に `(released YYYY-MM-DD)` 化」フローは旧監査 `delivery/D4-AUDIT-2026-04-30.md` M-1 で**問題提起**され（同節「ルールが未定義」と明示）、v5.4.0 リリース時に過去エントリ（v5.0.0〜v5.3.0）一括正規化として**実装**されて以降の運用慣行として確立。本 v5.5.0 patch はその慣行の最初の正規適用例にあたる。マージ前後の history が PR 状態と整合する。

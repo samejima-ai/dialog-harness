@@ -2,6 +2,17 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.5.1
+
+### AD-020: Phase γ 先行宣言 4 の本実装（ストラングラー / BBA 射程外の正式宣言）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | v5.5.0 の AD-019 で Phase γ コア 3 件（先行宣言 1/2/3）を本実装し、先行宣言 4（ストラングラー射程外宣言）+ 5（失敗アンチパターン早期検出）は v5.5.x patch / v5.6.0 へ温存とされた。先行宣言 4 は 4 行記述の先行宣言版で `handoff-to-evaluator.md` に存在していたが、Phase γ コア 3 件の実装過程で `handoff-to-evaluator.md` が VB6 移行事例（ストラングラー類似）と Branch by Abstraction に言及したため、L1 実装者が「先行宣言 2 → BBA 全パターン採用」と拡大解釈する誤りリスクが残置されていた |
+| 判断 | 先行宣言 4 を v5.5.1 patch で本実装。`handoff-to-evaluator.md` の先行宣言 4 セクションを 4 行記述から 5 サブセクション（射程外要素の明示列挙 / 援用と全体採用の境界線 / L1/L2 禁止規約 / v6.0.0 昇格の観測トリガー / 整合性ガード）へ拡充。先行宣言 5 は引き続き温存（Phase β との一体化要件のため） |
+| 根拠 | (a) v5.5.0 AD-019 で v5.5.x patch / v5.6.0 候補として既に明示済み、(b) Phase γ コア 3 件の実装で生じた拡大解釈リスクを Shift Left で防止する必要、(c) 明文化のみで機能変更ゼロ・後方互換完全維持のため patch で十分（minor 昇格不要）、(d) 観測駆動原則（`wf-baseline-rationale.md` §3）に従い v6.0.0 昇格条件を観測閾値（≥ 3 利用者プロジェクト要請）として明示することで温存範囲を限定、(e) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当せず Council 諮問は不要 |
+| 影響 | `layer0-archeo-architect/references/handoff-to-evaluator.md` の **4 箇所**を改修: (1) ステータスヘッダ / (2) ロードマップ表 / (3) 実装ステータス記述（Phase γ 詳細仕様 §冒頭の節）/ (4) 先行宣言 4 セクション本体（4 行 → 5 サブセクション）。SK 本文の機能変更ゼロ、既存 references の本文（追記のみ）、crosscut-* / templates/ / harness-verifier/ は機能不変。`refactor-intent-map.md` の I/O 契約不変。先行宣言 2/3 との整合性ガード（schema priority）を新設、今後の先行宣言 2 更新時に整合確認義務発生。Copilot review #39 line 14 で指摘された箇所数の事実誤認（3 → 4）を訂正済み |
+
 ## v5.5.0
 
 以下 2 件は PR #33 ブレスト結晶 `delivery/AUTONOMOUS-DRIVE-BRAINSTORM-2026-05-02.md`（adrv01/02/03 全合意成立）を起源とする L0 設計判断 + L1 実装。確定ロードマップ「v5.5.0 = adrv01-Ph1 + Phase γ」に従い、v5.4.0 リリース翌日に L0 spec-architect で SPEC 化し、同セッション内で L1 が minor として実装。
