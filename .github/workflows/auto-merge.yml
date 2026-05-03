@@ -65,11 +65,15 @@ jobs:
       github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # job レベル env: gh CLI に必要な認証 + repo 指定（v5.5.3 PR #42 初回 run で
+    # checkout なし環境で gh pr view が "not a git repository" fatal を起こした
+    # ため、GH_REPO で git context 不要にする）
+    env:
+      GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+      GH_REPO: ${{ github.repository }}
     steps:
       - name: Resolve PR number
         id: resolve
-        env:
-          GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
         run: |
           set -euo pipefail
           PR_NUMBER=""
