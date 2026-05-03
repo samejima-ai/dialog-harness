@@ -2,6 +2,39 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.6.0（minor 昇格、後方互換維持）
+
+- 判定日: 2026-05-03
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect（本セッションで起動）→ crosscut-council 諮問（`council-2026-05-03T08:30:00Z-adrv02`、β 止揚で `agreed_with_modification`）→ layer1-autonomous-dev で実装
+- 起源: ユーザー（ひでさん）の明示要請「自律駆動を L0 に記録、メタスキル開発」+ DH AI 組織論の宣言（4 役割属性 + サポート構造）
+- L0 譲渡: `delivery/HANDOFF-v5.6.0-autonomous-drive.md`
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS、`delivery/SELF-VERIFICATION-v5.6.0.md`
+
+### 非破壊変更（破壊項目なし、後方互換完全維持）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| philosophy.md 第 7 条新設 | AI 組織論（4 役割 + サポート + Person 責務 P1-P4）を既存 6 条と並列に追加。既存条改訂なし | 非破壊（新規追加のみ） |
+| autonomous-drive 標準化 | `templates/github-workflows/` 新設 + `crosscut-autonomous-drive` skill 新設（β 止揚採用、deployment 専念） | opt-in 新機能（dev_mode autonomous 選択時のみ） |
+| dev_mode `autonomous` 本格定義 | v5.0.0 で列挙のみだった `autonomous` を `autonomous_scope`（full / merge_gated / custom）軸で本格定義 | 非破壊（既存 dev_mode 値は不変） |
+| spec-architect 改修 | dialog-questions / regime-assessment / dev-env-spec / meta-spec-template に Level C / autonomous_scope 質問・テンプレ追加 | 非破壊（既存対話フロー不変、新規プロジェクトでのみ追加質問発生） |
+| 履歴記録 | CHANGELOG / INTENT / REGIME-LOG（本ファイル）/ ARCH-DECISIONS（AD-023/024/025）/ COUNCIL-LOG（adrv02）に記録 | 非破壊 |
+| 同梱 housekeeping | v5.5.3 (in progress, target 2026-05-03) → (released 2026-05-03) 化を本 PR 同梱 | 非破壊（履歴記述の正規化のみ、5 例目正規適用） |
+| バージョン | v5.5.3 → v5.6.0（minor 昇格）。philosophy 第 7 条新設 + 利用者プロジェクト展開機構の追加で minor 相当 | — |
+
+破壊項目なし。利用者プロジェクトには配布されない（v5.0.0〜v5.5.3 と同パターン）。autonomous-drive deployment は利用者プロジェクトに配布する template であって、`crosscut-autonomous-drive` skill 自体は D4 マスタ skill に留まる。
+
+### Council 諮問の有無
+
+本 minor は Council 諮問あり：`council-2026-05-03T08:30:00Z-adrv02`（skill 新設の可否、judgment カテゴリ、business 種別、`agreed_with_modification`）。F2 観測駆動原則の緩和判断（v5.5.3 AD-022 の「数 PR 試運用後判断」を 1 例のみで標準化要請へ移行）は実装者裁量で進行（複数案拮抗ではなく、メタスキル開発の優先度判断、Council 起動条件未満）。philosophy.md 第 7 条新設の HANDOFF H1-H4 ラベル衝突解消（→ P1-P4 リネーム）も実装者裁量で進行（confidence 0.7、明確な解あり、Council 起動の閾値未満）。
+
+### dev_mode 判定（変更あり）
+
+REGIME.md の `dev_mode` は `github_assisted` のまま据え置き（dialog-harness 本体の運用は v5.5.3 まで通り）。本 minor は **「他プロジェクトが dev_mode `autonomous` を選択可能にする」標準化** であり、DH 本体自身を `autonomous` に引き上げるものではない。`autonomous_scope` 軸は dev_mode `autonomous` 選択時にのみ意味を持つ。
+
+
+
 ## v5.5.3（patch、no minor bump）
 
 - 判定日: 2026-05-03

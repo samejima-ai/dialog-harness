@@ -263,27 +263,56 @@ ARC パターン選択（monolith / realtime-pubsub / event-sourcing）は `refe
 
 **AI能力バージョン**（例: Claude Opus 4.7）を REGIME.md に必ず記録する。
 
-#### dev_mode 軸（v5.0.0 追加）
+#### dev_mode 軸（v5.0.0 追加 / v5.6.0 で `autonomous` 本格化）
 
 GitHub 連携前提の自律駆動を 3 段階で表現する追加軸。規模・チーム軸と並列で動的判定する。
 詳細プロトコルは `references/regime-assessment.md` の「dev_mode 判定」セクション参照。
 
-| dev_mode | GitHub | Actions | Issue 自動化 | 並列実装 | 人間関与 |
-|---|---|---|---|---|---|
-| local_only | × | × | × | × | 全 Layer |
-| github_assisted | ○ | 任意 | × | 手動 | L0 + 承認 |
-| github_autonomous | ○ | ○ | ○ | 自動 | L0 のみ |
+| dev_mode | GitHub | Actions | Issue 自動化 | 並列実装 | 自動 merge | 人間関与 |
+|---|---|---|---|---|---|---|
+| local_only | × | × | × | × | × | 全 Layer |
+| github_assisted | ○ | 任意 | × | 手動 | × | L0 + 承認 |
+| autonomous | ○ | ○ | ○ | 自動 | ○（scope 依存）| P1〜P4 のみ |
+
+旧名 `github_autonomous` は v5.6.0 で `autonomous` にリネーム（autonomous_scope 軸との整合）。後方互換: 既存 REGIME.md で `github_autonomous` 記述は `autonomous` + `autonomous_scope: full` と等価扱い（自動マイグレーションは行わない、新規プロジェクトから新名を使用）。
 
 判定フロー：
 1. 質問1：「GitHub 使う？」
 2. No → `local_only` 確定
-3. Yes → 規模 + LC から推論（v5.0.0 時点）
+3. Yes → 規模 + LC から推論（v5.6.0 時点）
    - M1 → `github_assisted`
    - M2, LC ≤ 1 → `github_assisted`
-   - M2-L2, LC ≥ 1 → `github_autonomous`
+   - M2-L2, LC ≥ 1 → `autonomous`（質問 2 で `autonomous_scope` 確認）
 4. 推論結果を 1 回のみ確認、ユーザー裁量で昇格・降格可
 
 dev_mode 昇格・降格は手動 + ADR 記録必須（spec §3.2.3）。「GitHub 無しでも DH ベースは完全動作」が原則。
+
+#### autonomous_scope 軸（v5.6.0 追加）
+
+dev_mode が `autonomous` の場合のみ意味を持つ。autonomous-drive 機構（PR 作成 / 多層検証 / 自動 merge / 次 Issue 着手）の運用粒度を 3 値で表現する。
+
+| autonomous_scope | 自動 merge | PR review/approve | P3 (事後確認) のタイミング |
+|---|---|---|---|
+| **full**（デフォルト） | 有効（`auto-merge` label opt-in + 多層検証通過時） | AI（または gemini-review/Copilot 等の独立 critic）| merge 後に P3 |
+| merge_gated | **無効**（人間 approve 必須）| 人間が実施 | merge 前に P3 |
+| custom | 部分有効（`dev-env-spec.md` Level C 詳細表で指定） | 個別設定 | 個別設定 |
+
+**判定フロー**（dev_mode = `autonomous` 確定後の質問 2）：
+
+```
+Q: 自律駆動の度合いを選択してください
+   (1) フルオート [デフォルト推奨] = autonomous_scope: full
+       人間 = P1〜P4 のみ。AI = Issue 精査〜自動 merge〜次 Issue 着手まで完全自走
+   (2) 中度 = autonomous_scope: merge_gated
+       自動 merge は無効、PR review/approve は人間が実施（P3 を merge 前に倒す）
+   (3) カスタム = autonomous_scope: custom
+       個別に設定（dev-env-spec.md Level C 詳細表で指定）
+```
+
+**Person 責務（P1〜P4）**: philosophy.md 第 7 条参照。autonomous_scope = `full` 時、人間関与は以下 4 点に集約：
+- P1 発案 / P2 ブレスト（Issue 化は AI）/ P3 事後確認・評価 / P4 暴走時介入
+
+`autonomous_scope` の昇格・降格は手動 + ADR 記録必須。デフォルト = `full` で、ユーザー要請時のみ `merge_gated` / `custom` を選択。
 
 ### 5. 人間レビュー
 
@@ -319,7 +348,19 @@ dev_mode 昇格・降格は手動 + ADR 記録必須（spec §3.2.3）。「GitH
 | M2 | 標準構成（CLAUDE.md + REGIME.md + .claude/skills/ + sensors/computational + inferential + review-checklist） |
 | L2 | M2 + DOMAINS.md + 各ドメイン別部分SPEC + sensors/integration/ |
 
-**重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は **Level A（共通スキル）** に存在し、プロジェクト側で再生成しない。プロジェクト差異は sensors やチェックリストに閉じる。
+**Level C: AI 自律運用（v5.6.0 追加、dev_mode = `autonomous` 選択時のみ）**
+
+dev_mode が `autonomous` の場合、上記モード別生成物に加えて以下を導入する：
+
+| autonomous_scope | 追加生成物 |
+|---|---|
+| **full**（デフォルト） | `templates/github-workflows/` から auto-merge.yml + gemini-review.yml を placeholder 置換して `.github/workflows/` 配下にコピー、label (`ready-for-ai` / `auto-merge` / `do-not-merge`) 自動作成、secrets (`GH_REVIEW_PAT` / `GEMINI_API_KEY`) 設定ガイド |
+| merge_gated | 上記から auto-merge.yml を除外（gemini-review.yml + label のみ）|
+| custom | `dev-env-spec.md` Level C 詳細表で個別指定 |
+
+deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-architect が dev_mode `autonomous` 判定後に明示起動）。詳細は `references/autonomous-drive-deployment.md` 参照。
+
+**重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は **Level A（共通スキル）** に存在し、プロジェクト側で再生成しない。autonomous-drive deployment skill (`crosscut-autonomous-drive`) も Level A として配置される。プロジェクト差異は sensors やチェックリストに閉じる。
 
 生成する開発環境構成（M2 標準）：
 - **CLAUDE.md / .claude/settings.json** — エージェントのRL（ルール）定義

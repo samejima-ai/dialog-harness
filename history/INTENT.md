@@ -2,6 +2,53 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v5.6.0 で追加された概念
+
+### autonomous-drive 標準化 + DH AI 組織論明文化（メタスキル開発）
+
+ユーザー（ひでさん）の根源要請「自律駆動を L0 に記録、メタスキル開発」と「DH AI 組織は L0 設計 / L1 実装 / L2 統括 / Council 判断 の 4 役割属性 + サポート だけで、あらゆる開発に対応できる」の宣言を制度化する minor リリース。L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に従い L1 autonomous-dev で実装。
+
+#### 設計意図の核
+
+**(a) DH AI 組織論の明文化（philosophy.md 第 7 条新設）**: 4 役割属性（L0/L1/L2/Council）+ サポート（crosscut-* 非 council 系 + sub-agent）の構造を philosophy.md の正式条として制度化。L3 運用層を新設しない原則（第 1 条フラクタル）と整合し、運用インシデントは L0 へ還元する設計を明示する。第 6 条 H カテゴリ（判断種別）と第 7 条 P カテゴリ（責務種別）は直交 2 軸として整理。HANDOFF で「H1〜H4」と仮ラベル化されていた人間 4 責務は philosophy 第 6 条 H カテゴリとの番号衝突を避けるため `P1〜P4` にリネーム（実装者裁量、Council 起動の閾値未満）。
+
+**(b) autonomous-drive 機構の標準化**: v5.5.3 で dialog-harness 自身に実装した autonomous-drive 機構（gemini-review.yml + auto-merge.yml）を template 化し、利用者プロジェクトに展開可能にする。`templates/github-workflows/` に placeholder 化テンプレートを配置、`crosscut-autonomous-drive` skill が deployment ロジックを担う（β 止揚採用、Council `adrv02`）。
+
+**(c) `autonomous_scope` 軸の正式定義**: dev_mode `autonomous`（v5.0.0 で列挙のみ）に対して `autonomous_scope`（full / merge_gated / custom）を細分化軸として追加。デフォルト = full（人間 = P1〜P4 のみ、AI = Issue 精査〜次 Issue 着手まで完全自走）。
+
+**(d) Council β 止揚採用（adrv02）**: skill 新設の可否について Council 諮問を実施。経営者（案 A 推奨）/ 開発者（案 B 寄り）/ 哲学者（案 A + 第 3 の道）の対立を「deployment skill のみ新設、guardian は v5.6.x patch で観測駆動追加」で β 止揚。`agreed_with_modification` で確定。
+
+**(e) 観測駆動原則の緩和（F2 即着手判断）**: v5.5.3 AD-022 の「数 PR 試運用後にパス B 移行」原則は、本日 PR #42 自動 merge の 1 例のみで標準化要請に踏み切った。理由: メタスキル開発は単一プロジェクトでの試運用観測より、複数プロジェクトへの展開可能性確保が先決。観測は v5.6.x patch で並行継続。
+
+**(f) フラクタル原則 (第 1 条) との整合**: 4 役割 + サポート構造は L3 運用層新設を伴わず、第 1 条と整合する。サポート skill は単独で完結せず必ず 4 役割のいずれかから呼ばれるため、判断機能や責務階層を持たない。
+
+**(g) 後方互換完全維持**: philosophy.md 既存 6 条改訂なし、既存 spec-architect 対話フロー不変、利用者プロジェクトへの強制配布なし、autonomous-drive 機構は dev_mode `autonomous` 選択時のみ opt-in。
+
+#### 改修内容
+
+- `philosophy.md` 第 7 条新設（既存 6 条不変、新規追加のみ）
+- `spec-architect/SKILL.md` + 4 references + 1 asset の `dev_mode autonomous` / `autonomous_scope` / Level C 追加
+- `templates/github-workflows/` 配置 + `crosscut-autonomous-drive` skill 新設
+- 履歴層 5 ファイル更新
+
+#### Person 責務（P1〜P4）と第 6 条 H カテゴリの関係
+
+| 軸 | 第 6 条 H | 第 7 条 P |
+|---|---|---|
+| 分類対象 | 判断種別 | 責務種別 |
+| 例 | H3 方向性発案（哲学変更等の判断） | P1 発案（プロジェクト方向性のアイデア提示） |
+
+両軸は直交補完。H は「判断境界」、P は「行為境界」。両軸とも 4 区分は DH の現在規模で適切（汎化性主張の実 N 観測は v5.6.x 候補）。
+
+#### v5.6.x / v6.0.0 候補として温存
+
+- destructive change detector（diff threshold / DELETE-heavy detect、観測駆動で追加判断）
+- circuit breaker（5 連続 fail 自動停止）
+- ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）
+- adrv01-Ph2（独立観測機構、harness-verifier 同型 crosscut skill）— 第 7 条で組織論が確定したので連動して本実装可能
+- crosscut-verifier-philosophy 本実装（v5.0.0 から累計後送中、第 7 条 + 既存 6 条で 7 本柱整合検証として再構成可能）
+- DH AI 組織論の汎化性主張テスト（4 役割で実 N=3 別プロジェクトをカバーできるか観測）
+
 ## 保留中の長期計画
 
 ### CI/CD 強化計画（2026-05-01 開始、保留中）

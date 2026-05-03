@@ -2,6 +2,37 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.6.0
+
+以下 3 件は L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に基づく設計判断 + L1 autonomous-dev による実装。Council 諮問 `council-2026-05-03T08:30:00Z-adrv02` で β 止揚採用（`agreed_with_modification`）。
+
+### AD-023: autonomous-drive 標準化（メタスキル展開機構の追加）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | dialog-harness 本体で v5.5.3 まで autonomous-drive 機構（gemini-review.yml + auto-merge.yml）が稼働、PR #42 で自動 merge の自己テスト成功。ユーザー要請「自律駆動を L0 に記録、他の開発でも容易に展開できるようにしたい、メタスキル開発」を起源として、本機構を template 化し利用者プロジェクトに展開可能にする必要が生じた。v5.5.3 AD-022 で温存された「パス B（dev_mode autonomous 化）」の本格仕様化案件 |
+| 判断 | **(a) パス B 本格採用**: dev_mode `autonomous` を本格定義 + `autonomous_scope` 軸（full / merge_gated / custom）追加、デフォルト = full。**(b) 配置層**: D2（`templates/github-workflows/`）+ D3（`.claude/skills/crosscut-autonomous-drive/`）+ D4（`spec-architect/references/autonomous-drive-deployment.md`）の 3 層構成。**(c) Council β 止揚採用**: deployment skill 1 つのみ新設、guardian（destructive change detector / circuit breaker）は v5.6.x patch で観測駆動追加。**(d) 観測駆動原則の緩和**: v5.5.3 AD-022 の「数 PR 試運用後判断」原則を 1 例（PR #42）のみで標準化要請へ移行（メタスキル開発は複数プロジェクト展開可能性確保が先決） |
+| 根拠 | (a) v5.0.0 で列挙のみだった `autonomous` を本格化することで、ユーザー要請「issue 取得→精査→実行→PR→検証→自動 merge→次 issue」のフルループが標準化される。(b) D2 template だけでは利用者プロジェクトへの展開ロジックが分散、D4 skill だけでは配布物が不在 → 3 層構成で配布物 + 展開ロジック + 対話ガイドを揃える。(c) Council 諮問結果（`adrv02`）の β 止揚採用で skill 化のメリット（再利用性・拡張性・第 7 条整合）と YAGNI 精神（最小実装）を両立、guardian は観測駆動で後追加判断。(d) F2（認識ズレ検出）でユーザーが「即着手 OK」と判断、観測駆動原則の緩和は明示的に F2 で記録、観測継続は v5.6.x patch で並行 |
+| 影響 | `templates/github-workflows/` 新設 + `crosscut-autonomous-drive` skill 新設 + `spec-architect/SKILL.md` + 4 references + 1 asset の改修。利用者プロジェクト本体には強制配布されない（DH 自身の運用標準化、autonomous-drive 機構は dev_mode `autonomous` 選択時のみ opt-in）。harness-verifier 5 検査の対象に新 skill `crosscut-autonomous-drive` が追加（frontmatter 検査 +1）。**温存項目**: destructive change detector / circuit breaker（v5.6.x patch 観測駆動）/ ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）/ 第 7 条と連動した crosscut-verifier-philosophy 本実装（v5.0.0 から累計後送中、第 7 条確定で 7 本柱整合検証として再構成可能） |
+
+### AD-024: philosophy.md 第 7 条「AI 組織論（4 役割 + サポート構造）」新設
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | ユーザー宣言「DH の AI 組織は L0 設計 / L1 実装 / L2 統括 / Council 判断 の 4 役割属性 + サポート だけで、あらゆる開発に対応できる」を philosophy.md の正式条として制度化する必要が生じた。既存 6 条には 4 役割の組織論が明示されていなかった（第 1 条フラクタル原則で L0/L1/L2 は言及されるが、Council を含む 4 役割としての明示はなく、サポート skill の位置づけも暗黙的だった） |
+| 判断 | **(a) 第 7 条新設、既存 6 条改訂なし**: minor 範疇で philosophy.md に第 7 条を追加（v4.2 第 6 条追加と同形式）。既存 6 条の責務再定義・削除は major 案件のため避ける。**(b) 4 役割属性 + サポート構造の明文化**: L0/L1/L2/Council を 4 役割として明示、crosscut-* 非 council 系 + sub-agent をサポートとして位置づけ。**(c) Person 責務 P1〜P4 の追加**: 人間 4 責務（発案 / ブレスト / 事後確認・評価 / 暴走時介入）を philosophy.md 内に明記。HANDOFF の仮ラベル「H1-H4」は第 6 条 H カテゴリと番号衝突するため `P1-P4`（Person responsibilities）にリネーム（実装者裁量、Council 起動の閾値未満）。**(d) H と P は直交 2 軸**: H = 判断種別、P = 責務種別、両者は補完関係（番号符合は偶然） |
+| 根拠 | (a) 既存 6 条改訂は major 案件、minor 範囲では追加のみ。(b) 4 役割の明文化は組織論の汎化性主張（「あらゆる開発に対応」）を制度化するために必須、サポート skill の位置づけ明文化は v5.0.0 で導入された crosscut-* 群の責務体系を整理する。(c) HANDOFF の H1-H4 を P1-P4 にリネームすることで第 6 条との混乱を回避、用語純度を確保（philosophy.md 第 3 条情報純度の系）。(d) 直交 2 軸として整理することで、両カテゴリを統合せずに済む（統合すると major 範囲になり既存 6 条改訂を伴う）。Council 起動条件のいずれにも該当せず Council 諮問は不要（リネーム判断は実装者 confidence 0.7、明確な解あり） |
+| 影響 | `philosophy.md` 末尾に第 7 条追加（既存 6 条不変）。各 skill の参照経路は不変（philosophy.md 末尾参照節に第 7 条を関連付け追記）。harness-verifier 5 検査の用語辞書整合に新用語（`autonomous_scope` / `P1〜P4` / 「サポート skill」/ 「4 役割属性」/ 「メタスキル」）が追加される可能性あり、verify.py 実行時に確認。**温存項目**: 「献上 3 軸構造」（philosophy.md §5 タイプ二項分類の限界、v6.0.0 候補）と第 7 条の関係再整理（major 候補）/ 第 7 条と既存 6 条の統合的な体系整理（major 候補）|
+
+### AD-025: `autonomous_scope` 軸の正式定義（full / merge_gated / custom）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | dev_mode `autonomous`（v5.0.0 で列挙のみ）に対して、autonomous-drive 機構の運用粒度を細分化する軸が必要。ユーザー要請「デフォルトはフルオートで OK、人間 = P1〜P4 のみ」を REGIME.md の機械可読軸として制度化する |
+| 判断 | `autonomous_scope` 軸新設（full / merge_gated / custom の 3 値）、REGIME.md 必須フィールド化。**デフォルト = full**（人間 = P1〜P4 のみ、AI = Issue 精査〜次 Issue 着手まで完全自走）。`merge_gated` は自動 merge 無効（PR review/approve は人間が実施、P3 を merge 前に倒す）、`custom` は dev-env-spec.md の Level C 詳細表で個別指定 |
+| 根拠 | (a) dev_mode 単独では autonomous の運用粒度が表現不能（手動 merge を残すかどうかの 2 値以上の選択肢が必要）。(b) full をデフォルトとすることで、ユーザー要請「フルオートでいい」を即時反映。(c) `merge_gated` は段階的引き上げパス（local_only → github_assisted → autonomous/merge_gated → autonomous/full）の中間段階として機能。(d) `custom` は将来の拡張点（destructive detector / circuit breaker 等の細粒度設定）を保持 |
+| 影響 | `meta-spec-template.md` の REGIME.md テンプレに `## autonomous_scope` セクション追加、`spec-architect/references/regime-assessment.md` に判定ロジック追加、`dialog-questions.md` に質問追加、`dev-env-spec.md` の Level C に `autonomous_scope` 別の有効化機能表追加。既存 REGIME.md（LC ≥ 1 プロジェクト）への遡及適用なし、v5.6.0 以降に新規プロジェクト立ち上げ時のみ追加。利用者プロジェクトには配布されない（spec-architect の対話で記録される機械可読軸であり、配布物ではない） |
+
 ## v5.5.3
 
 ### AD-022: autonomous-drive 機構の出口側として label opt-in 自動 merge を新設

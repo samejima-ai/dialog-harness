@@ -635,3 +635,83 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   modification_note: "β 止揚採用 — V-1 を本セッションで実施しつつ、哲学者の第3の道（検証を v5.5.0 adrv01-Ph1 / Phase γ の SPEC 化過程に内包）を併用。adrv01 と同じ『段階的組み込みで止揚』パターン。adrv01-Ph2（v5.6.0 独立観測機構）への自然な前段としても整合"
   follow_up_questions_count: 0
   agreed_at: "2026-05-02T12:35:00Z"
+
+
+---
+
+- invocation_id: council-2026-05-03T08:30:00Z-adrv02
+  invoked_at: "2026-05-03T08:30:00Z"
+  source_skill: "layer0-spec-architect"
+  council_kind: "business"
+  category: "judgment"
+  decision_category: "implementation"
+  question_to_answer: "v5.6.0 で autonomous-drive 標準化を実装するにあたり、template 適用ロジックを新 crosscut skill (crosscut-autonomous-drive) として skill 化するか、spec-architect reference + L1 直接参照で済ませるか"
+  context: |
+    DH v5.5.3 までで autonomous-drive 機構が dialog-harness 自身で稼働中（gemini-review.yml + auto-merge.yml）。
+    v5.6.0 で本機構を template 化し利用者プロジェクトに展開可能にするにあたり、deployment ロジックの配置層を判断する必要が生じた。
+    関連: ユーザー発話「Council 起動」、philosophy.md 第 7 条新設案（4 役割 + サポート構造）。
+  options:
+    - id: "A"
+      stance: "新 crosscut skill (crosscut-autonomous-drive) を新設"
+      summary: "template 取得→placeholder 置換→配置→label 作成→secrets チェックを skill として独立化"
+    - id: "B"
+      stance: "spec-architect reference + L1 直接参照"
+      summary: "新 skill 不要、reference のみで対応、L1 が template を直接コピー・置換"
+  trigger: "(d) 自己評価 confidence < 0.7（複数案拮抗、ユーザー判断要）"
+  self_reported_confidence: 0.65
+  reason: "メタスキル開発の構造判断、philosophy 第 7 条との整合性が論点、複数案拮抗"
+  ctl: 0
+  consensus_mode: "council_advisory"
+  phase_reached: "1→3"
+  conflict_type: "simple_conflict"
+  base_weights: { 経営者: 1.0, 開発者: 1.0, 哲学者: 1.0 }
+  ethos_multiplier: 1.0
+  situational_modifier: { 経営者: 0, 開発者: 0, 哲学者: 0 }
+  final_weights: { 経営者: 1.0, 開発者: 1.0, 哲学者: 1.0 }
+  weight_total: 3.0
+  persona_summary:
+    経営者:
+      stance: "案 A 推奨"
+      reason: "autonomous-drive は DH 将来核機能。skill 化で再利用性・拡張性を確保、template 追加・placeholder 規約拡張が skill 内で完結。skill 数増コストより失敗時の運用障害コストが大きい"
+      confidence: 0.75
+      concerns: ["短期的な実装コスト（SKILL.md + references 整備）"]
+    開発者:
+      stance: "案 B 寄り（条件付き）"
+      reason: "template 適用ロジック自体は単純（bash 数十行で書ける）、reference で十分。ただし destructive change detector / circuit breaker は責務的に分離価値あり"
+      confidence: 0.70
+      concerns: ["YAGNI 原則違反", "skill 数管理コスト", "v5.0.0 crosscut-* と autonomous-drive deployment の責務粒度のミスマッチ"]
+    哲学者:
+      stance: "案 A 推奨（第 3 の道つき: deployment skill のみ新設、guardian は v5.6.x patch で観測駆動追加）"
+      reason: "第 7 条「サポート skill」の好例。独立起動・独立検証・献上関係の 3 条件を満たす。1 skill vs 2 skill 分割は段階的解決"
+      confidence: 0.65
+      concerns: ["§1 フラクタル原則「L3 運用層新設禁止」との境界判断", "1 skill vs 2 skill 分割の判断"]
+  judgment_confidence: 0.7
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案 A（哲学者の第 3 の道 = deployment skill のみ）"
+        supporters: ["経営者", "哲学者"]
+        weight_sum: 2.0
+        weighted_score: 1.41
+        components:
+          - { persona: "経営者", weight: 1.0, confidence: 0.75 }
+          - { persona: "哲学者", weight: 1.0, confidence: 0.65, modifier: "第 3 の道として案 A 系統" }
+      - stance: "案 B 寄り（条件付き）"
+        supporters: ["開発者"]
+        weight_sum: 1.0
+        weighted_score: 0.70
+        components:
+          - { persona: "開発者", weight: 1.0, confidence: 0.70 }
+    max_score_stance: "案 A 系統（哲学者の第 3 の道）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "β 止揚: deployment skill のみ新設、guardian は v5.6.x patch で観測駆動追加"
+  reasoning: "案 A (skill 化) のメリット (再利用性・拡張性・第 7 条整合) と案 B (YAGNI) のメリット (最小実装) を両立。deployment skill 責務を絞り込むことで開発者の YAGNI 懸念に対応、destructive detector / circuit breaker は v5.6.0 から分離して観測駆動で追加判断。哲学者の『1 skill vs 2 skill 分割』論点も段階的解決"
+  minority_opinion: "案 B (reference のみ) も autonomous-drive deployment が極めて単純な場合には妥当。skill 化が overhead になるリスクは留意"
+  weight_note: "等重み (business 種別 PR1 デフォルト)、3 票中 2 票が案 A 寄り、1 票が案 B 寄り、ただし哲学者の第 3 の道で全員の懸念が止揚される"
+  final_decision: null
+  human_escalated: false
+  implementer_consent: "agreed_with_modification"
+  modification_note: "β 止揚採用 — v5.6.0 で crosscut-autonomous-drive deployment skill 1 つを新設、guardian (destructive detector / circuit breaker) は v5.6.x patch / v5.7.0 候補へ温存。観測駆動原則と整合"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-03T08:35:00Z"

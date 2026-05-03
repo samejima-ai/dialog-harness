@@ -152,12 +152,21 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 ## 判定結果
 モード: [M1 / M2 / L2]
 
-## dev_mode（v5.0.0 追加）
-- mode: [local_only / github_assisted / github_autonomous]
+## dev_mode（v5.0.0 追加 / v5.6.0 で `autonomous` 本格化）
+- mode: [local_only / github_assisted / autonomous]
 - ctl: [0 / 1 / 2 / 3]   # Council Trust Level（crosscut-council/references/ctl-calculation.md 参照）
 - 判定根拠: [GitHub 利用有無 + 規模 + LC の組み合わせ]
 
+旧名 `github_autonomous` は v5.6.0 で `autonomous` にリネーム。後方互換: 既存記述で `github_autonomous` は `autonomous` + `autonomous_scope: full` と等価扱い。
+
 （判定プロトコルは `regime-assessment.md` §dev_mode 判定 参照。昇格・降格は手動 + ADR 記録必須。）
+
+## autonomous_scope（v5.6.0 追加、dev_mode = autonomous の場合のみ記載）
+- scope: [full / merge_gated / custom]
+- 判定根拠: [autonomous-drive 機構の運用粒度の選択理由]
+- deployment: [crosscut-autonomous-drive skill による template 適用済 / 未適用 / 部分適用]
+
+（判定プロトコルは `regime-assessment.md` §autonomous_scope 判定 参照。詳細は `dev-env-spec.md` Level C 参照。Person 責務 P1〜P4 と autonomous_scope の対応は `philosophy.md` 第 7 条参照。）
 
 ## 判定根拠
 
