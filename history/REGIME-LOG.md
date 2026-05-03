@@ -2,6 +2,34 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.5.3（patch、no minor bump）
+
+- 判定日: 2026-05-03
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 起源: ユーザー要請「自律駆動できるようにしたい、issue の自動取得で GO サインがある issue だけを対象に」を起点に、autonomous-drive 機構の出口側（auto-merge）を実装するパス A 採用判断
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS
+- 後方互換: 完全維持（label opt-in、label なき PR は従来通り手動 merge）
+
+### 変更項目（opt-in 新機能 1 件 + 非破壊変更）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| `.github/workflows/auto-merge.yml` 新設 | label `auto-merge` 付き PR を多層検証通過後に squash merge する workflow（160 line） | **opt-in 新機能**（label なし PR は影響なし、後方互換完全維持） |
+| 履歴記録 | CHANGELOG / INTENT / REGIME-LOG / ARCH-DECISIONS に v5.5.3 + AD-022 追加 | 非破壊（明文化のみ） |
+| v5.5.2 housekeeping | 前 PR #41 merge 後の `(in progress)` → `(released)` 化を同梱（独立 PR 不要化） | 非破壊（履歴記述の正規化のみ） |
+| バージョン | 据え置き → v5.5.3（patch のみ昇格）。新機能だが opt-in 完全後方互換、minor 昇格不要 | — |
+
+利用者プロジェクトには配布されない（v5.0.0〜v5.5.2 と同パターン）。
+
+### dev_mode 判定（変更なし）
+
+REGIME.md の `dev_mode` は `github_assisted` のまま。本 patch は出口側自動化のみで、issue 作成 → AI 実装 → auto-merge のフル自動化（パス B）は v5.6.0 候補として温存。観測駆動原則に従い数 PR 試運用 → 問題なければ L0 spec-architect 経由で `autonomous` へ昇格判断する。
+
+### Council 諮問の有無
+
+本 patch は Council 諮問なしで実施（AD-022 §根拠参照）。理由: (a) ユーザー（人間）からの明示要請（パス A 承認）、(b) 後方互換完全維持（opt-in 設計）、(c) 実装者 confidence ≥ 0.6（複数案拮抗なし、パス A/B 選択は人間判断で確定）、(d) `crosscut-council` 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しない。
+
 ## v5.5.2（patch、no minor bump）
 
 - 判定日: 2026-05-03
