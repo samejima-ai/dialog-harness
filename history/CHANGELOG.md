@@ -2,7 +2,46 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.7.0 (in progress, target 2026-05-03)
+## v5.7.1 (in progress, target 2026-05-03)
+
+> **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.7.1 が **7 例目正規適用**）。同 PR で v5.7.0 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
+
+**patch 昇格**。**実装エージェント方式の見直し（gemini-cli → Claude Code CLI メイン化、AD-026 訂正）**。
+
+ユーザー要請「実装は Anthropic Claude Code CLI で実行したい、サブスクで稼働、Gemini はフォールバック」を起源として、L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.1-claude-code-pivot.md`) に基づく実装。
+
+**新事実発見**: Anthropic Pro/Max サブスクリプション + `CLAUDE_CODE_OAUTH_TOKEN` 経由で Claude Code CLI を GitHub Actions で **追加 API 課金なし** で稼働可能。v5.7.0 AD-026「Anthropic API 回避で gemini-cli 採用」の前提が変わった → AD-029 で訂正。
+
+**後方互換完全維持**: philosophy.md 改訂なし、既存 SKILL.md セクション番号不変、利用者プロジェクトへの強制配布なし。**Council 諮問なし**（11+7 論点全て対話で合意、複数案拮抗なし、confidence ≥ 0.7）。
+
+### Step 1: 履歴層 + housekeeping
+
+- 本セクション
+- INTENT.md v5.7.1 設計意図
+- REGIME-LOG.md v5.7.1 patch 判定
+- ARCH-DECISIONS.md AD-029 追加（Claude Code CLI 採用、AD-026 訂正記録）
+- v5.7.0 (in progress) → (released 2026-05-03) 化同梱
+
+### Step 2: crosscut-issue-implementer skill 改修
+
+- SKILL.md frontmatter description + 本文の実装エージェント記述を「Claude Code CLI メイン + gemini-cli フォールバック」へ
+- references/triage-protocol.md: AI triage は gemini-cli メイン継続を明文化
+- references/setup-checklist.md: `CLAUDE_CODE_OAUTH_TOKEN` 取得手順追加（Anthropic Console、Pro/Max サブスクリプション前提）
+
+### Step 3: workflow + template
+
+- `.github/workflows/issue-pickup.yml`: `anthropics/claude-code-action@v0` 統合 + `CLAUDE_CODE_OAUTH_TOKEN` 認証 + 失敗時 `pickup-failed` label + notice（フォールバック自動化なし、人間 P4 判断）
+- `templates/github-workflows/issue-pickup.yml.template`: 同等改訂
+
+### Step 4: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 5 検査 PASS
+- `delivery/SELF-VERIFICATION-v5.7.1.md` 作成
+- 本 PR は ready-for-review + `auto-merge` label で autonomous-drive loop **7 例目** として投入
+
+## v5.7.0 (released 2026-05-03)
+
+> **記録規約**: PR #44 (2026-05-03 merged) の `(in progress)` 状態を本 v5.7.1 patch に同梱して `(released 2026-05-03)` 化（**7 例目正規適用**）。housekeeping を独立 PR にせず同梱の運用が継続的に定着。
 
 > **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.7.0 が 6 例目正規適用）。同 PR で v5.6.0 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
 

@@ -2,6 +2,34 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.7.1（patch 昇格、AD-026 訂正）
+
+- 判定日: 2026-05-03
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect → layer1-autonomous-dev で実装
+- 起源: ユーザー要請「実装は Claude Code CLI で、サブスクで稼働、Gemini はフォールバック」+ 新事実「`CLAUDE_CODE_OAUTH_TOKEN` 経路で API 課金回避可能」
+- L0 譲渡: `delivery/HANDOFF-v5.7.1-claude-code-pivot.md`
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS、`delivery/SELF-VERIFICATION-v5.7.1.md`
+- Council 諮問: なし
+
+### 非破壊変更（破壊項目なし、後方互換完全維持）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| 実装エージェント方式変更 | crosscut-issue-implementer の実装エージェントを gemini-cli → Claude Code CLI メイン + gemini フォールバックへ。`CLAUDE_CODE_OAUTH_TOKEN` (Pro/Max サブスクリプション) で稼働、追加 API 課金なし | 非破壊（v5.7.0 deploy 済プロジェクトは旧 workflow 維持可、新規 deploy で新方式採用） |
+| AD-026 訂正 | AD-029 新設で「v5.7.0 当時の判断、新事実発見で訂正」を記録。AD-026 自体は削除せず historical 維持 | 非破壊（記録のみ） |
+| gemini-cli 用途整理 | AI triage = メイン継続、実装フォールバック、PR レビュー = メイン継続 | 非破壊（既存用途維持 + 新フォールバック追加） |
+| Claude Code 失敗時挙動 | label `pickup-failed` + notice → 人間 P4 判断（自動フォールバックなし）| 新規（philosophy 第 4 条 + 第 7 条 P4 整合）|
+| 履歴記録 | CHANGELOG / INTENT / REGIME-LOG（本ファイル）/ ARCH-DECISIONS (AD-029) に記録 | 非破壊 |
+| 同梱 housekeeping | v5.7.0 (in progress) → (released 2026-05-03) 化（**7 例目正規適用**）| 非破壊 |
+| バージョン | v5.7.0 → v5.7.1（patch 昇格）。philosophy.md 改訂なし、実装手段の差し替えのみ、SPEC 改修範囲は限定的 | — |
+
+破壊項目なし。利用者プロジェクトには強制配布されない（v5.0.0〜v5.7.0 と同パターン）。
+
+### Council 諮問の有無
+
+本 patch は Council 諮問なしで実施（理由）: (a) 11+7 論点全て対話で合意、(b) 複数案拮抗なし（OAuth token 経路の発見でユーザー要望が一意に確定）、(c) 実装者 confidence ≥ 0.7、(d) `crosscut-council` 起動条件のいずれにも該当しない。**ただし autonomous-dev が実装中に gemini フォールバック発動条件で confidence < 0.6 を検出した場合は独自 Council 起動可**（adrv01-Ph1 自己申告プロトコル経由）。
+
 ## v5.7.0（minor 昇格、後方互換維持）
 
 - 判定日: 2026-05-03
