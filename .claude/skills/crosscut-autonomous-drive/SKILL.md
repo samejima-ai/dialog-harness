@@ -2,11 +2,11 @@
 name: crosscut-autonomous-drive
 dimension: D4
 description: >
-  autonomous-drive 標準化の deployment ヘルパー（v5.6.0 追加）。
+  autonomous-drive 標準化の deployment ヘルパー（v5.6.0 追加 / v5.7.1 で Claude Code CLI 対応追記）。
   dialog-harness の `templates/github-workflows/` から workflow テンプレートを取得し、
   placeholder 置換して利用者プロジェクトの `.github/workflows/` に配置する。
   併せて label (ready-for-ai / auto-merge / do-not-merge) を作成し、
-  Repository Secrets (GH_REVIEW_PAT / GEMINI_API_KEY) の設定ガイドを提示する。
+  Repository Secrets (GH_REVIEW_PAT / GEMINI_API_KEY、v5.7.1 で **CLAUDE_CODE_OAUTH_TOKEN** 追加) の設定ガイドを提示する。
   spec-architect が dev_mode `autonomous` 判定時に明示起動する。
   philosophy.md 第 7 条「AI 組織論」の「サポート skill」枠（4 役割を補助、L3 運用層ではない）。
 ---
@@ -23,7 +23,7 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 2. **placeholder 置換**: spec-architect 対話で確定した値（`${ALLOWED_AUTHORS}` 等）を template に展開
 3. **配置**: 利用者プロジェクトの `.github/workflows/` 配下にコピー
 4. **label 作成**: GitHub UI または API 経由で `ready-for-ai` / `auto-merge` / `do-not-merge` label を作成（autonomous_scope に応じて）
-5. **secrets ガイド**: `GH_REVIEW_PAT` / `GEMINI_API_KEY` の設定手順をユーザーに提示（実際の入力は人間 P4 / spec-architect 対話で確認）
+5. **secrets ガイド**: `GH_REVIEW_PAT` / `GEMINI_API_KEY` / **`CLAUDE_CODE_OAUTH_TOKEN`** (v5.7.1〜、issue-pickup.yml が必要とする) の設定手順をユーザーに提示（実際の入力は人間 P4 / spec-architect 対話で確認）。GH_REVIEW_PAT は **Contents/PR/Issues = Read and write** が必要（Read のみでは Claude Code 実装の commit/push が失敗）。詳細: `.claude/skills/crosscut-issue-implementer/references/setup-checklist.md`
 
 ## 起動条件
 

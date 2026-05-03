@@ -13,6 +13,12 @@
 # - 認証: CLAUDE_CODE_OAUTH_TOKEN（Anthropic Pro/Max サブスクリプション、追加 API 課金なし）
 # - AI triage は gemini-cli メイン継続（軽量、無料 tier、異質モデル併走）
 # - 失敗時のフォールバックは自動化しない（人間 P4 判断、`pickup-failed` label 付与）
+#
+# 注意: 本 workflow は autonomous_scope: full 専用。
+#   prompt 内の `--label auto-merge` も full 専用前提。
+#   merge_gated / custom スコープで利用する場合は SKILL.md「CTL との関係」表に従い
+#   `--label auto-merge` を取り除いた派生 workflow を別途用意すること（auto-merge 自動付与は merge_gated では禁止）。
+#   crosscut-issue-implementer/SKILL.md 「発動条件」も `autonomous_scope: full` のみ active 化と明記。
 
 name: issue-pickup
 

@@ -17,12 +17,12 @@ description: >
 
 - Issue に label `ready-for-ai` が付与された（人間 P2 の明示 GO サイン、philosophy 第 7 条）
 - REGIME.md `dev_mode: autonomous` + `autonomous_scope: full` （local_only / github_assisted では起動しない）
-- Repository Secrets: GEMINI_API_KEY + GH_REVIEW_PAT が設定済
+- Repository Secrets: **CLAUDE_CODE_OAUTH_TOKEN + GEMINI_API_KEY + GH_REVIEW_PAT** が設定済（v5.7.1〜、詳細は `references/setup-checklist.md`）
 
-## 処理フロー（v5.7.0 改訂版）
+## 処理フロー（v5.7.1 改訂版）
 
 ```
-1. Pre-check: GEMINI_API_KEY + GH_REVIEW_PAT availability
+1. Pre-check: CLAUDE_CODE_OAUTH_TOKEN + GEMINI_API_KEY + GH_REVIEW_PAT availability
 2. Circuit Breaker check: 日次/月次 Issue pickup 上限の確認 (references/circuit-breaker-spec.md)
 3. 3 段階フィルター実行 (references/issue-filter-spec.md):
    一次: label `ready-for-ai` 確認（trigger 条件で既に通過）
@@ -32,10 +32,10 @@ description: >
         - skip 時は理由 label を自動付与（needs-clarification / out-of-scope / focus-mismatch）
         - Issue は close せず人間差し戻し
 4. Pickup 確定: label `in-progress` 自動付与、Issue 番号で branch 作成（feat/<issue-num>-<slug>）
-5. 実装: gemini-cli が repo を clone + Issue + SPEC を読み込み + 実装 + commit
+5. 実装: **Claude Code CLI** (anthropics/claude-code-action) が repo を clone + Issue + SPEC を読み込み + 実装 + commit
 6. PR 作成: gh pr create + ready-for-review + (autonomous_scope: full なら) `auto-merge` label 自動付与
 7. 後段委譲: 既存 gemini-review.yml + auto-merge.yml が引き継ぎ
-8. 統計記録: .gemini/issue-pickup-stats.json に pickup 結果を append (Circuit Breaker 用)
+8. 統計記録: .gemini/issue-pickup-stats.json に pickup 結果を append (Circuit Breaker 用、v5.7.x で永続化完成予定)
 ```
 
 ## 実装エージェント: Claude Code CLI (v5.7.1 で改訂)
@@ -78,7 +78,7 @@ description: >
 | Circuit Breaker 上限超過 | label `circuit-broken` 自動付与 + workflow 全停止 + notice |
 | 二次フィルター FAIL (本文不足) | label `needs-clarification` + Issue は close せず人間差し戻し |
 | 三次フィルター FAIL (out-of-scope / focus-mismatch) | 該当 label 自動付与 + 人間判断要請 |
-| 実装中の致命的エラー (gemini-cli 失敗) | label `pickup-failed` + Issue に notice コメント + branch 削除 |
+| 実装中の致命的エラー (Claude Code CLI 失敗) | label `pickup-failed` + Issue に notice コメント + 自動フォールバックなし（人間 P4 判断、philosophy 第 4 条 + 第 7 条）|
 | PR 作成後 24h 以内に変更なし | 自動 release（label `in-progress` 削除）+ notice |
 
 ## CTL との関係

@@ -28,7 +28,7 @@
 
 ## 実装スコープ Phase A〜D（全 11 項目）
 
-### Phase A: 履歴層 + housekeeping (3 項目)
+### Phase A: 履歴層 + housekeeping (4 項目)
 
 1. `history/CHANGELOG.md` v5.7.1 (in progress) + v5.7.0 (released 2026-05-03) 化（7 例目正規適用）
 2. `history/INTENT.md` v5.7.1 設計意図セクション
@@ -50,7 +50,7 @@
    - triage 部分は gemini-cli 維持
 9. `templates/github-workflows/issue-pickup.yml.template` 同等改訂
 
-### Phase D: 自己検証 + 献上 (1 項目)
+### Phase D: 自己検証 + 献上 (2 項目)
 
 10. `delivery/SELF-VERIFICATION-v5.7.1.md`
 11. `python harness-verifier/verify.py` 全 5 検査 PASS
