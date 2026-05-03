@@ -2,6 +2,54 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.5.2 (in progress, target 2026-05-03)
+
+> **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、v5.5.1 で 2 例目正規適用、本 v5.5.2 が 3 例目）。
+
+patch 昇格。**v5.5.1 で gemini-review 動作確立に伴い導入された診断機構の縮退と、self-PR 制約を反映した prompt 最適化**。
+
+v5.5.1 PR #40 で gemini-review が動作完了 + 副次目的（独立 critic 機能の検証）が達成されたため、診断目的の暫定機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / Diagnostics step 2 件）を削除。並行して、self-PR APPROVE が GitHub API 仕様で常時 fail する制約を prompt で明示し、無駄な APPROVE 試行による quota 消費を回避する。
+
+明文化と diagnostic cleanup のみで機能変更ゼロ・後方互換完全維持。利用者プロジェクトには配布されない。
+
+### Step 1: gemini-review.yml の diagnostics 縮退
+
+- **削除**: `Diagnostics — runner / docker / GitHub MCP server reachability` step（v5.5.1 で追加、原因 A 切り分け用）
+- **削除**: `Diagnostics — gemini_review step outcome` step（v5.5.1 で追加、post-step outcome 確認用）
+- **削除**: `Run Gemini PR review` の `continue-on-error: true`（診断時の fail 通過用）
+- **削除**: `Run Gemini PR review` の `id: gemini_review`（post-step が消えたため不要）
+- **削除**: `GEMINI_DEBUG: "true"` env（diagnostic 過程で必要だったが本番では token 消費過多）
+- **保持**: `Upload gemini-artifacts (stdout / stderr / telemetry)` step（low cost で将来 debug 必要時に有用）
+- **保持**: `actions/checkout` の `fetch-depth: 0`（本 repo の小ささから cost 極小、cli 内部 diff 計算が必要な場合に効く）
+- **保持**: settings JSON の `tools.core` / `mcpServers.github.includeTools` 不在（α パッチで判明した tool exposure 阻害除去）
+
+### Step 2: prompt の self-PR 最適化
+
+`pull_request_review_write` の event="APPROVE" は **GitHub API 仕様で「Cannot approve your own pull request」エラー**を返す（PAT owner = PR author の構造的制約）。v5.5.1 PR #40 では gemini が APPROVE 試行 → fail → COMMENT fallback で復旧したが、無駄な API call 消費が発生した。
+
+prompt 改修:
+- 「重要: self-PR 制約（GitHub 仕様）」セクション新設
+- verdict 候補から APPROVE を明示的に除外、COMMENT または REQUEST_CHANGES を直接使うよう指示
+- 「出力形式」「必須実行プロトコル」両セクションも APPROVE 言及を COMMENT へ置換
+- 期待効果: APPROVE 試行 → fail → 再試行のラウンドトリップ削減、quota 節約
+
+### Step 3: settings JSON のコメント更新（security 注 追加）
+
+`includeTools` 不在で github-mcp-server の **全 tool が model に expose** される（read 系のみならず write/destructive 系含む）。本 repo は信頼済み author 前提で許容するが、tool 名の正しい形式判明後の絞り込みを v5.5.x 候補として明記。
+
+### Step 4: 履歴層更新
+
+- `history/CHANGELOG.md` 本セクション
+- `history/INTENT.md` v5.5.2 セクション追加
+- `history/REGIME-LOG.md` v5.5.2 patch 判定記録
+- `history/ARCH-DECISIONS.md` AD-021 追加
+
+### Step 5: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 PASS
+- gemini-review が新 prompt + diagnostics 削減後の構成で正常動作することを本 PR で検証
+- 本 PR description / CHANGELOG / verification 結果の整合を gemini-review 自身が独立 critic として確認する 3 例目運用
+
 ## v5.5.1 (released 2026-05-02)
 
 > **記録規約**: 本セクションは PR #39 の draft 中（実際は ready-for-review 開始）に書かれ、`(in progress, target 2026-05-02)` で記録されていた。本 patch（PR #39 マージ後）で `(released 2026-05-02)` へ更新。「PR draft 中は `(in progress)` / マージ時に `(released YYYY-MM-DD)` 化」フローは v5.5.0 で正規適用が確立し、本 v5.5.1 は **2 例目の正規適用**にあたる。

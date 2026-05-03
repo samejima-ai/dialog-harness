@@ -2,6 +2,17 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.5.2
+
+### AD-021: gemini-review の diagnostics 縮退と self-PR 最適化
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | v5.5.1 PR #40 で gemini-review GitHub Action（PR #37/#38 で導入）の運用テストが完了。8 commit にわたる段階的診断（仮説 A〜F + α）の結果、真因 = settings JSON `tools.core: []` / `includeTools` filter による tool exposure 阻害（α パッチで除去済）+ PAT permission 不足（ユーザーが Read+Write 付与済）と確定。診断目的で導入された暫定機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / Diagnostics step 2 件）が役目を完遂し、本番運用構成への縮退が必要 |
+| 判断 | **(a) Diagnostics 機構の削除**: `Diagnostics — runner / docker / GitHub MCP server reachability` + `Diagnostics — gemini_review step outcome` の 2 step、`continue-on-error: true`、`GEMINI_DEBUG: "true"` env、`id: gemini_review` を削除。**(b) Artifact upload は保持**: `actions/upload-artifact@v4` step は将来 debug 用に残置（low cost、retention 7 日）。**(c) prompt の self-PR 最適化**: PAT owner = PR author の構造的制約により APPROVE が常時 fail することを prompt で明示し、APPROVE 試行を禁止して COMMENT 直接使用を指示。**(d) settings JSON の security 注追加**: `includeTools` 不在で全 tool が expose される trade-off を明文化、v5.5.x 候補として絞り込み再検討を記録 |
+| 根拠 | (a) v5.5.1 PR #40 で診断機構は「役目完遂後縮退」前提で導入されており本 patch はその完遂後実施、(b) self-PR APPROVE は GitHub API レベルの構造的制約で永続的に fail するため prompt で除外するのが quota 効率的、(c) 機能変更ゼロ・後方互換完全維持のため patch で十分（minor 昇格不要）、(d) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当せず Council 諮問は不要、(e) philosophy.md §5「献上哲学」の「役目を終えた機構の縮退」原則と整合 |
+| 影響 | `.github/workflows/gemini-review.yml` 全体で 58 line 縮減（324 → 266 line）。SK 本文・harness-verifier・利用者プロジェクトへの影響ゼロ。`includeTools` 不在による security trade-off は v5.5.x 候補として温存（tool 名の正しい形式判明後に read 系のみへ絞り込み）。本 patch 自身が gemini-review の本番運用 3 例目テストとなり、新構成の動作確認を兼ねる |
+
 ## v5.5.1
 
 ### AD-020: Phase γ 先行宣言 4 の本実装（ストラングラー / BBA 射程外の正式宣言）

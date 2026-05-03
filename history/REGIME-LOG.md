@@ -2,6 +2,34 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.5.2（patch、no minor bump）
+
+- 判定日: 2026-05-03
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 起源: v5.5.1 PR #40 で gemini-review 動作確立に伴い導入された診断機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / Diagnostics 2 step）の縮退。並行して self-PR APPROVE 制約を prompt で明示し無駄な API call を排除
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS
+- 後方互換: 機能変更ゼロ（diagnostic 縮退 + prompt 最適化のみ）
+
+### 非破壊変更（破壊項目なし、機能変更なし）
+
+| 項目 | 内容 |
+|---|---|
+| Diagnostics step 削除 | `Diagnostics — runner / docker / GitHub MCP server reachability` + `Diagnostics — gemini_review step outcome` の 2 step 削除（v5.5.1 PR #40 で診断目的で追加、役目完遂） |
+| `continue-on-error` 削除 | `Run Gemini PR review` の `continue-on-error: true` を削除（本番では fail を fail として扱う） |
+| `GEMINI_DEBUG` 削除 | env 削除（debug log は token 消費過多、必要時のみ手動 enable） |
+| `id: gemini_review` 削除 | post-step が消えたため不要 |
+| Prompt self-PR 最適化 | 「重要: self-PR 制約（GitHub 仕様）」セクション新設、APPROVE 試行禁止、COMMENT 直接使用指示 |
+| Settings JSON コメント | `includeTools` 不在の security trade-off を明文化、v5.5.x 候補として絞り込み再検討を記録 |
+| Artifact upload | 保持（将来 debug 用、low cost） |
+| バージョン | 据え置き → v5.5.2（patch のみ昇格）。機能変更なし、minor 昇格不要 |
+
+破壊項目なし。利用者プロジェクトには配布されない（v5.0.0〜v5.5.1 と同パターン）。
+
+### Council 諮問の有無
+
+本 patch は Council 諮問なしで実施（AD-021 §根拠参照）。理由: (a) v5.5.1 PR #40 で診断機構は明示的に「役目完遂後縮退」前提で導入された、(b) 本 patch は明確な仕様（v5.5.1 末で「diagnostics 縮退は別 PR で実施」と CHANGELOG に予告済）の素直実装、(c) 実装者 confidence ≥ 0.6（複数案拮抗なし）、(d) `crosscut-council` 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しない。
+
 ## v5.5.1（patch、no minor bump）
 
 - 判定日: 2026-05-02
