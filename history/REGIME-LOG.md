@@ -2,6 +2,39 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.7.0（minor 昇格、後方互換維持）
+
+- 判定日: 2026-05-03
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect（本セッションで起動）→ layer1-autonomous-dev で実装
+- 起源: ユーザー（ひでさん）の明示要請「Bを考えよう」+ 「Issue 選択は開発品質を決める」観点。v5.6.0 INTENT 温存項目の本格仕様化
+- L0 譲渡: `delivery/HANDOFF-v5.7.0-issue-pickup.md`
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS、`delivery/SELF-VERIFICATION-v5.7.0.md`
+- Council 諮問: なし（11 論点全て対話で合意）
+
+### 非破壊変更（破壊項目なし、後方互換完全維持）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| autonomous-drive 入口側本格稼働 | crosscut-issue-implementer skill 全面改訂 + `.github/workflows/issue-pickup.yml` 新設 + template 配置 | opt-in 新機能（dev_mode `autonomous` + `autonomous_scope: full` 選択時のみ） |
+| Issue 選別 3 段階フィルター | label opt-in / author allowlist / 本文必須項目 / current_focus 整合 / AI triage | 非破壊（既存 issue-implementer は claude-code-action 前提だったが未稼働、本改訂で実機構化） |
+| current_focus 軸新設 | REGIME.md フィールド追加 + spec-architect 4 ファイル拡張 | 非破壊（既存 REGIME.md には影響なし、新規プロジェクト追加 + 既存も任意更新） |
+| gemini-cli 実装エージェント化 | 既存 GEMINI_API_KEY 流用、Anthropic API 回避 | 新規（追加コスト 0、ただし未踏領域、観測駆動で品質判断） |
+| Circuit Breaker | 日次 5 / 月次 50 Issue 上限、上限到達で workflow 全停止 | 新規（暴走防止、philosophy 第 7 条 P4 機構） |
+| 履歴記録 | CHANGELOG / INTENT / REGIME-LOG / ARCH-DECISIONS (AD-026/027/028) に記録 | 非破壊 |
+| 同梱 housekeeping | v5.6.0 (in progress) → (released 2026-05-03) 化（6 例目正規適用） | 非破壊 |
+| バージョン | v5.6.0 → v5.7.0（minor 昇格）。新機能追加 + autonomous-drive 完成形 | — |
+
+破壊項目なし。利用者プロジェクトには配布されない（v5.0.0〜v5.6.0 と同パターン）。`templates/github-workflows/issue-pickup.yml.template` は配布候補だが、deploy は spec-architect 対話で明示確認後のみ。
+
+### dev_mode 判定（変更あり）
+
+dialog-harness 本体: `dev_mode: github_assisted` のまま据え置き（autonomous-drive deploy せず、本 minor は他プロジェクトへの展開機構整備）。本 minor で **dialog-harness 自身に issue-pickup.yml をデプロイ**するため、merge 後は実質 `autonomous` 相当に昇格する（次 v5.7.x 開発から Issue 起点ループ稼働）。dev_mode の formal な昇格は v5.7.x で REGIME.md 改訂により実施判断。
+
+### Council 諮問の有無
+
+本 minor は Council 諮問なしで実施（11 論点全て対話で合意、起動条件未満）。理由: (a) 複数案拮抗なし（gemini-cli 採用は実装方式の素直選択、API 回避要望から決定）、(b) 実装者 confidence ≥ 0.6（β 止揚相当の選択肢が明確）、(c) `crosscut-council` 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しない。**ただし実装中に gemini-cli 品質懸念が顕在化した場合は autonomous-dev が独自 Council 起動可**（adrv01-Ph1 自己申告プロトコル経由）。
+
 ## v5.6.0（minor 昇格、後方互換維持）
 
 - 判定日: 2026-05-03

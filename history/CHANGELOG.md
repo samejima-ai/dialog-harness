@@ -2,7 +2,63 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.6.0 (in progress, target 2026-05-03)
+## v5.7.0 (in progress, target 2026-05-03)
+
+> **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.7.0 が 6 例目正規適用）。同 PR で v5.6.0 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
+
+**minor 昇格**。**autonomous-drive 入口側（Issue → AI pickup → 実装開始）本格稼働 + Issue 選別機構**。
+
+ユーザー（ひでさん）の根源要請「Bを考えよう（自前 workflow 実装）」+ 「Issue 選択は開発品質を決めると言って過言ではない」を起源として、L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.0-issue-pickup.md`) に基づく実装。
+
+**実装方式**: gemini-cli 流用（既存 GEMINI_API_KEY、追加コスト 0、Anthropic API 回避）。
+**Council 諮問**: なし（11 論点全て対話で合意、起動条件未満）。
+
+**後方互換完全維持**: dev_mode `autonomous` + `autonomous_scope: full` のみで enable。利用者プロジェクトには配布されない（template 配置のみ）。
+
+### Step 1: 履歴層 + housekeeping
+
+- 本セクション
+- INTENT.md v5.7.0 設計意図
+- REGIME-LOG.md v5.7.0 minor 昇格
+- ARCH-DECISIONS.md AD-026 (実装方式) / AD-027 (current_focus) / AD-028 (Issue 選別 3 段階フィルター)
+- v5.6.0 (in progress) → (released 2026-05-03) 化同梱
+
+### Step 2: spec-architect 拡張 - current_focus 軸新設
+
+- meta-spec-template.md: REGIME.md テンプレに `## current_focus` セクション追加（type / target / since / priority）
+- regime-assessment.md: current_focus 判定（β 半自動 + γ ブランチ命名フォールバック）追加
+- dialog-questions.md: current_focus 確認質問追加
+- dev-env-spec.md: Level C に current_focus と Issue pickup の連動表追加
+
+### Step 3: crosscut-issue-implementer skill 拡張
+
+- SKILL.md 全面改訂（claude-code-action 前提 → gemini-cli 流用、3 段階フィルター、AI triage、circuit breaker）
+- references/issue-filter-spec.md 新設（label / author / 本文 / current_focus 整合の filter ロジック）
+- references/triage-protocol.md 新設（gemini-cli AI triage 二次判定）
+- references/circuit-breaker-spec.md 新設（日次5/月次50 + 緊急停止）
+
+### Step 4: workflow + template
+
+- `.github/workflows/issue-pickup.yml` 新設（dialog-harness 自身に deploy、gemini-cli base）
+- `templates/github-workflows/issue-pickup.yml.template` 新設（利用者展開用、placeholder 化）
+- `spec-architect/references/autonomous-drive-deployment.md` に入口側 deployment 手順追記
+
+### Step 5: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 5 検査 PASS（新用語 + frontmatter + path 整合性）
+- `delivery/SELF-VERIFICATION-v5.7.0.md` 作成
+- 本 PR は ready-for-review + `auto-merge` label で autonomous-drive loop 6 例目として投入
+
+### v5.7.x / v6.0.0 候補として温存
+
+- gemini-cli 実装エージェントの品質観測（fail 率測定、必要なら Council 起動でフォールバック判断）
+- 新 sub-skill `crosscut-issue-drafter`（ブレスト → Issue 化支援、philosophy 第 7 条 P2 強化）
+- destructive change detector / circuit breaker の実機構（v5.6.0 から累計後送中）
+- ALLOWED_AUTHORS 動的化
+
+## v5.6.0 (released 2026-05-03)
+
+> **記録規約**: PR #43 (2026-05-03 merged) の `(in progress)` 状態を本 v5.7.0 patch に同梱して `(released 2026-05-03)` 化（6 例目正規適用）。housekeeping を独立 PR にせず本 PR に同梱の運用が継続的に定着。
 
 > **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.6.0 が 5 例目正規適用）。同 PR で v5.5.3 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
 

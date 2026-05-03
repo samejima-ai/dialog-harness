@@ -618,3 +618,35 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 
 `autonomous_scope: full` 時、人間関与は `philosophy.md` 第 7 条 Person 責務 P1〜P4 に集約：
 - P1 発案 / P2 ブレスト（Issue 化は AI）/ P3 事後確認・評価 / P4 暴走時介入
+
+---
+
+## Level C 拡張: current_focus と Issue pickup の連動表（v5.7.0 追加）
+
+`autonomous_scope: full` の運用で `crosscut-issue-implementer` workflow（issue-pickup.yml）が稼働する場合、Issue pickup の判定で REGIME.md `## current_focus` フィールドを参照する。
+
+### Issue label と current_focus.type の対応
+
+| Issue label | current_focus.type 整合判定 | 挙動 |
+|---|---|---|
+| `type:bug` | `bug-fix` と一致 → pickup 候補 | 一致時のみ AI triage 進行 |
+| `type:feature` | `feature` と一致 → pickup 候補 | 同上 |
+| `type:refactor` | `refactor` と一致 → pickup 候補 | 同上 |
+| `type:docs` | `docs` と一致 → pickup 候補 | 同上 |
+| `type:chore` | `chore` と一致 → pickup 候補 | 同上 |
+| 不一致 | label `focus-mismatch` 自動付与、Issue は close せず一時延期 | current_focus 変更で再 pickup 候補化 |
+| label 未指定 | AI triage で Issue 本文から推論、current_focus と照合 | 推論不能なら label `needs-clarification` 付与 |
+
+### dev_mode との関係
+
+| dev_mode | autonomous_scope | issue-pickup.yml | current_focus 参照 |
+|---|---|---|---|
+| local_only | — | × | 不要 |
+| github_assisted | — | × | 任意（記録のみ） |
+| autonomous | full | ✅ deploy | ✅ active 機能（pickup 判定で参照） |
+| autonomous | merge_gated | △ deploy 可（PR は手動 merge） | ✅ active |
+| autonomous | custom | 個別指定 | 個別 |
+
+### deployment 経路
+
+`crosscut-autonomous-drive` skill が `templates/github-workflows/issue-pickup.yml.template` を placeholder 置換して `.github/workflows/issue-pickup.yml` に配置する。`autonomous_scope` 別の deploy 対象は `autonomous-drive-deployment.md` で詳述。

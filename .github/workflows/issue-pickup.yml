@@ -1,0 +1,223 @@
+# issue-pickup — Issue → AI 実装 → PR 作成 (autonomous-drive 入口側)
+#
+# v5.7.0 で新設。dialog-harness の crosscut-issue-implementer skill 実装。
+# Issue label `ready-for-ai` 付与で発火、3 段階フィルター + AI triage で選別、
+# pickup 確定なら gemini-cli が実装、PR 作成、`auto-merge` label 自動付与で
+# 既存 gemini-review.yml + auto-merge.yml に引き継ぐ。
+#
+# 詳細は .claude/skills/crosscut-issue-implementer/SKILL.md 参照。
+#
+# 重要: gemini-cli を実装エージェントとして使うのは未踏領域。
+# 失敗時のフォールバック: ローカル Claude / Copilot Workspace / 一時的 Anthropic API。
+# 観測駆動で品質判断、Council 起動可（adrv01-Ph1 自己申告）。
+
+name: issue-pickup
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+# 同 Issue の並行実行を排他（多重起動防止）
+concurrency:
+  group: "issue-pickup-${{ github.event.issue.number }}"
+  cancel-in-progress: false
+
+env:
+  # Issue picking up を信頼する author allowlist (space 区切り)
+  ALLOWED_AUTHORS: "samejima-ai"
+  # Circuit Breaker: 日次/月次上限
+  DAILY_LIMIT: "5"
+  MONTHLY_LIMIT: "50"
+
+jobs:
+  pickup:
+    # label `ready-for-ai` 付与時のみ、bot を除外
+    if: |
+      github.event.label.name == 'ready-for-ai' &&
+      github.event.issue.user.login != 'dependabot[bot]' &&
+      github.event.issue.user.login != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Pre-check secrets availability
+        id: check_secrets
+        env:
+          GEMINI_API_KEY_PROBE: ${{ secrets.GEMINI_API_KEY }}
+          GH_REVIEW_PAT_PROBE: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          if [ -z "$GEMINI_API_KEY_PROBE" ] || [ -z "$GH_REVIEW_PAT_PROBE" ]; then
+            echo "::notice::GEMINI_API_KEY or GH_REVIEW_PAT not set. Skipping pickup."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.check_secrets.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          token: ${{ secrets.GH_REVIEW_PAT }}
+
+      - name: Filter — label `do-not-pickup` block
+        if: steps.check_secrets.outputs.available == 'true'
+        id: do_not_pickup_check
+        run: |
+          set -euo pipefail
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | tr '\n' ',')
+          if echo ",$LABELS," | grep -q ",do-not-pickup,"; then
+            echo "::notice::Issue #$ISSUE_NUMBER has 'do-not-pickup' label. Block."
+            echo "blocked=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "blocked=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Circuit Breaker check
+        if: steps.check_secrets.outputs.available == 'true' && steps.do_not_pickup_check.outputs.blocked != 'true'
+        id: circuit_breaker
+        run: |
+          set -euo pipefail
+          STATS_FILE=".gemini/issue-pickup-stats.json"
+          mkdir -p .gemini
+          if [ ! -f "$STATS_FILE" ]; then
+            echo '{"version":"v5.7.0","issues":[]}' > "$STATS_FILE"
+          fi
+          TODAY=$(date -u +%Y-%m-%d)
+          MONTH=$(date -u +%Y-%m)
+          TODAY_COUNT=$(jq --arg d "$TODAY" '[.issues[]? | select(.pickup_at | startswith($d))] | length' "$STATS_FILE")
+          MONTH_COUNT=$(jq --arg m "$MONTH" '[.issues[]? | select(.pickup_at | startswith($m))] | length' "$STATS_FILE")
+          if [ "$TODAY_COUNT" -ge "$DAILY_LIMIT" ]; then
+            echo "::warning::Daily Circuit Breaker triggered ($TODAY_COUNT/$DAILY_LIMIT)"
+            gh issue edit "$ISSUE_NUMBER" --add-label "circuit-broken" || true
+            echo "broken=true" >> "$GITHUB_OUTPUT"
+          elif [ "$MONTH_COUNT" -ge "$MONTHLY_LIMIT" ]; then
+            echo "::warning::Monthly Circuit Breaker triggered ($MONTH_COUNT/$MONTHLY_LIMIT)"
+            gh issue edit "$ISSUE_NUMBER" --add-label "circuit-broken" || true
+            echo "broken=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "broken=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Filter — author allowlist
+        if: |
+          steps.check_secrets.outputs.available == 'true' &&
+          steps.do_not_pickup_check.outputs.blocked != 'true' &&
+          steps.circuit_breaker.outputs.broken != 'true'
+        id: author_check
+        run: |
+          set -euo pipefail
+          AUTHOR=$(gh issue view "$ISSUE_NUMBER" --json author --jq '.author.login')
+          if ! echo " $ALLOWED_AUTHORS " | grep -q " $AUTHOR "; then
+            echo "::notice::Author '$AUTHOR' not in ALLOWED_AUTHORS. Skip."
+            gh issue edit "$ISSUE_NUMBER" --add-label "untrusted-author" || true
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Filter — body required sections
+        if: |
+          steps.check_secrets.outputs.available == 'true' &&
+          steps.do_not_pickup_check.outputs.blocked != 'true' &&
+          steps.circuit_breaker.outputs.broken != 'true' &&
+          steps.author_check.outputs.passed == 'true'
+        id: body_check
+        run: |
+          set -euo pipefail
+          BODY=$(gh issue view "$ISSUE_NUMBER" --json body --jq '.body')
+          MISSING=()
+          # 再現手順 / Steps to reproduce
+          if ! echo "$BODY" | grep -qE "^## (再現手順|Steps to reproduce)"; then
+            MISSING+=("再現手順 / Steps to reproduce")
+          fi
+          # 期待動作 / Expected behavior
+          if ! echo "$BODY" | grep -qE "^## (期待動作|Expected behavior)"; then
+            MISSING+=("期待動作 / Expected behavior")
+          fi
+          # 受入条件 / Acceptance criteria
+          if ! echo "$BODY" | grep -qE "^## (受入条件|Acceptance criteria)"; then
+            MISSING+=("受入条件 / Acceptance criteria")
+          fi
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "::notice::Body missing required sections: ${MISSING[*]}"
+            gh issue edit "$ISSUE_NUMBER" --add-label "needs-clarification" || true
+            gh issue comment "$ISSUE_NUMBER" --body "本 Issue は自動 pickup の本文必須項目を満たしていません。以下のセクションを追加してください: ${MISSING[*]}" || true
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: AI Triage (gemini-cli)
+        if: |
+          steps.check_secrets.outputs.available == 'true' &&
+          steps.do_not_pickup_check.outputs.blocked != 'true' &&
+          steps.circuit_breaker.outputs.broken != 'true' &&
+          steps.author_check.outputs.passed == 'true' &&
+          steps.body_check.outputs.passed == 'true'
+        id: triage
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -uo pipefail
+          # Triage 実装は v5.7.0 初版では minimum viable な assertion のみ
+          # （Issue 内容 + SPEC + DONT + current_focus を gemini-cli に渡して JSON 判定）
+          # フル実装は v5.7.x patch で gemini-cli インストール + prompt template 整備後
+          echo "::notice::AI Triage (v5.7.0 minimum viable): pickup_yes と仮定して進行"
+          echo "::notice::フル実装: references/triage-protocol.md 参照、v5.7.x patch で gemini-cli 経由 triage を完全実装予定"
+          echo "verdict=pickup_yes" >> "$GITHUB_OUTPUT"
+
+      - name: Pickup confirmation + label `in-progress`
+        if: steps.triage.outputs.verdict == 'pickup_yes'
+        run: |
+          set -euo pipefail
+          gh issue edit "$ISSUE_NUMBER" --add-label "in-progress" || true
+          gh issue comment "$ISSUE_NUMBER" --body "Issue pickup を開始しました（v5.7.0 issue-pickup workflow）。実装エージェント: gemini-cli。フル実装は v5.7.x patch で完全稼働予定。" || true
+
+      - name: Implementation (gemini-cli, placeholder for v5.7.0 MVP)
+        if: steps.triage.outputs.verdict == 'pickup_yes'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          set -uo pipefail
+          # v5.7.0 minimum viable: 実装本体は placeholder
+          # 本番実装は v5.7.x patch で以下を実装:
+          # 1. gemini-cli インストール (gemini-review.yml から流用)
+          # 2. branch 作成 (feat/<issue-num>-<slug>)
+          # 3. gemini-cli が repo + Issue を読み実装 + commit
+          # 4. PR 作成 (gh pr create + ready-for-review + auto-merge label 自動付与)
+          # 5. 後段は既存 gemini-review.yml + auto-merge.yml が引き継ぎ
+          echo "::notice::Implementation (v5.7.0 MVP): placeholder。フル実装は v5.7.x patch で対応"
+          echo "::notice::現状は workflow 骨格と filter 機構の検証のみ。Issue は in-progress label 付き、人間が手動で実装移行"
+
+      - name: Update statistics
+        if: |
+          steps.check_secrets.outputs.available == 'true' && always()
+        run: |
+          set -uo pipefail
+          STATS_FILE=".gemini/issue-pickup-stats.json"
+          if [ ! -f "$STATS_FILE" ]; then
+            mkdir -p .gemini
+            echo '{"version":"v5.7.0","issues":[]}' > "$STATS_FILE"
+          fi
+          # append-only 統計記録（merge 時は別 commit で更新を推奨、本 workflow では artifact upload で観測）
+          echo "::notice::Stats record skipped in MVP (artifact upload で観測可能化は v5.7.x で対応)"
+
+      - name: Upload pickup-stats artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-pickup-stats-${{ github.event.issue.number }}-run-${{ github.run_id }}
+          path: |
+            .gemini/
+          if-no-files-found: warn
+          retention-days: 7

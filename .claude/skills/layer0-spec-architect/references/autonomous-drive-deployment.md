@@ -84,3 +84,52 @@ deployment 完了後、最初の autonomous loop 試運用で以下を観測す�
 - `crosscut-autonomous-drive/references/setup-checklist.md` — 利用者プロジェクト側 setup 手順
 - `dev-env-spec.md` Level C — autonomous_scope 別の deploy 機能表
 - `philosophy.md` 第 7 条 — DH AI 組織論（4 役割 + サポート構造、Person 責務 P1〜P4）
+
+---
+
+## 入口側 deployment 手順（v5.7.0 追加）
+
+`autonomous_scope: full` の運用で `crosscut-issue-implementer` の workflow（issue-pickup.yml）も deploy する。出口側（gemini-review.yml + auto-merge.yml）と一緒に配置する。
+
+### 配置成果物（autonomous_scope: full、v5.7.0 拡張）
+
+```
+利用者プロジェクト/
+├── .github/workflows/
+│   ├── auto-merge.yml             # v5.6.0 から
+│   ├── gemini-review.yml          # v5.6.0 から
+│   └── issue-pickup.yml           # v5.7.0 で追加（placeholder 置換済）
+├── label set:
+│   ├── ready-for-ai               # 入口 GO サイン (v5.7.0 で必須化)
+│   ├── auto-merge                 # 出口 GO サイン
+│   ├── do-not-merge               # 出口 block
+│   ├── do-not-pickup              # 入口 block (v5.7.0 追加)
+│   └── (filter 結果 label 群、v5.7.0 で AI が自動付与):
+│       in-progress / needs-clarification / out-of-scope /
+│       focus-mismatch / too-complex / circuit-broken / pickup-failed /
+│       untrusted-author
+├── REGIME.md:
+│   └── ## current_focus セクション (v5.7.0 で必須化、Issue pickup 判定で参照)
+└── Repository Secrets:
+    ├── GH_REVIEW_PAT (v5.5.1 から)
+    └── GEMINI_API_KEY (v5.5.0 から、v5.7.0 で「実装」用途にも転用)
+```
+
+### Spec-architect 対話で取得すべき値（v5.7.0 拡張）
+
+| 項目 | 用途 |
+|---|---|
+| `${ALLOWED_AUTHORS}` (auto-merge + issue-pickup 共通) | 信頼境界 |
+| `current_focus.type / target / since / priority` | Issue pickup judging |
+| autonomous_scope | full / merge_gated / custom |
+
+### Person 責務との対応（v5.7.0 入口側追加）
+
+`autonomous_scope: full` 時の人間関与は以下 4 場面に集約（philosophy 第 7 条 P1〜P4）：
+
+- **P1 発案**: 新機能 / バグ修正のアイデアを思考
+- **P2 ブレスト**: AI と対話して具体化、AI が Issue 作成 + label `ready-for-ai` 付与（人間は方向性を伝えるのみ、Issue 化は AI）
+- **P3 事後確認・評価**: 自動 merge 完了後に PR を振り返り
+- **P4 暴走時介入**: `do-not-merge` / `do-not-pickup` label 付与、`circuit-broken` 解除
+
+入口側 deploy で完成: 「対話 → Issue → 自動 pickup → 実装 → PR → 多層検証 → 自動 merge → 次 Issue」のフル自律 loop。

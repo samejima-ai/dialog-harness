@@ -402,3 +402,26 @@ Q: 自律駆動の度合いを選択してください
 質問する非エンジニア向け補助:
 - 「人間の手介入は『発案するとき』『ブレストするとき』『事後確認するとき』『AI が暴走したとき止めるとき』の 4 場面だけになります。それで OK ですか？」（fullの説明）
 - 「PR の最終 merge ボタンだけは自分で押したい場合は (2) を選んでください」（merge_gated の説明）
+
+## current_focus 質問例（v5.7.0 追加、autonomous-drive 入口側 Issue pickup と連動）
+
+dev_mode `autonomous` 確定時、または振り返り儀式で集中対象の変更を検出した時に確認：
+
+```
+Q: 今このプロジェクトで何に集中していますか？
+   (1) bug-fix     ：master や直近リリースのバグ修正中
+   (2) feature     ：新機能開発中（v5.x.0 minor 等）
+   (3) refactor    ：コード整理・命名統一・リファクタ中
+   (4) docs        ：ドキュメント改修中
+   (5) chore       ：依存更新・CI 整備等の雑務中
+```
+
+更新は spec-architect が AI 側で REGIME.md の `## current_focus` セクションに記録（β 半自動）。
+人間は発話で方向性を伝えるだけ（philosophy 第 4 条 + 第 7 条 P1/P2 と整合）。
+
+更新タイミング：
+- 新規機能着手時（例: 「v5.8.0 の新機能を始めたい」→ type: feature 更新）
+- フェーズ切替時（例: 「バグ修正に集中したい」→ type: bug-fix 更新）
+- 振り返り儀式時（過去 1 週間の commit 傾向と乖離検出時）
+
+current_focus が設定されていると、autonomous-drive 入口側 Issue pickup で「focus と一致しない Issue は skip」される（一時延期、Issue は close せず）。

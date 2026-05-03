@@ -2,6 +2,35 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.7.0
+
+### AD-026: gemini-cli を実装エージェントとして採用（Anthropic API 回避）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | v5.6.0 で温存された「パス B（crosscut-issue-implementer workflow 実装）」を本格仕様化するにあたり、実装エージェントの選定が必要。既存 skill (v5.0.0) は claude-code-action（Anthropic API 課金あり）前提だったが未稼働。ユーザー要望「自前開発で低コスト、API 課金避けたい」 |
+| 判断 | gemini-cli を実装エージェントとして転用採用。既存 GEMINI_API_KEY（v5.5.1 で導入、PR レビュー用途で稼働中）を流用。追加コスト 0。Anthropic API は使用しない |
+| 根拠 | (a) ユーザー要望「自前開発・低コスト・できるだけ API 避ける」と整合、(b) gemini-2.5-pro が PR レビュー用途で実用域実証済（PR #43）、(c) 段階的進行原則: 失敗したら Copilot Workspace 切替や一時的 Anthropic API 使用へ昇格判断（観測駆動）、(d) Council 起動条件のいずれにも該当せず Council 諮問は不要 |
+| 影響 | `crosscut-issue-implementer/SKILL.md` から claude-code-action 言及削除、gemini-cli base 設計へ全面改訂。`.github/workflows/issue-pickup.yml` は gemini-cli を呼び出す形式。**未踏領域**: PR レビューから「実装」への拡張は未検証、品質懸念あり、実装段階で品質悪い場合は autonomous-dev が独自 Council 起動可（adrv01-Ph1 自己申告経由）。フォールバック候補: ローカル Claude / Copilot Workspace / 一時的 Anthropic API |
+
+### AD-027: REGIME.md `current_focus` 軸新設（β 半自動 + γ ブランチ命名フォールバック）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | ユーザー観点「master のバグ修正中なら新機能 Issue を pickup しない」を機械可読化する必要。Issue pickup 時の「コンテキスト依存判定」が品質を決める |
+| 判断 | REGIME.md に新フィールド `## current_focus` を追加（type / target / since / priority）。**β 半自動更新**（spec-architect 対話で「今このプロジェクトで何に集中？」を確認 → AI が更新）+ **γ ブランチ命名フォールバック**（fix/* feat/* refactor/* から推論、REGIME.md 値が優先） |
+| 根拠 | (a) philosophy.md 第 4 条「モード判定は L0」と整合（自動推論ではなく対話で更新）、(b) β 半自動は人間 P1/P2 の発話起点で更新、AI が REGIME.md を編集する形 = 人間 = 頭と口、AI = 手 の原則と整合、(c) γ フォールバックは REGIME.md 未設定時の救済、(d) Issue 選別 3 段階フィルターの 3 段階目「current_focus 整合」で参照される、(e) Council 起動条件未満 |
+| 影響 | `meta-spec-template.md` REGIME.md テンプレに `## current_focus` セクション追加。`regime-assessment.md` に判定プロトコル追加。`dialog-questions.md` に質問追加。`dev-env-spec.md` Level C に Issue pickup 連動表追加。既存 LC ≥ 1 プロジェクトへの遡及適用なし、新規 + 任意更新。utilizer プロジェクトへ配布されない（spec-architect 対話で記録される機械可読軸） |
+
+### AD-028: Issue 選別 3 段階フィルター（label / author + 本文 / AI triage）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | ユーザー明示「全 Issue を picking up は NG」「Issue 選択は開発品質を決める」。乱雑な Issue から品質ある Issue を選別する機構が必要 |
+| 判断 | 3 段階フィルター採用: **一次** label `ready-for-ai` opt-in（人間 P2 の明示 GO サイン）、**二次** author allowlist + 本文必須項目（再現手順 / 期待動作 / 受入条件）、**三次** AI triage（gemini-cli が Issue 内容を読んで pickup 可否判定、SPEC/DONT/current_focus と照合）。各段階で skip 時の理由 label を自動付与（`needs-clarification` / `out-of-scope` / `focus-mismatch`）+ Issue は close せず人間差し戻し |
+| 根拠 | (a) ユーザー観点「label 回避 / 取得」両対応 = opt-in 設計、(b) philosophy 第 3 条情報純度（各段階で独立した判定）+ 第 7 条 P2 ブレスト責務（人間が GO サイン、AI が選別実行）と整合、(c) 完全自動を目指すユーザー要望と整合（一次 GO サイン後は AI が完遂）、(d) 失敗時の救済経路（label 付与で人間に差し戻し、Issue は残る） |
+| 影響 | `crosscut-issue-implementer/SKILL.md` 改訂 + `references/issue-filter-spec.md` / `triage-protocol.md` / `circuit-breaker-spec.md` 新設。`.github/workflows/issue-pickup.yml` で実装。Circuit Breaker（日次 5 / 月次 50）で経済的暴走防止（philosophy 第 7 条 P4）。**温存項目**: 新 sub-skill `crosscut-issue-drafter`（ブレスト → Issue 化支援）/ destructive change detector / ALLOWED_AUTHORS 動的化 |
+
 ## v5.6.0
 
 以下 3 件は L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に基づく設計判断 + L1 autonomous-dev による実装。Council 諮問 `council-2026-05-03T08:30:00Z-adrv02` で β 止揚採用（`agreed_with_modification`）。
