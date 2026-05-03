@@ -2,6 +2,35 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.5.2（patch、no minor bump）
+
+- 判定日: 2026-05-03
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 起源: v5.5.1 PR #40 で gemini-review 動作確立に伴い導入された診断機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / Diagnostics 2 step）の縮退。並行して `continue-on-error` 削除の副作用として PAT 未設定環境で job hard-fail する事象を防ぐため `GH_REVIEW_PAT` availability check を新設
+- 自己検証: `harness-verifier/verify.py` 全項目 PASS
+- 後方互換: 機能ロジックは不変。**ただし `continue-on-error: true` 削除は observable な operational behavior 変更**（transient Gemini/MCP failure が silent success → hard-fail (red CI) に変わる、Copilot review #41 line 12 で指摘 → 意図的設計判断として明文化）
+
+### 変更項目（operational behavior 変更 1 件 + 非破壊変更）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| `continue-on-error` 削除 | `Run Gemini PR review` の soft-fail 設定を削除。transient Gemini/MCP failure が以前の silent success → 本 patch 以降は **hard-fail (red CI)** | **operational 変更**（意図的、philosophy.md §3 情報純度の系） |
+| `GH_REVIEW_PAT` availability check 新設 | 上記副作用対策。PAT 未設定なら GEMINI_API_KEY 不在時と同様に notice 出力でクリーン skip | 非破壊（Robustness 強化） |
+| Diagnostics step 削除 | `Diagnostics — runner / docker / GitHub MCP server reachability` + `Diagnostics — gemini_review step outcome` の 2 step（v5.5.1 PR #40 で診断目的で追加、役目完遂） | 非破壊 |
+| `GEMINI_DEBUG` 削除 | env 削除（debug log は token 消費過多、必要時のみ手動 enable） | 非破壊 |
+| `id: gemini_review` 削除 | post-step が消えたため不要 | 非破壊 |
+| Prompt self-PR fallback 方式 | v5.5.1 と同様「APPROVE/COMMENT/REQUEST_CHANGES 全選択肢、self-PR API 拒否時に COMMENT fallback」を維持。v5.5.2 草案でハードコード化を試みたが Copilot review #41 line 184 で指摘 → revert | 非破壊（草案を撤回） |
+| Settings JSON コメント | `includeTools` 不在の security trade-off を明文化、v5.5.x 候補として絞り込み再検討を記録 | 非破壊（明文化のみ） |
+| Artifact upload | 保持（将来 debug 用、low cost） | 非破壊 |
+| バージョン | 据え置き → v5.5.2（patch のみ昇格）。operational 変更は minor 昇格相当ではない（fail の可視化は新機能追加ではなく既存機能の正常化と位置づける） | — |
+
+利用者プロジェクトには配布されない（v5.0.0〜v5.5.1 と同パターン）。
+
+### Council 諮問の有無
+
+本 patch は Council 諮問なしで実施（AD-021 §根拠参照）。理由: (a) v5.5.1 PR #40 で診断機構は明示的に「役目完遂後縮退」前提で導入された、(b) 本 patch は明確な仕様（v5.5.1 末で「diagnostics 縮退は別 PR で実施」と CHANGELOG に予告済）の素直実装、(c) 実装者 confidence ≥ 0.6（複数案拮抗なし）、(d) `crosscut-council` 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しない。
+
 ## v5.5.1（patch、no minor bump）
 
 - 判定日: 2026-05-02

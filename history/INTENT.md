@@ -340,6 +340,36 @@ DH の多くの設計判断は本調査の業界知見と一致しており、�
 - Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
 - 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
 
+## v5.5.2 で追加された概念
+
+### gemini-review の diagnostic 機構縮退と PAT availability check 新設
+
+v5.5.1 PR #40 で gemini-review GitHub Action（PR #37/#38 で導入、v5.5.1 で動作確立）の運用テストが完了。診断旅程で導入した暫定機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / 2 件の Diagnostics step）を本 patch で削除し、本番運用構成へ縮退する。並行して、`continue-on-error` 削除の副作用として PAT 未設定環境で job が hard-fail する事象を防ぐため、`GH_REVIEW_PAT` の availability check を新設する。
+
+#### 設計意図の核
+
+**(a) 診断機構の役割完遂と縮退**: v5.5.1 PR #40 で 8 commit にわたり実施した段階的診断（仮説 A〜F + α）の結果、真因 = settings JSON `tools.core: []` / `includeTools` filter による tool exposure 阻害（α パッチで除去）+ PAT permission 不足（ユーザーが Read+Write 付与）と確定。診断機構はもう機能不要（philosophy.md §5 献上哲学の「役目を終えた機構の縮退」原則と整合）。
+
+**(b) Operational behavior 変更の意図的可視化**: `continue-on-error: true` 削除により、transient な Gemini/MCP 失敗が **silent success → hard-fail (red CI)** に変わる。これは observable な behavior 変更（Copilot review #41 で指摘）であり、本 patch の意図的設計判断。レビュー機構の fail を fail として可視化することで、philosophy.md §3 情報純度の系（「観測されない fail は存在しないのと同じ」を排除）を実装する。
+
+**(c) PAT availability check の必要性**: `continue-on-error` 削除に伴い、PAT 未設定で MCP server に空 token を渡すと review_write が API レベルで「Resource not accessible」を返し job が red になる。`GEMINI_API_KEY` と同形式の早期 availability check を `GH_REVIEW_PAT` にも適用し、いずれかが未設定なら notice 出力でクリーン skip する。
+
+**(d) self-PR APPROVE は API 応答ベース fallback で扱う**: PR author と PAT owner が同一の場合 APPROVE は API が拒否するが、これを workflow 側でハードコードする案（v5.5.2 patch 草案）は Copilot review #41 で「他 maintainer が同 repo に PR を作った場合に誤った検閲となる」と指摘 → revert。prompt は v5.5.1 と同じ「APPROVE/COMMENT/REQUEST_CHANGES 全選択肢、self-PR で API 拒否時のみ COMMENT fallback」方式を維持。author の事前判定は unenforced repository assumption に依存するため避ける。
+
+**(e) tool exposure と security の trade-off の明文化**: α パッチで `includeTools` filter を削除した結果、github-mcp-server の **全 tool（write/destructive 含む）が model に expose** される状態が継続。本 repo は信頼済み author 前提で許容するが、settings JSON コメントに security 注を明記し、v5.5.x 候補として「tool 名の正しい形式判明後の read 系絞り込み」を温存する。
+
+**(f) artifact upload は保持**: 将来 debug 必要時の即応性を考え `actions/upload-artifact@v4` step は残す（cost 極小、retention 7 日）。これは「diagnostic」ではなく「永続的観測機構」と位置付け直す。
+
+#### 改修内容
+
+- `.github/workflows/gemini-review.yml`: diagnostics 2 step 削除 / `continue-on-error` / `GEMINI_DEBUG` / `id: gemini_review` 削除 / **`Check GH_REVIEW_PAT availability` step 新設** / `Run Gemini PR review` と `Upload gemini-artifacts` の if 条件を両 secret available に拡張 / prompt の self-PR セクションを fallback 方式へ簡素化 / settings JSON コメントに security 注追加
+
+#### v5.5.x / v5.6.0 候補として温存
+
+- **`includeTools` を正しい tool 名で復元**: github-mcp-server v0.27.0+ の正確な tool 名（toolset 命名規則）が判明したら read 系のみへ絞り込み（destructive tool の expose を排除）
+- **CodeRabbit / 他 AI レビュアーとの併走比較**: gemini-review が異質モデルとして機能した実績を踏まえ、複数 AI reviewer の独立配置を検討
+- **gemini-review の利用者プロジェクト template 化**: dialog-harness 自身の運用が安定したら template 化を検討（v5.5.0 から候補温存中）
+
 ## v5.5.1 で追加された概念
 
 ### Phase γ 先行宣言 4 本実装: ストラングラー・フィグ / Branch by Abstraction の射程外正式宣言

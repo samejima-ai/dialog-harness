@@ -2,6 +2,63 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.5.2 (in progress, target 2026-05-03)
+
+> **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、v5.5.1 で 2 例目正規適用、本 v5.5.2 が 3 例目）。
+
+patch 昇格。**v5.5.1 で gemini-review 動作確立に伴い導入された診断機構の縮退**。
+
+v5.5.1 PR #40 で gemini-review が動作完了 + 副次目的（独立 critic 機能の検証）が達成されたため、診断目的の暫定機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / Diagnostics step 2 件）を削除。
+
+**Operational behavior 変更（意図的、Copilot review #41 line 13 で指摘）**: `continue-on-error: true` 削除により、transient な Gemini/MCP 失敗が以前は silent success として記録されていたが、本 patch 以降は **PR check が hard-fail (red CI)** になる。本 repo のレビュー機構として fail を fail として可視化する設計判断（philosophy.md §3 情報純度の系）。
+
+PAT 未設定環境での noisy red を避けるため `GH_REVIEW_PAT` の availability check を新設し、未設定時は GEMINI_API_KEY 不在時と同様にクリーン skip する（Copilot review #41 line 121 対応）。
+
+self-PR の APPROVE 制約は **API レスポンスで判別する fallback 方式**で記述（v5.5.1 prompt と同形式）。author が PAT owner と同一かを workflow で判定するロジックは導入しない（unenforced repository assumption を排除、Copilot review #41 line 184 対応）。
+
+利用者プロジェクトには配布されない。
+
+### Step 1: gemini-review.yml の diagnostics 縮退
+
+- **削除**: `Diagnostics — runner / docker / GitHub MCP server reachability` step（v5.5.1 で追加、原因 A 切り分け用）
+- **削除**: `Diagnostics — gemini_review step outcome` step（v5.5.1 で追加、post-step outcome 確認用）
+- **削除**: `Run Gemini PR review` の `continue-on-error: true`（診断時の fail 通過用、本 patch で fail を可視化）
+- **削除**: `Run Gemini PR review` の `id: gemini_review`（post-step が消えたため不要）
+- **削除**: `GEMINI_DEBUG: "true"` env（diagnostic 過程で必要だったが本番では token 消費過多）
+- **保持**: `Upload gemini-artifacts (stdout / stderr / telemetry)` step（low cost で将来 debug 必要時に有用）
+- **保持**: `actions/checkout` の `fetch-depth: 0`（本 repo の小ささから cost 極小、cli 内部 diff 計算が必要な場合に効く）
+- **保持**: settings JSON の `tools.core` / `mcpServers.github.includeTools` 不在（α パッチで判明した tool exposure 阻害除去）
+
+### Step 2: GH_REVIEW_PAT availability check 新設
+
+`continue-on-error: true` 削除に伴い PAT 未設定で MCP server に空 token を渡すと review_write が hard-fail する事象を防ぐため、`GEMINI_API_KEY` と同形式の早期 availability check を追加。両 secret が available の場合のみ `Run Gemini PR review` / `Upload gemini-artifacts` を実行する（Copilot review #41 line 121 対応）。
+
+### Step 3: prompt self-PR fallback 方式の維持
+
+self-PR APPROVE 拒否は **API レスポンスで判別する fallback 方式**で prompt に記述（v5.5.1 と同形式）。author が PAT owner と同一かを workflow 側で事前判定するロジックは導入しない理由：
+- author = `${{ github.event.pull_request.user.login }}` と PAT owner の比較には PAT owner の事前知識が必要（unenforced assumption）
+- 他 maintainer が同 repo に PR を作った場合、APPROVE は実際に通るので強制 COMMENT downgrade は誤った検閲となる
+- v5.5.2 patch 草案でハードコード化を試みたが Copilot review #41 line 184 で指摘 → API 応答ベースの fallback に revert
+
+prompt の「出力形式」「必須実行プロトコル」セクションは v5.5.1 と同様に APPROVE/COMMENT/REQUEST_CHANGES 全選択肢を提示し、self-PR で API 拒否時のみ COMMENT fallback と明記。
+
+### Step 4: settings JSON のコメント更新（security 注 追加）
+
+`includeTools` 不在で github-mcp-server の **全 tool が model に expose** される（read 系のみならず write/destructive 系含む）。本 repo は信頼済み author 前提で許容するが、tool 名の正しい形式判明後の絞り込みを v5.5.x 候補として明記。
+
+### Step 5: 履歴層更新
+
+- `history/CHANGELOG.md` 本セクション
+- `history/INTENT.md` v5.5.2 セクション追加
+- `history/REGIME-LOG.md` v5.5.2 patch 判定記録
+- `history/ARCH-DECISIONS.md` AD-021 追加
+
+### Step 6: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 PASS
+- gemini-review が新 prompt + diagnostics 削減後の構成で正常動作することを本 PR で検証
+- 本 PR description / CHANGELOG / verification 結果の整合を gemini-review 自身が独立 critic として確認する 3 例目運用
+
 ## v5.5.1 (released 2026-05-02)
 
 > **記録規約**: 本セクションは PR #39 の draft 中（実際は ready-for-review 開始）に書かれ、`(in progress, target 2026-05-02)` で記録されていた。本 patch（PR #39 マージ後）で `(released 2026-05-02)` へ更新。「PR draft 中は `(in progress)` / マージ時に `(released YYYY-MM-DD)` 化」フローは v5.5.0 で正規適用が確立し、本 v5.5.1 は **2 例目の正規適用**にあたる。
