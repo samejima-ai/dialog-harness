@@ -99,6 +99,7 @@ jobs:
         if: steps.check_key.outputs.available == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REVIEW_PAT: ${{ secrets.GH_REVIEW_PAT }}
         run: |
           set -uo pipefail
           echo "::group::Runner environment"
@@ -106,27 +107,38 @@ jobs:
           docker --version || echo "::warning::docker not available"
           echo "::endgroup::"
 
-          echo "::group::GITHUB_TOKEN format check"
-          # token の prefix のみ表示（ghs_ = GitHub Apps token, ghp_/github_pat_ = PAT）
-          # 全体は出さない。長さと先頭 4 文字のみ
-          token_prefix="${GITHUB_TOKEN:0:4}"
-          token_len="${#GITHUB_TOKEN}"
-          echo "token prefix: ${token_prefix}*** (length: ${token_len})"
-          if [ "${token_prefix}" = "ghs_" ]; then
-            echo "::notice::GITHUB_TOKEN is GitHub Apps token (ghs_*). github-mcp-server may have limited write capabilities — PAT (ghp_*) recommended for review_write operations."
+          echo "::group::Token format check (ghs_ = GitHub Apps, ghp_/github_pat_ = PAT)"
+          gh_token_prefix="${GITHUB_TOKEN:0:4}"
+          gh_token_len="${#GITHUB_TOKEN}"
+          echo "GITHUB_TOKEN prefix: ${gh_token_prefix}*** (length: ${gh_token_len})"
+          if [ -z "${GH_REVIEW_PAT}" ]; then
+            echo "::warning::GH_REVIEW_PAT secret is not set. Falling back to GITHUB_TOKEN for MCP server."
+            pat_prefix="(unset)"
+            pat_len=0
+          else
+            pat_prefix="${GH_REVIEW_PAT:0:4}"
+            pat_len="${#GH_REVIEW_PAT}"
           fi
+          echo "GH_REVIEW_PAT prefix: ${pat_prefix}*** (length: ${pat_len})"
           echo "::endgroup::"
 
           echo "::group::Pull github-mcp-server image"
           docker pull ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | tail -5 || echo "::warning::docker pull failed"
           echo "::endgroup::"
 
-          echo "::group::Smoke test: github-mcp-server starts and responds to initialize"
-          # MCP server に initialize リクエストを送り、応答が返るか確認（5 秒で打ち切り）
-          # これで auth と起動の両方が一度に切り分けできる
+          # MCP server を実際に動かす token を選ぶ：PAT があれば PAT、無ければ auto token
+          if [ -n "${GH_REVIEW_PAT}" ]; then
+            mcp_token="${GH_REVIEW_PAT}"
+            mcp_token_label="GH_REVIEW_PAT"
+          else
+            mcp_token="${GITHUB_TOKEN}"
+            mcp_token_label="GITHUB_TOKEN (auto)"
+          fi
+
+          echo "::group::Smoke test: github-mcp-server initialize with ${mcp_token_label}"
           init_req='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"diag","version":"0.1"}}}'
           response=$(echo "$init_req" | timeout 10 docker run -i --rm \
-            -e GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_TOKEN}" \
+            -e GITHUB_PERSONAL_ACCESS_TOKEN="${mcp_token}" \
             ghcr.io/github/github-mcp-server:v0.27.0 2>&1 | head -20 || true)
           echo "MCP server response (first 20 lines):"
           echo "${response}"
@@ -147,9 +159,11 @@ jobs:
         env:
           GEMINI_CLI_TRUST_WORKSPACE: "true"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # GitHub MCP server の Docker container に渡す PAT 名と完全一致させる
-          # （Copilot review #37 line 99: 環境変数展開の曖昧さを排除）
-          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GitHub MCP server には Fine-grained PAT (GH_REVIEW_PAT) を渡す（v5.5.1）。
+          # 自動の secrets.GITHUB_TOKEN（ghs_* 形式の GitHub Apps token）では PR #39 の
+          # diagnostic run で gemini-review が success かつ投稿 0 件のサイレント終了を
+          # 起こしたため、Fine-grained PAT (Pull requests: read+write, Contents: read) に切替
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # 診断用 verbose log（v5.5.1）。gemini-cli が tool 呼び出しと turn を stderr に詳細出力する
           GEMINI_CLI_VERBOSE: "true"
