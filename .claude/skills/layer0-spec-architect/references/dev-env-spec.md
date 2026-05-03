@@ -578,3 +578,43 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 - **compute_consensus_mode のシグネチャ変更**: 引数に `ctl` と `stats` を追加。
   既存呼び出し側は CTL-0 / 空 stats で呼べば従来通り「全件献上」相当の挙動
 - **後方互換破壊**: なし
+
+---
+
+## Level C: AI 自律運用（v5.6.0 追加、dev_mode = autonomous の場合のみ）
+
+`dev_mode` が `autonomous` に決定したプロジェクトに対して、autonomous-drive 機構（PR 作成 / 多層検証 / 自動 merge / 次 Issue 着手）を deploy する。各 `autonomous_scope` 値ごとに有効化される機能：
+
+### autonomous_scope: full（デフォルト）
+
+- `templates/github-workflows/auto-merge.yml.template` を `.github/workflows/auto-merge.yml` に配置（placeholder 置換後）
+- `templates/github-workflows/gemini-review.yml.template` を `.github/workflows/gemini-review.yml` に配置（placeholder 置換後）
+- label 自動作成: `ready-for-ai` / `auto-merge` / `do-not-merge`
+- Repository Secrets 設定ガイド表示: `GH_REVIEW_PAT`（Pull requests: Read+Write） / `GEMINI_API_KEY`（Google AI Studio 発行）
+- ALLOWED_AUTHORS 確認（hardcode、変更時は spec 改修扱い）
+
+### autonomous_scope: merge_gated
+
+- `gemini-review.yml` のみ配置（auto-merge.yml はスキップ）
+- label: `ready-for-ai` のみ自動作成
+- Repository Secrets: `GEMINI_API_KEY` のみ必須、`GH_REVIEW_PAT` は任意
+- 人間 approve が PR merge 前に必須
+
+### autonomous_scope: custom
+
+- 個別指定。spec-architect 対話で各機能を on/off 確認：
+  - auto-merge workflow 配置（y/n）
+  - gemini-review workflow 配置（y/n）
+  - destructive change detector（v5.6.x patch 候補、未実装）
+  - circuit breaker（v5.6.x patch 候補、未実装）
+  - label セット個別カスタマイズ
+- REGIME.md の `## autonomous_scope` セクションに `custom_config:` を YAML で記録
+
+### deployment 実行主体
+
+`crosscut-autonomous-drive` skill（v5.6.0 で新設）が template 適用を担う。spec-architect が dev_mode `autonomous` 判定後に明示起動する。詳細は `autonomous-drive-deployment.md` 参照。
+
+### Person 責務との対応
+
+`autonomous_scope: full` 時、人間関与は `philosophy.md` 第 7 条 Person 責務 P1〜P4 に集約：
+- P1 発案 / P2 ブレスト（Issue 化は AI）/ P3 事後確認・評価 / P4 暴走時介入

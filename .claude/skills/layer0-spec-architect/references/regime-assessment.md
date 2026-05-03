@@ -404,17 +404,19 @@ REGIME.md に以下を記録する。未記載時のデフォルトは **L0-2**�
 
 ---
 
-## dev_mode 判定（v5.0.0 追加）
+## dev_mode 判定（v5.0.0 追加 / v5.6.0 で `autonomous` 本格化）
 
 GitHub 連携前提の自律駆動を 3 段階で表現する追加軸。規模・チーム軸と並列の動的判定軸として L0 対話で取得する。
 
 ### モード境界
 
-| モード | GitHub | Actions | Issue 自動化 | 並列実装 | 人間関与範囲 |
-|---|---|---|---|---|---|
-| `local_only` | × | × | × | × | 全 Layer |
-| `github_assisted` | ○ | 任意 | × | 手動 | L0 + 承認 |
-| `github_autonomous` | ○ | ○ | ○ | 自動 | L0 のみ |
+| モード | GitHub | Actions | Issue 自動化 | 並列実装 | 自動 merge | 人間関与範囲 |
+|---|---|---|---|---|---|---|
+| `local_only` | × | × | × | × | × | 全 Layer |
+| `github_assisted` | ○ | 任意 | × | 手動 | × | L0 + 承認 |
+| `autonomous` | ○ | ○ | ○ | 自動 | ○（scope 依存）| **P1〜P4 のみ**（philosophy.md §7 Person 責務） |
+
+旧名 `github_autonomous` は v5.6.0 で `autonomous` にリネーム（autonomous_scope 軸との整合）。後方互換は §dev_mode 旧名対応 参照。
 
 ### 判定プロトコル（2 段階判定）
 
@@ -484,3 +486,43 @@ dev_mode の変更は人間判断による。昇格・降格いずれも `histor
 - C1 判断献上の頻度（多すぎ＝仕様不足、少なすぎ＝スコープ逸脱の見落とし）
 
 蓄積データから判定表の閾値を調整する。
+
+---
+
+## autonomous_scope 判定（v5.6.0 追加、dev_mode = autonomous の場合のみ）
+
+`dev_mode` が `autonomous` に決定したら、autonomous-drive 機構の運用粒度を 3 値で取得する。
+
+### scope 境界
+
+| autonomous_scope | 自動 merge | PR review/approve | P3（事後確認）の位置 | Person 責務範囲 |
+|---|---|---|---|---|
+| **`full`**（デフォルト） | 有効（`auto-merge` label opt-in + 多層検証通過時） | AI / 独立 critic | merge 後 | P1〜P4 のみ |
+| `merge_gated` | 無効（人間 approve 必須） | 人間 | merge 前 | P1〜P4 + PR review |
+| `custom` | 部分有効（dev-env-spec.md Level C 詳細指定） | 個別 | 個別 | 個別 |
+
+### 判定プロトコル
+
+dev_mode = `autonomous` 確定後に 1 問のみ：
+```
+Q: 自律駆動の度合いを選択してください
+   (1) フルオート [デフォルト]
+   (2) 中度 (merge は人間)
+   (3) カスタム
+```
+→ デフォルト = `full`、ユーザー裁量で `merge_gated` / `custom` に降格可。
+
+### dev_mode 旧名対応（後方互換）
+
+v5.0.0〜v5.5.x で記録された REGIME.md は `dev_mode: github_autonomous` のままで動作する（`autonomous` + `autonomous_scope: full` と等価扱い）。新規プロジェクトでは新名 `autonomous` を使用する。明示的な migration は要求しない（philosophy.md 第 5 条「タイプ二項分類の限界」と同様、運用慣行で吸収）。
+
+### Person 責務範囲との対応
+
+`autonomous_scope: full` を選択した場合の人間関与は philosophy.md 第 7 条 Person 責務 P1〜P4 に集約：
+- P1 発案 / P2 ブレスト（Issue 化は AI）/ P3 事後確認・評価 / P4 暴走時介入
+
+`merge_gated` では P3 を merge 前に倒すため、PR review/approve も人間関与に追加。`custom` は dev-env-spec.md Level C で個別指定。
+
+### ADR 記録要請
+
+`autonomous_scope` の昇格・降格（例: `merge_gated` → `full`）は手動 + ADR 記録必須（dev_mode 変更と同形式）。観測駆動: 数 PR の運用観測後に降格 / 昇格を判断（v5.5.3 AD-022 の観測駆動原則を継承）。

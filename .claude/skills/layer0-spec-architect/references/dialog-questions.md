@@ -376,3 +376,29 @@ NFR スコアと合わせて `monolith / realtime-pubsub / event-sourcing` か�
 - 「壊れたら困る本番環境は何ですか？ そこは絶対に人間判断にしたい？」
 
 デフォルトは L0-2（最小権限）。L0-3 昇格は Layer 0 対話で明示同意を得た場合のみ。
+
+## autonomous_scope 質問例（v5.6.0 追加、dev_mode = autonomous 確定後）
+
+dev_mode が `autonomous` に決定した場合、autonomous-drive 機構（PR 作成 / 多層検証 / 自動 merge / 次 Issue 着手）の運用粒度を選択する 1 問を追加する。**デフォルト = full**（人間 = P1〜P4 のみ）。
+
+```
+Q: 自律駆動の度合いを選択してください
+   (1) フルオート [デフォルト推奨]
+       人間 = P1〜P4 (発案 / ブレスト / 事後確認・評価 / 暴走時介入) のみ
+       AI = Issue 精査〜PR 作成〜多層検証〜自動 merge〜次 Issue 着手 まで完全自走
+       autonomous_scope: full
+   (2) 中度
+       自動 merge は無効、PR review/approve は人間が実施（P3 を merge 前に倒す）
+       autonomous_scope: merge_gated
+   (3) カスタム
+       個別に設定（dev-env-spec.md Level C 詳細表で指定）
+       autonomous_scope: custom
+```
+
+質問しないケース：
+- M1 単体モード → `local_only` or `github_assisted` のみ、autonomous_scope は適用外
+- LC = 0（新規プロジェクト立ち上げ初回）+ 規模 S が小 → `github_assisted` 推奨で本軸スキップ
+
+質問する非エンジニア向け補助:
+- 「人間の手介入は『発案するとき』『ブレストするとき』『事後確認するとき』『AI が暴走したとき止めるとき』の 4 場面だけになります。それで OK ですか？」（fullの説明）
+- 「PR の最終 merge ボタンだけは自分で押したい場合は (2) を選んでください」（merge_gated の説明）

@@ -1,0 +1,88 @@
+---
+name: crosscut-autonomous-drive
+dimension: D4
+description: >
+  autonomous-drive 標準化の deployment ヘルパー（v5.6.0 追加）。
+  dialog-harness の `templates/github-workflows/` から workflow テンプレートを取得し、
+  placeholder 置換して利用者プロジェクトの `.github/workflows/` に配置する。
+  併せて label (ready-for-ai / auto-merge / do-not-merge) を作成し、
+  Repository Secrets (GH_REVIEW_PAT / GEMINI_API_KEY) の設定ガイドを提示する。
+  spec-architect が dev_mode `autonomous` 判定時に明示起動する。
+  philosophy.md 第 7 条「AI 組織論」の「サポート skill」枠（4 役割を補助、L3 運用層ではない）。
+---
+
+# Crosscut Autonomous-Drive (Deployment)
+
+autonomous-drive 機構を利用者プロジェクトに deploy するためのサポート skill。
+philosophy.md 第 7 条 4 役割属性（L0 設計 / L1 実装 / L2 統括 / Council 判断）の **サポート枠** に位置づく。
+L3 運用層ではない（運用インシデントは L0 spec-architect へ還元する原則と整合）。
+
+## 責務
+
+1. **template 取得**: `templates/github-workflows/` から `auto-merge.yml.template` / `gemini-review.yml.template` を読み込む
+2. **placeholder 置換**: spec-architect 対話で確定した値（`${ALLOWED_AUTHORS}` 等）を template に展開
+3. **配置**: 利用者プロジェクトの `.github/workflows/` 配下にコピー
+4. **label 作成**: GitHub UI または API 経由で `ready-for-ai` / `auto-merge` / `do-not-merge` label を作成（autonomous_scope に応じて）
+5. **secrets ガイド**: `GH_REVIEW_PAT` / `GEMINI_API_KEY` の設定手順をユーザーに提示（実際の入力は人間 P4 / spec-architect 対話で確認）
+
+## 起動条件
+
+- `dev_mode: autonomous` が REGIME.md に記録されている
+- `autonomous_scope` が `full` / `merge_gated` / `custom` のいずれかに確定済み
+- spec-architect が deployment フェーズで本 skill を明示起動
+
+ユーザー発話で「autonomous-drive を deploy して」「自律駆動の workflow を入れて」「auto-merge を有効化して」等の入力でも起動候補。
+
+## 起動しないケース
+
+- `dev_mode: local_only` または `github_assisted`（本機構は autonomous モード専用）
+- spec-architect の dev_mode 判定が完了していない（先に L0 対話を完了させる）
+- 既に deployment 済み（idempotent ではない、再 deploy は明示確認後）
+
+## 処理フロー
+
+```
+1. REGIME.md から dev_mode + autonomous_scope を読み取る
+2. autonomous_scope に応じた template セットを選択
+   - full: auto-merge.yml.template + gemini-review.yml.template
+   - merge_gated: gemini-review.yml.template のみ
+   - custom: dev-env-spec.md Level C 詳細表に従う個別選択
+3. 各 template ファイルを読み込み、placeholder を spec-architect 対話で確定した値で置換
+   - placeholder 一覧と規約は references/placeholder-spec.md 参照
+4. 利用者プロジェクトの .github/workflows/ 配下に配置
+5. label 作成（autonomous_scope に応じた set）
+6. Repository Secrets 設定ガイドを表示（人間が GitHub UI で実際に設定）
+7. 配置結果を DELIVERY.md に記録（成功/失敗、配置パス、placeholder 値、未設定 secrets）
+```
+
+## 失敗時の挙動
+
+- placeholder 値が未確定 → L0 spec-architect への Type C 献上（仕様改訂提案）
+- template ファイル読み込み失敗 → Type D 献上（技術例外）
+- 既存 workflow ファイル衝突検出 → 上書き前に明示確認、衝突履歴を `delivery/` に記録
+- Repository Secrets 確認失敗（API 経由） → 人間 P4 へ手動確認依頼（暴走防止の安全側 fail）
+
+## 失敗時の独立検証
+
+`autonomous_scope: full` で deploy した場合、初回 PR で auto-merge.yml が稼働する時点が事実上の独立検証。dialog-harness 自身では PR #42 で実証済み（self-merge 成功）。
+
+## 関連ドキュメント
+
+### このスキル内 references/
+
+- [references/placeholder-spec.md](references/placeholder-spec.md) — placeholder 一覧 + 規約
+- [references/setup-checklist.md](references/setup-checklist.md) — label / secret / PAT 設定手順チェックリスト
+
+### このスキル外
+
+- `templates/github-workflows/auto-merge.yml.template` — auto-merge workflow テンプレート（dialog-harness リポジトリ ルート）
+- `templates/github-workflows/gemini-review.yml.template` — gemini-review workflow テンプレート（同上）
+- `.claude/skills/layer0-spec-architect/references/autonomous-drive-deployment.md` — spec-architect 対話レベルのガイド
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` Level C — deploy 対象機能の autonomous_scope 別表
+- `.claude/skills/layer0-spec-architect/references/philosophy.md` 第 7 条 — DH AI 組織論（本 skill の位置づけ）
+
+## バージョン
+
+- v0.1.0（v5.6.0 で新規導入、deployment 専念）
+- v5.6.x 候補: destructive change detector / circuit breaker（guardian 機能）の追加
+- v5.7.0 候補: ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）
