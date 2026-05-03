@@ -2,9 +2,63 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.5.2 (in progress, target 2026-05-03)
+## v5.5.3 (in progress, target 2026-05-03)
 
-> **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、v5.5.1 で 2 例目正規適用、本 v5.5.2 が 3 例目）。
+> **記録規約**: PR draft / ready-for-review 中は `(in progress, target YYYY-MM-DD)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.5.3 が 4 例目正規適用）。本 PR では併せて v5.5.2（前回 PR #41 で merge 後 in-progress 化のままだった）も `(released 2026-05-03)` 化する（housekeeping、独立 PR を増やさず本 PR に同梱）。
+
+patch 昇格。**autonomous-drive 機構の出口側として label opt-in による PR 自動 merge workflow を新設**。
+
+DH の crosscut-issue-implementer から続く autonomous-drive 機構（issue → AI 実装 → 多層レビュー → 自動 merge）の最終段階。今までは人間が merge ボタンを手押ししていた部分を、明示的な opt-in（label `auto-merge`）+ 多層検証（harness-verify + gemini-review + reviewDecision）通過時のみ自動化する。
+
+**Operational behavior 追加（opt-in、後方互換完全維持）**: label が無い PR は従来通り手動 merge を要する（既定挙動の変更なし）。label 付与時のみ条件評価 → 全 pass で自動 merge。利用者プロジェクトには配布されない。
+
+### Step 1: auto-merge.yml workflow 新設
+
+`.github/workflows/auto-merge.yml`（160 line）。trigger event:
+- `pull_request`: labeled / unlabeled / opened / synchronize / ready_for_review / reopened
+- `pull_request_review`: submitted / dismissed
+- `check_suite`: completed
+
+評価条件（全て満たす場合のみ squash merge）:
+
+| # | 条件 | 目的 |
+|---|---|---|
+| 1 | label `auto-merge` 付き | 明示的な人間の GO サイン（opt-in） |
+| 2 | non-draft | 編集途中を merge しない |
+| 3 | author が `ALLOWED_AUTHORS` (env) に含まれる | 信頼境界（現状: `samejima-ai` のみ） |
+| 4 | `harness-verify` (job: verify) が SUCCESS | 構造的検証通過 |
+| 5 | `gemini-review` (job: review) が走った場合 SUCCESS、走らなかった場合（paths 外）skip 扱い | 異質モデル独立 critic の通過 |
+| 6 | `reviewDecision` が CHANGES_REQUESTED でない | 指摘解消待ちで block |
+| 7 | PR state が OPEN | closed / merged を再 merge しない |
+
+非該当 PR は notice 出力で skip（red CI にしない）、merge 時は `--squash --delete-branch`。
+
+### Step 2: 設計判断の記録
+
+| 判断 | 理由 |
+|---|---|
+| GitHub native auto-merge ではなく workflow で直接 merge | branch protection 設定変更不要、ロジック一元管理、運用観測（notice ログ）が一元化 |
+| PAT (`GH_REVIEW_PAT`) を使用 | workflow の auto GITHUB_TOKEN は別 workflow を trigger できない（無限ループ防止）が、本 workflow は別 workflow を起動しない用途 + PAT で post-merge 動作観測を統一 |
+| `ALLOWED_AUTHORS` env で hardcode | spec 改修扱い、変更時は L0 spec-architect 経由で REGIME.md と整合確認 |
+| `gemini-review` を「走った場合のみ必須」 | paths filter で発火しない PR（例: `.github/workflows/**` のみ変更）でも auto-merge 可能にする |
+
+### Step 3: 履歴層更新
+
+- `history/CHANGELOG.md` 本セクション
+- `history/INTENT.md` v5.5.3 セクション追加（autonomous-drive パイプラインとの位置づけ）
+- `history/REGIME-LOG.md` v5.5.3 patch 判定記録
+- `history/ARCH-DECISIONS.md` AD-022 追加
+- v5.5.2 (in progress) → (released 2026-05-03) 化（同梱）
+
+### Step 4: 自己検証 + 献上
+
+- `python harness-verifier/verify.py` 全 PASS（D4 整合性維持）
+- 本 PR 自身は `auto-merge` label を付けない運用（初回投入の動作確認は人間 merge で実施、信頼運用は次 PR から開始）
+- 次 PR で初めて auto-merge label を試験投入し、workflow が期待通り条件評価 → merge 実行することを確認する 4 例目運用
+
+## v5.5.2 (released 2026-05-03)
+
+> **記録規約**: 本セクションは PR #41 draft 中は `(in progress, target 2026-05-03)` で記録され、PR #41 merge (2026-05-03) で `(released 2026-05-03)` 化されるべきだったが follow-up PR が遅延した。本 v5.5.3 patch（PR #42 想定）に同梱する形で正規化（4 例目正規適用に該当）。
 
 patch 昇格。**v5.5.1 で gemini-review 動作確立に伴い導入された診断機構の縮退**。
 

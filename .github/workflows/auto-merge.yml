@@ -1,0 +1,160 @@
+# auto-merge — label opt-in による PR 自動 merge
+#
+# v5.5.3 で追加。DH の crosscut-issue-implementer から続く autonomous-drive
+# 機構の出口側（issue → AI 実装 → 多層レビュー → 自動 merge のうち最終段階）。
+#
+# 動作: 以下の全条件を満たした場合のみ PR を squash merge する
+#   1. PR に label `auto-merge` が付いている（明示 opt-in、人間の GO サイン）
+#   2. PR が non-draft
+#   3. author が ALLOWED_AUTHORS（信頼済 list）に含まれる
+#   4. harness-verify check が SUCCESS（構造的検証）
+#   5. gemini-review が走った場合 SUCCESS 必須（走らなかった = paths filter
+#      で対象外、その場合は条件クリア扱い）
+#   6. reviewDecision が CHANGES_REQUESTED でない
+#   7. PR state が OPEN
+#
+# 非該当 PR は notice 出力で skip（red CI にしない）。
+#
+# 設計判断:
+# - GitHub native auto-merge ではなく workflow で直接 merge する形を採用
+#   理由: branch protection の設定変更を伴わず opt-in 運用できる、ロジックを
+#   一箇所で管理できる、運用観測（notice ログ）が一元化される
+# - PAT (GH_REVIEW_PAT) を使用: workflow の auto GITHUB_TOKEN は別 workflow を
+#   trigger できない（無限ループ防止）が、PAT なら trigger 可能。本 workflow 自身は
+#   別 workflow を起動しないが、merge commit が後続 workflow を起こす可能性は許容
+# - 自動 merge 後は branch を削除（--delete-branch、ノイズ削減）
+#
+# 必要な setup:
+# - Repo Settings → Secrets に GH_REVIEW_PAT が設定済（v5.5.1 で導入）
+# - GitHub UI で `auto-merge` label を作成（手動、初回のみ）
+#
+# 信頼済 author list の拡張:
+# - 本 workflow の env.ALLOWED_AUTHORS を更新する PR を出す（spec 改修扱い）
+# - 別 contributor を追加する場合は L0 spec-architect 経由で REGIME.md と整合確認
+
+name: auto-merge
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, opened, synchronize, ready_for_review, reopened]
+  pull_request_review:
+    types: [submitted, dismissed]
+  check_suite:
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+# 同 PR の並行実行を排他（多 event で同時 merge を防ぐ）
+concurrency:
+  group: "auto-merge-${{ github.event.pull_request.number || github.event.check_suite.head_sha }}"
+  cancel-in-progress: false
+
+env:
+  # 信頼済 author list（space 区切り）。本 workflow を信頼する author を列挙。
+  # 拡張時は spec-architect 経由で REGIME.md と整合確認のうえ更新する
+  ALLOWED_AUTHORS: "samejima-ai"
+
+jobs:
+  evaluate:
+    # bot 作者 + dependabot を skip（無限ループ / 想定外 merge を防ぐ）
+    if: |
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve PR number
+        id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          set -euo pipefail
+          PR_NUMBER=""
+
+          case "${{ github.event_name }}" in
+            pull_request|pull_request_review)
+              PR_NUMBER="${{ github.event.pull_request.number }}"
+              ;;
+            check_suite)
+              HEAD_SHA="${{ github.event.check_suite.head_sha }}"
+              # SHA から open PR を逆引き（同 SHA で複数 PR があれば先頭採用）
+              PR_NUMBER=$(gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/pulls" \
+                --jq '[.[] | select(.state == "open")] | .[0].number // empty')
+              ;;
+          esac
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::notice::PR を解決できませんでした (event: ${{ github.event_name }})。skip。"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::評価対象: PR #$PR_NUMBER"
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Evaluate conditions and merge
+        if: steps.resolve.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          # PR 詳細を一括取得
+          PR_JSON=$(gh pr view "$PR_NUMBER" --json author,labels,isDraft,state,statusCheckRollup,reviewDecision,title)
+
+          # 条件 7: PR state OPEN
+          STATE=$(echo "$PR_JSON" | jq -r '.state')
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::notice::PR #$PR_NUMBER state=$STATE。skip。"
+            exit 0
+          fi
+
+          # 条件 1: auto-merge label
+          if ! echo "$PR_JSON" | jq -e '.labels[]? | select(.name == "auto-merge")' > /dev/null; then
+            echo "::notice::PR #$PR_NUMBER に 'auto-merge' label なし。skip（明示 opt-in 待ち）。"
+            exit 0
+          fi
+
+          # 条件 2: non-draft
+          if [ "$(echo "$PR_JSON" | jq -r '.isDraft')" = "true" ]; then
+            echo "::notice::PR #$PR_NUMBER は draft。skip。"
+            exit 0
+          fi
+
+          # 条件 3: author allowlist
+          AUTHOR=$(echo "$PR_JSON" | jq -r '.author.login')
+          if ! echo " $ALLOWED_AUTHORS " | grep -q " $AUTHOR "; then
+            echo "::notice::author '$AUTHOR' が ALLOWED_AUTHORS 外。skip（信頼済 list 拡張は spec-architect 経由）。"
+            exit 0
+          fi
+
+          # 条件 4: harness-verify は SUCCESS 必須
+          # statusCheckRollup の name は workflow 内 job 名（"verify"）が入る
+          HV=$(echo "$PR_JSON" | jq -r '.statusCheckRollup[]? | select(.name == "verify") | .conclusion' | tail -1)
+          if [ "$HV" != "SUCCESS" ]; then
+            echo "::notice::harness-verify=${HV:-未実行} (expected SUCCESS)。skip。"
+            exit 0
+          fi
+
+          # 条件 5: gemini-review は走った場合 SUCCESS 必須（paths filter で走らなければ skip 扱い）
+          GR=$(echo "$PR_JSON" | jq -r '.statusCheckRollup[]? | select(.name == "review") | .conclusion' | tail -1)
+          if [ -n "$GR" ] && [ "$GR" != "SUCCESS" ]; then
+            echo "::notice::gemini-review=$GR (expected SUCCESS or 未実行)。skip。"
+            exit 0
+          fi
+
+          # 条件 6: reviewDecision が CHANGES_REQUESTED でない
+          RD=$(echo "$PR_JSON" | jq -r '.reviewDecision // ""')
+          if [ "$RD" = "CHANGES_REQUESTED" ]; then
+            echo "::notice::PR #$PR_NUMBER の reviewDecision=$RD。skip（指摘解消待ち）。"
+            exit 0
+          fi
+
+          # 全条件 pass
+          TITLE=$(echo "$PR_JSON" | jq -r '.title')
+          echo "::notice::全条件 pass。PR #$PR_NUMBER ($TITLE) を squash merge します。"
+          gh pr merge "$PR_NUMBER" --squash --delete-branch --subject "$TITLE (#$PR_NUMBER)"
+          echo "::notice::PR #$PR_NUMBER の auto-merge 完了。"

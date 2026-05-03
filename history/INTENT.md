@@ -340,6 +340,44 @@ DH の多くの設計判断は本調査の業界知見と一致しており、�
 - Cline 事件の一次情報（公式 incident report URL）は本サイクルでは未確認。次サイクルで `crosscut-issue-implementer` 改修に着手する際に出典付きで補完すること
 - 本調査の範囲は AI 主導型 CI/CD に偏っており、伝統的な CI/CD（言語ランタイム別最小構成、actionlint 等の defacto ツール、solo dev 向け推奨パターン）は別途調査余地あり
 
+## v5.5.3 で追加された概念
+
+### autonomous-drive 機構の出口側として label opt-in 自動 merge を新設
+
+DH の crosscut-issue-implementer から続く autonomous-drive 機構（issue → AI 実装 → 多層レビュー → 自動 merge）の最終段階を本 patch で実装。今までは人間が merge ボタンを手押しする箇所だったが、明示的な opt-in（label `auto-merge`）+ 多層検証通過時のみ自動化することで、ユーザーの手介入を「issue 作成（GO サイン）」と「検証 fail 時の判断」の 2 点に限定する方向性へ進む。
+
+#### 設計意図の核
+
+**(a) autonomous-drive パイプラインの完成形**: v5.0.0 で導入した crosscut-* 機構（dispatcher / issue-implementer / feedback-loop）は入口〜中段までを autonomous 化していたが、最終段階の merge は手動だった。本 patch で出口も自動化し、issue 起点〜merge 完了までの autonomous loop を構造的に閉じる（philosophy.md §6 H3「方向性発案」相当の人間専管判断は issue 作成時に集約される設計）。
+
+**(b) 段階的引き上げの選択（パス A 採用）**: 当初の選択肢として「パス A: auto-merge workflow だけ追加」と「パス B: dev_mode を `autonomous` に引き上げ（spec-architect 経由）」があったが、観測駆動原則（`wf-baseline-rationale.md` §3）に従いパス A を先に運用 → 数 PR で問題なければパス B 昇格を判断する。本 patch はパス A の実装。
+
+**(c) 多層検証による信頼境界の構築**: auto-merge 条件は単一の checkbox ではなく、以下の 4 層 AND で構成される：
+- **構造層**: harness-verify SUCCESS（D4 整合性、5 検査）
+- **意味層**: gemini-review SUCCESS（異質モデル独立 critic、走った場合のみ）
+- **判断層**: reviewDecision != CHANGES_REQUESTED（人間 / Copilot / gemini いずれかの REQUEST_CHANGES が立てば block）
+- **承認層**: label `auto-merge` 付き + author allowlist（明示的 opt-in + 信頼境界）
+
+各層が独立して fail を表明できる設計で、philosophy.md §3「情報純度」（Generator/Evaluator 分離）と §5「献上哲学」（自律内部完結禁止、独立観測機構の通過）を実装。
+
+**(d) ハードコードを避けた author allowlist**: `ALLOWED_AUTHORS` を workflow env に hardcode する形を採用（外部 secret や別 config file に逃さない）。理由: contributor の追加は spec 改修扱いとし、L0 spec-architect 経由で REGIME.md との整合確認を必須化する設計判断。これにより allowlist の不可視拡張（誰かが secret を追加して invisible に信頼境界が広がる）を防ぐ。
+
+**(e) gemini-review 「走った場合のみ必須」設計**: gemini-review は paths filter で発火しない PR（例: `.github/workflows/**` のみ変更）が存在する。「常に必須」とすると発火しない PR が永久 pending になるため、「走った場合のみ SUCCESS 必須」と条件化。一方 harness-verify は paths filter なしで全 PR 走るため、無条件必須として設計。
+
+#### 改修内容
+
+- `.github/workflows/auto-merge.yml` 新設（160 line）
+
+#### 同梱: v5.5.2 (in progress) → (released 2026-05-03) 化
+
+PR #41 merge 後の `(released)` 化 follow-up PR が遅延していたため、本 PR に housekeeping として同梱。独立 PR を増やさず、4 例目正規適用として記録。
+
+#### v5.5.x / v5.6.0 候補として温存
+
+- **パス B: dev_mode autonomous 化**: 本パッチ（パス A）で数 PR 試運用 → 問題なければ L0 spec-architect 経由で REGIME.md `dev_mode: github_assisted` → `autonomous` 引き上げ。issue 作成 → AI 実装 → auto-merge までフル自動化（v5.6.0 候補）
+- **`ALLOWED_AUTHORS` の動的化**: 現在 hardcode だが、複数 contributor 体制になったら repository variable 化を検討（現状不要、philosophy.md §6 H3「方向性発案」原則と整合）
+- **destructive change detector**: diff の line count threshold / DELETE-heavy diff 検出による追加 guard（v5.5.x 候補、観測駆動で追加判断）
+
 ## v5.5.2 で追加された概念
 
 ### gemini-review の diagnostic 機構縮退と PAT availability check 新設

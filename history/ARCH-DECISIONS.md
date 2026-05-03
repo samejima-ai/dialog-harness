@@ -2,6 +2,17 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.5.3
+
+### AD-022: autonomous-drive 機構の出口側として label opt-in 自動 merge を新設
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | DH の crosscut-* 機構（v5.0.0 で導入: dispatcher / issue-implementer / feedback-loop）は autonomous-drive パイプラインの入口〜中段までを自動化していたが、最終段階の merge は人間手押しで残っていた。ユーザー（非エンジニア）からの要請「自律駆動できるようにしたい、issue label = GO サイン → AI 実装 → 自動 merge」を起点に、出口側自動化の必要性が確定 |
+| 判断 | **(a) パス A 採用**: 「auto-merge workflow だけ追加」を選択。「パス B: dev_mode を `autonomous` へ引き上げ」は v5.6.0 候補として温存（観測駆動原則、数 PR 試運用後に判断）。**(b) GitHub native auto-merge ではなく workflow で直接 merge**: branch protection 設定変更不要、ロジック一元管理、運用観測（notice ログ）一元化。**(c) 4 層検証 AND** で auto-merge 条件を構成: 構造層（harness-verify）+ 意味層（gemini-review）+ 判断層（reviewDecision != CHANGES_REQUESTED）+ 承認層（label `auto-merge` + author allowlist）。**(d) `ALLOWED_AUTHORS` を workflow env に hardcode**: 拡張は spec 改修扱い、L0 spec-architect 経由で REGIME.md と整合確認必須。**(e) `gemini-review` は「走った場合のみ必須」**: paths filter で発火しない PR の永久 pending を回避 |
+| 根拠 | (a) パス A はリスク小・段階的、ユーザー体感の自律度が大幅 up（手動 merge ボタン押しが消える）、AI 自走による意図逸脱リスクを 1 層ずつ観測しながら拡大可能（観測駆動原則と整合）。(b) GitHub native auto-merge は branch protection 必須で運用ルール変更を伴う、本機構は branch protection なしでも opt-in 動作する低侵襲設計。(c) 4 層 AND は philosophy.md §3「情報純度」（Generator/Evaluator 分離）と §5「献上哲学」（自律内部完結禁止、独立観測機構の通過）を実装。(d) hardcode は allowlist の不可視拡張（誰かが secret を追加して invisible に信頼境界が広がる）を防ぐ設計判断。(e) 必須化は paths filter 起因の deadlock を防ぐ。Council 起動条件のいずれにも該当せず Council 諮問は不要 |
+| 影響 | `.github/workflows/auto-merge.yml` 新設（160 line）。SK 本文・harness-verifier・利用者プロジェクトへの影響ゼロ。**opt-in 完全後方互換**（label なき PR は従来通り手動 merge）。本 patch 自身は label を付けず人間 merge で投入し、信頼運用は次 PR から開始する 4 例目運用。dev_mode は `github_assisted` のまま据え置き、autonomous 化は v5.6.0 候補として温存。**温存項目**: パス B（dev_mode autonomous 化、L0 spec-architect 経由）/ `ALLOWED_AUTHORS` の動的化（複数 contributor 体制になったら検討）/ destructive change detector（diff threshold / DELETE-heavy 検出、観測駆動で追加判断） |
+
 ## v5.5.2
 
 ### AD-021: gemini-review の diagnostics 縮退と PAT availability check 新設
