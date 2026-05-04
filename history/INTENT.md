@@ -12,7 +12,7 @@ v5.7.1 で `gemini-cli` → `Claude Code CLI` に実装エージェントを切�
 
 **(a) 観測駆動の bug 検出**: v5.7.1 merge 時点では実装本体（`claude-code-action`）の本番テストが行われておらず、bug が潜在化。Issue #46 が初のトリガー。「観測駆動原則」が実証された事例として記録（philosophy.md §1 フラクタル原則 + §3 情報純度の応用）。
 
-**(b) 自明な single-line fix**: 修正は workflow `permissions:` ブロックに `id-token: write` 1 行追加のみ。複数案拮抗なし、不可逆操作なし、SPEC 矛盾なし → Council 諮問は不要（philosophy.md 第 6 条「人間 ≒ Council」起動条件のいずれにも該当せず）。
+**(b) 自明な single-line fix**: 修正は workflow `permissions:` ブロックに `id-token: write` 1 行追加のみ。複数案拮抗なし、不可逆操作なし、SPEC 矛盾なし → Council 諮問は不要（philosophy.md §6「人間 ≒ Council」起動条件のいずれにも該当せず）。
 
 **(c) v5.7.1 release 化を同梱**: 本 patch は v5.7.1 の bug 修正であり、merge と同時に v5.7.1 (in progress) → (released 2026-05-03) 化を housekeeping として同梱（**8 例目正規適用**）。
 
