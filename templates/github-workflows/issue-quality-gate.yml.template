@@ -1,0 +1,555 @@
+# GitHub Actions Workflow Template for Issue Quality Gate
+# 
+# This template implements activation trigger (d) for crosscut-issue-quality-gate
+# Triggers when 'ready-for-ai' label is added to issues
+#
+# Setup Instructions:
+# 1. Copy this file to .github/workflows/issue-quality-gate.yml
+# 2. Customize the configuration section below
+# 3. Ensure required secrets are set: GITHUB_TOKEN, GEMINI_API_KEY (optional)
+# 4. Update project-specific settings in the config section
+
+name: Issue Quality Gate
+
+on:
+  issues:
+    types: [labeled, unlabeled, edited]
+
+# Required permissions for gh issue edit/comment operations
+# (デフォルトの GITHUB_TOKEN が read-only になるリポジトリ設定でも書き込み可能にする)
+permissions:
+  contents: read
+  issues: write
+
+# Configuration - Customize for your project
+env:
+  # Quality Gate Configuration
+  QUALITY_GATE_VERSION: "5.8.0"
+  STRICT_MODE: "true"  # true for strict checking, false for warning mode
+  AI_MODEL: "claude"   # claude | gpt | gemini | auto
+
+  # Timeout and Retry Settings
+  GATE_TIMEOUT_SECONDS: "30"
+  MAX_RETRIES: "3"
+
+  # Notification Settings
+  TEAM_MENTION: "@dev-team"  # Customize your team mention
+  # Slack Webhook URL は secret 経由で参照する（env: 直書きは漏洩リスク）。
+  # Repo Settings → Secrets → SLACK_WEBHOOK_URL に設定後、本 workflow が secrets.SLACK_WEBHOOK_URL を参照する
+
+jobs:
+  # Extract issue metadata and determine if gate should run
+  gate-check:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'labeled' && github.event.label.name == 'ready-for-ai'
+    env:
+      # gh コマンドの repo context（checkout 不要で gh issue view が動作するため必要）
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      should_run_gate: ${{ steps.check.outputs.should_run }}
+      issue_number: ${{ github.event.issue.number }}
+      issue_title: ${{ github.event.issue.title }}
+
+    steps:
+    - name: Check if Quality Gate should run
+      id: check
+      run: |
+        # Check if issue already passed quality gate recently
+        passed_label=$(gh issue view ${{ github.event.issue.number }} --json labels | \
+          jq -r '.labels[] | select(.name == "quality-gate:passed") | .name')
+
+        # Check for bypass labels
+        bypass_label=$(gh issue view ${{ github.event.issue.number }} --json labels | \
+          jq -r '.labels[] | select(.name | startswith("emergency-bypass") or startswith("gate-override")) | .name')
+
+        if [ -n "$bypass_label" ]; then
+          echo "should_run=false" >> $GITHUB_OUTPUT
+          echo "Issue has bypass label: $bypass_label"
+        elif [ -n "$passed_label" ]; then
+          echo "should_run=false" >> $GITHUB_OUTPUT
+          echo "Issue already passed quality gate"
+        else
+          echo "should_run=true" >> $GITHUB_OUTPUT
+        fi
+
+  # Run the quality gate checks
+  quality-gate:
+    runs-on: ubuntu-latest
+    needs: gate-check
+    if: needs.gate-check.outputs.should_run_gate == 'true'
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js (if needed)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+      # lockfile が存在する Node プロジェクトでのみ Node セットアップ + cache を有効化
+      # （yarn/pnpm/lockfile なしのリポジトリでの failure 防止）
+      if: hashFiles('package.json') != '' && hashFiles('package-lock.json') != ''
+
+    - name: Install dependencies (if needed)
+      run: npm ci
+      # lockfile 存在時のみ npm ci を実行（同上）
+      if: hashFiles('package.json') != '' && hashFiles('package-lock.json') != ''
+      
+    - name: Get Issue Content
+      id: issue-content
+      run: |
+        # Fetch issue details
+        issue_data=$(gh issue view ${{ needs.gate-check.outputs.issue_number }} --json title,body,labels,author)
+        
+        echo "title=$(echo "$issue_data" | jq -r '.title')" >> $GITHUB_OUTPUT
+        echo "author=$(echo "$issue_data" | jq -r '.author.login')" >> $GITHUB_OUTPUT
+        
+        # Save issue body to file for processing
+        echo "$issue_data" | jq -r '.body' > issue_body.md
+        echo "$issue_data" | jq -r '.labels[].name' > issue_labels.txt
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract Scope Label
+      id: scope
+      run: |
+        # Extract scope label, assign default if none
+        scope_label=$(grep "^scope:" issue_labels.txt | head -1 || echo "")
+        
+        if [ -z "$scope_label" ]; then
+          scope_label="scope:general"
+          echo "No scope label found, assigning: $scope_label"
+          gh issue edit ${{ needs.gate-check.outputs.issue_number }} --add-label "$scope_label"
+        fi
+        
+        echo "scope_label=$scope_label" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Axis A: Specification Alignment
+    - name: "Axis A: Check Specification Alignment"
+      id: axis-a
+      run: |
+        echo "🔍 Checking specification alignment..."
+        
+        # Check for SPEC.md existence and basic compliance
+        spec_check="pass"
+        reasons=()
+        
+        if [ -f "SPEC.md" ]; then
+          # Check for conflicts with SPEC.md
+          if grep -i "conflict\|deprecated\|obsolete" SPEC.md > /dev/null; then
+            spec_check="warn"
+            reasons+=("Found potential conflicts in SPEC.md")
+          fi
+        else
+          reasons+=("SPEC.md not found")
+        fi
+        
+        if [ -f "DONT.md" ]; then
+          # Basic DONT.md violation check (simplified)
+          if grep -i "forbidden\|prohibited\|never" DONT.md > /dev/null; then
+            reasons+=("Check DONT.md compliance manually")
+          fi
+        fi
+        
+        echo "result=$spec_check" >> $GITHUB_OUTPUT
+        printf '%s\n' "${reasons[@]}" | tr '\n' ';' > axis_a_reasons.txt
+        
+    # Axis ii: Duplication Detection  
+    - name: "Axis ii: Check for Duplicates"
+      id: axis-ii
+      run: |
+        echo "🔍 Checking for duplicate issues..."
+        
+        duplicate_check="pass"
+        reasons=()
+        
+        # Get existing issues for similarity check
+        existing_issues=$(gh issue list --state all --limit 50 --json title,number | \
+          jq -r '.[] | "\(.number): \(.title)"')
+        
+        current_title="${{ steps.issue-content.outputs.title }}"
+        
+        # Simple keyword-based similarity check
+        similar_issues=$(echo "$existing_issues" | grep -i "$(echo "$current_title" | cut -d' ' -f1-3)" || true)
+        
+        if [ -n "$similar_issues" ]; then
+          duplicate_check="warn"
+          reasons+=("Found potentially similar issues")
+          echo "Similar issues found:"
+          echo "$similar_issues"
+        fi
+        
+        echo "result=$duplicate_check" >> $GITHUB_OUTPUT
+        printf '%s\n' "${reasons[@]}" | tr '\n' ';' > axis_ii_reasons.txt
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Axis iii: Security Check
+    - name: "Axis iii: Security Check"
+      id: axis-iii
+      run: |
+        echo "🔍 Running security checks..."
+        
+        security_check="pass"
+        reasons=()
+        
+        # Check for potential secrets in issue body
+        if grep -iE "(password|secret|key|token|credential)" issue_body.md > /dev/null; then
+          security_check="warn"
+          reasons+=("Potential sensitive information detected")
+        fi
+        
+        # Check for security-related keywords that need attention
+        if grep -iE "(auth|login|permission|role|access)" issue_body.md > /dev/null; then
+          reasons+=("Security-related changes - review carefully")
+        fi
+        
+        echo "result=$security_check" >> $GITHUB_OUTPUT
+        printf '%s\n' "${reasons[@]}" | tr '\n' ';' > axis_iii_reasons.txt
+
+    # Axis viii: Test Granularity
+    - name: "Axis viii: Test Strategy Check"
+      id: axis-viii
+      run: |
+        echo "🔍 Checking test strategy..."
+        
+        test_check="pass"
+        reasons=()
+        
+        # Check if test strategy is mentioned in issue
+        if ! grep -iE "(test|testing|spec|tdd|coverage)" issue_body.md > /dev/null; then
+          test_check="fail"
+          reasons+=("No test strategy mentioned")
+        fi
+        
+        # Check for test files if this is code-related
+        if grep -iE "(implement|code|function|class|component)" issue_body.md > /dev/null; then
+          if [ ! -d "tests/" ] && [ ! -d "test/" ] && [ ! -d "__tests__/" ]; then
+            test_check="warn"
+            reasons+=("No test directory found for code changes")
+          fi
+        fi
+        
+        echo "result=$test_check" >> $GITHUB_OUTPUT
+        printf '%s\n' "${reasons[@]}" | tr '\n' ';' > axis_viii_reasons.txt
+
+    # Axis ix: Parallel Safety
+    - name: "Axis ix: Parallel Safety Check"
+      id: axis-ix
+      run: |
+        echo "🔍 Checking parallel execution safety..."
+        
+        parallel_check="pass"
+        reasons=()
+        
+        scope_label="${{ steps.scope.outputs.scope_label }}"
+        
+        # Check for in-progress issues with same scope
+        if [ "$scope_label" != "scope:general" ]; then
+          in_progress_issues=$(gh issue list --label "$scope_label" --label "in-progress" --json number,title | jq length)
+          
+          if [ "$in_progress_issues" -gt 0 ]; then
+            parallel_check="warn"
+            reasons+=("Found $in_progress_issues in-progress issues with same scope")
+          fi
+        fi
+        
+        # Check for mutex labels
+        mutex_labels=$(grep "^mutex:" issue_labels.txt || true)
+        if [ -n "$mutex_labels" ]; then
+          for mutex_label in $mutex_labels; do
+            mutex_conflicts=$(gh issue list --label "$mutex_label" --label "in-progress" --json number | jq length)
+            if [ "$mutex_conflicts" -gt 0 ]; then
+              parallel_check="fail"
+              reasons+=("Mutex conflict detected: $mutex_label")
+            fi
+          done
+        fi
+        
+        # Check for refactor:major
+        if grep "^refactor:major" issue_labels.txt > /dev/null; then
+          reasons+=("Major refactor detected - consider freezing other issues")
+        fi
+        
+        echo "result=$parallel_check" >> $GITHUB_OUTPUT
+        printf '%s\n' "${reasons[@]}" | tr '\n' ';' > axis_ix_reasons.txt
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # AI-powered comprehensive analysis (optional)
+    - name: "AI Analysis (if configured)"
+      id: ai-analysis
+      if: env.AI_MODEL != 'none' && (secrets.ANTHROPIC_API_KEY || secrets.OPENAI_API_KEY || secrets.GEMINI_API_KEY)
+      run: |
+        echo "🤖 Running AI-powered analysis..."
+        
+        # This is a placeholder for AI integration
+        # Actual implementation would call appropriate AI service
+        # with issue content and project context
+        
+        ai_result="pass"
+        ai_confidence="0.8"
+        ai_reasoning="Basic checks passed, detailed AI analysis not implemented in this template"
+        
+        echo "result=$ai_result" >> $GITHUB_OUTPUT
+        echo "confidence=$ai_confidence" >> $GITHUB_OUTPUT
+        echo "reasoning=$ai_reasoning" >> $GITHUB_OUTPUT
+
+    # Aggregate results and make decision
+    - name: "Aggregate Results"
+      id: aggregate
+      run: |
+        echo "📊 Aggregating quality gate results..."
+        
+        # Collect all axis results
+        axis_a_result="${{ steps.axis-a.outputs.result }}"
+        axis_ii_result="${{ steps.axis-ii.outputs.result }}"
+        axis_iii_result="${{ steps.axis-iii.outputs.result }}"
+        axis_viii_result="${{ steps.axis-viii.outputs.result }}"
+        axis_ix_result="${{ steps.axis-ix.outputs.result }}"
+        
+        # Count failures
+        fail_count=0
+        warn_count=0
+        failed_axes=()
+        
+        for axis in "A:$axis_a_result" "ii:$axis_ii_result" "iii:$axis_iii_result" "viii:$axis_viii_result" "ix:$axis_ix_result"; do
+          axis_name=$(echo "$axis" | cut -d: -f1)
+          axis_result=$(echo "$axis" | cut -d: -f2)
+          
+          case "$axis_result" in
+            "fail")
+              fail_count=$((fail_count + 1))
+              failed_axes+=("$axis_name")
+              ;;
+            "warn")
+              warn_count=$((warn_count + 1))
+              ;;
+          esac
+        done
+        
+        # Determine overall result
+        if [ "$fail_count" -gt 0 ]; then
+          overall_result="fail"
+        elif [ "$warn_count" -gt 2 ]; then  # More than 2 warnings = fail
+          overall_result="fail"
+        elif [ "$warn_count" -gt 0 ]; then
+          overall_result="warn"
+        else
+          overall_result="pass"
+        fi
+        
+        echo "overall_result=$overall_result" >> $GITHUB_OUTPUT
+        echo "fail_count=$fail_count" >> $GITHUB_OUTPUT
+        echo "warn_count=$warn_count" >> $GITHUB_OUTPUT
+        printf '%s\n' "${failed_axes[@]}" | tr '\n' ',' > failed_axes.txt
+
+    # Handle successful gate passage
+    - name: "Handle Gate Pass"
+      if: steps.aggregate.outputs.overall_result == 'pass'
+      run: |
+        echo "✅ Quality Gate PASSED"
+        
+        # Add success labels
+        gh issue edit ${{ needs.gate-check.outputs.issue_number }} \
+          --add-label "quality-gate:passed" \
+          --add-label "in-progress"
+        
+        # Optional success comment
+        if [ "${{ env.STRICT_MODE }}" = "true" ]; then
+          gh issue comment ${{ needs.gate-check.outputs.issue_number }} --body "✅ **Quality Gate Passed**
+
+This issue has successfully passed all quality checks and is ready for implementation.
+
+**Gate Results:**
+- Axis A (Specification): ✅
+- Axis ii (Duplication): ✅  
+- Axis iii (Security): ✅
+- Axis viii (Testing): ✅
+- Axis ix (Parallel Safety): ✅
+
+The issue has been automatically labeled with \`in-progress\` and is ready for pickup by the implementation system."
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Handle gate failure  
+    - name: "Handle Gate Failure"
+      if: steps.aggregate.outputs.overall_result == 'fail'
+      run: |
+        echo "❌ Quality Gate FAILED"
+        
+        fail_count="${{ steps.aggregate.outputs.fail_count }}"
+        warn_count="${{ steps.aggregate.outputs.warn_count }}"
+        
+        # Remove ready-for-ai label
+        gh issue edit ${{ needs.gate-check.outputs.issue_number }} \
+          --remove-label "ready-for-ai"
+        
+        # Add failure labels for each failed axis
+        failed_axes=$(cat failed_axes.txt | tr ',' '\n')
+        for axis in $failed_axes; do
+          if [ -n "$axis" ]; then
+            gh issue edit ${{ needs.gate-check.outputs.issue_number }} \
+              --add-label "gate-failed:axis-$axis"
+          fi
+        done
+        
+        # Create detailed failure comment
+        comment_body="❌ **Quality Gate Failed**
+
+This issue did not meet the quality standards and cannot proceed to implementation.
+
+**Summary:**
+- 🔴 Failed checks: $fail_count
+- 🟡 Warnings: $warn_count
+
+**Detailed Results:**"
+
+        # Add axis-specific details
+        if [ -f axis_a_reasons.txt ] && [ "${{ steps.axis-a.outputs.result }}" != "pass" ]; then
+          comment_body="$comment_body
+- **Axis A (Specification):** ${{ steps.axis-a.outputs.result }} - $(cat axis_a_reasons.txt)"
+        fi
+        
+        if [ -f axis_ii_reasons.txt ] && [ "${{ steps.axis-ii.outputs.result }}" != "pass" ]; then
+          comment_body="$comment_body
+- **Axis ii (Duplication):** ${{ steps.axis-ii.outputs.result }} - $(cat axis_ii_reasons.txt)"
+        fi
+        
+        if [ -f axis_iii_reasons.txt ] && [ "${{ steps.axis-iii.outputs.result }}" != "pass" ]; then
+          comment_body="$comment_body
+- **Axis iii (Security):** ${{ steps.axis-iii.outputs.result }} - $(cat axis_iii_reasons.txt)"
+        fi
+        
+        if [ -f axis_viii_reasons.txt ] && [ "${{ steps.axis-viii.outputs.result }}" != "pass" ]; then
+          comment_body="$comment_body
+- **Axis viii (Testing):** ${{ steps.axis-viii.outputs.result }} - $(cat axis_viii_reasons.txt)"
+        fi
+        
+        if [ -f axis_ix_reasons.txt ] && [ "${{ steps.axis-ix.outputs.result }}" != "pass" ]; then
+          comment_body="$comment_body
+- **Axis ix (Parallel Safety):** ${{ steps.axis-ix.outputs.result }} - $(cat axis_ix_reasons.txt)"
+        fi
+        
+        comment_body="$comment_body
+
+**Next Steps:**
+1. Address the failed checks listed above
+2. Update the issue content as needed
+3. Re-add the \`ready-for-ai\` label to trigger another quality gate run
+
+For more information about quality standards, see the project's quality guidelines."
+
+        gh issue comment ${{ needs.gate-check.outputs.issue_number }} --body "$comment_body"
+        
+        # Mention team if configured
+        if [ -n "${{ env.TEAM_MENTION }}" ]; then
+          gh issue comment ${{ needs.gate-check.outputs.issue_number }} --body "${{ env.TEAM_MENTION }} Quality gate failed for issue #${{ needs.gate-check.outputs.issue_number }}"
+        fi
+        
+        exit 1  # Fail the workflow
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Handle warnings (pass with caution)
+    - name: "Handle Gate Warning"
+      if: steps.aggregate.outputs.overall_result == 'warn'
+      run: |
+        echo "⚠️ Quality Gate PASSED with warnings"
+        
+        gh issue edit ${{ needs.gate-check.outputs.issue_number }} \
+          --add-label "quality-gate:warning" \
+          --add-label "needs-review"
+          
+        # Create warning comment
+        gh issue comment ${{ needs.gate-check.outputs.issue_number }} --body "⚠️ **Quality Gate Passed with Warnings**
+
+This issue passed the quality gate but has some concerns that should be addressed:
+
+**Warnings:** ${{ steps.aggregate.outputs.warn_count }}
+
+Please review the warnings and consider addressing them before implementation.
+
+The issue has been labeled with \`needs-review\` for human attention."
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Optional: Send notifications to external systems
+  notify:
+    runs-on: ubuntu-latest
+    needs: [gate-check, quality-gate]
+    # quality-gate が実際に走った場合のみ通知（unlabeled / edited などの skip イベントで
+    # needs.gate-check.outputs.* が空のまま Slack 通知が走るのを防ぐ）
+    if: |
+      always() &&
+      needs.gate-check.result == 'success' &&
+      (needs.quality-gate.result == 'success' || needs.quality-gate.result == 'failure') &&
+      secrets.SLACK_WEBHOOK_URL != ''
+
+    steps:
+    - name: "Send Slack Notification"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        if [ "${{ needs.quality-gate.result }}" = "success" ]; then
+          status="✅ Passed"
+          color="good"
+        else
+          status="❌ Failed"
+          color="danger"
+        fi
+
+        curl -X POST -H 'Content-type: application/json' \
+          --data "{
+            \"attachments\": [{
+              \"color\": \"$color\",
+              \"title\": \"Quality Gate: $status\",
+              \"text\": \"Issue #${{ needs.gate-check.outputs.issue_number }}: ${{ needs.gate-check.outputs.issue_title }}\",
+              \"fields\": [{
+                \"title\": \"Repository\",
+                \"value\": \"${{ github.repository }}\",
+                \"short\": true
+              }]
+            }]
+          }" \
+          ${{ env.SLACK_WEBHOOK }}
+
+# Quality Gate Bypass (for emergency situations)
+  bypass-gate:
+    runs-on: ubuntu-latest
+    if: |
+      github.event.action == 'labeled' && 
+      (github.event.label.name == 'emergency-bypass' || 
+       startsWith(github.event.label.name, 'gate-override:'))
+    
+    steps:
+    - name: "Handle Quality Gate Bypass"
+      run: |
+        echo "🚨 Quality Gate BYPASSED"
+        
+        bypass_reason="Manual override"
+        if [ "${{ github.event.label.name }}" = "emergency-bypass" ]; then
+          bypass_reason="Emergency bypass"
+        fi
+        
+        gh issue edit ${{ github.event.issue.number }} \
+          --add-label "quality-gate:bypassed" \
+          --add-label "in-progress"
+          
+        gh issue comment ${{ github.event.issue.number }} --body "🚨 **Quality Gate Bypassed**
+
+Reason: $bypass_reason
+Bypassed by: @${{ github.actor }}
+Timestamp: $(date -u)
+
+⚠️ **Warning:** This issue bypassed quality checks and may not meet standard quality requirements. Please ensure proper review and testing.
+
+The issue has been marked as \`in-progress\` and is ready for implementation."
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

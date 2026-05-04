@@ -34,6 +34,10 @@ __pycache__/
 *.pyc
 *.pyo
 
+# .gemini/ runtime artifacts (issue-pickup workflow が実行時に生成する統計ファイル等)
+# v5.8.0 PR #50 review feedback で repo にコミット不適切と確定（ブランチ間競合リスク）
+.gemini/
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

@@ -46,7 +46,10 @@ permissions:
   issues: write
   id-token: write  # v5.7.2 fix: anthropics/claude-code-action@v0 の OIDC token 取得に必須
 
-# 同 Issue の並行実行を排他（多重起動防止）
+# 並行制御（v5.7.x 互換、v5.8.0 で scope ベース動的判定を意図したが GitHub Actions の
+# workflow-level concurrency は steps.* 参照不可で完全実装不可と判明したため Issue 番号
+# ベースに後退。scope 別並列制御は v5.8.x patch で jobs 内自前実装 or 静的 contains
+# chain で本実装予定。詳細: dh-upgrades/upgrade-spec-v5.8.0.md「concurrency 制約注記」
 concurrency:
   group: "issue-pickup-${{ github.event.issue.number }}"
   cancel-in-progress: false

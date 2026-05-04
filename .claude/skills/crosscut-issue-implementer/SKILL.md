@@ -31,6 +31,7 @@ description: >
         - SPEC.md / DONT.md / current_focus と照合
         - skip 時は理由 label を自動付与（needs-clarification / out-of-scope / focus-mismatch）
         - Issue は close せず人間差し戻し
+3.5. crosscut-issue-quality-gate 最終確認（v5.8.0 追加、発動契機 (d)）
 4. Pickup 確定: label `in-progress` 自動付与、Issue 番号で branch 作成（feat/<issue-num>-<slug>）
 5. 実装: **Claude Code CLI** (anthropics/claude-code-action) が repo を clone + Issue + SPEC を読み込み + 実装 + commit
 6. PR 作成: gh pr create + ready-for-review + (autonomous_scope: full なら) `auto-merge` label 自動付与
@@ -102,6 +103,7 @@ CTL は本 v5.7.0 改訂で参照しない（v5.0.0 旧版で言及されてい�
 
 ### このスキル外
 
+- `.claude/skills/crosscut-issue-quality-gate/SKILL.md` — Issue 品質チェック（発動契機 (d)）
 - `.github/workflows/issue-pickup.yml` — dialog-harness 自身の deploy
 - `templates/github-workflows/issue-pickup.yml.template` — 利用者プロジェクト展開用
 - `.claude/skills/layer0-spec-architect/references/autonomous-drive-deployment.md` — deployment ガイド

@@ -532,6 +532,7 @@ DH 本体（D4: メタスキル層）の内部整合性を 5 項目で検査す�
 - `references/dev-env-spec.md` の参照権限マトリクスに `templates/` 行を追加（配布雛形）
 - 関連: 既存 `council/` を `crosscut-council/` にリネーム（major 破壊）。`crosscut-` を Level A skill の第二の命名規則として確立
 - 関連: 5 新規 crosscut skill（issue-dispatcher / issue-implementer / verifier-drift / verifier-philosophy(placeholder) / feedback-loop）追加。詳細は各 SKILL.md
+- v5.8.0 追加: crosscut-issue-quality-gate（Issue 品質チェック、発動契機 (b)）
 - バージョン記法を semver 厳格化（v5.0.0 以降は MAJOR.MINOR.PATCH）。v4.x 互換のため旧表記は受理
 
 ### v4.2 追加（分類再編・progressive disclosure 適合化）
