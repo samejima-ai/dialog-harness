@@ -46,11 +46,12 @@ permissions:
   issues: write
   id-token: write  # v5.7.2 fix: anthropics/claude-code-action@v0 の OIDC token 取得に必須
 
-# scope ラベル基準の並行制御（v5.8.0 改訂、並列安全性軸対応）
-# 同 scope の Issue は直列、別 scope は並列実行
-# Note: scope ラベル未設定時は 'general' として全て直列化（安全側に倒す）
+# 並行制御（v5.7.x 互換、v5.8.0 で scope ベース動的判定を意図したが GitHub Actions の
+# workflow-level concurrency は steps.* 参照不可で完全実装不可と判明したため Issue 番号
+# ベースに後退。scope 別並列制御は v5.8.x patch で jobs 内自前実装 or 静的 contains
+# chain で本実装予定。詳細: dh-upgrades/upgrade-spec-v5.8.0.md「concurrency 制約注記」
 concurrency:
-  group: "issue-pickup-scope-general"  # 動的設定は jobs 内で実装
+  group: "issue-pickup-${{ github.event.issue.number }}"
   cancel-in-progress: false
 
 env:

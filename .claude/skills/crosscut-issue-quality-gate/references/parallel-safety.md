@@ -319,15 +319,17 @@ release_freeze_period() {
 
 ## workflow 組み込み
 
+> **v5.8.0 制約注記**: 下記の「改修後」形は **GitHub Actions の workflow-level `concurrency` block が `steps.*` を参照できない**制約により完全実装不可。v5.8.0 では Issue 番号ベース（v5.7.x 互換）を維持し、scope 動的判定は v5.8.x patch で jobs 内自前実装 or 静的 contains chain として本実装する。詳細: `dh-upgrades/upgrade-spec-v5.8.0.md`「concurrency 制約注記」
+
 ### issue-pickup.yml の改修
 
-**現行**:
+**現行（v5.7.x / v5.8.0 維持）**:
 ```yaml
 concurrency:
   group: "issue-pickup-${{ github.event.issue.number }}"
 ```
 
-**改修後**:
+**改修案（v5.8.x 候補、未実装）**:
 ```yaml
 jobs:
   get-scope:

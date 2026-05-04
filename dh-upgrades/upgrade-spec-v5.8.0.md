@@ -76,7 +76,18 @@
 - `.claude/skills/layer0-spec-architect/references/philosophy.md`: 軸 vi = Council 入力基盤の明文化（第 6 条補足）
 
 ### Workflow Integration
-- `templates/github-workflows/issue-pickup.yml.template`: concurrency group を scope ラベルベースに変更（軸 ix 要求）
+- `templates/github-workflows/issue-pickup.yml.template`: concurrency group の方針更新（軸 ix 要求）
+
+### concurrency 制約注記（PR #50 review feedback で v5.8.0 内に確定）
+
+軸 ix の理想形は「同 scope の Issue は直列、別 scope は並列」だが、**GitHub Actions の workflow-level `concurrency` block は `steps.*` 参照不可**（YAML パース時点で評価）のため、Issue ラベルから動的に scope を抽出した group 名を組み立てることが完全実装できない。
+
+v5.8.0 の対処：
+- `issue-pickup.yml.template` の concurrency は **Issue 番号ベース（v5.7.x 互換）** に後退
+- scope 別並列制御は **v5.8.x patch で本実装予定**（jobs 内自前実装 or 静的 contains chain による expression）
+- 本制約は Quality Gate 軸 viii「テスト粒度」の改良候補（workflow YAML expression 制約検証を本番前 smoke test に組み込む）として記録
+
+これは observation-driven の SPEC 改訂事例（実装してみて初めて GitHub Actions 制約が判明）。
 
 ## 12 軸詳細
 
