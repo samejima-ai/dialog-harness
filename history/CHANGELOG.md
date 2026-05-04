@@ -2,7 +2,51 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.7.2 (in progress, target 2026-05-04)
+## v5.8.0 (released 2026-05-04)
+
+> **記録規約**: 本 v5.8.0 が **9 例目正規適用**（autonomous-drive ループの最終 PR 作成のみ人間 P4 代行、それ以外は完全自律完遂）。
+
+**minor 昇格**。**`crosscut-issue-quality-gate` skill 新設（12 軸 × 並列安全性）**。
+
+Issue #46 の L0 spec-architect 対話セッション（2026-05-03〜04、Q1〜Q12 確定）で設計した 12 軸品質ガード機構を `anthropics/claude-code-action@v0`（Claude Code CLI）が autonomous-drive 9 例目として実装、PR #50 で master に merge。最終 `gh pr create` ステップのみ claude-code-action default 挙動で skip され人間 P4 代行（Issue #51 で別途追跡）、それ以外は完全自律完遂。
+
+**Council 諮問なし**（L0 対話 Q1〜Q12 で全合意、複数案拮抗なし、不可逆操作なし）。**後方互換完全維持**（新 skill 不在でも DH ベースは通常動作）。
+
+### Step 1: 設計（L0 spec-architect セッション）
+
+- 12 軸 × 機械/AI ハイブリッド検証規格確定
+- 観測性二層モデル（収集層 = 精緻、提示層 = 人間可読）
+- 並列安全性軸（4 段階フィルター: scope/mutex/depends-on/AI 推論）
+- DH メタへのフラクタル自己適用
+
+### Step 2: 実装（autonomous-drive 9 例目）
+
+- 新 skill `crosscut-issue-quality-gate` 本体 + references 7 + assets 1 = 計 9 ファイル
+- `dh-upgrades/upgrade-spec-v5.8.0.md`
+- `templates/github-workflows/issue-quality-gate.yml.template`
+- `delivery/self-gate-check-AD010.md`（フラクタル原則の自己採点、12 軸中 8 PASS / 2 FAIL = 既知の自己違反として記録）
+- 既存 7 ファイルへの参照追記（4 crosscut skill: dispatcher / implementer / council / spec-architect、+ 3 非 skill ファイル: philosophy.md / issue-pickup.yml.template / harness-verifier glossary.yml）
+
+### Step 3: review feedback（合計 10 件解消）
+
+- harness-verify failure 2 件（glossary.yml 未登録 + machine-checks.md 誤検出）
+- gemini-review 1 件（concurrency ハードコード → SPEC 改訂で対応）
+- Copilot review 6 件（permissions / SLACK_WEBHOOK / GH_REPO / lockfile / notify ガード / .gemini/ コミット）
+- post-merge gemini 1 件（References 件数誤記、本 housekeeping で対応）
+
+### Step 4: 観測駆動の SPEC 改訂（v5.8.x 候補温存）
+
+- **workflow-level concurrency 制約**: GitHub Actions の `concurrency` block が `steps.*` 参照不可と判明 → scope 動的判定は v5.8.x patch で jobs 内自前実装 or 静的 contains chain で本実装予定
+- **claude-code-action glossary 更新忘れ**: harness-verify で事後検出 → 軸 vii「ドキュメント波及」改良候補
+- **review timing 競合**（PR #48 で観測）: 8 例目の手動 merge 譲歩の主因 → 軸 ix「並列安全性」周辺事象として記録
+
+### 後発 Issue / 温存項目
+
+- Issue #51: claude-code-action `gh pr create` skip 問題（autonomous-drive 最終ステップの構造的穴）
+- Issue #49: gemini-review 入力・プロンプト規格再設計（draft、別 L0 セッションで継続）
+- Quality Gate 軸 viii「テスト粒度」改良: 本番前 smoke test + workflow YAML expression 制約検証
+
+## v5.7.2 (released 2026-05-04)
 
 > **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化。本 v5.7.2 が **8 例目正規適用**。
 
