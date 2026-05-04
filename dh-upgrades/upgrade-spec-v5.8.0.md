@@ -36,7 +36,7 @@
 | 状況 | autonomous-drive パイプラインで Issue が AI 自律駆動の初期 context となる構造上、Issue の品質 = プロジェクトの成功率。人間対話起点・Council 献上起点・D4〜D2 献上起点いずれの Issue も、品質バラつきがそのまま実装品質に伝播する。現状、SPEC/ADR 差分起点の crosscut-issue-dispatcher はあるが、Issue 段階での独立チェック機構は未配置 |
 | 判断 | **12 軸品質チェック** + **並列安全性軸** を持つ独立 skill `crosscut-issue-quality-gate` を新設。(a) dispatcher 内部通過 + (b) 明示呼び出し + (d) GitHub Actions 最終ガードの 3 発動契機。**軸 vi（観測性統一）** で Council 入力データレイヤー整合保証、**軸 ix（並列安全性）** で 4 段階フィルター（scope/mutex/depends-on/AI推論）による論理・意味・依存コンフリクト事前検知。**フラクタル原則徹底** で DH 自身も例外なく本 Gate 通過 |
 | 根拠 | (a) Issue 品質 = autonomous-drive 成功率の構造的因果、(b) 起点に依存しない横断機構としての独立性確保、(c) Council 合議成立の前提条件として観測性データ整合が必須、(d) Issue 並列実行時の git 検出不能コンフリクト（論理・意味・依存）の事前回避、(e) philosophy.md 第 1 条フラクタル原則の「規律の自己相似性」実装、(f) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当せず Council 諮問は不要 |
-| 影響 | 新規 skill 1 件 + references 8 件 + assets 1 件 + dh-upgrades 1 件 + workflow template 1 件の追加。既存 7 ファイル（ARCH-DECISIONS / 4 crosscut-* SKILL / spec-architect SKILL / philosophy.md / issue-pickup.yml.template）への必要最小限参照追記。ラベル規約（scope/mutex/refactor/freeze-period）配布。philosophy.md / harness-verifier / 既存 skill 機能への影響ゼロ。**完全後方互換**: 新 skill 不在でも DH ベースは通常動作、既存 Issue 形式変更なし、既存プロジェクトへの強制配布なし |
+| 影響 | 新規 skill 1 件 + references 7 件 + assets 1 件 + dh-upgrades 1 件 + workflow template 1 件の追加。既存 7 ファイル（ARCH-DECISIONS / 4 crosscut-* SKILL / spec-architect SKILL / philosophy.md / issue-pickup.yml.template）への必要最小限参照追記。ラベル規約（scope/mutex/refactor/freeze-period）配布。philosophy.md / harness-verifier / 既存 skill 機能への影響ゼロ。**完全後方互換**: 新 skill 不在でも DH ベースは通常動作、既存 Issue 形式変更なし、既存プロジェクトへの強制配布なし |
 
 ## 新規ファイル（11件）
 

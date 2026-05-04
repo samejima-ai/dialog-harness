@@ -25,9 +25,9 @@ Issue #46 の L0 spec-architect 対話セッション（2026-05-03〜04、Q1〜Q
 - `dh-upgrades/upgrade-spec-v5.8.0.md`
 - `templates/github-workflows/issue-quality-gate.yml.template`
 - `delivery/self-gate-check-AD010.md`（フラクタル原則の自己採点、12 軸中 8 PASS / 2 FAIL = 既知の自己違反として記録）
-- 既存 7 skill への参照追記（dispatcher / implementer / council / spec-architect / philosophy.md / issue-pickup.yml.template / harness-verifier glossary.yml）
+- 既存 7 ファイルへの参照追記（4 crosscut skill: dispatcher / implementer / council / spec-architect、+ 3 非 skill ファイル: philosophy.md / issue-pickup.yml.template / harness-verifier glossary.yml）
 
-### Step 3: review feedback（合計 8 件解消）
+### Step 3: review feedback（合計 10 件解消）
 
 - harness-verify failure 2 件（glossary.yml 未登録 + machine-checks.md 誤検出）
 - gemini-review 1 件（concurrency ハードコード → SPEC 改訂で対応）
