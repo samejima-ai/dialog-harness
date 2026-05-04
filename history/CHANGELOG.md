@@ -30,7 +30,7 @@ Issue #46（v5.8.0 候補 `crosscut-issue-quality-gate` 設計）を実装トリ
 - `claude-code-action@v0` が OIDC token 取得 → 実装本体起動 → PR 作成まで完遂を確認
 - 副次目的: 本 PR 自身が **v5.7.2 fix の有効性検証 + Issue #46 (v5.8.0) の autonomous-drive 完遂** のダブルテストを兼ねる
 
-## v5.7.1 (in progress, target 2026-05-03)
+## v5.7.1 (released 2026-05-03)
 
 > **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.7.1 が **7 例目正規適用**）。同 PR で v5.7.0 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
 
