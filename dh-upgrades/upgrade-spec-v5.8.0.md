@@ -43,7 +43,7 @@
 ### Skill 本体
 - `.claude/skills/crosscut-issue-quality-gate/SKILL.md`
 
-### References（8件）
+### References（7件）
 - `.claude/skills/crosscut-issue-quality-gate/references/twelve-axes.md`
 - `.claude/skills/crosscut-issue-quality-gate/references/machine-checks.md`
 - `.claude/skills/crosscut-issue-quality-gate/references/ai-judgment-rubric.md`
