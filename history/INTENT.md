@@ -2,6 +2,36 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v5.7.2 で追加された概念
+
+### `claude-code-action@v0` の OIDC permission bug 修正
+
+v5.7.1 で `gemini-cli` → `Claude Code CLI` に実装エージェントを切り替えた際、`anthropics/claude-code-action@v0` が要求する `id-token: write` permission を `issue-pickup.yml` に追加し忘れていた single-line bug。Issue #46 の autonomous-drive 起動で初の本番テストとなり顕在化。
+
+#### 設計意図の核
+
+**(a) 観測駆動の bug 検出**: v5.7.1 merge 時点では実装本体（`claude-code-action`）の本番テストが行われておらず、bug が潜在化。Issue #46 が初のトリガー。「観測駆動原則」が実証された事例として記録（philosophy.md §1 フラクタル原則 + §3 情報純度の応用）。
+
+**(b) 自明な single-line fix**: 修正は workflow `permissions:` ブロックに `id-token: write` 1 行追加のみ。複数案拮抗なし、不可逆操作なし、SPEC 矛盾なし → Council 諮問は不要（philosophy.md §6「人間 ≒ Council」起動条件のいずれにも該当せず）。
+
+**(c) v5.7.1 release 化を同梱**: 本 patch は v5.7.1 の bug 修正であり、merge と同時に v5.7.1 (in progress) → (released 2026-05-03) 化を housekeeping として同梱（**8 例目正規適用**）。
+
+**(d) Issue Quality Gate との連動**: Issue #46（v5.8.0 候補 `crosscut-issue-quality-gate`）の autonomous-drive 完遂を本 patch の動作検証として兼ねる。Quality Gate 完成後に「v5.7.1 release 時に本 bug を事前検知できなかった理由」を遡及採点する材料として記録（軸 viii テスト粒度・本番前テスト粒度の改善案件）。
+
+**(e) 後方互換完全維持**: permission 追加は既存挙動に影響しない（既存 workflow が要求しない権限を増やすだけ）。利用者プロジェクトへの強制配布なし。
+
+#### 改修内容
+
+- `.github/workflows/issue-pickup.yml` 1 行追加
+- `templates/github-workflows/issue-pickup.yml.template` 1 行追加
+- 履歴層 4 ファイル更新（CHANGELOG / INTENT / REGIME-LOG / ARCH-DECISIONS AD-030）
+
+#### 温存項目（v5.7.x / v5.8.0 候補）
+
+- **本番前テスト粒度の規格化**: Issue #46 完了後、Issue Quality Gate 軸 viii の合格基準として「本番前テストで `claude-code-action` を含む全 step を smoke test する手順」を加える検討
+- **claude-code-action SHA pin**: v5.7.1 で温存中、v5.7.x で観測駆動判断
+- **gemini-cli 自動フォールバック**: 同上、観測駆動判断
+
 ## v5.7.1 で追加された概念
 
 ### 実装エージェント方式の見直し（Claude Code CLI メイン化、AD-026 訂正）

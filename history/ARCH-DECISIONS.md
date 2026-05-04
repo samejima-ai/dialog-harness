@@ -2,6 +2,18 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.7.2
+
+### AD-030: `claude-code-action@v0` の OIDC token 取得に必要な `id-token: write` permission 追加
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | v5.7.1 で `gemini-cli` → `Claude Code CLI` に実装エージェントを切替えたが、`anthropics/claude-code-action@v0` が OIDC で token 取得を試みる仕様に対し、`issue-pickup.yml` の `permissions:` ブロックには `contents: write` / `pull-requests: write` / `issues: write` のみで `id-token: write` が未設定だった。Issue #46 (v5.8.0 候補 `crosscut-issue-quality-gate`) の autonomous-drive 起動が `claude-code-action` の初の本番テストとなり、`Failed to setup GitHub token: Error: Could not fetch an OIDC token. Did you remember to add 'id-token: write' to your workflow permissions?` で workflow が exit 1 終了し顕在化 |
+| 判断 | `issue-pickup.yml` および `templates/github-workflows/issue-pickup.yml.template` の `permissions:` ブロックに `id-token: write` 1 行を追加する v5.7.2 patch を発行。Council 諮問は不要（自明な single-line bug fix、複数案拮抗なし、不可逆操作なし、SPEC 矛盾なし）。v5.7.1 (in progress) → (released 2026-05-03) 化を本 patch で housekeeping として同梱（**8 例目正規適用**） |
+| 根拠 | (a) `anthropics/claude-code-action@v0` の公式仕様で `id-token: write` が必須、(b) v5.7.1 の merge 時点で実装本体の本番テストが未実施だったため bug が潜在化、(c) Issue #46 が初のトリガーで観測駆動的に顕在化、(d) 修正は 1 行追加で意味的に自明、複数代替案なし、(e) 既存挙動に影響しない（追加権限のみ、既存 workflow が要求しない権限を増やすだけ）、(f) Issue #46 の autonomous-drive 完遂のためには本 fix の merge が前提条件 |
+| 影響 | `.github/workflows/issue-pickup.yml` 1 行追加、`templates/github-workflows/issue-pickup.yml.template` 1 行追加。philosophy.md / 既存 6+1 条 / 4 役割組織論への影響ゼロ。harness-verifier 全 PASS 維持。利用者プロジェクトへの強制配布なし（後方互換完全維持）。**温存項目**: 本番前テスト粒度の規格化（Issue Quality Gate 軸 viii 合格基準として後発検討）、claude-code-action SHA pin（v5.7.x、観測駆動）、gemini-cli 自動フォールバック（同上） |
+| 連動 | Issue #46 の autonomous-drive 完遂 + v5.7.1 機構の動作確認のダブルテストを兼ねる。merge 後、Issue #46 の `in-progress` ラベル除去 + `ready-for-ai` 再付与で再 trigger 実施 |
+
 ## v5.7.1
 
 ### AD-029: 実装エージェントを Claude Code CLI へ切替（AD-026 訂正）

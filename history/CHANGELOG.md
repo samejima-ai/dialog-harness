@@ -2,7 +2,35 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.7.1 (in progress, target 2026-05-03)
+## v5.7.2 (in progress, target 2026-05-04)
+
+> **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化。本 v5.7.2 が **8 例目正規適用**。
+
+**patch 昇格**。**`anthropics/claude-code-action@v0` の OIDC token 取得失敗 bug 修正**。
+
+Issue #46（v5.8.0 候補 `crosscut-issue-quality-gate` 設計）を実装トリガーとして v5.7.1 機構の初の本番テストを実施したところ、`Failed to setup GitHub token: Error: Could not fetch an OIDC token. Did you remember to add 'id-token: write' to your workflow permissions?` で workflow が exit 1 で終了。`anthropics/claude-code-action@v0` が OIDC で token 取得を試みるが、`issue-pickup.yml` の `permissions:` ブロックに `id-token: write` が含まれていなかった。v5.7.1 で gemini-cli → Claude Code CLI 切替時の追加漏れ。
+
+**Council 諮問なし**（自明な single-line bug fix、複数案拮抗なし、不可逆操作なし）。**後方互換完全維持**（permission 追加は既存挙動に影響しない）。
+
+### Step 1: 履歴層
+
+- 本セクション
+- INTENT.md v5.7.2 設計意図
+- REGIME-LOG.md v5.7.2 patch 判定
+- ARCH-DECISIONS.md AD-030 追加（OIDC permission 追加、v5.7.1 bug 修正記録）
+
+### Step 2: workflow + template
+
+- `.github/workflows/issue-pickup.yml` `permissions:` に `id-token: write` 1 行追加
+- `templates/github-workflows/issue-pickup.yml.template` 同上
+
+### Step 3: 動作確認（merge 後の actual）
+
+- Issue #46 の `in-progress` ラベルを除去 + `ready-for-ai` 再付与で再 trigger
+- `claude-code-action@v0` が OIDC token 取得 → 実装本体起動 → PR 作成まで完遂を確認
+- 副次目的: 本 PR 自身が **v5.7.2 fix の有効性検証 + Issue #46 (v5.8.0) の autonomous-drive 完遂** のダブルテストを兼ねる
+
+## v5.7.1 (released 2026-05-03)
 
 > **記録規約**: PR draft / ready-for-review 中は `(in progress)` で記録、merge 時に `(released YYYY-MM-DD)` 化（v5.5.0 で確立、本 v5.7.1 が **7 例目正規適用**）。同 PR で v5.7.0 (in progress) → (released 2026-05-03) 化を housekeeping として同梱。
 

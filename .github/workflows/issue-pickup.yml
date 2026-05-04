@@ -30,6 +30,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write  # v5.7.2 fix: anthropics/claude-code-action@v0 の OIDC token 取得に必須
 
 # 同 Issue の並行実行を排他（多重起動防止）
 concurrency:
