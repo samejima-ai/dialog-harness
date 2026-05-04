@@ -237,9 +237,9 @@ find history/ -name "*.md" -newer package.json 2>/dev/null
 ### リンク整合性
 
 ```bash
-# 内部リンクのチェック
-grep -r "\[.*\](\..*\.md)" *.md | while IFS=: read file link; do
-  target=$(echo "$link" | sed 's/.*](\(.*\)).*/\1/')
+# 内部リンクのチェック: markdown link 構文を検出する regex
+grep -rE '\[[^]]+\]\([^)]+\.md\)' *.md | while IFS=: read file link; do
+  target=$(echo "$link" | sed 's/.*](\([^)]*\)).*/\1/')
   test -f "$target" || echo "Broken link: $file -> $target"
 done
 ```
