@@ -14,6 +14,17 @@ DH 本体の設計判断の記録（ADR 軽量版）。
 | 影響 | `.github/workflows/issue-pickup.yml` 1 行追加、`templates/github-workflows/issue-pickup.yml.template` 1 行追加。philosophy.md / 既存 6+1 条 / 4 役割組織論への影響ゼロ。harness-verifier 全 PASS 維持。利用者プロジェクトへの強制配布なし（後方互換完全維持）。**温存項目**: 本番前テスト粒度の規格化（Issue Quality Gate 軸 viii 合格基準として後発検討）、claude-code-action SHA pin（v5.7.x、観測駆動）、gemini-cli 自動フォールバック（同上） |
 | 連動 | Issue #46 の autonomous-drive 完遂 + v5.7.1 機構の動作確認のダブルテストを兼ねる。merge 後、Issue #46 の `in-progress` ラベル除去 + `ready-for-ai` 再付与で再 trigger 実施 |
 
+## v5.8.0
+
+### AD-031: Issue 段階品質ガード機構の独立 skill 化（12 軸 + 並列安全性）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | autonomous-drive パイプラインで Issue が AI 自律駆動の初期 context となる構造上、Issue の品質 = プロジェクトの成功率。人間対話起点・Council 献上起点・D4〜D2 献上起点いずれの Issue も、品質バラつきがそのまま実装品質に伝播する。現状、SPEC/ADR 差分起点の crosscut-issue-dispatcher はあるが、Issue 段階での「12 軸チェック」を独立に通過させる横断機構は未配置。並列実行時の論理・意味・依存コンフリクト（git では検出不能な 3 種）を事前検知する必要性も確認された |
+| 判断 | **12 軸品質チェック** + **並列安全性軸** を持つ独立 skill `crosscut-issue-quality-gate` を新設。**(a) dispatcher 内部通過** + **(b) 明示呼び出し** + **(d) GitHub Actions 最終ガード** の 3 発動契機。**軸 vi（観測性統一）** で Council 入力データレイヤー整合保証、**軸 ix（並列安全性）** で 4 段階フィルター（scope/mutex/depends-on/AI推論）による論理・意味・依存コンフリクト事前検知。**フラクタル原則徹底** で DH 自身も例外なく本 Gate 通過。不合格 Issue は理由ラベル（gate-failed:axis-X）付与し close せず人間差し戻し |
+| 根拠 | (a) Issue 品質 = autonomous-drive 成功率の構造的因果関係、(b) 起点に依存しない横断機構としての独立性確保（crosscut-* 系の責務分離原則）、(c) Council 合議成立の前提条件として観測性データ整合が必須（philosophy.md 第 6 条「人間 ≒ Council」の実装前提）、(d) Issue 並列実行時の git 検出不能コンフリクト（論理・意味・依存）の事前回避、(e) philosophy.md 第 1 条フラクタル原則 P1 の「規律の自己相似性」実装、(f) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当せず Council 諮問は不要 |
+| 影響 | **新規追加**: skill 本体 + references 8 + assets 1 + dh-upgrades 1 + workflow template 1 の計 12 ファイル。**既存変更**: ARCH-DECISIONS（本項目）/ crosscut-* 4 skill / layer0-spec-architect / philosophy.md / issue-pickup.yml.template への最小参照追記。**完全後方互換**: 新 skill 不在でも DH ベースは通常動作、既存 Issue 形式変更なし、既存プロジェクトへの強制配布なし。ラベル規約（scope/mutex/refactor/freeze-period）は assets/ で配布、各プロジェクト任意採用。harness-verifier 全検査 PASS 維持 |
+
 ## v5.7.1
 
 ### AD-029: 実装エージェントを Claude Code CLI へ切替（AD-026 訂正）

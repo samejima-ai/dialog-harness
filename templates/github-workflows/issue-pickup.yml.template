@@ -46,9 +46,11 @@ permissions:
   issues: write
   id-token: write  # v5.7.2 fix: anthropics/claude-code-action@v0 の OIDC token 取得に必須
 
-# 同 Issue の並行実行を排他（多重起動防止）
+# scope ラベル基準の並行制御（v5.8.0 改訂、並列安全性軸対応）
+# 同 scope の Issue は直列、別 scope は並列実行
+# Note: scope ラベル未設定時は 'general' として全て直列化（安全側に倒す）
 concurrency:
-  group: "issue-pickup-${{ github.event.issue.number }}"
+  group: "issue-pickup-scope-general"  # 動的設定は jobs 内で実装
   cancel-in-progress: false
 
 env:

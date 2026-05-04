@@ -25,8 +25,9 @@ description: >
 2. REGIME.md の CTL を確認 → 動作モード決定（CTL 別動作は `references/dispatch-protocol.md` 参照）
 3. Issue 分解（最大 5、REGIME.md で上書き可能）
 4. CTL ≥ 2 の場合：`crosscut-council` 事前検証を発動
-5. GitHub Issue 作成（label: `ready-for-ai` 等を付与）
-6. `history/CHANGELOG.md` にレベル A（自動承認）で追記
+5. `crosscut-issue-quality-gate` による品質チェック（v5.8.0 追加、発動契機 (a)）
+6. GitHub Issue 作成（label: `ready-for-ai` 等を付与）
+7. `history/CHANGELOG.md` にレベル A（自動承認）で追記
 
 ## 暴走防止
 
@@ -38,4 +39,5 @@ description: >
 
 - `references/dispatch-protocol.md` — CTL 別動作詳細
 - `crosscut-council/SKILL.md` — 事前検証時の判定機構
+- `crosscut-issue-quality-gate/SKILL.md` — Issue 品質チェック（発動契機 (a)）
 - `templates/.github/workflows/issue-dispatch.yml` — 自動化雛形
