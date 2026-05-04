@@ -2,6 +2,28 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.7.2（patch 昇格、OIDC permission bug fix）
+
+- 判定日: 2026-05-04
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect 対話セッション内で発見 → 同セッションで実装
+- 起源: Issue #46 (`crosscut-issue-quality-gate` 設計、v5.8.0 候補) を実装トリガーに v5.7.1 の `claude-code-action@v0` 経路の初の本番テスト → OIDC token error で顕在化
+- L0 譲渡: 本 patch は単純 single-line bug fix で HANDOFF 不要、対話セッション内で完結
+- 自己検証: workflow YAML syntax 確認、`harness-verifier/verify.py` 全項目 PASS
+- Council 諮問: なし（自明な single-line bug fix、複数案拮抗なし、不可逆操作なし、SPEC 矛盾なし）
+
+### 非破壊変更（破壊項目なし、後方互換完全維持）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| `id-token: write` permission 追加 | `issue-pickup.yml` + `issue-pickup.yml.template` の `permissions:` ブロックに 1 行追加 | 非破壊（既存挙動に影響しない、追加権限のみ） |
+| v5.7.1 release 化同梱 | (in progress) → (released 2026-05-03) 化を housekeeping として同梱（**8 例目正規適用**） | 非破壊（記録のみ） |
+
+### 副次目的
+
+- 本 patch 自身が **Issue #46 の autonomous-drive 完遂前提条件** + **v5.7.1 機構の動作確認** のダブルテストを兼ねる
+- merge 後、Issue #46 の `in-progress` ラベル除去 + `ready-for-ai` 再付与で再 trigger を実施
+
 ## v5.7.1（patch 昇格、AD-026 訂正）
 
 - 判定日: 2026-05-03
