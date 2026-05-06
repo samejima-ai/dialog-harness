@@ -316,7 +316,7 @@ L2 統合検証との接続: 複数 Island に渡る restructure では `layer2-
 
 ##### 判定の集約
 
-意図合致軸の判定は `delivery/DELIVERY.md` に「意図合致検証」セクションとして記録する(フォーマット: `references/delivery-format.md` §意図合致検証 参照)。
+意図合致軸の判定は `delivery/DELIVERY.md` に「意図合致検証」セクションとして記録する（フォーマット: `references/delivery-format.md` §意図合致検証 参照）。
 
 #### 自力修正の上限
 - 同一エラーに対する修正試行は最大3回
