@@ -809,3 +809,49 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   modification_note: "C ハイブリッド採用 + minority_opinion 由来の 4 実装要件を v5.9.0 SPEC に同梱: (1) 境界の SPEC 不変化（opt-out 領域 / opt-in 領域の分類を philosophy.md または専用 SPEC に明記、AI が境界を動かせない構造）、(2) roll-back プロトコル（6 ヶ月後検証で事故 1 件以上 → opt-in に戻す手順を v5.9.0 SPEC に同梱）、(3) 既存 `auto-merge` ラベルの廃止（二重ラベル方式の腐敗回避、stop ラベルへの単一情報源化）、(4) メタ承認機構（AI 自身の『判定基準該当判定』の信頼性検査、Council<0.5 自動付与など、PR1 では sensor の placeholder 実装で温存）"
   follow_up_questions_count: 0
   agreed_at: "2026-05-06T08:35:00Z"
+
+- invocation_id: "council-2026-05-06T08:05:00Z-pur47i"
+  timestamp: "2026-05-06T08:05:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "crosscut-council Phase 1 独立性侵害の修正方針（単一セッション順次生成での情報純度違反を物理分離 / sub-agent 並列 / system prompt 強化 / ハイブリッドのいずれで解決するか）"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "Option D: ハイブリッド（軽量 Council は現行維持、重要 Council のみ Option A）", confidence: 0.65 }
+    開発者: { stance: "Option A: Anthropic SDK 独立呼び出し（物理的分離）", confidence: 0.85 }
+    哲学者: { stance: "Option A: Anthropic SDK 独立呼び出し + 将来の sub-agent 移行余地（第3の道）", confidence: 0.55 }
+  judgment_confidence: 0.65
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "Option A: Anthropic SDK 独立呼び出し（物理的分離）"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 6.20
+        components:
+          - { persona: "開発者", weight: 6, confidence: 0.85 }
+          - { persona: "哲学者", weight: 2, confidence: 0.55, modifier: "第3の道として Option A 系統" }
+      - stance: "Option D: ハイブリッド"
+        supporters: ["経営者"]
+        weight_sum: 2
+        weighted_score: 1.30
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.65 }
+    third_way_excluded: []
+    max_score_stance: "Option A: Anthropic SDK 独立呼び出し（物理的分離）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "Option A: Anthropic SDK 独立呼び出し（物理的分離）。crosscut-council/SKILL.md L60-65 に『Phase 1 = 3 つの独立 messages.create 呼び出し』を実装契約レベルで明記し、共通 context 汚染を構造的に排除する。各ペルソナに「他ペルソナ出力を含まない context + system prompt のみ」を渡し、Phase 1 完了後に Orchestrator が 3 出力を集約"
+  minority_opinion: "経営者: 軽量 Council（implementation 系 / 低リスク）では現行の順次生成でも運用コスト上許容できる。Option D ハイブリッドで critical Council のみ分離すれば段階移行コストを抑制可能。哲学者: 将来的に claude-code Agent sub-agent 並列起動（Option B）への移行余地を残すべき。SDK 直接呼び出し（Option A）は claude-code エコシステムから外れるため、中長期では Option B に置き換えることが整合的"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-06T08:10:00Z"
