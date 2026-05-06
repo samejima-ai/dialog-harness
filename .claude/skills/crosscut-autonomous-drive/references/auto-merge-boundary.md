@@ -59,10 +59,12 @@ v5.9.0 で `auto-merge` ラベルは **廃止**（二重ラベル方式の腐敗
 
 ## メタ承認機構（PR1 placeholder）
 
-Council minority_opinion (4) の「AI 自身の判定基準該当判定の信頼性検査」は v5.9.0 PR1 では placeholder 実装：
+Council minority_opinion (4) の「AI 自身の判定基準該当判定の信頼性検査」は v5.9.0 PR1 では placeholder 実装。**v5.9.0 で workflow が `auto-merge` ラベルを参照しなくなったため、roll-back 指標 4 項目のうち workflow で自動検知できないもの（AI 判定漏れ・境界曖昧化・二重ラベル腐敗）はすべて本機構の手動運用に統合する**：
 
-- AI が opt-out 判定した PR で **後から人間が `human-review-needed` を付与** した場合、その PR を「AI 判定漏れ」として記録（手動運用、PR3 で sensor 化候補）
-- 月次集計で「AI 判定漏れ率」が 5% を超えたら roll-back 評価ゲートを起動（下記 §roll-back プロトコル）
+- **AI 判定漏れ監視**: AI が opt-out 判定した PR で **後から人間が `human-review-needed` を付与** した場合、その PR を「AI 判定漏れ」として記録（手動運用、PR3 で sensor 化候補）
+- **二重ラベル腐敗監視**（v5.9.0 反転由来）: merge 済 PR に旧 `auto-merge` ラベルが残存しているか月次で `gh pr list --state merged --label auto-merge` で確認、1 件でも検出されたら即 roll-back ゲート起動
+- **境界曖昧化監視**: opt-in / opt-out の判定が曖昧だった事例（philosophy 周辺等）を月次で振り返り、月 2 件以上なら roll-back 評価
+- **集計**: 月次で「AI 判定漏れ率」「二重ラベル検出件数」「境界曖昧化件数」を `history/REGIME-LOG.md` または専用ログに append、閾値超過で roll-back 評価ゲートを起動（下記 §roll-back プロトコル）
 
 ## roll-back プロトコル（6 ヶ月後検証）
 
@@ -70,12 +72,12 @@ Council minority_opinion (2) 由来。**v5.9.0 merge 後 6 ヶ月時点（2026-1
 
 ### 評価指標
 
-| 指標 | 閾値 | 出典 |
-|------|------|------|
-| **暗黙 merge 事故件数** | 1 件以上で要再評価 | 哲学者懸念（『気づいたら merge』の事後発覚） |
-| **AI 判定漏れ率** | 5% 超で要再評価 | 上記メタ承認機構の月次集計 |
-| **境界曖昧化事例** | 月 2 件以上で要再評価 | 経営者懸念（philosophy 周辺の判定揺らぎ） |
-| **二重ラベル腐敗** | 旧 `auto-merge` ラベル残存 PR が 1 件でも auto-merge → 即 roll-back | 開発者懸念 |
+| 指標 | 閾値 | 出典 | 検知主体 |
+|------|------|------|----------|
+| **暗黙 merge 事故件数** | 1 件以上で要再評価 | 哲学者懸念（『気づいたら merge』の事後発覚） | 人間（事後監視）+ メタ承認機構 |
+| **AI 判定漏れ率** | 5% 超で要再評価 | 上記メタ承認機構の月次集計 | メタ承認機構（手動運用、PR3 で sensor 化候補） |
+| **境界曖昧化事例** | 月 2 件以上で要再評価 | 経営者懸念（philosophy 周辺の判定揺らぎ） | 人間（事後監視） |
+| **二重ラベル腐敗** | 旧 `auto-merge` ラベル残存 PR が 1 件でも auto-merge → 即 roll-back | 開発者懸念 | **人間（事後監視）** — workflow は v5.9.0 で `auto-merge` ラベルをチェックしなくなったため自動検知不可。メタ承認機構の手動運用に統合する |
 
 ### roll-back 手順
 
