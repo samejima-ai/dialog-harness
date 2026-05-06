@@ -2,6 +2,40 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.9.0（minor 昇格、in progress、auto-merge opt-in→opt-out 反転 + cookpato retro A1〜A5 取り込み）
+
+- 判定日: 2026-05-06
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect 対話セッション（auto-merge 反転論点の初出）→ Council 諮問 → SPEC 改修
+- 起源: PR #33（v5.4.0 後の docs/brainstorm draft PR）が 4 日間放置されている事例の発見と、ユーザー発言「人間は多少のことは無関心、暗黙オートが基本」を起点とする
+- L0 譲渡: 対話セッション内で完結（philosophy 改修を伴うため Council 諮問必須）
+- 自己検証: workflow YAML syntax / `harness-verifier/verify.py --strict` 全項目 PASS（実行予定）
+- Council 諮問: `council-2026-05-06T08:30:00Z-amrev1`（business / category=conception / phase_3 / unanimous / judgment_confidence=0.80 / consensus_mode=auto_agree / implementer_consent=agreed_with_modification）
+
+### 非破壊変更 + 1 件の破壊的変更（opt-in→opt-out 反転、roll-back プロトコル付き）
+
+| 項目 | 内容 | 影響種別 |
+|---|---|---|
+| auto-merge.yml 条件 1 反転 | whitelist (`auto-merge` ラベル必須) → blacklist (stop ラベル不在) | **破壊的変更**（既存 PR で `auto-merge` ラベル付与運用していた利用者プロジェクトは挙動変化、roll-back プロトコルでカバー） |
+| issue-pickup.yml 改修 | `--label auto-merge` 自動付与削除、opt-in 領域該当時のみ `--label human-review-needed` | 非破壊（autonomous_scope: full 既存プロジェクトは新挙動を享受） |
+| 境界 SPEC 新設 | `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` | 新規（opt-in 領域 8 項目、stop ラベル定義、roll-back プロトコル、メタ承認機構） |
+| philosophy 改修 | 第 7 条 §autonomous-drive §auto-merge デフォルト方針 を新設、P4 暴走時介入を stop ラベル群に拡張 | 非破壊（追記、既存条文不変） |
+| 既存 `auto-merge` ラベル廃止 | deployment では作成しない、自動付与削除 | 非破壊（残存しても merge 判定に影響しない、stop ラベル方式で代替） |
+| cookpato retro A1〜A5 取り込み | 既存 PR/Issue 群（#53/#54/#55/#56/#57/#46）で進行 | 非破壊（個別 PR レベル） |
+| バージョン | v5.8.0 → v5.9.0（minor 昇格）。新機能追加 + autonomous-drive 機構の哲学反転 | — |
+
+### dev_mode 判定（変更なし）
+
+REGIME.md の `dev_mode` は `github_assisted` のまま据え置き。本 minor は autonomous-drive 機構の哲学反転であり、DH 本体自身の dev_mode 昇格は伴わない。`autonomous_scope` 軸も既存通り（`full` / `merge_gated` / `custom`）、ただし stop ラベル運用方針が `autonomous_scope` 別に変更（詳細は `crosscut-issue-implementer/SKILL.md §CTL との関係`）。
+
+### Council 諮問の根拠
+
+本判定は philosophy.md 改修を伴う conception カテゴリのため Council 諮問が必須（philosophy 第 6 条「Council 起動条件」）。3 ペルソナ（経営者 weight 3 / 開発者 weight 3 / 哲学者 weight 5）が unanimous で C ハイブリッドに収束、weighted_score 7.31 / 全 weight 11（100%）で支配的。哲学者 confidence 0.55 で 4 実装要件（境界 SPEC 不変化 / roll-back プロトコル / `auto-merge` ラベル廃止 / メタ承認機構）が minority_opinion として SPEC に同梱。implementer_consent=agreed_with_modification。
+
+### roll-back 評価ゲート（2026-11-06）
+
+評価指標 4 項目（暗黙 merge 事故件数 1 件以上 / AI 判定漏れ率 5% 超 / 境界曖昧化月 2 件以上 / 二重ラベル腐敗 1 件）のいずれかで Council 再諮問 → 必要に応じて opt-in モデル復帰。詳細は `auto-merge-boundary.md §roll-back プロトコル`。
+
 ## v5.7.2（patch 昇格、OIDC permission bug fix）
 
 - 判定日: 2026-05-04

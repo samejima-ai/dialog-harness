@@ -2,6 +2,49 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v5.9.0 候補：auto-merge 人間承認モデルの opt-in→opt-out 反転 (in progress)
+
+PR #33 が 4 日間放置されている事例を起点に、auto-merge の人間承認モデル（v5.5.3 で導入された label opt-in モデル）を opt-out モデルに反転する設計判断。Council 諮問 `council-2026-05-06T08:30:00Z-amrev1`（business / category=conception / phase_3 / unanimous / judgment_confidence=0.80）で **C ハイブリッド採用** が weighted_score 7.31（全 weight 11、100%）で全会一致。
+
+### 設計意図の核
+
+**(a) opt-out 反転の根拠**: 人間（ひでさん）の発言「人間は多少のことは無関心なので基本オートでよい。対話の中でタグ付けするかどうかを重要度によって聞くようにして、基本は暗黙的にオートである」を起点とする流速最適化。opt-in モデルでは PR #33 のように人間が `auto-merge` ラベル付与を忘れて PR が滞留する事例を構造的に許容していた。opt-out モデルでは沈黙が暗黙承認となり流速が劇的改善する。
+
+**(b) C ハイブリッド採用（A 全面 opt-out でも B 維持でもない）**: philosophy/harness-verifier/cross-cutting/不可逆領域は opt-in 維持（人間の能動的同意が必要）、定型領域のみ opt-out。哲学者の懸念「opt-in が体現していた『同意の能動性』が opt-out で失われる」「5 年スパンで『無関心 = 委譲』が『無関心 = 思考停止』に滑落する重力」を「境界を SPEC で不変化することで止揚」する。
+
+**(c) 4 実装要件（minority_opinion 由来）**:
+
+| # | 要件 | 実装 |
+|---|------|------|
+| 1 | 境界の SPEC 不変化 | `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` を一次情報源化、AI が境界を動かせない |
+| 2 | roll-back プロトコル | 6 ヶ月後評価ゲート（2026-11-06）、評価指標 4 項目（暗黙 merge 事故 / AI 判定漏れ率 5% 超 / 境界曖昧化 月 2 件 / 二重ラベル腐敗）で 1 件でも閾値超過なら opt-in 復帰 |
+| 3 | 既存 `auto-merge` ラベル廃止 | 二重ラベル方式の腐敗回避、deployment では作成しない、issue-pickup 自動付与削除 |
+| 4 | メタ承認機構 | PR1 placeholder 実装（手動運用）、月次「AI 判定漏れ率」5% 超で roll-back ゲート起動 |
+
+**(d) opt-in 領域 8 項目**: philosophy 改修 / harness-verifier 自己改修 / 不可逆操作 / DONT.md 抵触 / Council `judgment_confidence < 0.5` / 複数 SPEC 横断改修（3 ファイル以上）/ autonomous-drive workflow 自身の改修 / 境界 SPEC 自身の改修（メタ自己参照）。
+
+**(e) opt-out 領域**: 単一機能追加 / bug fix / typo 修正 / format 修正 / documentation 更新（history/, delivery/）/ 単一 skill SPEC 追記（1 ファイル内）/ リファクタ（動作不変）/ monthly report 自動生成。
+
+**(f) Council 入力構造の自己参照**: 本判定自体が「philosophy 改修を伴う conception カテゴリ」であり、哲学者 weight が最大（5/11）の状況で「自己の権限縮退を自己決定する構造」の倫理的捻れを抱える。哲学者は confidence 0.55 で他ペルソナより低めだが C ハイブリッドに収束、minority_opinion で「沈黙が承認に化ける制度設計が招く認知負債」「P4 介入権の事後発動による質的劣化」を指摘し、これらを 4 実装要件として SPEC に同梱することで止揚した。
+
+### roll-back 評価ゲート（2026-11-06）
+
+| 評価指標 | 閾値 | 出典 |
+|----------|------|------|
+| 暗黙 merge 事故件数 | 1 件以上で要再評価 | 哲学者懸念 |
+| AI 判定漏れ率 | 5% 超で要再評価 | メタ承認機構 |
+| 境界曖昧化事例 | 月 2 件以上で要再評価 | 経営者懸念 |
+| 二重ラベル腐敗 | 1 件で即 roll-back | 開発者懸念 |
+
+評価指標すべて閾値未満なら継続、1 年後（2027-05-06）に再評価ゲート。
+
+### 関連
+
+- Council: `council-2026-05-06T08:30:00Z-amrev1` (history/COUNCIL-LOG.md)
+- 境界 SPEC: `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md`
+- 起点事例: PR #33（4 日間放置の docs/brainstorm draft PR）
+- 影響範囲: `.github/workflows/auto-merge.yml` + template / `.github/workflows/issue-pickup.yml` + template / `crosscut-autonomous-drive` SKILL.md / `crosscut-issue-implementer` SKILL.md / `layer1-autonomous-dev` SKILL.md §7.5 / `philosophy.md` 第 7 条
+
 ## v5.8.x / v5.9.0 候補：cookpato retro A1〜A5 取り込みポートフォリオ (discussion 段階)
 
 cookpato（妻専用献立メモ PWA、`samejima-ai/cookpato`）のバックアップ機能サイクル振り返り（PR #22、`docs/retros/2026-05-05-backup-cycle.md`）から DH 本体取り込み候補 5 件 (A1〜A5) を抽出。Council 諮問 `council-2026-05-06T04:42:00Z-a5port` (business / category=judgment / phase_3 / simple_conflict / judgment_confidence=0.75) で **案A (採用案維持)** が weighted_score 6.20 で支配的採用。

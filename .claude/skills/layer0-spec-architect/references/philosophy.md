@@ -343,7 +343,7 @@ L0 対話完了後、L1/L2 実行中は Council 事後評価のための質問�
 | **P1 発案** | プロジェクト方向性、新機能アイデア | 思考 | ❌ AI 不可 |
 | **P2 ブレスト** | 対話で方向性を具体化（**Issue 化は AI 担当**、人間は手を動かさない） | 発話 | △ AI が応答・整理・Issue 作成 |
 | **P3 事後確認・評価** | merge 済 PR の振り返り、autonomous loop の健全性監視 | 思考 | ❌ AI 不可 |
-| **P4 暴走時介入** | `do-not-merge` label、`ALLOWED_AUTHORS` 縮退、circuit breaker | 発話 | △ AI は notice/warning で兆候提示まで |
+| **P4 暴走時介入** | stop ラベル付与（`do-not-merge` / `human-review-needed` / `pickup-failed`）、`ALLOWED_AUTHORS` 縮退、circuit breaker | 発話 | △ AI は notice/warning で兆候提示まで |
 
 **原則**: 人間 = 頭と口を動かす / AI = 手を動かす（第 4 条と整合）。
 
@@ -386,6 +386,19 @@ autonomous_scope = `full` の運用では、AI は P 範囲外の以下を完遂
 - 次 Issue 着手（crosscut-issue-implementer の自動 pickup）
 
 人間関与は P1〜P4 の 4 点に集約され、それ以外の操作は AI が担う。
+
+### auto-merge デフォルト方針（v5.9.0 で opt-in→opt-out 反転）
+
+v5.5.3〜v5.7.2 では auto-merge 走行に **明示 `auto-merge` ラベル付与（人間の能動的 GO サイン）** が必須だった。v5.9.0 で **opt-out モデル（暗黙オート + stop ラベルで停止）** に反転した。
+
+- **デフォルト = auto-merge 走行**: 人間は多くの PR に無関心であり、沈黙が暗黙承認となる流速優先の設計
+- **stop ラベル**: `do-not-merge` / `human-review-needed` / `pickup-failed` のいずれかで停止
+- **opt-in 領域（明示停止が必要）**: philosophy 改修・harness-verifier 自己改修・複数 SPEC 横断・autonomous-drive workflow 自身・不可逆操作・DONT.md 抵触・Council `judgment_confidence < 0.5`
+- **境界の SPEC 不変化**: `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` に集約、AI は境界を動かせない
+
+第 4 条「人間が判断する場面」の P4 暴走時介入は **事後発動から事前付与（opt-in 領域での `human-review-needed` 自動付与）と事後発動（merge 後の振り返り）の二層構造** に拡張された。
+
+**根拠**: Council 諮問 `council-2026-05-06T08:30:00Z-amrev1`（unanimous C ハイブリッド、judgment_confidence 0.80、implementer_consent: agreed_with_modification）。**roll-back 評価ゲート** は 6 ヶ月後（2026-11-06）に必須で、暗黙 merge 事故 1 件以上 / AI 判定漏れ率 5% 超 / 境界曖昧化月 2 件以上 / 二重ラベル腐敗のいずれかで opt-in モデルに戻す手順を `auto-merge-boundary.md §roll-back プロトコル` に定義。
 
 ---
 
