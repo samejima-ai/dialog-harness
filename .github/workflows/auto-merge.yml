@@ -1,10 +1,21 @@
-# auto-merge — label opt-in による PR 自動 merge
+# auto-merge — stop ラベル opt-out による PR 自動 merge
 #
-# v5.5.3 で追加。DH の crosscut-issue-implementer から続く autonomous-drive
-# 機構の出口側（issue → AI 実装 → 多層レビュー → 自動 merge のうち最終段階）。
+# v5.5.3 で追加（label opt-in モデル）、v5.9.0 で opt-out モデルに反転。
+# DH の crosscut-issue-implementer から続く autonomous-drive 機構の出口側
+# （issue → AI 実装 → 多層レビュー → 自動 merge のうち最終段階）。
+#
+# v5.9.0 反転の根拠:
+#   - Council 諮問 council-2026-05-06T08:30:00Z-amrev1（unanimous C ハイブリッド、
+#     judgment_confidence 0.80、implementer_consent: agreed_with_modification）
+#   - 旧 opt-in モデルは PR #33 のように人間が `auto-merge` ラベル付与を忘れて
+#     PR が滞留する事例を構造的に許容していた
+#   - opt-out モデルは「人間は多少のことは無関心、暗黙オートが基本」の人間発言と整合
+#   - 境界の SPEC 不変化は `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md`
+#     に明記、AI が境界を動かせない（哲学者懸念への対抗）
 #
 # 動作: 以下の全条件を満たした場合のみ PR を squash merge する
-#   1. PR に label `auto-merge` が付いている（明示 opt-in、人間の GO サイン）
+#   1. PR に stop ラベル（`do-not-merge` / `human-review-needed` / `pickup-failed`）が
+#      ついて **いない**（v5.9.0 で whitelist → blacklist へ反転）
 #   2. PR が non-draft
 #   3. author が ALLOWED_AUTHORS（信頼済 list）に含まれる
 #   4. harness-verify check が SUCCESS（構造的検証）
@@ -12,13 +23,20 @@
 #      で対象外、その場合は条件クリア扱い）
 #   6. reviewDecision が CHANGES_REQUESTED でない
 #   7. PR state が OPEN
+#   4.5（zero-check 防止）. harness-verify / gemini-review の最低どちらか 1 つが
+#       SUCCESS で走っていること（両方未実行の paths filter 外 PR を防ぐ）
 #
 # 非該当 PR は notice 出力で skip（red CI にしない）。
 #
 # 設計判断:
 # - GitHub native auto-merge ではなく workflow で直接 merge する形を採用
-#   理由: branch protection の設定変更を伴わず opt-in 運用できる、ロジックを
+#   理由: branch protection の設定変更を伴わず運用できる、ロジックを
 #   一箇所で管理できる、運用観測（notice ログ）が一元化される
+# - opt-out（blacklist）反転: opt-in（whitelist）は人間の能動的同意を要求するが
+#   人間は多くの PR に無関心。opt-out では沈黙が暗黙承認となり流速が劇的改善する。
+#   tail-risk 抑制は opt-in 領域（auto-merge-boundary.md §opt-in 領域）の維持で
+#   担保（philosophy/harness-verifier/cross-cutting/不可逆領域は AI が対話中に
+#   `human-review-needed` 付与確認を必ず発話する）
 # - PAT (GH_REVIEW_PAT) を使用: workflow の auto GITHUB_TOKEN は別 workflow を
 #   trigger できない（無限ループ防止）が、PAT なら trigger 可能。本 workflow 自身は
 #   別 workflow を起動しないが、merge commit が後続 workflow を起こす可能性は許容
@@ -26,7 +44,14 @@
 #
 # 必要な setup:
 # - Repo Settings → Secrets に GH_REVIEW_PAT が設定済（v5.5.1 で導入）
-# - GitHub UI で `auto-merge` label を作成（手動、初回のみ）
+# - GitHub UI で `do-not-merge` / `human-review-needed` ラベルを作成（手動、初回のみ）
+#   旧 `auto-merge` ラベルは v5.9.0 で廃止（残存しても merge 判定に影響しない、
+#   crosscut-autonomous-drive deployment では作成しない）
+#
+# roll-back プロトコル（6 ヶ月後検証 = 2026-11-06）:
+# - auto-merge-boundary.md §roll-back プロトコル を参照
+# - 暗黙 merge 事故 1 件以上 / AI 判定漏れ率 5% 超 / 境界曖昧化月 2 件以上 / 二重ラベル腐敗
+#   のいずれかで Council 再諮問 → 必要に応じて opt-in モデル復帰
 #
 # 信頼済 author list の拡張:
 # - 本 workflow の env.ALLOWED_AUTHORS を更新する PR を出す（spec 改修扱い）
@@ -142,9 +167,11 @@ jobs:
             exit 0
           fi
 
-          # 条件 1: auto-merge label
-          if ! echo "$PR_JSON" | jq -e '.labels[]? | select(.name == "auto-merge")' > /dev/null; then
-            echo "::notice::PR #$PR_NUMBER に 'auto-merge' label なし。skip（明示 opt-in 待ち）。"
+          # 条件 1: stop ラベル不在（v5.9.0 で opt-in→opt-out 反転、
+          # auto-merge-boundary.md §stop ラベル定義 参照）
+          STOP_LABEL=$(echo "$PR_JSON" | jq -r '[.labels[]? | select(.name == "do-not-merge" or .name == "human-review-needed" or .name == "pickup-failed")] | .[0].name // ""')
+          if [ -n "$STOP_LABEL" ]; then
+            echo "::notice::PR #$PR_NUMBER に stop ラベル '$STOP_LABEL' あり。skip（人間レビュー or 差し戻し or pickup 失敗）。"
             exit 0
           fi
 

@@ -227,12 +227,12 @@ jobs:
             3. Issue 本文の「再現手順」「期待動作」「受入条件」を満たす実装
             4. 自己検証（sensors/ に従い、計算的 + 推論的）
             5. commit + push（ブランチ名と一致）
-            6. PR 作成: `gh pr create --title <descriptive title> --body <Closes #${{ env.ISSUE_NUMBER }} 含む詳細> --label auto-merge`
+            6. PR 作成: `gh pr create --title <descriptive title> --body <Closes #${{ env.ISSUE_NUMBER }} 含む詳細>`（v5.9.0 で `--label auto-merge` 削除、opt-out モデルでデフォルト auto-merge 走行）
             7. PR description に必ず `Closes #${{ env.ISSUE_NUMBER }}` を含める
-            8. `auto-merge` label を付与（後段 auto-merge.yml + gemini-review.yml が引き継ぐ）
+            8. opt-in 領域（`.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` §opt-in 領域）に該当する変更を含む場合は `--label human-review-needed` を付与（auto-merge を停止して人間レビュー待ち）
 
             ## 失敗時
-            自力修正上限（同一エラー 3 回）を超えた場合は、Issue にコメントで報告し、`pickup-failed` label 付与の判断を行うこと。
+            自力修正上限（同一エラー 3 回）を超えた場合は、Issue にコメントで報告し、`pickup-failed` label 付与の判断を行うこと（`pickup-failed` は stop ラベルとして auto-merge を skip する）。
 
       - name: Handle Claude Code failure
         if: |

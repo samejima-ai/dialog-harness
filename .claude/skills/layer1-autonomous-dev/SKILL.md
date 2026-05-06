@@ -337,6 +337,49 @@ L2 統合検証との接続: 複数 Island に渡る restructure では `layer2-
 layer1-independent-reviewer の役割と設計原則は `.claude/skills/layer1-independent-reviewer/SKILL.md` を参照。
 プロジェクト差異は sensors/ や `sensors/review-checklist.md` に閉じる（agent本体はプロジェクト不変）。
 
+### 7.5. PR 作成 + stop ラベル判定（v5.9.0 追加、`dev_mode` ≥ `github_assisted` で参照）
+
+PR 作成時、対話中に**変更内容が opt-in 領域に該当するか**を判定し、該当する場合は `human-review-needed` ラベルを付与する。該当しない場合は無言で PR を作成し、`auto-merge.yml` のデフォルトに任せる（v5.9.0 で opt-in→opt-out 反転、Council 諮問 `council-2026-05-06T08:30:00Z-amrev1` 由来）。
+
+**判定基準（いずれか該当で `human-review-needed` 付与確認発話）**:
+
+| 軸 | 該当例 |
+|----|--------|
+| **不可逆性** | DB migration、データ削除、外部 API 破壊変更、secrets 削除、branch 強制 push |
+| **DONT.md 抵触** | プロジェクトの `DONT.md` で禁止された領域への侵入（この場合は `do-not-merge` 推奨） |
+| **Council 起動 + 低 confidence** | Council 諮問が起動し `judgment_confidence < 0.5` で escalate された場合 |
+| **philosophy 改修** | `.claude/skills/layer0-spec-architect/references/philosophy.md` の追記・改訂 |
+| **harness-verifier 自己改修** | `harness-verifier/**`（reports/ 配下の月次自動生成は除外） |
+| **複数 SPEC 横断改修** | 3 ファイル以上の `.claude/skills/*/SKILL.md` または references/*.md を同 PR で改修 |
+| **autonomous-drive workflow 改修** | `.github/workflows/auto-merge.yml` `issue-pickup.yml` `gemini-review.yml` の改修 |
+| **境界 SPEC 自身の改修** | `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` の改修 |
+
+**該当しない場合の opt-out 領域（暗黙オート）**:
+
+- 単一機能追加 / bug fix（1 つの skill 内に閉じる）
+- typo / format 修正
+- documentation 更新（`history/**`, `delivery/**`）
+- 単一 skill SPEC 追記（1 ファイル内）
+- リファクタ（動作不変）
+
+詳細な境界分類は `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` が一次情報源。本ファイルは判定の触発点のみを示す。
+
+**PR 作成手順**:
+
+```bash
+# opt-out 領域（暗黙オート）
+gh pr create --title "<descriptive title>" --body "<Closes #N 含む詳細>"
+
+# opt-in 領域（人間レビュー待ち）
+gh pr create --title "<descriptive title>" --body "<Closes #N 含む詳細>" --label human-review-needed
+```
+
+**境界曖昧時**:
+
+- 「opt-out か判定に迷う」状態を検知したら `human-review-needed` を **デフォルト付与**（境界曖昧化を防ぐ安全側挙動）
+- セッション駆動の場合は人間に「opt-in 領域に該当しますか？」を発話確認
+- L1 単独実行（issue-pickup 経路）の場合は `human-review-needed` 付与で人間に判断を渡す
+
 ### 8. 献上
 
 成果物を人間にレビュー可能な状態で献上する。

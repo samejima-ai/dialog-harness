@@ -4,11 +4,11 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 
 ## v5.9.0 (in progress)
 
-> **記録規約**: 本 v5.9.0 は cookpato バックアップサイクル retro (`samejima-ai/cookpato` PR #22) からの A1〜A5 汎用パターン取り込み回。Council 諮問 `council-2026-05-06T04:42:00Z-a5port` で案A 採用 (judgment_confidence 0.75)、本 PR #58 は履歴層 F3 更新のみ (実装変更なし)。
+> **記録規約**: 本 v5.9.0 は (1) cookpato バックアップサイクル retro (`samejima-ai/cookpato` PR #22) からの A1〜A5 汎用パターン取り込み + (2) auto-merge 人間承認モデルの opt-in→opt-out 反転 の 2 系列を含む。
 
-**minor 昇格 (in progress)**。**cookpato retro A1〜A5 汎用パターン取り込みポートフォリオ確定**。
+**minor 昇格 (in progress)**。**cookpato retro A1〜A5 汎用パターン取り込みポートフォリオ確定 + auto-merge opt-out 反転**。
 
-実装は別 PR / issue 群で進行（#53 A1 / #57 A2 / #54 A5 / PR #56 A4 / #46 follow-up A3）、本 PR は履歴層 F3 (COUNCIL-LOG.md 諮問エントリ + INTENT.md 取り込み計画) のみ。
+実装は別 PR / issue 群で進行（#53 A1 / #57 A2 / #54 A5 / PR #56 A4 / #46 follow-up A3）、本 PR は履歴層 F3 (COUNCIL-LOG.md 諮問エントリ + INTENT.md 取り込み計画) + auto-merge 反転の SPEC 改修 + 境界 SPEC 新設。
 
 ### Step 1: Council 諮問（案A 採用）
 
@@ -33,6 +33,39 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 
 - 起点 retro: `samejima-ai/cookpato` PR #22 `docs/retros/2026-05-05-backup-cycle.md`
 - v6.0.0 候補温存: 「事故履歴という外部記憶への harness 依存を philosophy.md 第 8 条として昇格するか」を 2 件目 retro 出現時の再評価ゲートで本格検討
+
+### Step 3: auto-merge 人間承認モデルの opt-in→opt-out 反転
+
+PR #33 が 4 日間放置されている事例を起点に、auto-merge の人間承認モデルを反転する設計判断。「人間は多少のことは無関心、暗黙オートが基本」というユーザー発言を起点に Council 諮問を実施。
+
+#### Council 諮問（C ハイブリッド採用）
+
+- `council-2026-05-06T08:30:00Z-amrev1` (business / category=conception / phase_3 / unanimous)
+- final_weights: 経営者 3 / 開発者 3 / 哲学者 5（conception カテゴリで 哲学者 +2 modifier）
+- recommended: C ハイブリッド採用 (weighted_score 7.31 / 全 weight 11、100%)
+- judgment_confidence: 0.80 / consensus_mode: auto_agree
+- implementer_consent: agreed_with_modification（minority_opinion 由来 4 実装要件を SPEC に同梱）
+
+#### 実装変更（4 系統）
+
+- **workflow 反転**: `.github/workflows/auto-merge.yml` 条件 1 を whitelist (`auto-merge` ラベル必須) → blacklist (stop ラベル不在) に反転、template も同期
+- **issue-pickup 改修**: `--label auto-merge` 自動付与を削除、opt-in 領域該当時のみ `--label human-review-needed`
+- **境界 SPEC 新設**: `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md`（opt-in 領域 8 項目、opt-out 領域、stop ラベル定義、roll-back プロトコル、メタ承認機構）
+- **philosophy 改修**: 第 7 条 §autonomous-drive §auto-merge デフォルト方針 を新設、P4 暴走時介入を stop ラベル群に拡張
+
+#### 4 実装要件（minority_opinion 由来、SPEC 同梱）
+
+1. **境界の SPEC 不変化**: `auto-merge-boundary.md` を一次情報源、AI が境界を動かせない構造
+2. **roll-back プロトコル**: 6 ヶ月後検証ゲート（2026-11-06）、評価指標 4 項目で 1 件でも閾値超過なら opt-in 復帰
+3. **既存 `auto-merge` ラベルの廃止**: 二重ラベル方式の腐敗回避、deployment では作成しない
+4. **メタ承認機構**: PR1 placeholder 実装（手動運用）、月次「AI 判定漏れ率」5% 超で roll-back ゲート起動
+
+#### 影響を受ける skill
+
+- `crosscut-autonomous-drive` (v0.2.0): 境界 SPEC 一次情報源化、`auto-merge` ラベル廃止
+- `crosscut-issue-implementer` (v0.3.0): opt-in→opt-out philosophy 反転、CTL 表更新
+- `layer1-autonomous-dev` SKILL.md §7.5: PR 作成時の stop ラベル判定基準を新設
+- `philosophy.md` 第 7 条: P4 暴走時介入の stop ラベル拡張、auto-merge デフォルト方針を新設
 
 ## v5.8.0 (released 2026-05-04)
 

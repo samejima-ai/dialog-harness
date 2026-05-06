@@ -11,8 +11,9 @@
 # v5.7.0 で新設、v5.7.1 で実装エージェントを Claude Code CLI に切替。
 # dialog-harness の crosscut-issue-implementer skill 実装。
 # Issue label `ready-for-ai` 付与で発火、3 段階フィルター + AI triage で選別、
-# pickup 確定なら Claude Code CLI が実装、PR 作成、`auto-merge` label 自動付与で
-# 既存 gemini-review.yml + auto-merge.yml に引き継ぐ。
+# pickup 確定なら Claude Code CLI が実装、PR 作成（v5.9.0 で `auto-merge` ラベル
+# 自動付与は廃止、opt-out モデルでデフォルト auto-merge 走行）、既存 gemini-review.yml
+# + auto-merge.yml に引き継ぐ。
 #
 # 詳細は .claude/skills/crosscut-issue-implementer/SKILL.md 参照。
 #
@@ -22,10 +23,16 @@
 # - AI triage は gemini-cli メイン継続（軽量、無料 tier、異質モデル併走）
 # - 失敗時のフォールバックは自動化しない（人間 P4 判断、`pickup-failed` label 付与）
 #
+# v5.9.0 改訂点（opt-in→opt-out 反転）:
+# - PR 作成時の `--label auto-merge` 自動付与を削除
+# - opt-in 領域（auto-merge-boundary.md §opt-in 領域）に該当する場合のみ
+#   `--label human-review-needed` を付与する判定ロジックに変更
+# - 旧 `auto-merge` ラベルは廃止（二重ラベル方式の腐敗回避）
+#
 # 注意: 本 template は autonomous_scope: full 専用。
-#   prompt 内の `--label auto-merge` も full 専用前提。
-#   merge_gated / custom スコープで利用する場合は SKILL.md「CTL との関係」表に従い
-#   `--label auto-merge` を取り除いた派生 template を別途用意すること（auto-merge 自動付与は merge_gated では禁止）。
+#   v5.9.0 反転により `--label auto-merge` は不要化したが、merge_gated スコープでの
+#   利用には引き続き別 template が必要（merge_gated は明示 GO ラベルを残す運用、
+#   `auto-merge.yml` の whitelist を補助的に有効化する派生実装を予定）。
 #   crosscut-issue-implementer/SKILL.md 「発動条件」も `autonomous_scope: full` のみ active 化と明記。
 #
 # 必須 Repository Secrets:
@@ -245,9 +252,9 @@ jobs:
             3. Issue 本文の「再現手順」「期待動作」「受入条件」を満たす実装
             4. 自己検証（sensors/ に従い、計算的 + 推論的）
             5. commit + push（ブランチ名と一致）
-            6. PR 作成: `gh pr create --title <descriptive title> --body <Closes #${{ env.ISSUE_NUMBER }} 含む詳細> --label auto-merge`
+            6. PR 作成: `gh pr create --title <descriptive title> --body <Closes #${{ env.ISSUE_NUMBER }} 含む詳細>`（v5.9.0 で `--label auto-merge` 削除、opt-out モデルでデフォルト auto-merge 走行）
             7. PR description に必ず `Closes #${{ env.ISSUE_NUMBER }}` を含める
-            8. `auto-merge` label を付与（後段 auto-merge.yml + gemini-review.yml が引き継ぐ）
+            8. opt-in 領域（dialog-harness の `crosscut-autonomous-drive/references/auto-merge-boundary.md` §opt-in 領域）に該当する変更を含む場合は `--label human-review-needed` を付与（auto-merge を停止して人間レビュー待ち）
 
             ## 失敗時
             自力修正上限（同一エラー 3 回）を超えた場合は、Issue にコメントで報告し、`pickup-failed` label 付与の判断を行うこと。

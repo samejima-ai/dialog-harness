@@ -34,8 +34,8 @@ description: >
 3.5. crosscut-issue-quality-gate 最終確認（v5.8.0 追加、発動契機 (d)）
 4. Pickup 確定: label `in-progress` 自動付与、Issue 番号で branch 作成（feat/<issue-num>-<slug>）
 5. 実装: **Claude Code CLI** (anthropics/claude-code-action) が repo を clone + Issue + SPEC を読み込み + 実装 + commit
-6. PR 作成: gh pr create + ready-for-review + (autonomous_scope: full なら) `auto-merge` label 自動付与
-7. 後段委譲: 既存 gemini-review.yml + auto-merge.yml が引き継ぎ
+6. PR 作成: gh pr create + ready-for-review。**v5.9.0 で `auto-merge` ラベル自動付与は廃止**（opt-in→opt-out 反転、Council 諮問 `council-2026-05-06T08:30:00Z-amrev1` 由来）。opt-in 領域（`crosscut-autonomous-drive/references/auto-merge-boundary.md` §opt-in 領域）に該当する変更を含む場合のみ `--label human-review-needed` を付与
+7. 後段委譲: 既存 gemini-review.yml + auto-merge.yml が引き継ぎ（auto-merge.yml は stop ラベル不在をデフォルトに反転済）
 8. 統計記録: .gemini/issue-pickup-stats.json に pickup 結果を append (Circuit Breaker 用、v5.7.x で永続化完成予定)
 ```
 
@@ -84,13 +84,15 @@ description: >
 
 ## CTL との関係
 
-CTL は本 v5.7.0 改訂で参照しない（v5.0.0 旧版で言及されていたが未稼働だった）。`autonomous_scope` 軸（v5.6.0 追加）が運用粒度を決定する：
+CTL は本 v5.7.0 改訂で参照しない（v5.0.0 旧版で言及されていたが未稼働だった）。`autonomous_scope` 軸（v5.6.0 追加）が運用粒度を決定する。**v5.9.0 で opt-in→opt-out 反転後は `auto-merge` ラベル運用が廃止され、stop ラベル付与の有無で挙動を切り替える**：
 
-| autonomous_scope | issue-pickup.yml | auto-merge label 付与 | 後段 |
+| autonomous_scope | issue-pickup.yml | stop ラベル運用 | 後段 |
 |---|---|---|---|
-| full | ✅ 起動 | ✅ 自動 | gemini-review + auto-merge |
-| merge_gated | △ 起動可（PR 作成まで） | ❌ 付与しない | 人間 approve 待ち |
+| full | ✅ 起動 | opt-in 領域該当時のみ `human-review-needed` 付与（v5.9.0 反転） | gemini-review + auto-merge（デフォルト走行） |
+| merge_gated | △ 起動可（PR 作成まで） | ✅ 必ず `human-review-needed` 付与（明示 GO 待ち） | 人間が解除後に auto-merge |
 | custom | 個別指定 | 個別 | 個別 |
+
+opt-in / opt-out 領域の境界 SPEC は `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` を一次情報源とする。
 
 ## 関連ドキュメント
 
@@ -111,9 +113,11 @@ CTL は本 v5.7.0 改訂で参照しない（v5.0.0 旧版で言及されてい�
 - `.claude/skills/layer0-spec-architect/references/philosophy.md` 第 7 条 — DH AI 組織論（本 skill の位置づけ）
 - `.claude/skills/layer1-autonomous-dev/SKILL.md` — 実装本体（gemini-cli が呼び出される側の規約）
 - `.claude/skills/layer1-independent-reviewer/SKILL.md` — self-review 実行体
+- `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` — v5.9.0 opt-in/opt-out 境界 SPEC（一次情報源）
 
 ## バージョン
 
 - v0.1.0 (v5.0.0 で導入、claude-code-action 前提、未稼働)
 - **v0.2.0 (v5.7.0 で全面改訂)**: gemini-cli base、3 段階フィルター + AI triage + Circuit Breaker、dialog-harness 自身に deploy
+- **v0.3.0 (v5.9.0 で改訂)**: opt-in→opt-out 反転、`auto-merge` ラベル運用廃止、stop ラベル方式（`do-not-merge` / `human-review-needed` / `pickup-failed`）に統合。境界 SPEC は `crosscut-autonomous-drive/references/auto-merge-boundary.md` に集約
 - v5.7.x 候補: gemini-cli 実装品質観測 + 必要時の Council 起動（フォールバック判断）

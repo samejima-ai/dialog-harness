@@ -2,13 +2,14 @@
 name: crosscut-autonomous-drive
 dimension: D4
 description: >
-  autonomous-drive 標準化の deployment ヘルパー（v5.6.0 追加 / v5.7.1 で Claude Code CLI 対応追記）。
+  autonomous-drive 標準化の deployment ヘルパー（v5.6.0 追加 / v5.7.1 で Claude Code CLI 対応追記 / v5.9.0 で opt-in→opt-out 反転）。
   dialog-harness の `templates/github-workflows/` から workflow テンプレートを取得し、
   placeholder 置換して利用者プロジェクトの `.github/workflows/` に配置する。
-  併せて label (ready-for-ai / auto-merge / do-not-merge) を作成し、
+  併せて stop ラベル (do-not-merge / human-review-needed) + ready-for-ai を作成し、
   Repository Secrets (GH_REVIEW_PAT / GEMINI_API_KEY、v5.7.1 で **CLAUDE_CODE_OAUTH_TOKEN** 追加) の設定ガイドを提示する。
   spec-architect が dev_mode `autonomous` 判定時に明示起動する。
   philosophy.md 第 7 条「AI 組織論」の「サポート skill」枠（4 役割を補助、L3 運用層ではない）。
+  opt-in / opt-out 境界 SPEC は `references/auto-merge-boundary.md` を一次情報源とする。
 ---
 
 # Crosscut Autonomous-Drive (Deployment)
@@ -22,7 +23,7 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 1. **template 取得**: `templates/github-workflows/` から `auto-merge.yml.template` / `gemini-review.yml.template` を読み込む
 2. **placeholder 置換**: spec-architect 対話で確定した値（`${ALLOWED_AUTHORS}` 等）を template に展開
 3. **配置**: 利用者プロジェクトの `.github/workflows/` 配下にコピー
-4. **label 作成**: GitHub UI または API 経由で `ready-for-ai` / `auto-merge` / `do-not-merge` label を作成（autonomous_scope に応じて）
+4. **label 作成**: GitHub UI または API 経由で `ready-for-ai` / `do-not-merge` / `human-review-needed` label を作成（autonomous_scope に応じて）。**v5.9.0 で `auto-merge` ラベルは廃止**（opt-in→opt-out 反転、二重ラベル方式の腐敗回避）
 5. **secrets ガイド**: `GH_REVIEW_PAT` / `GEMINI_API_KEY` / **`CLAUDE_CODE_OAUTH_TOKEN`** (v5.7.1〜、issue-pickup.yml が必要とする) の設定手順をユーザーに提示（実際の入力は人間 P4 / spec-architect 対話で確認）。GH_REVIEW_PAT は **Contents/PR/Issues = Read and write** が必要（Read のみでは Claude Code 実装の commit/push が失敗）。詳細: `.claude/skills/crosscut-issue-implementer/references/setup-checklist.md`
 
 ## 起動条件
@@ -72,17 +73,20 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 
 - [references/placeholder-spec.md](references/placeholder-spec.md) — placeholder 一覧 + 規約
 - [references/setup-checklist.md](references/setup-checklist.md) — label / secret / PAT 設定手順チェックリスト
+- [references/auto-merge-boundary.md](references/auto-merge-boundary.md) — v5.9.0 opt-in/opt-out 境界 SPEC（一次情報源、AI が動かせない不変仕様）
 
 ### このスキル外
 
-- `templates/github-workflows/auto-merge.yml.template` — auto-merge workflow テンプレート（dialog-harness リポジトリ ルート）
+- `templates/github-workflows/auto-merge.yml.template` — auto-merge workflow テンプレート（dialog-harness リポジトリ ルート、v5.9.0 で opt-out 反転）
 - `templates/github-workflows/gemini-review.yml.template` — gemini-review workflow テンプレート（同上）
 - `.claude/skills/layer0-spec-architect/references/autonomous-drive-deployment.md` — spec-architect 対話レベルのガイド
 - `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` Level C — deploy 対象機能の autonomous_scope 別表
 - `.claude/skills/layer0-spec-architect/references/philosophy.md` 第 7 条 — DH AI 組織論（本 skill の位置づけ）
+- `.claude/skills/layer1-autonomous-dev/SKILL.md` §7.5 — PR 作成時の stop ラベル判定（境界 SPEC を参照する触発点）
 
 ## バージョン
 
 - v0.1.0（v5.6.0 で新規導入、deployment 専念）
+- **v0.2.0（v5.9.0 で改訂）**: opt-in→opt-out 反転、`auto-merge` ラベル廃止、stop ラベル方式に統合、境界 SPEC `auto-merge-boundary.md` を一次情報源化
 - v5.6.x 候補: destructive change detector / circuit breaker（guardian 機能）の追加
 - v5.7.0 候補: ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）
