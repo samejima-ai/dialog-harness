@@ -223,7 +223,7 @@ H カテゴリ（H1〜H4）の抵触を検知したら、Council 発動ではな
    - `final_decision` が常に null である理由: 第6条により Council は判断機構であり決定機構ではない。決定は人間または実装者の合意プロセスが担う。CTL ≥ CTL-1 で該当 C カテゴリが委譲範囲内なら、実装者の合意プロセスが Council 結果を採用して続行できる。
 4. 合意プロセスに入る（`.claude/skills/crosscut-council/references/consensus-protocol.md` 参照）:
    - 実装者は `recommended` を採用するか、別案で実装するかを決定する
-   - REGIME.md の CTL を確認し、該当 C カテゴリが委譲範囲外なら判断献上(Council 結果を参考情報として人間に渡す)
+   - REGIME.md の CTL を確認し、該当 C カテゴリが委譲範囲外なら判断献上（Council 結果を参考情報として人間に渡す）
    - `judgment_confidence < 0.5` の場合は自動で人間エスカレーション（献上で報告）
    - 採用可否と根拠を DELIVERY.md の**体制事後評価内の履歴系記録欄**に記載する（Council 発動記録専用節の新設は PR2 で予定）
 
