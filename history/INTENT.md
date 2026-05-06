@@ -2,6 +2,44 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v5.8.x / v5.9.0 候補：cookpato retro A1〜A5 取り込みポートフォリオ (discussion 段階)
+
+cookpato（妻専用献立メモ PWA、`samejima-ai/cookpato`）のバックアップ機能サイクル振り返り（PR #22、`docs/retros/2026-05-05-backup-cycle.md`）から DH 本体取り込み候補 5 件 (A1〜A5) を抽出。Council 諮問 `council-2026-05-06T04:42:00Z-a5port` (business / category=judgment / phase_3 / simple_conflict / judgment_confidence=0.75) で **案A (採用案維持)** が weighted_score 6.20 で支配的採用。
+
+### 設計意図の核
+
+**(a) 案A 採用ポートフォリオ振り分け** (最終確定):
+
+| 提案 | 取り込み先 | Issue/PR | バージョン |
+|---|---|---|---|
+| A1 事故起点プローブ | `dialog-questions.md` | #53 (A1 単独に書き換え済) | v5.8.1 patch or v5.9.0 minor |
+| A2 機能間相互作用セクション | `meta-spec-template.md` | #57 (新規作成) | v5.9.0 minor |
+| A3 R+1 オーバーライド | #46 軸 vi 観測性データソース拡張 | #46 (closed) へ follow-up コメント + 別 issue | v5.8.x patch or v5.9.0 minor |
+| A4 L1 依存導入チェック | `layer1-autonomous-dev/SKILL.md` | #55 / PR #56 (CI PASS、draft) | v5.8.1 patch |
+| A5 grep 規約センサー | `dev-env-spec.md` パターン例 | #54 (A5 単独に書き換え済) | v5.9.0 minor |
+
+**(b) 哲学者少数意見の v6.0.0 候補温存** (Council third_way_excluded で保持): 哲学者ペルソナは「**A1 と A3 はともに『沈黙する前提の言語化』カテゴリで同型**」(対象がユーザー記憶 vs プロジェクト履歴と異なるだけ) と指摘し、規則化の前に **philosophy.md 第 8 条候補 (v6.0.0)** として「**事故履歴という外部記憶への harness 依存**」を昇格すべきと主張。N=1 問題 (cookpato 単一事例から普遍規則を抽出する帰納的飛躍) への対処として、**2 件目 retro 出現時に再評価ゲート** を設ける。
+
+**(c) Council context 誤情報の事後訂正記録** (情報純度違反、philosophy.md §3): 諮問時 context に「v5.8.0 候補 = #46 (discussion 中、未着手)」と記述したが実際は **v5.8.0 既リリース (2026-05-04)、#46 closed**。判定 (案A) は前提変更後も妥当性を保つためバージョン表記のみ訂正、案A 維持。本訂正経緯は `COUNCIL-LOG` の `modification_note` に記録。
+
+**(d) F2 重複候補 3 件の整理**:
+- A1 ↔ `ritual-protocol.md` F2 認識ズレ検出: cookpato 事故は過去 INTENT 空のため F2 では拾えなかった → A1 はその穴埋めとして設計
+- A3 ↔ #46 Quality Gate 軸 vi 観測性: SSOT 維持のため #46 follow-up に統合 (二重化回避)
+- A5 ↔ `crosscut-verifier-drift`: 対象差異 (SPEC↔実装 vs CLAUDE.md規約↔実装) で補強カテゴリとして相補
+
+**(e) A1 実装時の哲学者フォロー脚注**: A1 を `dialog-questions.md` に追加する際、A1/A3 同型カテゴリ (沈黙前提の言語化) を明示的に脚注化し、第 8 条昇格議論への伏線とする (詳細は #53 issue body)。
+
+### v6.0.0 候補温存
+
+「**事故履歴という外部記憶への harness 依存を philosophy.md 第 8 条として昇格するか**」を哲学者第3の道として保持。2 件目 retro 出現時 (or v5.9.x マイナー安定後) に再評価ゲートで本格検討する。
+
+### 関連
+
+- 起点 retro: `samejima-ai/cookpato` PR #22 `docs/retros/2026-05-05-backup-cycle.md`
+- Issues: #53 (A1) / #54 (A5) / #55 (A4) / #57 (A2) / #46 (A3 follow-up コメント)
+- PR: #56 (A4 実装中、CI PASS、draft)
+- Council: `council-2026-05-06T04:42:00Z-a5port` (history/COUNCIL-LOG.md)
+
 ## v5.7.2 で追加された概念
 
 ### `claude-code-action@v0` の OIDC permission bug 修正

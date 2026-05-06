@@ -715,3 +715,52 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   modification_note: "β 止揚採用 — v5.6.0 で crosscut-autonomous-drive deployment skill 1 つを新設、guardian (destructive detector / circuit breaker) は v5.6.x patch / v5.7.0 候補へ温存。観測駆動原則と整合"
   follow_up_questions_count: 0
   agreed_at: "2026-05-03T08:35:00Z"
+
+- invocation_id: "council-2026-05-06T04:42:00Z-a5port"
+  timestamp: "2026-05-06T04:42:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "cookpato retro A1〜A5 の振り分けポートフォリオは妥当か（特に A3 を #46 に統合するか独立採用するか）"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "案A: 採用案維持", confidence: 0.70 }
+    開発者: { stance: "案A: 採用案維持", confidence: 0.85 }
+    哲学者: { stance: "第3の道: A3 を philosophy.md 第 8 条候補として discussion 化", confidence: 0.55 }
+  judgment_confidence: 0.75
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A: 採用案維持"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 8
+        weighted_score: 6.20
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.70 }
+          - { persona: "開発者", weight: 4, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "第3の道: A3 を philosophy.md 第 8 条候補として discussion 化、A1/A2/A4/A5 は案A 通り"
+        weight: 3
+        confidence: 0.55
+        reason: "options A〜D に含まれない自由記述 stance のため PR1 暫定運用ルールで weight 加算対象外、minority_opinion に転載。A1 と A3 はともに『沈黙する前提の言語化』カテゴリで同型 (対象がユーザー記憶 vs プロジェクト履歴と異なる) のため、規則化の前に第 8 条として昇格すべきと主張"
+    max_score_stance: "案A: 採用案維持"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案A: 採用案維持（A1 単独 v5.8.1 patch or v5.9.0 minor / A2 v5.9.0 minor / A3 #46 follow-up コメント + 別 issue / A4 完了 PR #56 / A5 v5.9.0 minor 軽量）"
+  reasoning: "judgment カテゴリ重み配分 (経営者 4, 開発者 4, 哲学者 3) において案A は経営者 + 開発者で weighted_score 6.20 と支配的。経営者は『#46 統合で観測性ロジックの二重化コスト回避 + 即 ROI』、開発者は『SSOT 保持と全提案の非破壊整合性』から案A を支持。哲学者は第3の道として A3 の哲学的格上げを提示したが options 外のため weight 加算対象外。判定対象内では案A が他案 (B/C/D いずれも 0.00) を 6.20 vs 0.00 で圧倒"
+  minority_opinion: "哲学者: A3 は表層的には R+1 加算ルールだが本質は『一度傷ついた領域の記憶を組織はどう継承するか』の時間論的問い。#46 統合で観測軸の一項目に矮小化、独立 issue で加算規則に縮退するため、philosophy.md 第 8 条候補として問いを熟成すべき。A1 (動機聞き出し) と A3 (事故履歴) は両方とも『沈黙する前提の言語化』で同型、別レイヤで扱う非対称性に正当化が必要。N=1 問題 (cookpato 単一事例からの帰納的飛躍) を指摘。案A 採用後のフォローアップ論点として独立検討 (v6.0.0 候補温存) を推奨"
+  weight_note: "council-weights.md §situational_modifier.judgment (経営者 +1) を適用。最終配分 4/4/3。weight 計算は weight_times_confidence 純粋関数結果。哲学者の第3の道は third_way_excluded に退避 (PR1 暫定運用ルール、weight 3 / 全 weight 11 ≈ 27% で 30% 閾値未満、conflict-typology.md §第3の道 stance の PR1 暫定運用ルール準拠)"
+  consensus_mode: "auto_agree"
+  final_decision: null
+  human_escalated: false
+  implementer_consent: "agreed_with_modification"
+  modification_note: "案A 採用 + 少数意見フォロー。Council context に誤情報 (諮問時に『v5.8.0 候補 = #46 (discussion 中、未着手)』と記述したが実際は v5.8.0 既リリース 2026-05-04・#46 closed) を含んでいたが、判定 (案A) は前提変更後も妥当性を保つため案A 維持しバージョン表記のみ訂正: A1 v5.7.x→v5.8.1 patch or v5.9.0 minor / A2 v5.8.x→v5.9.0 minor / A3 #46 統合→#46 (closed) follow-up コメント + 別 issue (v5.8.x patch or v5.9.0 minor) / A4 v5.7.x→v5.8.1 patch / A5 v5.8.x→v5.9.0 minor。情報純度違反 (philosophy.md §3) として記録。哲学者第3の道 (A3 を philosophy.md 第 8 条候補に昇格) は v6.0.0 候補として `history/INTENT.md` に温存。Issue 整理: #53 を A1 単独に書き換え、#54 を A5 単独に書き換え、A2 は #57 で新規作成、#46 へ A3 follow-up コメント追記"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-06T04:55:00Z"
