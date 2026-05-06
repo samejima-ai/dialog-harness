@@ -35,6 +35,7 @@ description: >
 
 ```
 1. ドキュメント＋開発環境の受領
+1.1. 依存導入の事前チェック（lock / manifest 起点で偽 FAIL を防ぐ）
 1.5. LC ≥ 1 の場合: history/INTENT.md / CHANGELOG.md を読み込む
      儀式拒否（E2）時の背景照合タスクもここで受領
 2. REGIME.md 読み込み → モードに応じて実行フローを選択
@@ -111,6 +112,28 @@ INDEX.mdから読み込みを開始し、必要なドキュメントを動的に
 5. DONT.md（スコープ外定義）
 6. sensors/（センサー定義）
 7. L2の場合は DOMAINS.md も読む（ただし L2 判定なら layer2-orchestrator に委譲）
+
+### 1.1 依存導入の事前チェック
+
+計算的センサー初回実行前に、依存関係が解決されているかを確認する。「依存未解決」は仕様問題でも実装問題でもない、純粋な前提条件問題として扱い、本ステップで吸収する。
+
+チェック方針：
+- lock / manifest 起点で同型に判定する（harness は env-agnostic を維持するため、ecosystem 列挙は例示扱い）
+- 解決済みの場合は即 skip。導入が必要な場合のみ ecosystem 標準コマンドを実行する
+- 1 秒以内に判定可能（存在確認のみ）。導入実行は本ステップ内で完結させる
+
+ecosystem 別の例：
+- Node プロジェクト：lockfile を識別子に package manager を判別し、対応する install を実行する
+  - `package-lock.json` あり (npm)：`node_modules/.package-lock.json` の存在確認 → なければ `npm ci`
+  - `pnpm-lock.yaml` あり (pnpm)：`node_modules/.pnpm/` の存在確認 → なければ `pnpm install --frozen-lockfile`
+  - `yarn.lock` あり (yarn)：`node_modules/` または Plug'n'Play (`.pnp.cjs`) の存在確認 → なければ `yarn install --frozen-lockfile`
+- Python プロジェクト：venv の存在確認 → なければ `pip install -r requirements.txt` または `uv sync`
+- Rust プロジェクト：`Cargo.lock` を起点に必要に応じて `cargo fetch`
+- その他 ecosystem：プロジェクト固有の lock / manifest を起点に同型のチェックを行う
+
+このチェックを省略するとセンサーが偽の失敗を返し、自力修正サイクルを浪費する。ステップ 5.5 以降のセンサー実行群すべてに先立つ前提条件として実行する。
+
+依存導入そのものが失敗した場合（lock 破損 / レジストリ到達不可 / 権限不足等）は、仕様問題ではないため Type A 仕様レビュー結果には該当しない。本ステップ内で自力修正サイクル（再ダウンロード・ミラー切替・lockfile 再生成等）を最大 3 回試行し、それでも解消しない場合はステップ 6 の自力修正上限到達と同様に扱い、ステップ 8 献上物テーブルの **Type D 異常献上**（発生条件「自力修正上限到達後に技術的解消不能」）として献上する。
 
 ### 2. REGIME.md 読み込みとモード分岐
 
