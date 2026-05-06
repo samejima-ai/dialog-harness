@@ -765,51 +765,6 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-06T04:55:00Z"
 
-- invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
-  timestamp: "2026-05-06T08:30:00Z"
-  source_skill: "layer0-spec-architect"
-  question_to_answer: "auto-merge の人間承認モデルを opt-in（明示 GO ラベル）から opt-out（暗黙オート + stop ラベル）に反転すべきか"
-  council_type: "business"
-  category: "conception"
-  category_fallback: false
-  phase_reached: "phase_3"
-  conflict_type: "unanimous"
-  final_weights:
-    経営者: 3
-    開発者: 3
-    哲学者: 5
-  persona_summary:
-    経営者: { stance: "C: ハイブリッド", confidence: 0.70 }
-    開発者: { stance: "C: ハイブリッド", confidence: 0.82 }
-    哲学者: { stance: "C: ハイブリッド", confidence: 0.55 }
-  judgment_confidence: 0.80
-  weight_calculation:
-    method: "weight_times_confidence"
-    scores:
-      - stance: "C: ハイブリッド（特定領域のみ opt-out、philosophy/harness-verifier/cross-cutting は opt-in 維持）"
-        supporters: ["経営者", "開発者", "哲学者"]
-        weight_sum: 11
-        weighted_score: 7.31
-        components:
-          - { persona: "経営者", weight: 3, confidence: 0.70 }
-          - { persona: "開発者", weight: 3, confidence: 0.82 }
-          - { persona: "哲学者", weight: 5, confidence: 0.55 }
-    third_way_excluded: []
-    max_score_stance: "C: ハイブリッド（特定領域のみ opt-out、philosophy/harness-verifier/cross-cutting は opt-in 維持）"
-    tie_break_applied: false
-  weight_calculation_retry_count: 0
-  recommended: "C: ハイブリッド採用。philosophy/harness-verifier/cross-cutting/不可逆領域は opt-in 維持、定型領域のみ opt-out。境界を SPEC で不変化し、roll-back プロトコル + メタ承認機構を実装に同梱する"
-  reasoning: "category=conception の重み配分 (経営者 3 / 開発者 3 / 哲学者 5) で 3 ペルソナ全員が C に収束、weighted_score 7.31 / 全 weight 11 (100%) で支配的。経営者は ROI（流速改善 vs tail-risk 抑制の両取り）、開発者は可逆性/保守性（zero-check 防止には領域=opt-in が必要、stop ラベル発行ロジックの単一情報源化）、哲学者は倫理（同意の能動性 + 境界の SPEC 不変化、5 年スパンで『無関心 = 委譲』が『無関心 = 思考停止』に滑落する重力への対抗）の異なる次元から同一結論を補強。全員に共通する懸念は『境界がブレると opt-out 領域が漸進拡張する』『AI 自己判定の信頼性』『roll-back プロトコル欠落』の 3 点で、これらを実装時の必須要件として取り込む"
-  minority_opinion: "哲学者（confidence 0.55）: opt-out 領域でも『気づいた時には既に merge』が構造的に発生し philosophy 第 7 条 P4 介入権が事後発動になる質的劣化、6 ヶ月後検証で 1 件でも事故があれば opt-in に戻す roll-back protocol を SPEC 明記すべき、『philosophy 改修を伴う conception』である本判定が opt-in 反転を決めるという『自己の権限縮退を自己決定する構造』の倫理的捻れ。開発者: 既存 auto-merge ラベル運用が残存し『二重ラベル方式』として腐敗するリスク、stop ラベル発行ロジック（Council/AI/Gemini/Circuit Breaker の 4 系統）の単一情報源化未保証、Gemini CHANGES_REQUESTED と stop ラベルの優先順位 race condition。経営者: 暗黙オート常態化で人間の監視感度が鈍化する慣れの問題、領域分類の境界曖昧化（philosophy 周辺の判定揺らぎ）"
-  weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。weight 計算は weight_times_confidence 純粋関数結果（経営者 3×0.70=2.10、開発者 3×0.82=2.46、哲学者 5×0.55=2.75、計 7.31）。全員一致 unanimous で third_way_excluded 該当なし"
-  consensus_mode: "auto_agree"
-  final_decision: null
-  human_escalated: false
-  implementer_consent: "agreed_with_modification"
-  modification_note: "C ハイブリッド採用 + minority_opinion 由来の 4 実装要件を v5.9.0 SPEC に同梱: (1) 境界の SPEC 不変化（opt-out 領域 / opt-in 領域の分類を philosophy.md または専用 SPEC に明記、AI が境界を動かせない構造）、(2) roll-back プロトコル（6 ヶ月後検証で事故 1 件以上 → opt-in に戻す手順を v5.9.0 SPEC に同梱）、(3) 既存 `auto-merge` ラベルの廃止（二重ラベル方式の腐敗回避、stop ラベルへの単一情報源化）、(4) メタ承認機構（AI 自身の『判定基準該当判定』の信頼性検査、Council<0.5 自動付与など、PR1 では sensor の placeholder 実装で温存）"
-  follow_up_questions_count: 0
-  agreed_at: "2026-05-06T08:35:00Z"
-
 - invocation_id: "council-2026-05-06T08:05:00Z-pur47i"
   timestamp: "2026-05-06T08:05:00Z"
   source_skill: "layer0-spec-architect"
@@ -855,3 +810,48 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-05-06T08:10:00Z"
+
+- invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
+  timestamp: "2026-05-06T08:30:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "auto-merge の人間承認モデルを opt-in（明示 GO ラベル）から opt-out（暗黙オート + stop ラベル）に反転すべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "C: ハイブリッド", confidence: 0.70 }
+    開発者: { stance: "C: ハイブリッド", confidence: 0.82 }
+    哲学者: { stance: "C: ハイブリッド", confidence: 0.55 }
+  judgment_confidence: 0.80
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "C: ハイブリッド（特定領域のみ opt-out、philosophy/harness-verifier/cross-cutting は opt-in 維持）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.31
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+          - { persona: "哲学者", weight: 5, confidence: 0.55 }
+    third_way_excluded: []
+    max_score_stance: "C: ハイブリッド（特定領域のみ opt-out、philosophy/harness-verifier/cross-cutting は opt-in 維持）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "C: ハイブリッド採用。philosophy/harness-verifier/cross-cutting/不可逆領域は opt-in 維持、定型領域のみ opt-out。境界を SPEC で不変化し、roll-back プロトコル + メタ承認機構を実装に同梱する"
+  reasoning: "category=conception の重み配分 (経営者 3 / 開発者 3 / 哲学者 5) で 3 ペルソナ全員が C に収束、weighted_score 7.31 / 全 weight 11 (100%) で支配的。経営者は ROI（流速改善 vs tail-risk 抑制の両取り）、開発者は可逆性/保守性（zero-check 防止には領域=opt-in が必要、stop ラベル発行ロジックの単一情報源化）、哲学者は倫理（同意の能動性 + 境界の SPEC 不変化、5 年スパンで『無関心 = 委譲』が『無関心 = 思考停止』に滑落する重力への対抗）の異なる次元から同一結論を補強。全員に共通する懸念は『境界がブレると opt-out 領域が漸進拡張する』『AI 自己判定の信頼性』『roll-back プロトコル欠落』の 3 点で、これらを実装時の必須要件として取り込む"
+  minority_opinion: "哲学者（confidence 0.55）: opt-out 領域でも『気づいた時には既に merge』が構造的に発生し philosophy 第 7 条 P4 介入権が事後発動になる質的劣化、6 ヶ月後検証で 1 件でも事故があれば opt-in に戻す roll-back protocol を SPEC 明記すべき、『philosophy 改修を伴う conception』である本判定が opt-in 反転を決めるという『自己の権限縮退を自己決定する構造』の倫理的捻れ。開発者: 既存 auto-merge ラベル運用が残存し『二重ラベル方式』として腐敗するリスク、stop ラベル発行ロジック（Council/AI/Gemini/Circuit Breaker の 4 系統）の単一情報源化未保証、Gemini CHANGES_REQUESTED と stop ラベルの優先順位 race condition。経営者: 暗黙オート常態化で人間の監視感度が鈍化する慣れの問題、領域分類の境界曖昧化（philosophy 周辺の判定揺らぎ）"
+  weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。weight 計算は weight_times_confidence 純粋関数結果（経営者 3×0.70=2.10、開発者 3×0.82=2.46、哲学者 5×0.55=2.75、計 7.31）。全員一致 unanimous で third_way_excluded 該当なし"
+  consensus_mode: "auto_agree"
+  final_decision: null
+  human_escalated: false
+  implementer_consent: "agreed_with_modification"
+  modification_note: "C ハイブリッド採用 + minority_opinion 由来の 4 実装要件を v5.9.0 SPEC に同梱: (1) 境界の SPEC 不変化（opt-out 領域 / opt-in 領域の分類を philosophy.md または専用 SPEC に明記、AI が境界を動かせない構造）、(2) roll-back プロトコル（6 ヶ月後検証で事故 1 件以上 → opt-in に戻す手順を v5.9.0 SPEC に同梱）、(3) 既存 `auto-merge` ラベルの廃止（二重ラベル方式の腐敗回避、stop ラベルへの単一情報源化）、(4) メタ承認機構（AI 自身の『判定基準該当判定』の信頼性検査、Council<0.5 自動付与など、PR1 では sensor の placeholder 実装で温存）"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-06T08:35:00Z"
