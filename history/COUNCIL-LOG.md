@@ -756,7 +756,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   recommended: "案A: 採用案維持（A1 単独 v5.8.1 patch or v5.9.0 minor / A2 v5.9.0 minor / A3 #46 follow-up コメント + 別 issue / A4 完了 PR #56 / A5 v5.9.0 minor 軽量）"
   reasoning: "judgment カテゴリ重み配分 (経営者 4, 開発者 4, 哲学者 3) において案A は経営者 + 開発者で weighted_score 6.20 と支配的。経営者は『#46 統合で観測性ロジックの二重化コスト回避 + 即 ROI』、開発者は『SSOT 保持と全提案の非破壊整合性』から案A を支持。哲学者は第3の道として A3 の哲学的格上げを提示したが options 外のため weight 加算対象外。判定対象内では案A が他案 (B/C/D いずれも 0.00) を 6.20 vs 0.00 で圧倒"
   minority_opinion: "哲学者: A3 は表層的には R+1 加算ルールだが本質は『一度傷ついた領域の記憶を組織はどう継承するか』の時間論的問い。#46 統合で観測軸の一項目に矮小化、独立 issue で加算規則に縮退するため、philosophy.md 第 8 条候補として問いを熟成すべき。A1 (動機聞き出し) と A3 (事故履歴) は両方とも『沈黙する前提の言語化』で同型、別レイヤで扱う非対称性に正当化が必要。N=1 問題 (cookpato 単一事例からの帰納的飛躍) を指摘。案A 採用後のフォローアップ論点として独立検討 (v6.0.0 候補温存) を推奨"
-  weight_note: "council-weights.md §situational_modifier.judgment (経営者 +1) を適用。最終配分 4/4/3。weight 計算は weight_times_confidence 純粋関数結果。哲学者の第3の道は third_way_excluded に退避 (PR1 暫定運用ルール、weight 1.65 / 全 weight 11 = 15% で 30% 閾値未満)"
+  weight_note: "council-weights.md §situational_modifier.judgment (経営者 +1) を適用。最終配分 4/4/3。weight 計算は weight_times_confidence 純粋関数結果。哲学者の第3の道は third_way_excluded に退避 (PR1 暫定運用ルール、weight 3 / 全 weight 11 ≈ 27% で 30% 閾値未満、conflict-typology.md §第3の道 stance の PR1 暫定運用ルール準拠)"
+  consensus_mode: "auto_agree"
   final_decision: null
   human_escalated: false
   implementer_consent: "agreed_with_modification"

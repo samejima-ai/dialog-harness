@@ -2,6 +2,38 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.9.0 (in progress)
+
+> **記録規約**: 本 v5.9.0 は cookpato バックアップサイクル retro (`samejima-ai/cookpato` PR #22) からの A1〜A5 汎用パターン取り込み回。Council 諮問 `council-2026-05-06T04:42:00Z-a5port` で案A 採用 (judgment_confidence 0.75)、本 PR #58 は履歴層 F3 更新のみ (実装変更なし)。
+
+**minor 昇格 (in progress)**。**cookpato retro A1〜A5 汎用パターン取り込みポートフォリオ確定**。
+
+実装は別 PR / issue 群で進行（#53 A1 / #57 A2 / #54 A5 / PR #56 A4 / #46 follow-up A3）、本 PR は履歴層 F3 (COUNCIL-LOG.md 諮問エントリ + INTENT.md 取り込み計画) のみ。
+
+### Step 1: Council 諮問（案A 採用）
+
+- `council-2026-05-06T04:42:00Z-a5port` (business / category=judgment / phase_3 / simple_conflict)
+- final_weights: 経営者 4 / 開発者 4 / 哲学者 3
+- recommended: 案A 採用案維持 (weighted_score 6.20 / 案 B/C/D 0.00)
+- judgment_confidence: 0.75 / consensus_mode: auto_agree
+- minority_opinion (third_way_excluded): 哲学者 = A3 を philosophy.md 第 8 条候補 (v6.0.0) として温存
+
+### Step 2: 履歴層 F3 更新（本 PR #58）
+
+- `history/COUNCIL-LOG.md`: 諮問エントリ append (append-only)
+- `history/INTENT.md`: A1〜A5 取り込み計画 + v6.0.0 候補温存 + Council context 誤情報訂正記録
+
+### 後発 Issue / 並走 PR
+
+- #53 A1 / #57 A2 / #54 A5: discussion (L0 対話で軸確定中)
+- PR #56 A4: 実装中 (`claude/dialog-harness-issue-V06Ko` branch、CI PASS、draft)
+- #46 A3 follow-up: closed PR への comment 追記済 + 別 issue で実装予定
+
+### 関連
+
+- 起点 retro: `samejima-ai/cookpato` PR #22 `docs/retros/2026-05-05-backup-cycle.md`
+- v6.0.0 候補温存: 「事故履歴という外部記憶への harness 依存を philosophy.md 第 8 条として昇格するか」を 2 件目 retro 出現時の再評価ゲートで本格検討
+
 ## v5.8.0 (released 2026-05-04)
 
 > **記録規約**: 本 v5.8.0 が **9 例目正規適用**（autonomous-drive ループの最終 PR 作成のみ人間 P4 代行、それ以外は完全自律完遂）。
