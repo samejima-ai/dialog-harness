@@ -295,12 +295,32 @@ Judgment Agent から実装者への delta 応答：
     tie_break_applied: false
   weight_calculation_retry_count: 0
   recommended: "案B（一文で）"
+  # 以下は §4 Judgment Agent 出力から派生する optional field（該当時のみ記録、欠落許容）
+  minority_opinion: "string | null  # 採用されなかった視点の保持（200 字以内、§4 由来）"
+  consensus_mode: "auto_agree | escalate_to_human  # Orchestrator 決定論出力（§4 line 102 由来）"
+  weight_note: "string | null  # weight 配分の出処注記（situational_modifier 適用根拠等、任意）"
+  reasoning: "string | null  # judgment 導出の補足説明（任意、推奨配分との関係明示等）"
   human_escalated: false
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへの単方向埋め込みを許容
   implementer_consent: "agreed_recommended"
+  modification_note: "string | null  # implementer_consent = agreed_with_modification 時の修正点記録（任意）"
   follow_up_questions_count: 0
   agreed_at: "2026-04-21T15:35:00Z"
 ```
+
+### optional field 一覧
+
+§8 schema は以下の field を **optional**（該当時のみ記録、欠落許容）として定義する。これらは §4 Phase 3 Judgment Agent 出力に由来し、Council の議論内容を保持するための field である。
+
+| field | 由来 | 用途 |
+|-------|------|------|
+| `minority_opinion` | §4 line 80 | 採用されなかった視点を 200 字以内で保持。少数意見を持つ persona が存在する判定で記録 |
+| `consensus_mode` | §4 line 102（v4.2 追加） | Orchestrator が決定論で計算する `auto_agree` / `escalate_to_human` の二値。Phase 3 出力からそのまま転記 |
+| `weight_note` | §4 + council-weights.md | `situational_modifier` 適用根拠等、weight 配分の解釈注記 |
+| `reasoning` | §4 + judgment-agent.md | judgment 導出の補足説明（推奨選択肢と他案の score 差等） |
+| `modification_note` | §合意プロセス | `implementer_consent = agreed_with_modification` 時の修正点記録 |
+
+これらの field は append-only ルールに従い、新エントリでも既存エントリでも欠落していて構わない。記録時は §4 出力からの転記を原則とし、独自加筆は禁止する（情報純度原則）。
 
 ## バリデーション
 
