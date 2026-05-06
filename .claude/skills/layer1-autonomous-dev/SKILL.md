@@ -123,14 +123,14 @@ INDEX.mdから読み込みを開始し、必要なドキュメントを動的に
 - 1 秒以内に判定可能（存在確認のみ）。導入実行は本ステップ内で完結させる
 
 ecosystem 別の例：
-- Node プロジェクト：`node_modules/.package-lock.json` の存在確認 → なければ `npm ci`（または `pnpm install --frozen-lockfile` / `yarn install --frozen-lockfile`）
+- Node プロジェクト (npm)：`node_modules/.package-lock.json` の存在確認 → なければ `npm ci`（pnpm / yarn / 他 package manager は下記「その他 ecosystem」に従い、それぞれの lock / manifest と成果物パスを起点に同型のチェックを行う）
 - Python プロジェクト：venv の存在確認 → なければ `pip install -r requirements.txt` または `uv sync`
 - Rust プロジェクト：`Cargo.lock` を起点に必要に応じて `cargo fetch`
 - その他 ecosystem：プロジェクト固有の lock / manifest を起点に同型のチェックを行う
 
 このチェックを省略するとセンサーが偽の失敗を返し、自力修正サイクルを浪費する。ステップ 5.5 以降のセンサー実行群すべてに先立つ前提条件として実行する。
 
-依存導入そのものが失敗した場合（lock 破損 / レジストリ到達不可 / 権限不足等）は、仕様問題ではないため Type A 仕様レビュー結果ではなく **Type D 異常献上**として扱う。
+依存導入そのものが失敗した場合（lock 破損 / レジストリ到達不可 / 権限不足等）は、仕様問題ではないため Type A 仕様レビュー結果には該当しない。本ステップ内で自力修正サイクル（再ダウンロード・ミラー切替・lockfile 再生成等）を最大 3 回試行し、それでも解消しない場合はステップ 6 の自力修正上限到達と同様に扱い、ステップ 8 献上物テーブルの **Type D 異常献上**（発生条件「自力修正上限到達後に技術的解消不能」）として献上する。
 
 ### 2. REGIME.md 読み込みとモード分岐
 
