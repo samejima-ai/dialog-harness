@@ -2,6 +2,48 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.10.0（minor 昇格、in progress、issue-pickup.yml body_check の type-aware 化）
+
+- 判定日: 2026-05-07
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect 対話セッション（v5.9.0 merge 後の autonomous-drive 起動失敗観測を起点）
+- 起源: 5 issues (#47/#49/#53/#54/#57) が `body_check` で一律ブロックされる事象。L0 spec-architect 起票の discussion-style issue が bug-style 形式を前提とした body_check に弾かれていた **規格漏れ**
+- L0 譲渡: Issue #61 で 5 軸 (A〜E) 確定 → 本 PR で実装
+- 自己検証: workflow YAML syntax / `harness-verifier/verify.py --strict` 全項目 PASS
+- Council 諮問: なし（軸が明確で拮抗していないため、judgment_confidence > 0.7、Council 不要と判断）
+
+### 非破壊変更（後方互換維持）
+
+| ファイル | 変更内容 |
+|---|---|
+| `.github/workflows/issue-pickup.yml` | `body_check` ステップを type-aware 化。`discussion` ラベル有無で必須セクションを分岐 |
+| `templates/github-workflows/issue-pickup.yml.template` | 同様の変更を mirror |
+| `.claude/skills/crosscut-issue-implementer/SKILL.md` | §Issue 本文必須セクション規格 (v5.10.0) 新設 |
+| `.claude/skills/crosscut-issue-quality-gate/SKILL.md` | §Issue Type 分岐ルール (v5.10.0) 追加 |
+| `history/CHANGELOG.md` / `history/REGIME-LOG.md` | v5.10.0 セクション追加 |
+
+破壊的変更なし。`discussion` ラベルなし issue は現行の 3 セクション必須を維持。
+
+### opt-in 領域該当性
+
+`issue-pickup.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`「autonomous-drive workflow 自身の改修」該当。本 PR は `human-review-needed` ラベル必須、人間レビュー後に解除して auto-merge 再評価。
+
+### dev_mode
+
+不変。`autonomous` + `autonomous_scope: full` の運用継続。
+
+### post-merge 復旧手順（既存ブロック 5 issues）
+
+```bash
+for ISSUE in 47 49 53 54 57; do
+  gh issue edit $ISSUE --remove-label needs-clarification
+  gh issue edit $ISSUE --remove-label ready-for-ai
+  gh issue edit $ISSUE --add-label ready-for-ai  # 再 trigger
+done
+```
+
+---
+
 ## v5.9.0（minor 昇格、in progress、auto-merge opt-in→opt-out 反転 + cookpato retro A1〜A5 取り込み）
 
 - 判定日: 2026-05-06

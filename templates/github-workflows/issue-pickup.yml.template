@@ -171,7 +171,7 @@ jobs:
             echo "passed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Filter — body required sections
+      - name: Filter — body required sections (type-aware, v5.10.0)
         if: |
           steps.check_secrets.outputs.available == 'true' &&
           steps.do_not_pickup_check.outputs.blocked != 'true' &&
@@ -181,25 +181,44 @@ jobs:
         run: |
           set -euo pipefail
           BODY=$(gh issue view "$ISSUE_NUMBER" --json body --jq '.body')
+          LABELS=$(gh issue view "$ISSUE_NUMBER" --json labels --jq '.labels[].name' | tr '\n' ',')
           MISSING=()
-          # 再現手順 / Steps to reproduce
-          if ! echo "$BODY" | grep -qE "^## (再現手順|Steps to reproduce)"; then
-            MISSING+=("再現手順 / Steps to reproduce")
-          fi
-          # 期待動作 / Expected behavior
-          if ! echo "$BODY" | grep -qE "^## (期待動作|Expected behavior)"; then
-            MISSING+=("期待動作 / Expected behavior")
-          fi
-          # 受入条件 / Acceptance criteria
-          if ! echo "$BODY" | grep -qE "^## (受入条件|Acceptance criteria)"; then
-            MISSING+=("受入条件 / Acceptance criteria")
+          # v5.10.0: discussion ラベル有無で必須セクションを分岐
+          # - discussion ラベルあり: L0 spec-architect 起票 (P3/P4 由来) → L0 対話記録 + 実装スコープ
+          # - discussion ラベルなし: bug-style 起票 (P1/P2 由来) → 再現手順 + 期待動作 + 受入条件
+          # 詳細: .claude/skills/crosscut-issue-implementer/SKILL.md §Issue 本文必須セクション規格
+          if echo ",$LABELS," | grep -q ",discussion,"; then
+            ISSUE_TYPE="discussion-style"
+            # L0 spec-architect 対話記録（実装の根拠 = 確定軸）
+            if ! echo "$BODY" | grep -qE "^## L0 spec-architect 対話記録"; then
+              MISSING+=("L0 spec-architect 対話記録")
+            fi
+            # 実装スコープ（実装の対象 = 変更ファイル + バージョン）
+            if ! echo "$BODY" | grep -qE "^## 実装スコープ"; then
+              MISSING+=("実装スコープ")
+            fi
+          else
+            ISSUE_TYPE="bug-style"
+            # 再現手順 / Steps to reproduce
+            if ! echo "$BODY" | grep -qE "^## (再現手順|Steps to reproduce)"; then
+              MISSING+=("再現手順 / Steps to reproduce")
+            fi
+            # 期待動作 / Expected behavior
+            if ! echo "$BODY" | grep -qE "^## (期待動作|Expected behavior)"; then
+              MISSING+=("期待動作 / Expected behavior")
+            fi
+            # 受入条件 / Acceptance criteria
+            if ! echo "$BODY" | grep -qE "^## (受入条件|Acceptance criteria)"; then
+              MISSING+=("受入条件 / Acceptance criteria")
+            fi
           fi
           if [ ${#MISSING[@]} -gt 0 ]; then
-            echo "::notice::Body missing required sections: ${MISSING[*]}"
+            echo "::notice::Body missing required sections (type=$ISSUE_TYPE): ${MISSING[*]}"
             gh issue edit "$ISSUE_NUMBER" --add-label "needs-clarification" || true
-            gh issue comment "$ISSUE_NUMBER" --body "本 Issue は自動 pickup の本文必須項目を満たしていません。以下のセクションを追加してください: ${MISSING[*]}" || true
+            gh issue comment "$ISSUE_NUMBER" --body "本 Issue (type=${ISSUE_TYPE}) は自動 pickup の本文必須項目を満たしていません。以下のセクションを追加してください: ${MISSING[*]}" || true
             echo "passed=false" >> "$GITHUB_OUTPUT"
           else
+            echo "::notice::Body check passed (type=$ISSUE_TYPE)"
             echo "passed=true" >> "$GITHUB_OUTPUT"
           fi
 

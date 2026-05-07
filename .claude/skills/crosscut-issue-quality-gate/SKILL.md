@@ -78,13 +78,30 @@ Issue 並列実行時のコンフリクトは git で検出可能な物理コン
 
 ## 処理フロー
 
-1. **前提チェック**: Issue の基本構造（title/body 存在、必須セクション）確認
+1. **前提チェック**: Issue の基本構造（title/body 存在、必須セクション）確認 — **type-aware (v5.10.0)**: `discussion` ラベル有無で必須セクション規格が分岐（下記 §Issue Type 分岐ルール）
 2. **12 軸検査実行**: 機械検査 → AI 推論の順番で各軸を評価
 3. **並列安全性チェック**: 軸 ix の 4 段階フィルターを実行
 4. **合格判定**: 全 12 軸が合格基準を満たすかチェック
 5. **結果処理**:
    - **合格**: `ready-for-ai` ラベル付与を許可
    - **不合格**: 理由ラベル（`gate-failed:axis-A` / `gate-failed:axis-vi` 等）を付与し、Issue は close せず人間差し戻し
+
+### Issue Type 分岐ルール（v5.10.0 追加）
+
+dialog-harness の Issue は philosophy 第 5 条（献上哲学）の起票元類型に従い 2 系統に分類される。本 Quality Gate と `issue-pickup.yml` body_check は同一の type 分岐ルールに従う（規格は `crosscut-issue-implementer/SKILL.md §Issue 本文必須セクション規格` を一次情報源とする）：
+
+| Type | ラベル条件 | 必須セクション | 想定起票元 |
+|---|---|---|---|
+| **bug-style** | `discussion` ラベル**なし** | `## 再現手順` / `## 期待動作` / `## 受入条件` （3 セクション） | 利用者の bug 報告（philosophy 第 7 条 P1/P2）|
+| **discussion-style** | `discussion` ラベル**あり** | `## L0 spec-architect 対話記録` / `## 実装スコープ` （2 セクション） | L0 起票・SPEC 改訂提案（philosophy 第 7 条 P3/P4）|
+
+**12 軸との直交性**: 12 軸チェック（軸 i〜xii）自体は type 中立で、両 type に同様に適用される。type 分岐は前提チェック (step 1) の必須セクション検査にのみ影響する。具体的には:
+
+- 軸 ix（並列安全性）: type 中立。`scope:*` / `mutex:*` ラベルは両 type で同様に検査
+- 軸 vi（観測性）: type 中立。Council 入力データの整合性は両 type で保証必要
+- 他軸も同様
+
+詳細な必須セクション規格は `crosscut-issue-implementer/SKILL.md` の §Issue 本文必須セクション規格 を参照（重複定義を避けるため、本 SKILL.md ではルールの存在のみ記述）。
 
 ## Council 連携
 

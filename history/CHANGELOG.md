@@ -2,6 +2,34 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.10.0 (in progress)
+
+**minor 昇格 (in progress)**。**issue-pickup.yml body_check の type-aware 化（discussion-style 起票への対応）**。
+
+### 動機
+
+v5.9.0 merge 後、L0 spec-architect 起票の discussion-style issue (#47/#49/#53/#54/#57) が `issue-pickup.yml` body_check ステップで一律ブロックされる事象が観測された。原因は body_check が bug-style 3 セクション（再現手順/期待動作/受入条件）をハードコードしており、L0 起票 issue の構造（背景/論点/L0 対話記録/確定軸/実装スコープ）を識別できなかったため。
+
+これは autonomous-drive 入力 Issue の **2 系統存在**（bug-style / discussion-style）が SPEC レベルで未定義だった規格漏れに起因する。Issue #61 の L0 spec-architect 対話で 5 軸（A〜E）を確定し、本 PR で実装。
+
+### 変更
+
+- **`.github/workflows/issue-pickup.yml`** — `body_check` ステップを type-aware に改修。`discussion` ラベル有無で必須セクション規格を分岐（discussion-style: L0 対話記録 + 実装スコープ / bug-style: 再現手順 + 期待動作 + 受入条件）。後方互換: `discussion` ラベルなし issue は現行 3 セクション必須維持
+- **`templates/github-workflows/issue-pickup.yml.template`** — 同様の変更をミラー（利用者プロジェクトへの展開）
+- **`.claude/skills/crosscut-issue-implementer/SKILL.md`** — §Issue 本文必須セクション規格 (v5.10.0) を新設。bug-style と discussion-style の必須項目・想定起票元・設計根拠・Quality Gate との整合を明文化
+- **`.claude/skills/crosscut-issue-quality-gate/SKILL.md`** — §Issue Type 分岐ルール (v5.10.0) を追加。本 Gate と body_check の規格整合性を明記、12 軸の type 中立性を明示
+
+### 反映元 Issue / Council
+
+- Issue #61 (本 PR で close) — 本 v5.10.0 の根拠 Issue
+- Issue #47/#49/#53/#54/#57 — 本ブロックで足止めされていた 5 件、merge 後に `needs-clarification` 除去 + `ready-for-ai` 再付与で再 trigger 可能（Issue #61 §post-merge 復旧手順）
+
+### opt-in 領域該当性
+
+`issue-pickup.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`「autonomous-drive workflow 自身の改修」**該当**。本 PR は `human-review-needed` ラベル必須、人間レビュー後に解除して auto-merge 再評価。
+
+---
+
 ## v5.9.0 (in progress)
 
 > **記録規約**: 本 v5.9.0 は (1) cookpato バックアップサイクル retro (`samejima-ai/cookpato` PR #22) からの A1〜A5 汎用パターン取り込み + (2) auto-merge 人間承認モデルの opt-in→opt-out 反転 の 2 系列を含む。
