@@ -278,6 +278,35 @@ jobs:
             ## 失敗時
             自力修正上限（同一エラー 3 回）を超えた場合は、Issue にコメントで報告し、`pickup-failed` label 付与の判断を行うこと。
 
+      # v5.10.0 (Issue #51 軸 A): Create PR fallback
+      # claude-code-action@v0 が direct_prompt の `gh pr create` 指示を default で skip する
+      # 構造的穴に対する workflow 側フォールバック。claude_impl success 後に branch を git で検出し、
+      # PR が存在しなければ自動作成する。
+      - name: Create PR (fallback if claude-code-action skipped, v5.10.0)
+        if: |
+          steps.triage.outputs.verdict == 'pickup_yes' &&
+          steps.claude_impl.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          set -euo pipefail
+          git fetch origin
+          BRANCH=$(git branch -r | grep -E "origin/(feat|claude)/issue-${ISSUE_NUMBER}[-/]?" | head -1 | sed 's|.*origin/||' | tr -d ' ')
+          if [ -z "$BRANCH" ]; then
+            echo "::warning::No branch found for Issue #${ISSUE_NUMBER}. Skip fallback."
+            exit 0
+          fi
+          echo "::notice::Detected branch: $BRANCH"
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // ""')
+          if [ -n "$EXISTING" ]; then
+            echo "::notice::PR #${EXISTING} already exists for branch ${BRANCH}. Skip fallback."
+            exit 0
+          fi
+          ISSUE_TITLE=$(gh issue view "$ISSUE_NUMBER" --json title --jq '.title')
+          PR_BODY=$(printf 'Closes #%s\n\nThis PR was auto-created by issue-pickup.yml fallback step (v5.10.0, Issue #51) because claude-code-action@v0 skipped `gh pr create` despite direct_prompt instruction.\n\nAuto-created via fallback step. Review and approve.' "$ISSUE_NUMBER")
+          gh pr create --base master --head "$BRANCH" --title "feat: $ISSUE_TITLE" --body "$PR_BODY"
+          echo "::notice::PR created for branch $BRANCH"
+
       - name: Handle Claude Code failure
         if: |
           steps.triage.outputs.verdict == 'pickup_yes' &&

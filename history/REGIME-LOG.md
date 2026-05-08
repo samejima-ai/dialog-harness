@@ -64,6 +64,26 @@ done
 
 `gemini-review.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`該当。`human-review-needed` ラベル必須。
 
+### v5.10.0 第 3 弾: claude-code-action gh pr create fallback（Issue #51、PR #68）
+
+- 判定日: 2026-05-08
+- 改修主体: layer0-spec-architect 対話 (Issue #51) で 4 軸 (A〜D) を確定 → 手動実装
+- 起源: PR #50 (9 例目完遂時) の観測 + 本セッション内で再発 (#47/#53/#54/#57 が同じ穴で Type A 失敗)
+- L0 譲渡: Issue #51 で完了
+- Council 諮問: なし（軸が明確で拮抗していないため）
+- bot 実装失敗 → 手動実装 (Issue #61, #49 と同型の workflow file push 拒否)
+
+#### 非破壊変更（後方互換維持）
+
+| ファイル | 変更内容 |
+|---|---|
+| `.github/workflows/issue-pickup.yml` | 新 step `Create PR (fallback if claude-code-action skipped)` を claude_impl success 後に追加 |
+| `templates/github-workflows/issue-pickup.yml.template` | 同様の変更を mirror |
+
+#### opt-in 領域該当性
+
+`issue-pickup.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`該当。`human-review-needed` ラベル必須。
+
 ---
 
 ## v5.9.0（minor 昇格、in progress、auto-merge opt-in→opt-out 反転 + cookpato retro A1〜A5 取り込み）

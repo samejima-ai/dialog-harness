@@ -38,6 +38,17 @@ L0 spec-architect 対話 (Issue #49) で 5 軸を確定し、最小セット (F1
 
 **opt-in 領域該当**: `gemini-review.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`「autonomous-drive workflow 自身の改修」該当。同じ PR で `human-review-needed` ラベル必須。
 
+### v5.10.0 第 3 弾: claude-code-action gh pr create fallback（Issue #51）
+
+claude-code-action@v0 が direct_prompt の `gh pr create` 指示を default で skip する構造的穴を、workflow 側フォールバック step で塞ぐ:
+
+- **`.github/workflows/issue-pickup.yml`** — 新 step `Create PR (fallback if claude-code-action skipped)` を `claude_impl` success 後に追加。`git branch -r` で `feat/issue-N-*` または `claude/issue-N-*` パターンを検出 → `gh pr list --head` で重複チェック → なければ `gh pr create` で自動作成
+- **`templates/github-workflows/issue-pickup.yml.template`** — 同様の変更をミラー
+
+これにより autonomous-drive の最終ステップ（PR 作成）が完全自律化される。本セッション内で発現した Type A 失敗（4 件: #47/#53/#54/#57 で branch あり PR なし）が今後は自動復旧する。
+
+**opt-in 領域該当**: `issue-pickup.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`該当。`human-review-needed` ラベル必須。
+
 ---
 
 ## v5.9.0 (in progress)

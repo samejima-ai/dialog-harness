@@ -253,6 +253,40 @@ jobs:
             ## 失敗時
             自力修正上限（同一エラー 3 回）を超えた場合は、Issue にコメントで報告し、`pickup-failed` label 付与の判断を行うこと（`pickup-failed` は stop ラベルとして auto-merge を skip する）。
 
+      # v5.10.0 (Issue #51 軸 A): Create PR fallback
+      # claude-code-action@v0 が direct_prompt の `gh pr create` 指示を default で skip する
+      # 構造的穴に対する workflow 側フォールバック。claude_impl success 後に branch を git で検出し、
+      # PR が存在しなければ自動作成する。
+      # 軸 B: ブランチ検出は `git branch -r` パターンマッチ
+      # 軸 C: 重複防止は `gh pr list --head` チェック
+      - name: Create PR (fallback if claude-code-action skipped, v5.10.0)
+        if: |
+          steps.triage.outputs.verdict == 'pickup_yes' &&
+          steps.claude_impl.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          set -euo pipefail
+          # ブランチ検出: feat/issue-N-* または claude/issue-N* パターン
+          git fetch origin
+          BRANCH=$(git branch -r | grep -E "origin/(feat|claude)/issue-${ISSUE_NUMBER}[-/]?" | head -1 | sed 's|.*origin/||' | tr -d ' ')
+          if [ -z "$BRANCH" ]; then
+            echo "::warning::No branch found for Issue #${ISSUE_NUMBER}. claude-code-action did not create a branch (or used unexpected naming)."
+            exit 0
+          fi
+          echo "::notice::Detected branch: $BRANCH"
+          # 重複防止: 既存 PR チェック
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // ""')
+          if [ -n "$EXISTING" ]; then
+            echo "::notice::PR #${EXISTING} already exists for branch ${BRANCH}. Skip fallback."
+            exit 0
+          fi
+          # PR 作成
+          ISSUE_TITLE=$(gh issue view "$ISSUE_NUMBER" --json title --jq '.title')
+          PR_BODY=$(printf 'Closes #%s\n\nThis PR was auto-created by issue-pickup.yml fallback step (v5.10.0, Issue #51) because claude-code-action@v0 skipped `gh pr create` despite direct_prompt instruction.\n\nThe implementation was completed by autonomous-drive Claude Code CLI on branch `%s`. Please review the diff and add the `human-review-needed` label if this PR touches opt-in territory (see `auto-merge-boundary.md`).\n\nAuto-created via fallback step. Review the implementation, then approve or request changes.' "$ISSUE_NUMBER" "$BRANCH")
+          gh pr create --base master --head "$BRANCH" --title "feat: $ISSUE_TITLE" --body "$PR_BODY"
+          echo "::notice::PR created for branch $BRANCH closing Issue #${ISSUE_NUMBER}"
+
       - name: Handle Claude Code failure
         if: |
           steps.triage.outputs.verdict == 'pickup_yes' &&
