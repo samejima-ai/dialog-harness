@@ -26,7 +26,7 @@ description: >
 2. Circuit Breaker check: 日次/月次 Issue pickup 上限の確認 (references/circuit-breaker-spec.md)
 3. 3 段階フィルター実行 (references/issue-filter-spec.md):
    一次: label `ready-for-ai` 確認（trigger 条件で既に通過）
-   二次: author allowlist + 本文必須項目（再現手順 / 期待動作 / 受入条件）
+   二次: author allowlist + 本文必須項目（type-aware、v5.10.0 追加 — 下記 §Issue 本文必須セクション規格 参照）
    三次: AI triage (gemini-cli が Issue 内容を読んで pickup 可否判定)
         - SPEC.md / DONT.md / current_focus と照合
         - skip 時は理由 label を自動付与（needs-clarification / out-of-scope / focus-mismatch）
@@ -38,6 +38,44 @@ description: >
 7. 後段委譲: 既存 gemini-review.yml + auto-merge.yml が引き継ぎ（auto-merge.yml は stop ラベル不在をデフォルトに反転済）
 8. 統計記録: .gemini/issue-pickup-stats.json に pickup 結果を append (Circuit Breaker 用、v5.7.x で永続化完成予定)
 ```
+
+## Issue 本文必須セクション規格 (v5.10.0 追加)
+
+dialog-harness の autonomous-drive 入力 Issue は philosophy 第 5 条（献上哲学）の起票元類型に従い **2 系統**に分類される。`issue-pickup.yml` の `body_check` ステップは `discussion` ラベルの有無で分岐し、type 別に必須セクションを検査する。
+
+### bug-style（`discussion` ラベルなし）
+
+利用者の bug 報告・機能要望（philosophy 第 7 条 P1/P2 起票）を想定。GitHub の標準 bug template と互換。
+
+| セクション | 必須 | 用途 |
+|---|---|---|
+| `## 再現手順` または `## Steps to reproduce` | ✅ | bug の再現条件 |
+| `## 期待動作` または `## Expected behavior` | ✅ | 修正後の正しい挙動 |
+| `## 受入条件` または `## Acceptance criteria` | ✅ | 完了判定基準 |
+
+### discussion-style（`discussion` ラベルあり）
+
+`crosscut-issue-dispatcher` 経由の SPEC/ADR 差分起票、`crosscut-feedback-loop` 経由の検証 Issue、L0 spec-architect 対話起点の仕様改訂提案（philosophy 第 7 条 P3/P4 起票）を想定。
+
+| セクション | 必須 | 用途 |
+|---|---|---|
+| `## L0 spec-architect 対話記録` | ✅ | L0 通過の証跡 + 確定軸（実装の根拠） |
+| `## 実装スコープ` | ✅ | 変更対象ファイル + バージョン（実装の対象） |
+| `## 背景` または `## 課題` | 推奨 | 検査対象外（実装文脈の参考情報） |
+| `## 関連 Issue / PR` | 推奨 | 検査対象外（既存ロジックとの関係） |
+
+### 設計根拠
+
+`autonomous-drive` の実装エージェント（Claude Code CLI）が必要とする最小情報を type 別に逆算した結果：
+
+- bug-style: **何が壊れているか**（再現手順）/ **何が正しいか**（期待動作）/ **どこまで直すか**（受入条件）
+- discussion-style: **なぜこの設計か**（確定軸）/ **何を変更するか**（実装スコープ）
+
+discussion-style の "受入条件" 相当は `## L0 spec-architect 対話記録` 内の「確定軸」セクションに「選択: X」形式で記述される（個別軸が完了判定基準を兼ねる）ため、独立セクションとしては不要。
+
+### Issue Quality Gate との整合
+
+`crosscut-issue-quality-gate` (#46, v5.8.0) の 12 軸チェックは type 中立であり、本規格と直交する。Quality Gate は「Issue 自体の構造的健全性」を検査し、本規格は「自動 pickup の機械可読性」を検査する。両者は順次適用される（一次/二次フィルターは本規格、三次フィルターで Quality Gate）。
 
 ## 実装エージェント: Claude Code CLI (v5.7.1 で改訂)
 
@@ -77,7 +115,7 @@ description: >
 |---|---|
 | Pre-check FAIL (secrets 未設定) | notice 出力で skip（red CI にしない） |
 | Circuit Breaker 上限超過 | label `circuit-broken` 自動付与 + workflow 全停止 + notice |
-| 二次フィルター FAIL (本文不足) | label `needs-clarification` + Issue は close せず人間差し戻し |
+| 二次フィルター FAIL (本文不足) | label `needs-clarification` + Issue は close せず人間差し戻し（v5.10.0 で type-aware 化、`discussion` ラベル有無で必須セクションが分岐 — §Issue 本文必須セクション規格 参照） |
 | 三次フィルター FAIL (out-of-scope / focus-mismatch) | 該当 label 自動付与 + 人間判断要請 |
 | 実装中の致命的エラー (Claude Code CLI 失敗) | label `pickup-failed` + Issue に notice コメント + 自動フォールバックなし（人間 P4 判断、philosophy 第 4 条 + 第 7 条）|
 | PR 作成後 24h 以内に変更なし | 自動 release（label `in-progress` 削除）+ notice |
