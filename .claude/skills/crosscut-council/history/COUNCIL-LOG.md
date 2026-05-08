@@ -1023,3 +1023,25 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 ### 合意プロセス記録
 
 ひでさん直接起動の議題として諮問。CC が機械的検査で「作らない」結論（5 原則違反）を提示済み、ひでさんが Council 諮問を選択し再評価。3 Persona 全員が独立に B（L1-refactor 不採用）を支持し unanimous 成立。weighted_score 8.85（11 点満点中）、judgment_confidence 0.85 の高判定。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK 許容を明文化』は minority ではなく長期拡張提案として保持。ひでさんから「v6.0.0 まではまだ v5.x 帯 minor 改修が複数あり、v6.0.0 候補を膨らませると圧力になる」との指摘を受け、最小記録方針（INTENT.md に 1-2 行追加、handoff-to-evaluator.md への追記なし）で agreed_recommended 確定。Council 諮問の結果、CC の機械的検査と Council 判断が完全整合し、L1-refactor 新設は v5.x 帯で実施しないことが堅牢に決定された。
+
+---
+
+## audit_meta_2026-05-08: Phase 1 情報純度違反構造的修正
+
+### Issue #47 対応
+
+**実施日**: 2026-05-08  
+**対応内容**: crosscut-council Phase 1 独立性侵害の構造的修正（情報純度違反）
+
+**問題**: Phase 1 で「3 Persona 独立並列発言」と規定されているが、実装契約が明文化されておらず、単一セッション順次生成により後半ペルソナ（特に哲学者）が前半ペルソナの出力を参照可能な構造的問題が存在した。
+
+**修正内容**:
+1. **SKILL.md L117-118**: Phase 1 実装契約を明文化
+   - `**実装契約**: 3 つの独立した messages.create API call で生成、context 共有禁止`
+   - `それぞれに「他ペルソナ出力を含まない context + system prompt」のみ渡す`
+
+2. **personas/business/*.md**: 実装レベル独立性を追記
+   - `**実装レベル独立性**: 独立した API call で生成され、他ペルソナ出力を含まない context で動作する`
+
+**v5.10.0 以降の新規 Council 起動**: Option A (独立 SDK 呼び出し) 実装を適用  
+**既存 Council 判定**: 構造改善前のエントリとして信頼性注記（本 COUNCIL-LOG 内エントリは audit_caveat 対象外、外部プロジェクトでの事例を受けた予防的改修）

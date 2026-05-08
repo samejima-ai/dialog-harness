@@ -114,6 +114,8 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
 [Phase 1] 3 Persona 独立並列発言
   → 経営者(temp 0.3) / 開発者(temp 0.2) / 哲学者(temp 0.7)
   → 他 Persona の出力を参照しない（情報純度）
+  → **実装契約**: 3 つの独立した `messages.create` API call で生成、context 共有禁止
+  → それぞれに「他ペルソナ出力を含まない context + system prompt」のみ渡す
   → 各 Persona は references/personas/business/*.md の system prompt に従う
   ↓
 [対立度判定] PR1 は簡略版: 全会一致 / 単純対立 の2値のみ
