@@ -42,6 +42,28 @@ for ISSUE in 47 49 53 54 57; do
 done
 ```
 
+### v5.10.0 第 2 弾: gemini-review 入力・プロンプト規格再設計（Issue #49、PR #67）
+
+- 判定日: 2026-05-08
+- 改修主体: layer0-spec-architect 対話 (Issue #49) で 5 軸 (A〜E) を確定 → 最小セット F1-F3 + A1 + B4 + G1 を実装
+- 起源: PR #34 〜 #48 の運用観測。Issue #46 (Quality Gate, v5.8.0) 完成と並ぶ「PR 段階の品質ガード」再設計
+- L0 譲渡: Issue #49 で完了
+- Council 諮問: なし（軸が明確で拮抗していないため、judgment_confidence > 0.7）
+- bot 実装失敗 → 手動実装 (Issue #61 と同型の workflow file push 拒否ケース): claude-code-action GitHub App は workflow file への push 権限を持たないため、Type B 失敗となった bot 実装内容を Windows ローカルから L0 確定軸に沿って再実装
+
+#### 非破壊変更（後方互換維持）
+
+| ファイル | 変更内容 |
+|---|---|
+| `.github/workflows/gemini-review.yml` | F1-F3 (includeTools 絞り込み) + A1 (context 事前注入 step) + B4 (self-PR 検出 step) |
+| `templates/github-workflows/gemini-review.yml.template` | 同様の変更を mirror (G1 template 骨格) |
+
+破壊的変更なし。`includeTools` で expose する tool 名は github-mcp-server v0.27.0 の命名前提で、実運用観測で必要に応じて調整。
+
+#### opt-in 領域該当性
+
+`gemini-review.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`該当。`human-review-needed` ラベル必須。
+
 ---
 
 ## v5.9.0（minor 昇格、in progress、auto-merge opt-in→opt-out 反転 + cookpato retro A1〜A5 取り込み）
