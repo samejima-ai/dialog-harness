@@ -1,0 +1,20 @@
+[
+  {"query": "ready-for-ai ラベル付けた Issue #142 がさっきから動かない。GitHub Actions の方は緑なんだけど、PR が立ち上がってこない。Claude Code CLI 側で何か詰まってるのかな", "should_trigger": true},
+  {"query": "あの GitHub Issue から自動で PR 作るやつ、設定したいんだけどさ。ready-for-ai 付けたら勝手に Claude Code が実装して PR 出してくれるやつ", "should_trigger": true},
+  {"query": "Issue #87 に ready-for-ai 付けたけど triage で弾かれた。filter spec のどこに引っかかったか確認したい", "should_trigger": true},
+  {"query": "autonomous_scope を full にしてるのに自動実装が走らない。dev_mode は autonomous 確認済み。CLAUDE_CODE_OAUTH_TOKEN の設定漏れかも", "should_trigger": true},
+  {"query": "Issue 自動実装が失敗したときのフォールバックって gemini-cli だよね。どのタイミングで切り替わるんだっけ", "should_trigger": true},
+  {"query": "issue-pickup.yml の type-aware 化が v5.10.0 で入ったの聞いた。新しい body_check の仕様教えて", "should_trigger": true},
+  {"query": "circuit-breaker 仕様で連続失敗 N 回後に auto-pause するって聞いたんだけど、N の閾値ってどこで設定するの", "should_trigger": true},
+  {"query": "P4 暴走介入って具体的にどういう状況で発動するの？Issue 実装が暴れ始めた時の手順", "should_trigger": true},
+  {"query": "Claude Code CLI 経由の Issue 実装で、Pro/Max サブスクリプション以外のプランでも動かせる？API 課金回避したい", "should_trigger": true},
+  {"query": "GitHub Issue #142 のバグ、自分で直したいから手元で再現手順だけ教えて", "should_trigger": false},
+  {"query": "Issue にして欲しい。SPEC.md の §4.2 を 3 つのタスクに分けて GitHub Issue 射出して", "should_trigger": false},
+  {"query": "この Issue の品質チェックして。ready-for-ai 付けて大丈夫か 12 軸で見て", "should_trigger": false},
+  {"query": "drift チェックして。実装が SPEC から離れてないか見たい", "should_trigger": false},
+  {"query": "Council に諮りたい判断点がある。複数案で迷ってる", "should_trigger": false},
+  {"query": "GitHub の認証通らない。gh auth login やったけど 401 で弾かれる", "should_trigger": false},
+  {"query": "VSCode の GitHub Pull Requests 拡張で Issue を開けるようにしたい", "should_trigger": false},
+  {"query": "PR レビューして欲しい。L1 の成果物を独立検証してくれる？", "should_trigger": false},
+  {"query": "auto-merge ワークフローを deploy したい。stop ラベルも自動作成して", "should_trigger": false}
+]

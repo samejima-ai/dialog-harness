@@ -1,0 +1,20 @@
+[
+  {"query": "この Issue #93、ready-for-ai 付ける前に品質確認したい。受け入れ条件が曖昧な気がするけど 12 軸でチェックしてくれる", "should_trigger": true},
+  {"query": "Issue dispatcher が SPEC 差分から自動生成した Issue 群、どれが quality gate 通過したのか一覧で見たい", "should_trigger": true},
+  {"query": "Council の judgment から起こした Issue が並列実装で衝突した。並列安全性軸って何見てるんだっけ", "should_trigger": true},
+  {"query": "Issue 品質ゲートで弾かれた #142 を直したい。どの軸で fail してるか教えて", "should_trigger": true},
+  {"query": "ready-for-ai 付与する前段で必ず通る検査の 12 軸の中身を知りたい。機械検査と AI 推論の境界は", "should_trigger": true},
+  {"query": "Issue 品質チェックの規格、Issue body 必須セクションって implementer 側で持ってる規格と quality-gate 側のどっちが一次情報源なの", "should_trigger": true},
+  {"query": "L0 対話起点の Issue だけ quality gate を skip したい。activation-protocol で除外できる", "should_trigger": true},
+  {"query": "issue-quality-checklist.template.md ってどこにある？fillable テンプレ使って手動チェックしたい", "should_trigger": true},
+  {"query": "fractal-application って quality gate のリファレンスにあるけど、これってどの粒度で再帰的に検査かけてるの", "should_trigger": true},
+  {"query": "Issue の本文に何書けばいいのか分からない。テンプレ欲しい", "should_trigger": false},
+  {"query": "GitHub の品質スコアが低い。code review で改善点指摘されまくってる", "should_trigger": false},
+  {"query": "PR の品質チェック走らせたい。drift があるか確認", "should_trigger": false},
+  {"query": "Issue にしてほしい。ToDo を 5 つに分けて射出", "should_trigger": false},
+  {"query": "ready-for-ai の付け方教えて。GitHub UI から付ける手順", "should_trigger": false},
+  {"query": "Council の judgment が confidence 0.5 で割れてる。Issue 化する前に決着つけたい", "should_trigger": false},
+  {"query": "テストの品質ゲート組みたい。CI で coverage 80% 切ったら落とす", "should_trigger": false},
+  {"query": "Issue 自動実装の失敗ログ追ってる。triage で弾かれた理由が知りたい", "should_trigger": false},
+  {"query": "SPEC レビューチェックリスト走らせたい。L1 で使うやつ", "should_trigger": false}
+]

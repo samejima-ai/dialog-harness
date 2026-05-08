@@ -1,0 +1,20 @@
+[
+  {"query": "spec-architect で dev_mode autonomous に判定された。次に autonomous-drive で workflow テンプレ deploy するって聞いたんだけど手順は", "should_trigger": true},
+  {"query": "auto-merge.yml と gemini-review.yml を利用者プロジェクトに配置したい。placeholder 置換まで一括でやって", "should_trigger": true},
+  {"query": "stop ラベル（do-not-merge / human-review-needed）と ready-for-ai ラベル一括作成したい。autonomous-drive deploy のやつ", "should_trigger": true},
+  {"query": "Repository Secrets の設定ガイド欲しい。GH_REVIEW_PAT と GEMINI_API_KEY と CLAUDE_CODE_OAUTH_TOKEN まとめて", "should_trigger": true},
+  {"query": "v5.9.0 で auto-merge が opt-in から opt-out に反転したって聞いた。利用者プロジェクトの workflow 更新するには", "should_trigger": true},
+  {"query": "templates/github-workflows/ から取ってくる workflow テンプレートの placeholder 一覧見たい", "should_trigger": true},
+  {"query": "auto-merge の opt-in / opt-out 境界 SPEC を確認したい。どこが境界線か", "should_trigger": true},
+  {"query": "autonomous-drive の deploy が失敗した。secrets の設定漏れか、ラベル既存か、どこから切り分ける", "should_trigger": true},
+  {"query": "GitHub Actions で workflow 走らせて自動 deploy したい。ECS にデプロイする pipeline 組みたい", "should_trigger": false},
+  {"query": "Issue を自動実装して PR 出すやつの設定。ready-for-ai ラベルで動くやつ", "should_trigger": false},
+  {"query": "新しいプロジェクトのセットアップしたい。SPEC 書きから", "should_trigger": false},
+  {"query": "drift チェック走らせて", "should_trigger": false},
+  {"query": "PR レビューしてほしい", "should_trigger": false},
+  {"query": "Issue 品質ゲート 12 軸で見て", "should_trigger": false},
+  {"query": "Council に諮りたい", "should_trigger": false},
+  {"query": "rtk install したい", "should_trigger": false},
+  {"query": "コードを実装してほしい。spec が決まってる", "should_trigger": false},
+  {"query": "git の auto-merge 設定方法教えて。GitHub web UI から enable する手順", "should_trigger": false}
+]

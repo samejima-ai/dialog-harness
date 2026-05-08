@@ -2,14 +2,20 @@
 name: crosscut-autonomous-drive
 dimension: D4
 description: >
-  autonomous-drive 標準化の deployment ヘルパー（v5.6.0 追加 / v5.7.1 で Claude Code CLI 対応追記 / v5.9.0 で opt-in→opt-out 反転）。
-  dialog-harness の `templates/github-workflows/` から workflow テンプレートを取得し、
-  placeholder 置換して利用者プロジェクトの `.github/workflows/` に配置する。
-  併せて stop ラベル (do-not-merge / human-review-needed) + ready-for-ai を作成し、
-  Repository Secrets (GH_REVIEW_PAT / GEMINI_API_KEY、v5.7.1 で **CLAUDE_CODE_OAUTH_TOKEN** 追加) の設定ガイドを提示する。
-  spec-architect が dev_mode `autonomous` 判定時に明示起動する。
-  philosophy.md 第 7 条「AI 組織論」の「サポート skill」枠（4 役割を補助、L3 運用層ではない）。
-  opt-in / opt-out 境界 SPEC は `references/auto-merge-boundary.md` を一次情報源とする。
+  autonomous-drive 標準化の deployment ヘルパー。dialog-harness の workflow テンプレートを
+  利用者プロジェクトの `.github/workflows/` に placeholder 置換して deploy する。
+  「autonomous-drive を deploy したい」「auto-merge.yml と gemini-review.yml を配置したい」
+  「stop ラベル（do-not-merge / human-review-needed）と ready-for-ai を一括作成」
+  「Repository Secrets（GH_REVIEW_PAT / GEMINI_API_KEY / CLAUDE_CODE_OAUTH_TOKEN）の設定ガイド」
+  「auto-merge を opt-in から opt-out に反転（v5.9.0）したい」「workflow テンプレの placeholder 一覧」
+  「opt-in / opt-out 境界 SPEC を確認」「autonomous-drive deploy が失敗、secrets 漏れか」等、
+  autonomous-drive 機構の利用者プロジェクトへの配置・workflow テンプレ展開・
+  ラベル/Secrets セットアップに関する発話で本スキルの起動を必ず検討する。
+  spec-architect が dev_mode `autonomous` 判定時に明示起動する deployment 専用スキル。
+  「Issue 自動実装」（→ issue-implementer）「Issue 品質チェック」（→ issue-quality-gate）
+  「git auto-merge を GitHub UI で enable」（→ 別文脈、本スキルは workflow ファイル deploy 専用）
+  との混同を避ける。
+  philosophy.md 第 7 条のサポート skill 枠。境界 SPEC は `references/auto-merge-boundary.md` が一次情報源。
 ---
 
 # Crosscut Autonomous-Drive (Deployment)

@@ -28,7 +28,45 @@ v5.9.0 merge 後、L0 spec-architect 起票の discussion-style issue (#47/#49/#
 
 `issue-pickup.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`「autonomous-drive workflow 自身の改修」**該当**。本 PR は `human-review-needed` ラベル必須、人間レビュー後に解除して auto-merge 再評価。
 
-### v5.10.0 第 2 弾: gemini-review 入力・プロンプト規格再設計（Issue #49）
+### v5.10.0 第 3 弾: 16 skill 横断 description 診断 + 弱点 5 skill 改善 (2026-05-08)
+
+skill-creator skill を起点に dialog-harness 配下 16 skill 全体の description 品質と progressive disclosure 適合性を静的横断診断し、trigger 精度の弱い 5 skill の description を手動改善した。
+
+#### 診断（4 並列フォーク、broken reference 0 件）
+
+`delivery/SKILL-CREATOR-AUDIT-v5.10.x.md` に集約。横断弱点パターン:
+
+- **P0-1 `assets/` 不在症候群** (6 skill): 出力テンプレート (DELIVERY/HANDOFF/VERIFICATION/INTEGRATION/Issue 規格/council-weights) が SKILL.md inline または root 直下配置 → progressive disclosure 三段階が二段階に縮退
+- **P0-2 trigger phrase 二極化** (5 skill): automation 経由前提で human trigger 欠落 / 「還流」が汎用すぎ / 本文に trigger 埋没。best of class は crosscut-verifier-drift と rtk-integration の symptom triggers パターン
+- **P1 L0 兄弟 trigger 衝突** (spec-architect / onboarding / archeo-architect 間で「整理したい」「ドキュメント化」等が衝突)
+- **P1 layer0-spec-architect 557 行 over-budget**（version history 75 行 + Pre-flight 反復が主因）
+- **P1 layer1-independent-reviewer に references/ 不在**（214 行に inline checklist）
+- **P1 issue-implementer ⇔ issue-quality-gate の規格双方向重複**（desync リスク）
+- **P2 systematic**: version history bloat / orchestrator 雛形境界曖昧 / quality-gate 12 軸表が 11 行 / verifier-philosophy 5 本柱 vs 6 条混在 / workflow path 命名不統一
+
+#### 改善（5 skill description 手動書き換え）
+
+弱点上位 5 skill の `description` (frontmatter) を以下方針で改修:
+- **crosscut-issue-implementer** — version history を 1 行圧縮、human-driven trigger 句 9 種追加、兄弟 skill の disambiguation を明示
+- **crosscut-issue-quality-gate** — 「12 軸」を「12 項目（A-E + 7 ローマ数字）」と明示化、human trigger 9 種、3 つの発動契機、混同回避句
+- **crosscut-feedback-loop** — 「還流」「フィードバック」の汎用語を「検証結果の還流先振り分け」に絞り込み、dispatcher との衝突回避句、CTL 0 動作を明示
+- **layer0-spec-architect** — L0 三兄弟の責務境界を upfront 化、新規/継続/振り返りの代表 trigger 例を 8 種、archeo / onboarding / autonomous-dev / dispatcher との混同回避を明示
+- **crosscut-autonomous-drive** — 本文 §起動条件 の trigger 句を frontmatter に昇格、deployment 専用スキルの境界を明示、issue-implementer / GitHub UI auto-merge との混同回避
+
+#### 関連変更
+
+- **skill-creator (`~/.claude/skills/skill-creator/`)** — Windows 互換パッチ適用: `subprocess.Popen` の cmd 解決を `shutil.which("claude")` に置換、`select.select` を Windows native では `queue.Queue + threading.Thread` 経由 pump に分岐。global skill のため他プロジェクトでも有効。Linux/macOS は select 経路を保持
+- **eval set 保持** (5 skill 分計 90 件) — `skill-audit-workspace/eval-sets/` に保存、将来の trigger eval 自動最適化用に温存
+
+#### Phase 3 自動最適化（run_loop.py）の制限事項
+
+`run_loop.py` の自動最適化を試行したが、**「Skill / Read 以外のツールを最初に呼んだ時点で trigger=false」検知ロジック**（run_eval.py L207-208）と Auto モード下の手動操作の両立が現時点で困難なため、手動 description 改善（Phase 3'）に切り替え。eval set は将来の自動検証・description 最適化サイクルに温存。
+
+#### opt-in / opt-out 領域該当性
+
+`auto-merge-boundary.md §opt-out 領域`「skill description 改善」**該当**（破壊的変更なし、後方互換維持、すべて metadata 層の改修）。
+
+
 
 L0 spec-architect 対話 (Issue #49) で 5 軸を確定し、最小セット (F1-F3 + A1 + B4 + G1) を実装:
 
