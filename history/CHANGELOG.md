@@ -28,6 +28,16 @@ v5.9.0 merge 後、L0 spec-architect 起票の discussion-style issue (#47/#49/#
 
 `issue-pickup.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`「autonomous-drive workflow 自身の改修」**該当**。本 PR は `human-review-needed` ラベル必須、人間レビュー後に解除して auto-merge 再評価。
 
+### v5.10.0 第 2 弾: gemini-review 入力・プロンプト規格再設計（Issue #49）
+
+L0 spec-architect 対話 (Issue #49) で 5 軸を確定し、最小セット (F1-F3 + A1 + B4 + G1) を実装:
+
+- **`.github/workflows/gemini-review.yml`** — F1-F3: `includeTools` で read 系 + review-related write のみ expose、destructive tool (merge/close/delete) を除外 / A1: 必須コンテキストファイル (SPEC.md / DONT.md / philosophy.md) を workflow 事前注入 / B4: self-PR 検出を workflow 側で構造化 (PR author == PAT owner check)
+- **`templates/github-workflows/gemini-review.yml.template`** — 同様の変更をミラー (G1: template 骨格整備、G2/G3 placeholder 規格は v5.11.0+ で整備予定)
+- **後発候補**: B1/B2/B3 (プロンプト分離・動的選択) / C1-C3 (粒度階層化) / D1-D3 (Council 連携) / E1-E3 (出力規格・履歴) / A2-A4 (PR メタ・観測データ) は observation-driven で v5.11.0+ に温存
+
+**opt-in 領域該当**: `gemini-review.yml` 改修 = `auto-merge-boundary.md §opt-in 領域`「autonomous-drive workflow 自身の改修」該当。同じ PR で `human-review-needed` ラベル必須。
+
 ---
 
 ## v5.9.0 (in progress)

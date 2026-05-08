@@ -118,6 +118,61 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # v5.10.0 (Issue #49 軸 D): self-PR 検出を workflow 側で構造化
+      # PR author == GH_REVIEW_PAT オーナーが同一の場合、APPROVE は GitHub API で拒否される
+      # (Cannot approve your own pull request)。従来 prompt 内 fallback だったが、API 一発で
+      # 判別できる情報を workflow 側で先取りして prompt に渡す。
+      - name: Detect self-PR (v5.10.0, Issue #49 軸 D)
+        id: detect_self_pr
+        if: steps.check_key.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          set -euo pipefail
+          PR_AUTHOR='${{ github.event.pull_request.user.login }}'
+          PAT_OWNER=$(gh api /user --jq '.login' 2>/dev/null || echo "")
+          if [ -z "$PAT_OWNER" ]; then
+            echo "::notice::PAT owner 取得失敗（PAT 権限不足の可能性）。self-PR 判定不能、prompt 側 fallback に委譲"
+            echo "is_self_pr=unknown" >> "$GITHUB_OUTPUT"
+          elif [ "$PR_AUTHOR" = "$PAT_OWNER" ]; then
+            echo "::notice::self-PR 検出: PR author '$PR_AUTHOR' == PAT owner '$PAT_OWNER'。COMMENT only に誘導"
+            echo "is_self_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::非 self-PR: PR author '$PR_AUTHOR' != PAT owner '$PAT_OWNER'。APPROVE 可能"
+            echo "is_self_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # v5.10.0 (Issue #49 軸 C, A1): 必須コンテキストファイルを事前注入
+      # gemini-cli が MCP 経由で取りに行く構造を廃止し、workflow が事前にファイルを集約。
+      # gemini が直接 read できる場所 (.gemini-context/required.md) に置く。
+      # ファイル不存在は skip (利用者プロジェクトへの汎用性確保)
+      - name: Inject required context files (v5.10.0, Issue #49 軸 C)
+        if: steps.check_key.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p .gemini-context
+          {
+            echo "# 必須コンテキストファイル (workflow 事前注入、v5.10.0)"
+            echo ""
+            echo "本ファイルは gemini-review.yml が PR レビュー前に集約。MCP 経由の取得を不要にし、レビュー精度を向上させる。"
+            echo ""
+          } > .gemini-context/required.md
+          for f in SPEC.md DONT.md .claude/skills/layer0-spec-architect/references/philosophy.md; do
+            if [ -f "$f" ]; then
+              {
+                echo "## $f"
+                echo ""
+                echo '```markdown'
+                cat "$f"
+                echo '```'
+                echo ""
+              } >> .gemini-context/required.md
+              echo "::notice::Injected: $f"
+            else
+              echo "::notice::Skipped (not found): $f"
+            fi
+          done
+
       # google-github-actions/run-gemini-cli 公式 action
       # 公式: https://github.com/google-github-actions/run-gemini-cli
       # 無料 tier 動作可（Google AI Studio API key）
@@ -141,12 +196,12 @@ jobs:
           # モデルは workflow level env.GEMINI_MODEL から参照（単一情報源、本ファイル冒頭コメント参照）
           gemini_model: ${{ env.GEMINI_MODEL }}
           github_pr_number: ${{ github.event.pull_request.number }}
-          # settings JSON: tool exposure 確保のため `tools.core` / `includeTools` を
-          # 設定しない（v5.5.1 PR #40 α パッチで本構成が動作確認済）。
-          # **security 注**: `includeTools` 不在で github-mcp-server の **全 tool** が model
-          # に expose される（read 系のみならず write/destructive 系含む）。本 repo は
-          # 信頼済み author のみが PR を作る運用前提で許容しているが、tool 名の正しい
-          # 形式が判明次第 read 系のみへの絞り込み（v5.5.x 候補）を再検討する。
+          # v5.10.0 (Issue #49 軸 B, F1-F3): tool exposure 適正化
+          # `includeTools` で read 系 + review-related write のみに絞り込み、destructive tool
+          # (merge_pull_request / close / delete_file 等) を除外。
+          # 注: tool 名は github-mcp-server v0.27.0 の MCP tool 命名に従う。tool 名は server
+          # により若干異なる可能性があるため、設定後に gemini-artifacts/ で実際の expose 状況を
+          # 観測して調整する想定。
           settings: |
             {
               "model": {
@@ -166,7 +221,15 @@ jobs:
                   ],
                   "env": {
                     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
-                  }
+                  },
+                  "includeTools": [
+                    "pull_request_read",
+                    "get_file_contents",
+                    "search_code",
+                    "list_files",
+                    "add_comment_to_pending_review",
+                    "pull_request_review_write"
+                  ]
                 }
               }
             }
@@ -183,16 +246,32 @@ jobs:
             - **head branch**: `${{ github.event.pull_request.head.ref }}`
 
             PR 番号は上記で確定済みです。**人間に PR 番号を質問してはいけません**。
-            最初に `mcp_github_pull_request_read` ツールで PR #${{ github.event.pull_request.number }} の
+            最初に `pull_request_read` ツールで PR #${{ github.event.pull_request.number }} の
             files / diff / 既存 review コメントを取得し、それを基にレビューしてください。
-            その後、レビュー観点に従って分析し、最後に必ず verdict を `mcp_github_pull_request_review_write` で投稿してください。
+            その後、レビュー観点に従って分析し、最後に必ず verdict を `pull_request_review_write` で投稿してください。
 
-            ## self-PR エラーハンドリング（GitHub 仕様）
+            ## 必須コンテキスト（workflow 事前注入、v5.10.0）
 
-            **PR author と GH_REVIEW_PAT オーナーが同一人物**の場合、`pull_request_review_write` で
-            event="APPROVE" は GitHub API が "Cannot approve your own pull request" で拒否します。
-            その場合は **event="COMMENT" に fallback** し、body に承認趣旨を明記してください。
-            異なる人物が author の場合は通常通り APPROVE が使えます（ハードコード禁止、API 応答で判別）。
+            workflow が `.gemini-context/required.md` に SPEC.md / DONT.md / philosophy.md を集約済みです。
+            **MCP 経由で取得する前に、まず本ファイルを Bash 等で直接読んでください**:
+
+            ```bash
+            cat .gemini-context/required.md
+            ```
+
+            これらは DH 本体の根本仕様であり、レビューの基準軸として最優先で参照してください。
+            ファイルが存在しない場合は workflow 注入 step が skip した（利用者プロジェクトへの展開時等）ため、MCP 経由で `.claude/skills/layer0-spec-architect/references/philosophy.md` 等を取得してください。
+
+            ## self-PR エラーハンドリング（v5.10.0 で workflow 構造化）
+
+            **workflow 側で self-PR を事前検出済みです** (Issue #49 軸 D)。下記 `IS_SELF_PR` を参照してください:
+
+            - `IS_SELF_PR=${{ steps.detect_self_pr.outputs.is_self_pr }}`
+              - `true`: PR author == PAT owner。**event="APPROVE" は GitHub API で必ず拒否されるため、最初から event="COMMENT" を使用**してください
+              - `false`: 通常通り event="APPROVE" / "COMMENT" / "REQUEST_CHANGES" を使用
+              - `unknown`: PAT owner 取得失敗（PAT 権限不足）。従来通り API 応答で判別する prompt 内 fallback を使用
+
+            旧 prompt 内 fallback ロジック（COMMENT 切替）は維持しますが、`IS_SELF_PR=true` 時は最初から COMMENT を使うことで API 拒否ラウンドトリップを排除できます。
 
             ## 構造的位置づけ
 
@@ -253,14 +332,14 @@ jobs:
 
             line comment で具体問題を指摘する（github MCP の `add_comment_to_pending_review`）。
             問題ゼロなら全体サマリのみで approve（`pull_request_review_write` で event=APPROVE）。
-            self-PR で APPROVE が API 拒否された場合は event=COMMENT に fallback してください。
+            self-PR (IS_SELF_PR=true) では event=COMMENT を最初から使用してください。
             review verdict は "REQUEST_CHANGES" / "COMMENT" / "APPROVE" のいずれかを明示。
 
             ## 必須実行プロトコル
 
             **必ず最後に `pull_request_review_write` を呼び出し、verdict を投稿してください**。
             問題が見つかった場合 → 各問題に対し `add_comment_to_pending_review` で line comment 追加 → 最後に `pull_request_review_write` で event="REQUEST_CHANGES" or "COMMENT" 確定。
-            問題が見つからなかった場合 → `pull_request_review_write` で event="APPROVE" + body="本 PR を独立 Gemini レビュアーとして確認、問題なし" を投稿（**self-PR で API 拒否された場合は event="COMMENT" に fallback**）。
+            問題が見つからなかった場合 → `pull_request_review_write` で event="APPROVE" (IS_SELF_PR=true 時は "COMMENT") + body="本 PR を独立 Gemini レビュアーとして確認、問題なし" を投稿。
             **ツール呼び出しなしで完了することは禁止します**。tool 呼び出しに失敗した場合は最終応答にその旨を明示してください。
 
       # gemini-artifacts/ を明示的に Actions Artifacts として upload。
