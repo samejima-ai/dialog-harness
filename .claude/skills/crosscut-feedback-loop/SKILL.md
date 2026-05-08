@@ -2,12 +2,17 @@
 name: crosscut-feedback-loop
 dimension: D4
 description: >
-  検証層で発覚した問題を設計層・実装層・L0 へ還流する横断機構（仕様4、v5.0.0 追加）。
-  drift / 思想違反 / 形式 FAIL の種別ごとに還流先を判定する。
-  CTL 連動で自動化度が変化する。
-  「還流」「フィードバック」「drift を Issue 化」「検証結果を SPEC に戻す」
-  等の発話でも起動。
-  仕様 1〜3 の検証結果を受けて起動される。
+  検証層（drift verifier / philosophy verifier / 5 層検出スタック）で発覚した問題を、
+  種別判定して設計層・実装層・L0 へルーティングする横断機構。
+  「drift verifier の指摘を SPEC に戻したい」「形式 FAIL と drift が両方出た時の還流先」
+  「思想違反検出後どこに還流」「自動 merge 後に drift 検出した、P3 に投げ返す手順」
+  「verifier-philosophy の placeholder fallback」「CTL 0 の local_only モードでの還流動作」
+  等、検証結果の還流先振り分けに関する発話で本スキルの起動を必ず検討する。
+  drift は dispatcher 経由 Issue 化、思想違反は Council 経由、形式 FAIL は L1 に再献上、
+  CTL に応じて自動化度が変化（CTL ≥ 1 から自動還流、CTL 0 では人間に献上のみ）。
+  「drift チェック走らせて」（→ verifier-drift）「Issue にして」（→ issue-dispatcher）
+  「振り返り儀式」（→ spec-architect）「Council に諮る」（→ council）との混同を避ける。
+  本 skill は仕様 1〜3 の検証結果を受けて起動される下流機構であり、検証自体は行わない。
 ---
 
 # Feedback Loop

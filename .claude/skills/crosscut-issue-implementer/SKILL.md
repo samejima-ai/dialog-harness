@@ -2,13 +2,18 @@
 name: crosscut-issue-implementer
 dimension: D4
 description: >
-  GitHub Issue を起点に AI 実装を起動する横断機構（仕様2、v5.0.0 追加 / v5.7.0 改訂 / v5.7.1 で Claude Code CLI メイン化）。
-  GitHub Actions workflow (issue-pickup.yml) 経由で起動、3 段階フィルター + AI triage で Issue 選別。
-  Issue label `ready-for-ai` 付与で自動発動、または明示コマンドで起動。
-  実装エージェント: **Claude Code CLI** (anthropics/claude-code-action + CLAUDE_CODE_OAUTH_TOKEN、Pro/Max サブスクリプション、追加 API 課金なし)。
-  AI triage は **gemini-cli** 維持（軽量、無料 tier）、実装失敗時のフォールバックも gemini-cli（人間 P4 判断発動）。
-  philosophy.md 第 7 条「AI 組織論」の「サポート skill」枠（4 役割を補助、L3 運用層ではない）。
-  dev_mode `autonomous` + `autonomous_scope: full` のみで active 化。
+  GitHub Issue を起点に Claude Code CLI で AI 実装を自動起動する横断機構。
+  「ready-for-ai 付けた Issue が動かない」「Issue から自動で PR 出すやつ設定したい」
+  「triage で弾かれた」「issue-pickup.yml が type-aware 化された件」「circuit-breaker の閾値」
+  「P4 暴走介入」「CLAUDE_CODE_OAUTH_TOKEN の設定漏れ」「autonomous_scope full なのに走らない」
+  「実装失敗時のフォールバック gemini-cli への切替」等、ready-for-ai ラベル経由の自動実装パイプライン
+  および issue-pickup.yml 関連の発話で本スキルの起動を必ず検討する。
+  3 段階フィルター + AI triage で Issue 選別、Pro/Max サブスクリプションで追加 API 課金なし。
+  「Issue にして」（→ issue-dispatcher）「Issue 品質チェック」（→ issue-quality-gate）
+  「PR レビュー」（→ independent-reviewer）「auto-merge workflow deploy」（→ autonomous-drive）
+  との混同を避ける。
+  philosophy.md 第 7 条「AI 組織論」のサポート skill 枠。
+  dev_mode `autonomous` + `autonomous_scope: full` のみで active 化（local_only / github_assisted では起動しない）。
 ---
 
 # Issue Implementer

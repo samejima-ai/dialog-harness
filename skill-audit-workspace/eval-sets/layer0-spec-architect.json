@@ -1,0 +1,20 @@
+[
+  {"query": "新しくレシピ管理アプリ作りたい。家族 4 人で食材在庫共有して献立提案までしたい。まだ全然イメージしかない", "should_trigger": true},
+  {"query": "既存の在庫管理ツールに通知機能追加したい。SPEC にどう書き足すか整理したい。REGIME.md 既にある", "should_trigger": true},
+  {"query": "前回作った社内 LINE もどき、ちょっと触ってないけど機能拡張入れる前に振り返りたい。LC=1 だよね", "should_trigger": true},
+  {"query": "DB 使うかどうか迷ってる。SQLite と Postgres どっちがいいかと、そもそも保存いるか決まってない。仕様策定段階", "should_trigger": true},
+  {"query": "M2 と L2 の境界がよく分からない。SPEC 規模が中途半端なんだけど、判定して", "should_trigger": true},
+  {"query": "新規プロジェクトの立ち上げから harness 設計までセットアップしたい。spec architect 一式お願い", "should_trigger": true},
+  {"query": "顧客向け Web ダッシュボードの権限設計を SPEC に落としたい。OpenFGA 使うかどうかも含めて L0-5 サブフェーズ起動", "should_trigger": true},
+  {"query": "REGIME.md の dev_mode を github_assisted から autonomous に昇格したい。ADR 記録も含めて", "should_trigger": true},
+  {"query": "リファクタしたい。前に書いた状態管理コードの意図がわからなくなった", "should_trigger": false},
+  {"query": "既存プロジェクトに dialog-harness-layers を後付けしたい。逆仕様化したい", "should_trigger": false},
+  {"query": "実装して。SPEC 確定済み。ship", "should_trigger": false},
+  {"query": "テスト書いて。ユニットテスト全部追加", "should_trigger": false},
+  {"query": "rtk 入れたい。ビルド出力が冗長すぎる", "should_trigger": false},
+  {"query": "Issue にして。タスク 3 つに分割して射出", "should_trigger": false},
+  {"query": "drift チェックして", "should_trigger": false},
+  {"query": "PR 自動レビュー走らせて", "should_trigger": false},
+  {"query": "Council に諮りたい。実装案 2 つで拮抗してる", "should_trigger": false},
+  {"query": "コミットメッセージ書き直して", "should_trigger": false}
+]

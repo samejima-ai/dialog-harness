@@ -1,0 +1,4 @@
+[
+  {"query": "rtk を入れたい。git log の出力が長すぎてコンテキストがすぐ埋まる。CLAUDE.md にも rtk 設定追加して", "should_trigger": true},
+  {"query": "今日の天気を教えて", "should_trigger": false}
+]

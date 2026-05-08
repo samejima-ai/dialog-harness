@@ -2,11 +2,18 @@
 name: crosscut-issue-quality-gate
 dimension: D4
 description: >
-  GitHub Issue の品質を 12 軸でチェックする横断機構（v5.8.0 新設）。
-  SPEC/ADR 差分起点・L0 対話起点・Council 献上起点・D4〜D2 献上起点いずれの Issue も、
-  ready-for-ai ラベル付与前に品質バラつきを統一規格で検査し、合格 Issue のみを
-  autonomous-drive パイプラインに通過させる。12 軸 = 機械検査 + AI 推論のハイブリッド、
-  並列安全性軸で論理・意味・依存コンフリクトを事前検知、Council 入力データレイヤー整合保証。
+  GitHub Issue の品質を 12 項目（A-E の 5 軸 + 7 ローマ数字補助軸）で機械検査 + AI 推論のハイブリッド検査する横断機構。
+  「この Issue 品質チェックして」「ready-for-ai 付ける前に 12 軸で見て」
+  「Issue 品質ゲートで弾かれた、どの軸で fail」「並列安全性軸って何見てるの」
+  「dispatcher が生成した Issue 群、どれが gate 通過したか」
+  「issue-quality-checklist.template.md を手動でチェックしたい」「fractal-application どの粒度で再帰検査」
+  「Council 起点 Issue を gate 経由」等、ready-for-ai ラベル付与前の Issue 検査と
+  並列安全性（scope / mutex / depends-on / 影響範囲衝突 4 段階フィルター）に関する発話で
+  本スキルの起動を必ず検討する。
+  3 つの発動契機: (a) issue-dispatcher 内部から自動通過 / (b) 人間明示「品質チェック」 / (c) Council judgment 起点 Issue。
+  「Issue にして」（→ issue-dispatcher）「Issue 自動実装」（→ issue-implementer）
+  「テスト品質ゲート CI 設定」（→ 別文脈）との混同を避ける。
+  v5.10.0: type-aware 化（discussion ラベル分岐、規格は issue-implementer SKILL.md を一次情報源）。
 ---
 
 # Issue Quality Gate

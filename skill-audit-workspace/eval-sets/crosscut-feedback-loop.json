@@ -1,0 +1,20 @@
+[
+  {"query": "drift verifier で出た仕様乖離を SPEC.md に戻したい。検証結果を設計層に還流するフロー", "should_trigger": true},
+  {"query": "5 層エラー検出スタックで思想違反を 2 件検知。Issue 化と SPEC 修正のどっち優先すべきか還流先判定して", "should_trigger": true},
+  {"query": "L1 から献上された VERIFICATION で形式 FAIL と drift が両方出た。それぞれ違う還流先だよね", "should_trigger": true},
+  {"query": "philosophy 違反を検出したけど v5.0.0 はまだ verifier-philosophy が placeholder。代わりに feedback-loop 経由で fallback できる", "should_trigger": true},
+  {"query": "CTL 0 の local_only モードで drift 検出した時、還流ってどうなるの？feedback-protocol.md にどう書いてある", "should_trigger": true},
+  {"query": "drift の重大度 high のやつを Issue 化したい。dispatcher 経由で射出する前に feedback ルーティング走らせて", "should_trigger": true},
+  {"query": "検証で見つかった問題を SPEC に戻すルートと Issue 化するルートと L0 対話に戻すルート、どう振り分けてる", "should_trigger": true},
+  {"query": "自動 merge 後に drift 検出した。feedback ループで P3 事後確認に投げ返す手順", "should_trigger": true},
+  {"query": "顧客フィードバック収集の仕組みを作りたい。Slack から声を集めて Issue に変換", "should_trigger": false},
+  {"query": "drift チェックして。実装が SPEC から離れてないか確認", "should_trigger": false},
+  {"query": "Issue にして。SPEC §3 を 4 つに分割", "should_trigger": false},
+  {"query": "振り返り儀式やりたい。前回の retrospective 振り返って次の改善点を", "should_trigger": false},
+  {"query": "philosophy.md の第 7 条と矛盾する記述見つけた。SPEC を直したい", "should_trigger": false},
+  {"query": "PR レビューフィードバックで指摘された 3 件を反映したい", "should_trigger": false},
+  {"query": "Council から judgment が来た。final_decision まだ null なんだけど次どうする", "should_trigger": false},
+  {"query": "テストの失敗ログ全部 Issue に上げたい", "should_trigger": false},
+  {"query": "v5.10.0 で gemini-review の入力規格再設計した件、CHANGELOG に残ってる", "should_trigger": false},
+  {"query": "REGIME.md の dev_mode を autonomous に昇格したい", "should_trigger": false}
+]
