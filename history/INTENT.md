@@ -93,7 +93,7 @@ cookpato（妻専用献立メモ PWA、`samejima-ai/cookpato`）のバックア�
 
 **(b) 過剰設計誘発リスク**: 監査観点 5 項目（データ取得層集約 / 整形変換分離 / 設定外出し / エラー共通化 / キャッシュ差し込み点明示）を無条件適用すると YAGNI / Premature Abstraction を誘発するため、条件発動型の閾値設計（規模 S ≥ 5 + DB 前提 + 寿命 6 ヶ月超 = フル監査 / S ≤ 2 = スキップ等）が前提になる。閾値の妥当性検証には複数事例が必要。
 
-**(c) スタック非依存性の実装難度**: Seam は実装言語・FW のイディオム依存度が高く（Next.js の `_lib/` 抽出 vs Rails の concern vs FastAPI の dependency injection）、観点をスタック非依存の抽象語で記述しつつ判定例を REGIME.md の stack に応じて差し替える設計が、テンプレ翻訳負債なしに到達できるか不明。
+**(c) スタック非依存性の実装難度**: Seam は実装言語・FW のイディオム依存度が高く（Next.js の `_lib/` 抽出 vs Rails の concern vs FastAPI の dependency injection）、観点をスタック非依存の抽象語で記述しつつ判定例を `REGIME.md` の `stack` に応じて差し替える設計が、テンプレ翻訳負債なしに到達できるか不明。
 
 ### 再評価ゲート（案 Y 採用）
 
@@ -103,12 +103,12 @@ cookpato A1/A3 の「2 件目事例で再評価」（案 X）より緩和した�
 
 ### Council 諮問の不要性判定
 
-philosophy.md 第 6 条「人間 ≒ Council」起動条件のいずれにも該当しない:
+`philosophy.md` §6「人間 ≒ Council」起動条件のいずれにも該当しない:
 
 - 複数案拮抗なし（観測温存で一致）
 - 不可逆操作なし（記録のみ、コード変更なし）
 - SPEC 矛盾なし（既存 sensors 体系を変更しない）
-- judgment_confidence < 0.5 ではない
+- `judgment_confidence < 0.5` ではない
 
 ゆえに本記録のみで処理（Council 諮問は不要）。
 
