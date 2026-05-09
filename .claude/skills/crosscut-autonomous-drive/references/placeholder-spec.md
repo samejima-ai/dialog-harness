@@ -24,6 +24,23 @@
 - 新規 placeholder 追加は v5.6.x patch 範疇（互換破壊なし）
 - 既存 placeholder 名の変更 / 削除は major 案件（template 利用プロジェクトの再 deploy 必須）
 
+### Forward-compat 命名規約（v5.11.0 追加、ADR-001 関連）
+
+将来追加予定の placeholder（例: `${PROJECT_REVIEW_AXES}` for v5.12.0、ADR-001 で予約済み）を意識し、新規 placeholder の命名は以下に準拠する:
+
+- SCREAMING_SNAKE_CASE 固定（既定）
+- ドメイン prefix を導入:
+  - `PROJECT_*` — user project の SPEC.md / DONT.md / 固有 sensors 由来（spec-architect 対話で抽出）
+  - `REPO_*` — git remote から自動抽出可能なメタ情報
+  - `WORKFLOW_*` — workflow 内部固有（job 名・step 名等）
+  - `VERIFIER_*` — verifier job 固有
+  - `ALLOWED_*` — auto-merge 信頼境界（authors / paths 等）
+  - `SCOPE_*` — gemini-review / harness-verify 等の発火範囲
+- 既存 placeholder の prefix 不一致は許容（後方互換維持のため改名しない）
+- 新規 placeholder は本規約に従う
+
+詳細背景は `adr-001-axis-placeholder-reservation-v5.12.0.md`（同一 references ディレクトリ配下）を参照。
+
 ## 利用者プロジェクトでの上書き
 
 deploy 後、placeholder 置換結果（実値）を利用者プロジェクトの `.github/workflows/` で直接編集することは妨げない。ただし変更は spec-architect 対話で確認した内容と乖離する場合があるため、`delivery/DELIVERY.md` の deployment 記録に「project-specific override」セクションを設ける運用を推奨。

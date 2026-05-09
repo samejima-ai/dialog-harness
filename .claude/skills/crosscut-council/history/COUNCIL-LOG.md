@@ -1045,3 +1045,68 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 
 **v5.10.0 以降の新規 Council 起動**: Option A (独立 SDK 呼び出し) 実装を適用  
 **既存 Council 判定**: 構造改善前のエントリとして信頼性注記（本 COUNCIL-LOG 内エントリは audit_caveat 対象外、外部プロジェクトでの事例を受けた予防的改修）
+
+---
+
+## council-2026-05-09T15:00:00Z-grtmpl
+
+```json
+{
+  "invocation_id": "council-2026-05-09T15:00:00Z-grtmpl",
+  "timestamp": "2026-05-09T15:00:00Z",
+  "source_skill": "layer0-spec-architect",
+  "council_type": "business",
+  "category": "judgment",
+  "category_fallback": false,
+  "question_to_answer": "gemini-review.yml.template の prompt 部分が user project に deploy された際に project-specific 化されない既知ギャップを v5.11.0 で解消するにあたり、案 1 (placeholder 拡張、最小) / 案 2 (軸 placeholder 化、中) / 案 3 (generic skeleton 化、大) のどれを採用すべきか。philosophy 改修不可、前倒し v5.11.0、opt-in 領域該当、prior なしの制約下で諮問",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 4,
+    "開発者": 4,
+    "哲学者": 3
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案 1: placeholder 拡張（最小）", "confidence": 0.72, "dimension": "ROI / 機会損失" },
+    "開発者": { "stance": "案 1（v5.11.0）+ 案 2 を v5.12.0 ADR で予約（段階分割）", "confidence": 0.85, "dimension": "可逆性 / 保守性 / Shift Left" },
+    "哲学者": { "stance": "案 1（v5.11.0）+ 既知ギャップ表記録 + 案 2 を v5.12.0 ADR で予約（止揚案）", "confidence": 0.65, "dimension": "前提への問い / 長期影響" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案 1: placeholder 拡張（最小）",
+        "supporters": ["経営者"],
+        "weight_sum": 4,
+        "weighted_score": 2.88,
+        "components": [
+          {"persona": "経営者", "weight": 4, "confidence": 0.72}
+        ]
+      }
+    ],
+    "third_way_excluded": [
+      {"persona": "開発者", "stance": "案 1（v5.11.0）+ 案 2 を v5.12.0 ADR で予約（段階分割）", "weight": 4, "confidence": 0.85, "reason": "options 外の自由記述 stance（段階分割の付帯条件）。PR1 暫定運用ルールに従い weight 加算対象から除外、付帯条件は recommended の reasoning に統合"},
+      {"persona": "哲学者", "stance": "案 1（v5.11.0）+ 既知ギャップ表記録 + 案 2 を v5.12.0 ADR で予約（止揚案）", "weight": 3, "confidence": 0.65, "reason": "options 外の自由記述 stance（止揚案、既知ギャップ記録 + ADR 予約の複合付帯）。PR1 暫定運用ルールに従い weight 加算対象から除外、付帯条件は recommended の reasoning に統合"}
+    ],
+    "max_score_stance": "案 1: placeholder 拡張（最小）",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.62,
+  "recommended": "案 1 (placeholder 拡張、最小) を v5.11.0 で採用。3 ペルソナとも案 1 の v5.11.0 採用を core で支持する unanimous（PR1 暫定 third_way_excluded ルールにより weight 上は経営者単独支持として max_score 2.88、開発者・哲学者の stance は付帯条件込みで options 外のため除外）。開発者・哲学者の第 3 の道（段階分割 + 既知ギャップ表記録 + 案 2 ADR 予約）は recommended に統合提案する: (a) v5.11.0 で hardcoded URL の `${REPO_OWNER}/${REPO_NAME}` 自動置換と permalink ベース URL 自動置換を実装、(b) `references/known-gaps.md` 等の既知ギャップ表に『DH-specific prompt 軸残存』を局所違反として明示記録、(c) 案 2 (軸 placeholder 化) を v5.12.0 で実施する旨を ADR で予約、(d) 案 1 の placeholder 命名規約を案 2 拡張に forward-compat な形で設計する。(b)(c)(d) の採否は実装者の合意プロセスで最終判断",
+  "minority_opinion": "哲学者が提示した『視点直交 vs 観測駆動は偽の二項対立、軸抽出は user project SPEC 体系から派生すべき』という前提への問いは、本判定では案 1 採用を覆さなかったが、案 2 の本質的価値（user project SPEC を gemini-review の駆動源とする構造）を v5.12.0 で再確認する際の論理基盤として保持。philosophy 改修不可制約が外れた将来時点では案 3 (generic skeleton) の D3/D4 境界明確化議論に再浮上させる候補。また開発者の段階分割提案は『v5.11.0 単独で完結させる vs v5.12.0 と二段階で完成させる』のリリース粒度判断を含み、F1 振り返り儀式での棚卸し対象",
+  "weight_note": "category: judgment → 経営者 4 / 開発者 4 / 哲学者 3（合計 11）。3 ペルソナは案 1 を core で支持する unanimous だが、開発者・哲学者の stance は options 外の付帯条件込み第 3 の道。PR1 暫定運用に従い third_way_excluded で weight 加算外、案 1 単独で max_score 2.88（11 点満点中）。第 3 の道の合計重み（4×0.85 + 3×0.65 = 5.35）は recommended の reasoning に統合提案として明示し、合意プロセスで採否判断する設計",
+  "reasoning": "全会一致 unanimous (案 1 を v5.11.0 で採用) が確定する一方で、3 ペルソナ中 2 ペルソナ（開発者・哲学者、合計重み 7/11）が options 外の付帯条件を提示したため、recommended は『案 1 を core 採用 + 第 3 の道 3 要素を統合提案』の合成形式。judgment_confidence は核判定の堅牢性（unanimous on core）と付帯条件採否の不確定性（合意プロセス委譲）を平均して 0.62。case-2 (案 2 v5.12.0 化) の commit 化が空文化すれば本判定の効力は半減するため、ADR 予約と既知ギャップ表記録を recommended に強く併記",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-05-09T15:30:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml.template の project-specific 化ギャップ解消）を諮問。事前に L0 対話で「前倒し v5.11.0」「philosophy 不改変」「opt-in 領域該当」「prior なし」の 4 軸を確定済み。3 ペルソナは独立に案 1 を v5.11.0 採用する点で全会一致 (unanimous core)、ただし開発者・哲学者は付帯条件として段階分割 / 既知ギャップ表記録 / 案 2 ADR 予約 を提示。PR1 暫定運用 (third_way_excluded) により weight 加算上は経営者単独支持で max_score 2.88、第 3 の道合計重み 5.35 は recommended の reasoning に統合提案として明示。judgment_confidence 0.62 で auto_agree 区分。L0 合意プロセスにて L0 が付帯 3 要素の採否を整理し、実装者（ひでさん）から `agreed_recommended` を確定 (2026-05-09T15:30:00Z)。v5.11.0 実装範囲は案 1 (placeholder 拡張) + (b) 既知ギャップ表記録 + (c) 案 2 ADR 予約 + (d) forward-compat placeholder 命名 の 4 要素を含む。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録（output-format.md §`follow_up_questions_count` 定義「本 invocation で実施された follow-up の総数」に基づく schema 厳密解釈）。実装者→ユーザー間で multiSelect 選択肢の整合確認が 1 回行われたが、これは Council protocol の `follow_up_question`（Judgment Agent 起点）に該当しないため count 対象外。
