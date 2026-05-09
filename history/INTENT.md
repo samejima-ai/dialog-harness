@@ -83,6 +83,42 @@ cookpato（妻専用献立メモ PWA、`samejima-ai/cookpato`）のバックア�
 - PR: #56 (A4 実装中、CI PASS、draft)
 - Council: `council-2026-05-06T04:42:00Z-a5port` (history/COUNCIL-LOG.md)
 
+## Issue #70（Seam 監査センサー）観測温存 (2026-05-09)
+
+`samejima-ai/kakuman-platform-v3.0` 単一事例（N=1）を起点とした「Architectural Fitness Function / Seam 監査センサー」（条件発動型）の L0 spec-architect 取り込み提案。本提案は **観測温存** とし、autonomous-drive の即時 implementation 経路には載せない。
+
+### 温存判断の根拠
+
+**(a) N=1 帰納的飛躍リスク**: cookpato A1/A3 と同型の N=1 問題（単一プロジェクト事例から普遍規則を抽出する帰納的飛躍）。ただし Architectural Fitness Function (Neal Ford) と Seam (Michael Feathers) は業界で確立した概念であるため、cookpato 提案より「沈黙する前提の言語化」の未踏度は低い。
+
+**(b) 過剰設計誘発リスク**: 監査観点 5 項目（データ取得層集約 / 整形変換分離 / 設定外出し / エラー共通化 / キャッシュ差し込み点明示）を無条件適用すると YAGNI / Premature Abstraction を誘発するため、条件発動型の閾値設計（規模 S ≥ 5 + DB 前提 + 寿命 6 ヶ月超 = フル監査 / S ≤ 2 = スキップ等）が前提になる。閾値の妥当性検証には複数事例が必要。
+
+**(c) スタック非依存性の実装難度**: Seam は実装言語・FW のイディオム依存度が高く（Next.js の `_lib/` 抽出 vs Rails の concern vs FastAPI の dependency injection）、観点をスタック非依存の抽象語で記述しつつ判定例を `REGIME.md` の `stack` に応じて差し替える設計が、テンプレ翻訳負債なしに到達できるか不明。
+
+### 再評価ゲート（案 Y 採用）
+
+**条件**: Lifecycle ≥ 1 のプロジェクトで Seam 退化（観点 1〜5 のいずれかが「コピペ増加」「Seam 破壊」として観測される）が **N=1 で再現** したら即再評価。
+
+cookpato A1/A3 の「2 件目事例で再評価」（案 X）より緩和した条件を採用する根拠は、**Architectural Fitness Function / Seam が業界で確立した概念**であり「沈黙する前提の言語化」未踏領域カテゴリには該当しないため。Lifecycle ≥ 1 の退化検出は新規開発時の初期 Seam 設計よりも実需要シグナルとして強い。
+
+### Council 諮問の不要性判定
+
+`philosophy.md` §6「人間 ≒ Council」起動条件のいずれにも該当しない:
+
+- 複数案拮抗なし（観測温存で一致）
+- 不可逆操作なし（記録のみ、コード変更なし）
+- SPEC 矛盾なし（既存 sensors 体系を変更しない）
+- `judgment_confidence < 0.5` ではない
+
+ゆえに本記録のみで処理（Council 諮問は不要）。
+
+### 関連
+
+- Issue: `samejima-ai/dialog-harness#70`（label `discussion` 付与、`ready-for-ai` 除去で autonomous-drive 経路から外す）
+- 起票元: `samejima-ai/kakuman-platform-v3.0` 検証セッション
+- 業界概念: Architectural Fitness Function (Neal Ford "Building Evolutionary Architectures") / Seam (Michael Feathers "Working Effectively with Legacy Code")
+- 関連 sensors: `crosscut-verifier-drift`（SPEC↔実装乖離、責務境界の差別化が再評価時論点）/ `inferential.md`（仕様合致、責務分離が再評価時論点）
+
 ## v5.7.2 で追加された概念
 
 ### `claude-code-action@v0` の OIDC permission bug 修正
