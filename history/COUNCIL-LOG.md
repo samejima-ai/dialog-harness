@@ -899,9 +899,10 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。哲学者 stance は options 外につき third_way_excluded（PR2 で third_way 類型として正式化予定）"
   consensus_mode: "escalate_to_human"
   human_escalated: true
-  # 後追記（合意プロセス完了時）
-  # implementer_consent: pending
-  # agreed_at: pending
+  # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
+  implementer_consent: "deferred_pending_dependent"
+  deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程"
+  agreed_at: "2026-05-11T04:14:26Z"
   follow_up_questions_count: 0
 
 - invocation_id: "council-2026-05-11T03:14:18Z-5v4xqq"
@@ -947,9 +948,10 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。哲学者 stance は options 外（B + 修飾語）につき third_way_excluded。decision_category=H1 哲学変更により consensus_mode は confidence によらず escalate_to_human"
   consensus_mode: "escalate_to_human"
   human_escalated: true
-  # 後追記（合意プロセス完了時）
-  # implementer_consent: pending
-  # agreed_at: pending
+  # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
+  implementer_consent: "deferred_pending_dependent"
+  deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程（特に P1「同等以上を生成できる方法論」の経験的根拠が必要）"
+  agreed_at: "2026-05-11T04:14:26Z"
   follow_up_questions_count: 0
 
 - invocation_id: "council-2026-05-11T03:49:01Z-4go7g1"
@@ -997,7 +999,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: true
   # 議題 1/2 への波及記録（議題 0 の結果として両者保留推奨）
   cascade_effect: "council-2026-05-11T03:14:18Z-vbxdnd (議題1) / council-2026-05-11T03:14:18Z-5v4xqq (議題2) を両者保留に推奨。咀嚼 SPEC 確定後に再上程"
-  # 後追記（合意プロセス完了時）
-  # implementer_consent: pending
-  # agreed_at: pending
+  # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z「合意、そして 2 の PR 拡張して SPEC 化を進めます」）
+  implementer_consent: "agreed_recommended"
+  modification_note: "Council 推奨をそのまま採用 + 人間が選択肢 2 を選択（本 PR #75 を draft 維持で咀嚼 SPEC 議題着手の起点として保持、Phase 0.5「素材 5-10 件具体化」まで本 PR で完遂、Step 2 SPEC 化と Step 3 議題 1/2 再上程は後続 PR に分離）"
+  agreed_at: "2026-05-11T04:14:26Z"
   follow_up_questions_count: 0
