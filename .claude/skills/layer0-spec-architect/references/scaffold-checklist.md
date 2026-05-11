@@ -67,6 +67,61 @@ stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + 
 
 ---
 
+## 業界叡智準拠の出力規約（Phase γ-i 連携、CTL ≥ 1、W5-Q2 採決追加）
+
+Wave 5 W5-Q2 採決 (`council-2026-05-11T12:15:00Z-w5qb02`、B 段階組込、conf 0.72) で確定した scaffold-checklist の業界叡智準拠強化。`subphase-common-protocol.md` Phase γ-i フックが起動するプロジェクトでは、§必須生成ファイル に加えて以下の業界互換配置を **任意推奨** として観測する。**観測駆動、候補出力のみ、自動採用なし**（philosophy 第 8 条 3 段階モデル準拠）。
+
+### ECC 互換配置（任意推奨）
+
+利用者プロジェクトが Claude Code 利用前提の場合、ECC (Everything Claude Code) 互換配置を推奨配置として参照する。**強制ではなく、L1 出力規約への影響度高いため業界慣例として明示**。
+
+| 配置パス | 役割 | 参照ソース |
+|---|---|---|
+| `~/.claude/agents/{agent-name}.md` | プロジェクト agent 定義（YAML frontmatter + system role） | ECC `agents-catalog.md` §2「agent 定義パターン」 |
+| `~/.claude/skills/{skill-name}/SKILL.md` | プロジェクト skill 定義（progressive disclosure 規約準拠） | ECC `skills-pattern.md` |
+| `.claude/settings.json` | プロジェクト固有設定（schema 準拠） | `https://json.schemastore.org/claude-code-settings.json` |
+| `.claude/hooks.json` | hook 発動規約（6 event 採用、PR #76 + #81 で確定） | `crosscut-hook-observer` skill / Wave 1 PR #76 |
+
+### Phase γ-i フックでの照合観点
+
+scaffold-checklist の §必須生成ファイル 12 種が **生成済** に加えて、業界叡智準拠の出力規約として以下を Phase γ-i フックが観測：
+
+| # | 観点 | 業界叡智ソース | match_type |
+|---|---|---|---|
+| 1 | プロジェクト agent 定義が `~/.claude/agents/{name}.md` に配置されているか（利用者プロジェクト側） | ECC `agents-catalog.md` | complementary |
+| 2 | プロジェクト skill 定義が `~/.claude/skills/{name}/SKILL.md` 規約に従うか | ECC `skills-pattern.md` | complementary |
+| 3 | `.claude/settings.json` が settings.schema に対し validate 成功するか | Claude Code settings schema | contradictory 検知用 |
+| 4 | `.claude/hooks.json` の `adopted_events` が `crosscut-hook-observer` の `SUPPORTED_EVENTS` (bootstrap.py) と整合するか | DH 内部 + ECC `hooks-trigger-points.md` | contradictory 検知用 |
+
+### 候補リスト出力例
+
+```yaml
+industry_wisdom_match_candidates:
+  - source: "ECC skills-pattern.md / scaffold-checklist §業界叡智準拠"
+    aspect: "skill 配置 (~/.claude/skills/{name}/SKILL.md)"
+    spec_draft_reference: "SPEC.md §開発環境構成 .claude/skills/"
+    match_type: "complementary"
+    suggestion: "ECC では progressive disclosure 規約 (SKILL.md + references/ + assets/) が確立。本プロジェクトも同規約準拠で配置候補"
+    confidence: 0.8
+```
+
+### 第 8 条 3 段階モデル準拠
+
+- **観測**: 生成された scaffold ファイル群と ECC 互換配置の照合
+- **候補化**: `industry_wisdom_match_candidates` リストとして Phase δ 差分サマリに含める
+- **人間最終承認**: Phase δ でユーザー承認（自動採用なし、philosophy 第 6 条準拠）
+
+### CTL 連動
+
+- **CTL 0**: 本セクション inactive（観察温存、候補化も抑止）
+- **CTL ≥ 1**: active、候補出力のみ
+
+### 既存 §必須生成ファイル との関係
+
+本セクションは **既存 12 種必須生成ファイル一覧に影響しない**。Vite+TS+React+PWA 標準 stack は不変、業界叡智準拠配置は **任意推奨観点として Phase γ-i フックが観測する追加層**。利用者プロジェクトの dev_mode (`local_only` / `github_assisted` / `autonomous`) や CTL に関わらず、本ファイル §必須生成ファイル のチェックリストはこれまで通り適用。
+
+---
+
 ## dev-env-spec.md との責務分離
 
 | ファイル | 責務 |
