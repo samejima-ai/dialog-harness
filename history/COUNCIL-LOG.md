@@ -1637,6 +1637,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   cascade_to: "subphase-common-protocol.md Phase γ に「業界叡智照合フック (Phase γ-i)」節を新規追加 (本 commit で実装)、Phase δ 差分サマリに業界叡智照合候補項目を追加 (本 commit で実装)、Wave 4 末振り返り儀式観測項目に「業界叡智参照を経た SPEC の unedited merged 率」「業界叡智照合フック起動回数 / 採用率 / 却下率」追加、subphase-l03〜l06 + scaffold-checklist 改修は Wave 5 申し送り"
   judgment_confidence: 0.78
+  starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 5 再諮問。本採決 conf 0.78 は採決確定領域、Phase C で Phase γ-i フック実装を本 PR で着地"
 
 - invocation_id: "council-2026-05-11T12:15:00Z-w5qb02"
   timestamp: "2026-05-11T12:15:00Z"
@@ -1703,4 +1704,3 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   cascade_to: "Wave 5 Phase C で subphase-l03-api.md + scaffold-checklist.md + subphase-l05-authz.md の 3 ファイル改修を別 PR で実装着地。残 subphase-l04-transition.md + subphase-l06-invariants.md は Wave 6 申し送り。delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md §7 未確定事項テーブルを採決結果で部分解消 (本 commit で実装)、Phase C 実装後に最終解消"
   judgment_confidence: 0.72
   starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 6 再諮問。本採決 conf 0.72 は採決確定領域、Phase C で B 採用の 3 ファイル改修を別 PR で実装"
-  starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 5 再諮問。本採決 conf 0.78 は採決確定領域、Phase C で Phase γ-i フック実装を本 PR で着地"

@@ -261,7 +261,7 @@ project_metadata:
 | 項目 | 値 |
 |---|---|
 | **recommended** | **B: 2-3 ファイル先行改修（subphase-l03-api + scaffold-checklist + subphase-l05-authz）** |
-| **judgment_confidence** | **0.72**（starter §2.2 判定基準 0.65 ≥ で採決確定）|
+| **judgment_confidence** | **0.72**（starter §2.2 判定基準 conf ≥ 0.65 で採決確定）|
 | **minority_opinion** | 経営者 + 哲学者連合（A 支持、weighted_score 2.94）|
 | **conflict_type** | simple_conflict |
 | **human_escalated** | false |
@@ -301,6 +301,6 @@ spec-architect L0 経由実装者（本セッション）は Council 判断（B 
 
 | ファイル | 変更内容 |
 |---|---|
-| `delivery/WAVE5-PHASE-B-W5Q2-COUNCIL.md` | 新規作成（本ファイル、諮問詳細記録）|
+| `history/wave5/COUNCIL-DECISION-wave5-phaseB-2026-05-11T12:15:00Z.md` | 新規作成（本ファイル、諮問詳細記録、`dev-env-spec.md` §`history/` 配置規則準拠）|
 | `history/COUNCIL-LOG.md` | エントリ 1 件 append（`council-2026-05-11T12:15:00Z-w5qb02`）|
 | `delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md` | §7 未確定事項テーブルの一部解消（採決結果記録、Phase C は次 PR 後に最終解消）|
