@@ -188,6 +188,63 @@ delivery/ 配下に置けるのは以下のみ：
 
 これらは `refactor-intent-map.md` 存在時のみ生成される（archeo を一度も起動していないプロジェクトには現れない）。`layer1-independent-reviewer` §5.5 配置規則チェックは本ディレクトリ群を許可リストに含める（`refactor-intent-map.md` の同梱が条件）。
 
+#### dialog-harness 自プロジェクト用 meta-skill 開発の進行中スコープ（v5.12.0 追加、本 repo 専用例外）
+
+**本カテゴリは `dialog-harness` リポジトリ自身（規約の発信元）にのみ適用される例外規則であり、利用者プロジェクトには配布されない。** dialog-harness が ECC 等の業界素材を咀嚼してメタスキル群を成長させる過程で生じるドキュメント群は、**ファイルの意図に応じて `delivery/` または `history/` のいずれかに配置する**。「規約発信元の例外だから全部 delivery/ に置く」のではなく、**履歴記録か進行中作業文書か** の意図で振り分ける。
+
+##### `delivery/` に置くもの（進行中の短期作業文書）
+
+「現在の Wave / 現在の Layer 引継ぎ」で参照される、**スコープが閉じれば歴史に移る**性質のファイル:
+
+- `delivery/CHEW-PROTOCOL-SPEC-wave*-starter.md` — 進行中 Wave の SPEC ドラフト（Wave 完遂後は `history/` へ archive）
+- `delivery/HANDOFF-*.md` / `delivery/HANDOFF-RECONCILE-*.md` — Layer 間引継ぎ（次 Layer の入力として参照中、完了後は `history/` へ）
+- `delivery/REGIME-CONFIRM-*.md` — 現在の REGIME 確認ノート（最新版のみ delivery/、過去版は `history/` へ）
+
+##### `history/` に置くもの（採決済 / 完了済の歴史記録、append-only）
+
+採決・完了後の不変記録で、**後続作業から参照されるが書き換えない**性質のファイル:
+
+- `history/COUNCIL-LOG.md`（既存）— Council 採決の総合ログ
+- `history/wave*/COUNCIL-DECISION-*.md` — Wave 別の Council 採決記録（詳細版）
+- `history/wave*/CHEW-CANDIDATES-*.md` / `history/wave*/COUNCIL-AGENDA-*.md` — 採決完了後の候補・agenda
+- `history/wave*/CHEW-PROTOCOL-SPEC-wave*-starter.md` — Wave 完遂後の SPEC archive
+- `history/PHILOSOPHY-NOTE-*.md` — philosophy.md 第 N 条候補の素材ノート（philosophy.md に統合された後も保管）
+- `history/ECC-SURVEY-*.md` / `history/refs-draft/` — 業界素材の観察スナップショット（時点記録）
+- `history/SKILL-CREATOR-AUDIT-*.md` / `history/SKILL-DESCRIPTION-AUDIT-checklist-*.md` — skill 群の監査記録
+- `history/SELF-VERIFICATION-*.md` / `history/D4-AUDIT-*.md` / `history/RITUAL-*.md` — 振り返り / 検証記録
+- `history/L0-WF-DESIGN-*.md` / `history/L1-DELIVERY-*.md` — 設計・リリース記録
+
+##### Wave 完遂時の移動規約
+
+Wave merge 後（次 Wave 開始前）に以下を実行:
+
+1. `delivery/CHEW-PROTOCOL-SPEC-wave<N>-starter.md` を `history/wave<N>/` に移動
+2. 同 Wave で生成された `delivery/HANDOFF-*-wave<N>-*.md` も `history/wave<N>/` に移動
+3. `delivery/` には次 Wave 進行中スコープのみ残す
+
+##### 移行措置（既存ファイル）
+
+本規約は v5.12.0 で導入されたが、それ以前から `delivery/` に存在する以下のファイル群は **次回 minor リリースで `history/` へ移動する別 PR で順次整理する**:
+
+- 過去 Wave の `delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md`
+- 過去の `delivery/COUNCIL-DECISION-*.md` / `delivery/PHILOSOPHY-NOTE-*.md`
+- 過去の監査・検証記録
+
+本 PR (#77) では Wave 2 進行中スコープに該当する SPEC starter のみ delivery/ に新規配置し、既存ファイルの大規模移動は別 PR で扱う（破壊的変更を 1 PR に集中させない）。
+
+##### 根拠
+
+- dialog-harness 自身は規約の **発信元** であり、自プロジェクトの meta-skill 開発で「規約 vs 実装」のメタ作業を行う特殊文脈にある
+- ただし「規約発信元の例外」だから無秩序に蓄積するのではなく、**作業文書 vs 歴史記録** の意図に応じて配置先を分ける
+- 咀嚼プロトコル（議題 0 採決 `council-2026-05-11T03:49:01Z-4go7g1`）は Wave 単位で SPEC → 採決 → 実装 → 検証を反復するため、Wave 進行中は `delivery/`、Wave 完遂後は `history/wave<N>/` に蓄積する
+- これらは利用者プロジェクトの L1/L2 開発フローには関与しないため、配布対象外（`harness-verifier/BOUNDARY.md` の配布境界と整合）
+
+##### 禁止（本例外でも維持）
+
+- 進行管理ファイル（PLAN.md / PHASE*.md / TODO.md 等）は本例外でも禁止のまま
+- 利用者プロジェクト側で本カテゴリのファイルを `delivery/` に配置することは禁止（dialog-harness 専用例外）
+- Wave 完遂後に SPEC starter / HANDOFF を `delivery/` に残したまま次 Wave を始めることは禁止（履歴と進行中の混在を避ける）
+
 #### 禁止
 
 - PLAN.md / PHASE*.md / TODO.md 等の進行管理ファイル
