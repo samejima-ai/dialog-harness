@@ -2,6 +2,77 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.13.0 (released 2026-05-11)
+
+**咀嚼プロトコル Wave 4 完遂**。Wave 3 minority opinion C 再諮問 + L0 対話パイプラインへの ECC 参照モード組込（Phase γ-i 業界叡智照合フック追加）。
+
+咀嚼プロトコル系 metaskill 改修は Wave 1-3 (PR #76-#81) では PHILOSOPHY-CHANGELOG / COUNCIL-LOG / starter ファイル群に閉じていたが、Wave 4 から本 CHANGELOG にも完遂記録を残す経路を確立する（starter §3.4 規約）。
+
+### Wave 4 Phase A (PR #82 merged)
+
+- `delivery/CHEW-PROTOCOL-SPEC-wave4-starter.md` 起草 (307 行、Copilot 8 件 fix 反映後)
+- ユーザー 3 不満（自立駆動の甘さ / Copilot レビュー耐性 / 多様な開発対応）を W4-Q1 + W4-Q2 議題に翻訳
+- 諮問順序 W4-Q1 (哲学) → W4-Q2 (取込実装) を §3.1 で明文化（「先にガードレール、後で取込拡張」ユーザー方針）
+
+### Wave 4 Phase B + Phase C (PR #83 merged)
+
+**W4-Q1 採決** (`council-2026-05-11T19:00:00Z-w4qb01`):
+
+- 議題: Wave 3 minority opinion C (第 8 条 4 段階モデル拡張) 再諮問
+- 採決: A: 3 段階モデル維持、conf 0.65 (部分実装領域)
+- weighted_score: A 4.56 (経営者+開発者) vs C 2.75 (哲学者)、差 1.81
+- 哲学者 conf が Wave 3 の 0.85 → Wave 4 の 0.55 に下落（運用データ未蓄積 + 条文の薄さ原則からの逸脱リスク自認）
+- minority C は Wave 5 再諮問温存（Council 経由率 ≤ 20% 観測条件）
+- 哲学者第 3 の道 (D 案: 条文不変 + 観測項目強化) を stance A の補強として吸収
+
+**W4-Q2 採決** (`council-2026-05-11T19:30:00Z-w4qb02`):
+
+- 議題: L0 対話パイプラインへの ECC 参照モード組込
+- 採決: B: 段階組込、全会一致 conf 0.78 (採決確定領域)
+- weighted_score: B 7.70 (経営者+開発者+哲学者)、A/C は 0
+- 3 ペルソナが異なる軸 (ROI / Shift Left / 哲学的バランス) で B 支持の多様性高品質
+- subphase-l03〜l06 + scaffold-checklist は Wave 5 申し送り
+
+**Phase C 実装**:
+
+- `subphase-common-protocol.md` に Phase γ-i「業界叡智照合フック」節を新規追加 (46 行)
+  - CTL 連動 (CTL 0 inactive / CTL ≥ 1 active で候補出力のみ)
+  - 第 8 条 3 段階準拠 (観測 → 候補化 → 人間最終承認)
+  - 自動採用なし、Phase δ で人間判断
+- Phase δ 差分サマリに業界叡智照合候補項目を追加
+- `history/PHILOSOPHY-CHANGELOG.md` に W4-Q1 結果追記（philosophy.md 本文不変）
+
+### Wave 4 末振り返り儀式観測項目（5 種、必須化）
+
+| # | 観測項目 | 由来 |
+|---|---|---|
+| 1 | Council 経由率 | W4-Q1 D 案吸収 |
+| 2 | 3 段階運用実績 | W4-Q1 |
+| 3 | minority C 再評価データ蓄積 | W4-Q1 |
+| 4 | 業界叡智参照を経た SPEC の unedited merged 率 | W4-Q2 哲学者 concerns |
+| 5 | 業界叡智照合フック起動回数 / 採用率 / 却下率 | W4-Q2 |
+
+### Wave 5 申し送り
+
+- minority C (4 段階 / CTL 連動ハイブリッド) 再諮問（Council 経由率 ≤ 20% 観測時）
+- subphase-l03〜l06 + scaffold-checklist 個別改修（W4-Q2 stance A フル組込繰越）
+- ECC-SURVEY 6 ヶ月再観察（2026-11-11 予定）
+- 17 skill description / frontmatter 監査の進捗評価
+- 残 3 hook event (UserPromptSubmit / Notification / SubagentStop) Wave 5 再評価
+
+### archive
+
+- `delivery/CHEW-PROTOCOL-SPEC-wave4-starter.md` → `history/wave4/CHEW-PROTOCOL-SPEC-wave4-starter.md`
+- `delivery/CHEW-PROTOCOL-SPEC-wave3-starter.md` → `history/wave3/CHEW-PROTOCOL-SPEC-wave3-starter.md`（Wave 3 完了済繰越 archive）
+
+### 関連 PR
+
+- #82 (Phase A starter)
+- #83 (Phase B + C 採決 + Phase γ-i フック実装)
+- 本 PR (Wave 4 完遂記録 + archive)
+
+---
+
 ## v5.10.0 (in progress)
 
 **minor 昇格 (in progress)**。**issue-pickup.yml body_check の type-aware 化（discussion-style 起票への対応）**。
