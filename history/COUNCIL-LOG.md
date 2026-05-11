@@ -951,3 +951,53 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   # implementer_consent: pending
   # agreed_at: pending
   follow_up_questions_count: 0
+
+- invocation_id: "council-2026-05-11T03:49:01Z-4go7g1"
+  timestamp: "2026-05-11T03:49:01Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "「私の哲学をベースにエンジニアの叡智を咀嚼して取り込む」前提のもとで、ECC 吸収案件をどう進めるべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B", confidence: 0.70 }
+    開発者: { stance: "B", confidence: 0.85 }
+    哲学者: { stance: "B+C の止揚 — 咀嚼方法論 SPEC 化と素材 5-10 件具体化の二段構え", confidence: 0.65 }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "B"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "B+C の止揚 — 咀嚼方法論 SPEC 化と素材 5-10 件具体化の二段構え"
+        weight: 5
+        confidence: 0.65
+        reason: "options 外 stance（B+C 止揚の自由記述）のため weight 加算対象外（PR1 暫定運用）。ただし内容的には B を否定せず B+C の実装統合を提案する建設的止揚"
+    max_score_stance: "B"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B 採択 + 哲学者の止揚を吸収。咀嚼プロトコル SPEC 化議題を v5.12.x で新規上程し、その第 1 ステップに『ECC から具体例 5-10 件抽出』（哲学者の C 精神）を組み込む。SPEC 確定後に議題 1/2 を再上程"
+  reasoning: "category=conception 重み配分 (経営者 3 / 開発者 3 / 哲学者 5) で options 内集計は B のみ。weighted_score(B) = 3×0.70 + 3×0.85 = 4.65。哲学者の B+C 止揚は options 外で third_way_excluded（weight 5/11=45.5%）。decision_category=H3（方向性発案）により無条件 escalate_to_human。哲学者の第 3 の道は議題 1/2 と異なり B を否定する第 3 の道ではなく『B の中に素材具体化を組み込む』建設的止揚で、経営者の『咀嚼プロトコル自体が抽象論に流れ実装に落ちないリスク』懸念と完全に整合。3 ペルソナは異なる次元（ROI / 保守性 / 意味）で B+ 素材具体化を補強しており、判断としての一致度は judgment_confidence 数値以上に高い"
+  minority_opinion: "哲学者: 『咀嚼』メタファーが実装に翻訳される過程で生命論的含意が機械的 transform に矮小化される危険。ECC の『型』を選択肢として embed する瞬間、ECC の前提（人間的分業）が暗黙裏に DH に侵入する可能性。非エンジニア創始者の『凡て握らない』立場が技術的細部での暗黙のエンジニア支配を許す逆説。これらは咀嚼 SPEC 化議題で必ず参照されるべき哲学的歯止め"
+  weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。哲学者 stance は options 外につき third_way_excluded。decision_category=H3 方向性発案により consensus_mode は無条件 escalate_to_human"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  # 議題 1/2 への波及記録（議題 0 の結果として両者保留推奨）
+  cascade_effect: "council-2026-05-11T03:14:18Z-vbxdnd (議題1) / council-2026-05-11T03:14:18Z-5v4xqq (議題2) を両者保留に推奨。咀嚼 SPEC 確定後に再上程"
+  # 後追記（合意プロセス完了時）
+  # implementer_consent: pending
+  # agreed_at: pending
+  follow_up_questions_count: 0
