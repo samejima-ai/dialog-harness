@@ -189,6 +189,53 @@ OpenFGA DSL・関係グラフ・継承の概念を省略。
 
 ---
 
+## 業界叡智参照モード（Phase γ-i 連携、CTL ≥ 1、W5-Q2 採決追加）
+
+Wave 5 W5-Q2 採決 (`council-2026-05-11T12:15:00Z-w5qb02`、B 段階組込、conf 0.72) で確定した subphase 個別の業界叡智参照モード。`subphase-common-protocol.md` Phase γ-i フック起動時に L0-5 (認可) は以下の業界叡智ソースを参照する。**観測駆動、候補出力のみ、自動採用なし**（philosophy 第 8 条 3 段階モデル準拠）。
+
+### 参照ソース
+
+| ソース | 配置 | 主な参照観点 |
+|---|---|---|
+| AgentShield 脆弱性パターン | `history/refs-draft/ecc/agentshield-spec.md` | 102 ルール × 5 カテゴリ (Secrets / Permission / Injection / Hook risk / Configuration) |
+| AgentShield 参照導入規約 | `templates/rules/common/agentshield-reference.md` | 利用者プロジェクト側の警告参照規約（Wave 2 PR #78 で追加）|
+
+### 照合観点（Phase γ-i フックが Phase γ 検証時に追加）
+
+認可モデル設計が以下の業界慣例と整合しているかを照合：
+
+| # | 観点 | 業界叡智ソース | match_type |
+|---|---|---|---|
+| 1 | 認可 relation の組み合わせに Permission auditing で警告される危険組合 (例: 全 user に can_write 付与) がないか | AgentShield §3 Permission auditing | contradictory 検知用 |
+| 2 | リソース上の所有者 (owner) 関係に Secrets detection で警告される直書きパターンがないか | AgentShield §3 Secrets detection | contradictory 検知用 |
+| 3 | 認可マトリクスの管理者特権定義が Configuration weaknesses (insecure defaults) に該当しないか | AgentShield §3 Configuration weaknesses | redundant 検知用 |
+| 4 | 認可拒否時のエラー応答が Injection analysis (path traversal 等) の脆弱性入口を提供しないか | AgentShield §3 Injection analysis | complementary |
+
+### 候補リスト出力例
+
+```yaml
+industry_wisdom_match_candidates:
+  - source: "AgentShield §3 Permission auditing"
+    aspect: "dangerous tool combinations (Bash + Write 同時許可相当)"
+    spec_draft_reference: "authz.fga §type todo / define can_write"
+    match_type: "contradictory"
+    suggestion: "guest ロールに can_write を付与すると AgentShield Permission auditing 相当の警告対象、設計再考候補"
+    confidence: 0.75
+```
+
+### 第 8 条 3 段階モデル準拠
+
+- **観測**: `authz.fga` / `authz-matrix.md` ドラフトと `agentshield-spec.md` の照合
+- **候補化**: `industry_wisdom_match_candidates` リストとして Phase δ 差分サマリに含める
+- **人間最終承認**: Phase δ でユーザー承認（自動採用なし、philosophy 第 6 条準拠）
+
+### CTL 連動
+
+- **CTL 0**: 本セクション inactive（観察温存、候補化も抑止）
+- **CTL ≥ 1**: active、候補出力のみ
+
+---
+
 ## 検証コマンド
 
 Phase 2 で `sensors/computational.md` に正式移動予定。Phase 1 では以下を推奨として記録のみ:

@@ -248,6 +248,53 @@ HTTP 層・認証・エラーコードを省略。関数型のみ。
 
 ---
 
+## 業界叡智参照モード（Phase γ-i 連携、CTL ≥ 1、W5-Q2 採決追加）
+
+Wave 5 W5-Q2 採決 (`council-2026-05-11T12:15:00Z-w5qb02`、B 段階組込、conf 0.72) で確定した subphase 個別の業界叡智参照モード。`subphase-common-protocol.md` Phase γ-i フック起動時に L0-3 (API 契約) は以下の業界叡智ソースを参照する。**観測駆動、候補出力のみ、自動採用なし**（philosophy 第 8 条 3 段階モデル準拠）。
+
+### 参照ソース
+
+| ソース | 配置 | 主な参照観点 |
+|---|---|---|
+| ECC agents 定義パターン | `history/refs-draft/ecc/agents-catalog.md` | YAML frontmatter (name / description / tools / model) 規格、PROACTIVE トリガー文言、本文 system role 定義 |
+| Claude Code settings schema | `https://json.schemastore.org/claude-code-settings.json` | `.claude/settings.json` の permission / env / hook 設定との連動可否（参照のみ、外部 URL）|
+
+### 照合観点（Phase γ-i フックが Phase γ 検証時に追加）
+
+API 契約上の agent / endpoint / authentication 設計が以下の業界慣例と整合しているかを照合：
+
+| # | 観点 | 業界叡智ソース | match_type |
+|---|---|---|---|
+| 1 | API agent の `tools` 列挙が読み取り専用パターンに沿うか | ECC agents-catalog §2「agent 定義パターン」 | complementary |
+| 2 | agent の `description` がトリガー文言 (PROACTIVELY 等) を持つか | 同上 | complementary |
+| 3 | API endpoint の認証方式 (Bearer / Cookie / API Key) が settings.schema の permission 区分と一貫するか | ECC agents-catalog + settings schema | contradictory 検知用 |
+| 4 | エラーレスポンス共通型が ECC agents の出力規約と相反しないか | ECC agents-catalog §2「本文構造」出力規約 | redundant 検知用 |
+
+### 候補リスト出力例
+
+```yaml
+industry_wisdom_match_candidates:
+  - source: "ECC agents-catalog.md §2"
+    aspect: "agent 定義の YAML frontmatter (tools/model 指定)"
+    spec_draft_reference: "api.tsp §interface Auth"
+    match_type: "complementary"
+    suggestion: "ECC では認証系 agent に tools: [\"Read\"] のみ列挙する慣例あり、Bearer エンドポイントの読み取り権限境界として参照候補"
+    confidence: 0.7
+```
+
+### 第 8 条 3 段階モデル準拠
+
+- **観測**: `api.tsp` / `api-signatures.ts` ドラフトと `agents-catalog.md` の照合
+- **候補化**: `industry_wisdom_match_candidates` リストとして Phase δ 差分サマリに含める
+- **人間最終承認**: Phase δ でユーザー承認（自動採用なし、philosophy 第 6 条準拠）
+
+### CTL 連動
+
+- **CTL 0**: 本セクション inactive（観察温存、候補化も抑止）
+- **CTL ≥ 1**: active、候補出力のみ
+
+---
+
 ## 検証コマンド
 
 Phase 2 で `sensors/computational.md` に正式移動予定。Phase 1 では以下を推奨として記録のみ:
