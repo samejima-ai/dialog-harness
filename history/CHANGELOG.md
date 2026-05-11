@@ -2,6 +2,113 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.14.0 (in progress, target 2026-05-11)
+
+**咀嚼プロトコル Wave 5 完遂**。観測駆動 Wave として、Wave 4 末で必須化された 5 観測項目を BL=0 から起算開始。W5-Q0（観測機構稼働化）+ W5-Q2（subphase 個別組込）の二本柱で進行、観測依存議題（W5-Q1 = minority C 再諮問 / W5-Q3 = 残 3 hook event 再評価）は観測サイクル経過後の Wave 6/7 に申し送り。
+
+業界叡智組込パイプラインが **観測層（W5-Q0）→ 機構層（Wave 4 Phase γ-i）→ subphase 層（W5-Q2）** の縦串で完成。DH 第 1 条フラクタル原則の初の明示的実装マイルストーン達成。
+
+### Wave 5 Phase A 起票 (PR #85 merged)
+
+- `delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md` 起草（344 行、Copilot 3 件 fix 反映後）
+- 5 観測項目の集計結果（全項目 BL=0、観測ベースライン未蓄積）を Wave 4 末振り返り儀式（儀式レベル 3）で記録
+- 進路設計: フラクタル自己観測（実プロジェクト不要、メタスキル開発で完結）→ 進路 (a) 採用
+
+### Wave 5 Phase A 実装 (PR #86 merged)
+
+**W5-Q0: 観測機構稼働化**（議題ではなく実装タスク、`auto_proceed`）
+
+- `.claude/hooks.json` 既存設定確認（Wave 1 PR #76 + Wave 3 PR #81 で adopted_events 6 event 整備済）
+- `bootstrap.py` SUPPORTED_EVENTS と hooks.json adopted_events の schema 整合確認
+- `harness-verifier/reports/hook-observations.jsonl` 初期化（smoke test 2 entry、`_smoke_test: true` フラグで運用データから識別可能）
+- HV 検査項目 6（hook 観測一貫性）が初の実 entry に対して評価して PASS
+- **Wave 5 観測サイクル起算: 2026-05-11T12:08:47Z**
+
+### Wave 5 Phase B (PR #87 merged)
+
+**W5-Q2 採決** (`council-2026-05-11T12:15:00Z-w5qb02`):
+
+- 議題: subphase 5 ファイル改修の Wave 5 Phase C 着地範囲（A 全 / B 部分 / C 全延期）
+- 採決: B: 2-3 ファイル先行改修、conf 0.72（採決確定領域 starter §2.2）
+- conflict_type: simple_conflict
+- weighted_score: B 4.68（開発者）vs A 2.94（経営者 + 哲学者連合）vs C 0、gap 1.74 で明確判定
+- category: implementation、final_weights 経営者 2 / 開発者 6 / 哲学者 2
+- Persona stance: 経営者 A (conf 0.82) + 哲学者 A (conf 0.65) vs 開発者 B (conf 0.78)
+- 改修対象 3 ファイル（開発者 Persona 推奨優先順）: subphase-l03-api + scaffold-checklist + subphase-l05-authz
+- 残 subphase-l04-transition + subphase-l06-invariants は Wave 6 申し送り
+- minority opinion 温存: A 連合「Phase γ-i 骨格固定済を派生作業と評価」前提、Wave 6 再評価候補
+
+**Wave 4 W4-Q2 (全会一致 conf 0.78) → Wave 5 W5-Q2 (simple_conflict conf 0.72) の構造変化**: Phase γ-i 骨格固定後の「派生作業評価 vs ドメイン別個別設計評価」の前提齟齬が表面化、implementation category の開発者重み 6 が設計通り支配的に作用した実証。
+
+### Wave 5 Phase C 実装 (PR #88 merged)
+
+subphase 3 ファイルに業界叡智参照モードを追加（合計 +195 行、既存内容不変）:
+
+- `subphase-l03-api.md`: ECC agents 定義パターン参照モード（+47 行）
+- `scaffold-checklist.md`: ECC 互換配置 + 業界叡智準拠の出力規約（+55 行）
+- `subphase-l05-authz.md`: AgentShield 脆弱性パターン参照モード（+47 行）
+
+共通設計:
+
+- `subphase-common-protocol.md` Phase γ-i フック連携（Wave 4 PR #83 で骨格実装済）
+- CTL 0 inactive / CTL ≥ 1 active の動作明記
+- 出力フォーマット `industry_wisdom_match_candidates`（自動採用なし、philosophy 第 8 条「採用段階での AI 自動経路は本条で禁止」準拠、第 6 条「人間 ≒ Council」とも整合）
+- 観測 → 候補化 → 人間最終承認 の第 8 条 3 段階明記
+- **既存内容不変、追加層として組込** → W5-Q2 哲学者 concerns「DH 哲学独占性希釈リスク」を最小化
+
+HV 検査 6 項目すべて PASS。
+
+### Wave 5 末振り返り儀式観測項目（5 + 補助 2 種、Wave 6 末で再評価）
+
+Wave 4 末必須化 5 項目を継続観測 + Wave 5 固有の補助 2 項目を追加。詳細は `history/wave5/RITUAL-2026-05-11-wave5.md` §4 参照。
+
+| # | 観測項目 | Wave 5 末集計値 | Wave 6 末評価条件 |
+|---|---|---|---|
+| 1 | Council 経由率 | 1/1（母数 1 件）| 母数 ≥ 10 件で算出可能化、≤ 20% で W5-Q1 再諮問起票 |
+| 2 | 3 段階運用実績 | 観測層稼働 / 候補化層 CTL 連動 / 人間最終承認層 PR merge 3 件 | hook 観測 ≥ 100 件 / 候補化 ≥ 5 件で安定性評価 |
+| 3 | minority C 再評価データ蓄積 | 判定不能（母数 1） | 項目 1 派生 |
+| 4 | 業界叡智参照を経た SPEC unedited merged 率 | N/A | subphase 起動を含む L0 対話発生時に蓄積開始 |
+| 5 | Phase γ-i フック起動 / 採用 / 却下率 | 0/0/0（機構実装は完了）| 同上 |
+| 6 (補助) | hook-observations.jsonl 初回観測ベースライン | smoke test 2 entry + 自然観測継続 | Wave 6 末で正式項目化判断 |
+| 7 (補助) | フラクタル自己観測の動作確認 | 3 者一致達成（philosophy 第 1 条準拠） | 同上 |
+
+### Wave 6 申し送り
+
+- **W5-Q1（minority C 再諮問）**: 観測条件「Council 経由率 ≤ 20% かつ母数 ≥ 10 件」が現状未充足、Wave 6 で観測 1 サイクル経過後に起票判断
+- **W5-Q2 残 2 subphase 改修**: subphase-l04-transition + subphase-l06-invariants（ECC hooks 自己参照リスク / Gherkin × Instincts 分類対応付け 要設計）
+- **W5-Q3（残 3 hook event 再評価）**: 観測条件「observation log ≥ 500 件 + PreCompact entry ≥ 5% 占有」が現状未充足、Wave 7 申し送り
+- W5-Q2 minority A 連合の再評価（Phase γ-i 派生作業評価前提の実証データに基づく）
+- 他業界実装の咀嚼（BMAD / Cline / Aider 等）の Phase A 起点起票
+- ECC-SURVEY 6 ヶ月再観察（2026-11-11 予定）
+- 17 skill description / frontmatter 監査の進捗評価
+
+### archive
+
+- `delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md` → `history/wave5/CHEW-PROTOCOL-SPEC-wave5-starter.md`
+- `delivery/WAVE5-PHASE-A-W5Q0-COMPLETION.md` → `history/wave5/WAVE5-PHASE-A-W5Q0-COMPLETION.md`
+- `delivery/WAVE5-PHASE-C-W5Q2-COMPLETION.md` → `history/wave5/WAVE5-PHASE-C-W5Q2-COMPLETION.md`
+
+### 数値統計（Wave 1-5 累積）
+
+| 指標 | Wave 1 | Wave 2 | Wave 3 | Wave 4 | **Wave 5** |
+|---|---|---|---|---|---|
+| Council 諮問数 | 3 | 3 | 3 | 2 | **1** |
+| 諮問省略数 | 1 | 1 | 1 | 0 | **1** (W5-Q0) |
+| 接近採決数 (conf < 0.6) | 0 | 0 | 1 | 0 | **0** |
+| simple_conflict 採決数 | 0 | 0 | 0 | 0 | **1** |
+| philosophy 改訂数 | 0 | 0 | 1 | 0 | **0** |
+| Wave 内マージ PR 数 | 1 | 2 | 2 | 3 | **5** |
+
+### 関連 PR
+
+- #85 (Phase A starter)
+- #86 (Phase A 実装 / W5-Q0 観測機構稼働化)
+- #87 (Phase B / W5-Q2 諮問 + B 採決)
+- #88 (Phase C / subphase 3 ファイル改修)
+- 本 PR (Wave 5 完遂記録 + archive + 振り返り儀式)
+
+---
+
 ## v5.13.0 (released 2026-05-11)
 
 **咀嚼プロトコル Wave 4 完遂**。Wave 3 minority opinion C 再諮問 + L0 対話パイプラインへの ECC 参照モード組込（Phase γ-i 業界叡智照合フック追加）。
