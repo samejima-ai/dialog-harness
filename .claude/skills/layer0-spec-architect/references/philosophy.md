@@ -402,6 +402,50 @@ v5.5.3〜v5.7.2 では auto-merge 走行に **明示 `auto-merge` ラベル付�
 
 ---
 
+## 第8条 自律性原則 + 哲学ガードレール
+
+AI 自律性の拡張は **観測 → 候補化 → 人間最終承認** の 3 段階を経由するものとする。各段階の自動化レベルは CTL（Compute / Trust Level）に連動し、CTL 0 では候補出力すら抑止する（観察温存）。
+
+### 3 段階モデル
+
+| 段階 | 内容 | CTL 0 | CTL 1+ |
+|---|---|---|---|
+| **観測** | hook / event / log の蓄積（read-only） | active | active |
+| **候補化** | pattern 検出 → 適用候補リスト出力（人間レビュー前提） | **inactive** | active |
+| **人間最終承認** | 候補から採用 / 棄却を判断、適用 PR の作成 | 人間単独 | 人間単独 |
+
+「採用」段階での AI 自動経路は **本条で禁止**。承認後の **実装**（PR 作成・コード変更）は AI が担うが、それは第 6 条「人間 ≒ Council 原則」の人間判断に基づく実行であり、本条の「採用判断」とは別レイヤ。
+
+### 自律拡張機構の本条準拠検証
+
+以下の機構は設計時に本条 3 段階を経由しない経路を持たないことを **検証必須**:
+
+- `crosscut-continuous-learning`: 観測 → 候補化 → 人間最終承認（Wave 2 で先取り実装、CTL 0 では skill 自体 inactive）
+- `crosscut-issue-dispatcher`: dev_mode 連動の自動 Issue 化は本条 3 段階の外側、CTL ≥ 1 でのみ active
+- `crosscut-issue-implementer`: ready-for-ai ラベル付与（= 人間最終承認）を経由してのみ AI 実装が起動
+- `crosscut-autonomous-drive`: auto-merge は opt-out モデルだが第 7 条 P4 介入権で `human-review-needed` ラベル経由の停止保証あり
+
+新規 skill / 機構の追加時、本条準拠の自己宣言を `frontmatter` または `SKILL.md` 冒頭に明示する（`origin/version` frontmatter 規格と並列）。
+
+### 4 段階拡張の可能性（minority opinion 温存）
+
+本条は **3 段階** で確定するが、philosophy 第 7 条「AI 組織論」P3 責務分離との接続性を強化する **4 段階拡張**（観測 → 候補化 → Council 採決 → 適用）が哲学者ペルソナによる minority opinion として温存される。
+
+Wave 4 末で「3 段階運用の Council 経由率 ≤ 20%」観測時、Wave 5 で 4 段階拡張を再諮問する経路を `history/PHILOSOPHY-CHANGELOG.md` 第 8 条エントリに記録する。
+
+**根拠**: Council 諮問 `council-2026-05-11T09:00:00Z-w3qb01`（recommended A、judgment_confidence 0.55、接近採決で minority C を Wave 4 / 5 で再諮問可能と温存）。
+
+### Wave 1 + Wave 2 の経験的根拠
+
+本条は Wave 1（PR #76）+ Wave 2（PR #77 + #78）で 2 回連続観測された **B 系収束パターン** の言語化:
+
+- Wave 1 Phase B: hooks 5 event 採用（残り棄却）、skill description 逐次修正、言語先取りなし
+- Wave 2 Phase B: continuous-learning 候補出力のみ、AgentShield warn のみ参照導入、frontmatter 逐次
+
+これらは咀嚼プロトコル §3「翻訳」の T3（サブセット選別）+ ガードレール語彙化が、DH 哲学（第 6 条「人間最終承認」+ 第 7 条 P4 介入権）の自然な帰結として動作する 2 サンプルの経験的根拠。本条はこの経験を philosophy 正式条文として恒久化する。
+
+---
+
 ## 参照関係
 
 本philosophy.md は L0 配下に原典を置き、他skillは**参照のみ**する。内容転記は禁止（散逸の原因）。

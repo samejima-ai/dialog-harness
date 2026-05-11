@@ -22,6 +22,7 @@ SUPPORTED_EVENTS = {
     "Stop",
     "SessionStart",
     "SessionEnd",
+    "PreCompact",
 }
 
 

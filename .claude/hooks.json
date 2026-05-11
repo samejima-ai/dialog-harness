@@ -3,14 +3,14 @@
   "_meta": {
     "origin": "ECC-derived (everything-claude-code v2.0.0-rc.1, hooks/hooks.json)",
     "chewing_translation": "T1+T3 (構造保持 + サブセット選別)",
-    "chewing_pr": "samejima-ai/dialog-harness#76",
-    "chewing_council_ref": "council-2026-05-11T05:00:00Z-w1qb01",
+    "chewing_pr": "samejima-ai/dialog-harness#76, #81 (PreCompact 追加)",
+    "chewing_council_ref": "council-2026-05-11T05:00:00Z-w1qb01, council-2026-05-11T09:00:00Z-w3qb02",
     "rejected_elements": [
-      "PreCompact event (v5.13.0 候補で温存、DH の /compact 連携未確立)",
       "exit code 2 (block) — philosophy.md 第 6 条「人間最終承認」と緊張、warn のみ採用",
-      "Node.js bootstrap (DH では Python bootstrap に置換)"
+      "Node.js bootstrap (DH では Python bootstrap に置換)",
+      "UserPromptSubmit / Notification / SubagentStop event (Wave 4 申し送り、council-w3qb02 B 採決)"
     ],
-    "adopted_events": ["PreToolUse", "PostToolUse", "Stop", "SessionStart", "SessionEnd"],
+    "adopted_events": ["PreToolUse", "PostToolUse", "Stop", "SessionStart", "SessionEnd", "PreCompact"],
     "observation_target": "harness-verifier (read-only 一方向依存、独立性原則準拠)"
   },
   "hooks": {
@@ -62,6 +62,16 @@
           {
             "type": "command",
             "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py SessionEnd"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py PreCompact"
           }
         ]
       }
