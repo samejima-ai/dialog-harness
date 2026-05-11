@@ -87,12 +87,12 @@
 | 項目 | 内容 |
 |---|---|
 | **Source** | ECC `skills/continuous-learning-v2/SKILL.md`（PreToolUse/PostToolUse hook で 100% 観測、project-scoped + global、2+ project × 0.8+ confidence で promotion） |
-| **DH embedding target** | (1) DH の「振り返り儀式」（F1/F2/F3）を補強する観測層 / (2) layer0-spec-architect の対話素材として「過去セッション学習」を導入する選択肢 |
-| **咀嚼角度** | DH には自動学習機構なし（明示的な振り返り儀式のみ）。**DH 哲学との根本的緊張**: ECC の「学習 = 自動 promotion」は DH の「人間最終承認」「振り返り儀式での意識的更新」と方向性が異なる。**咀嚼結果**: 観測層（PreToolUse での tool call 記録）のみ取り込み、promotion ロジックは DH 流（人間が振り返り儀式で承認するまで instinct 化しない）に翻訳。`instinct` という用語は DH 内に確立済語彙との衝突 (`crosscut-verifier-philosophy` の placeholder skill 名と無関係) を要確認 |
-| **動機 (a)** | L0 対話「セッション学習機構を組み込むか?」選択肢（CTL 連動で auto promotion or 人間承認制を選択） |
-| **動機 (b)** | エンジニアは **観測 → 抽象化 → promotion** の段階的学習設計の思考様式 |
-| **採否評価** | ★★★ |
-| **DH 哲学との緊張** | **大**。咀嚼深度が高い候補。「学習 = 蓄積」と「観測温存 + 人間最終承認」の止揚が SPEC 化に必須。哲学者の懸念「『型』を embed する瞬間に ECC の前提（人間的分業）が暗黙裏に DH に侵入」が最も顕在化する候補 |
+| **DH embedding target** | (1) 新設 skill `crosscut-instinct-learning`（または `layer0-instinct-learning`） / (2) 既存「振り返り儀式」（F1/F2/F3）との接続層 |
+| **咀嚼角度** | DH には自動学習機構なし（明示的な振り返り儀式のみ）。**ユーザー方針補足（2026-05-11T04:18Z, PR #75）**: 「AI の自立駆動学習は支持。哲学・原則に抵触・逸脱するもののみ人間関与」。**咀嚼結果（更新）**: ECC の auto promotion ロジックは **そのまま採用**（哲学的緊張を過剰評価していた前回判断を撤回）。ただし promotion / instinct 適用前に `crosscut-verifier-philosophy` + `crosscut-verifier-drift`（philosophy.md / DONT.md / SPEC との抵触検出）を必須通過させ、抵触検出時のみ `crosscut-feedback-loop` 経由で人間献上にフォールバック。これは「AI 自律駆動 + 哲学ガードレール」の二層構造で、ECC の学習機構と DH の独占 4 軸（観測温存・人間最終承認）を **統合（止揚）** する設計。`instinct` という用語は DH 内既存語彙との衝突要確認（continuous-learning v2.1 由来であることを `origin: ECC-derived` で明示） |
+| **動機 (a)** | L0 対話「セッション学習機構を組み込むか?」選択肢。CTL 連動で抵触検出感度を調整（CTL-0: strict / CTL-3: relaxed） |
+| **動機 (b)** | エンジニアは **観測 → 抽象化 → promotion** の段階的学習設計の思考様式 + DH は **抵触検出時のみ人間関与** という最小介入原則を統合した思考様式 |
+| **採否評価** | **★★★★**（前回 ★★★ から昇格、ユーザー方針補足を反映） |
+| **DH 哲学との緊張** | **中**（前回「大」から低下）。`crosscut-verifier-philosophy` + `crosscut-verifier-drift` を経由する設計により、自律性と哲学ガードレールの両立が可能。ただし「抵触・逸脱」の判定基準を SPEC で厳密化することが必須 |
 
 ---
 
@@ -140,27 +140,27 @@
 
 ## 候補横断の構造的観察
 
-### A. 採否評価分布
+### A. 採否評価分布（v2、ユーザー方針補足反映）
 
 | 評価 | 件数 | 候補番号 |
 |---|---|---|
 | ★★★★★ | 1 | 候補 3（hooks.json） |
-| ★★★★ | 3 | 候補 1（PROACTIVELY 語彙）/ 候補 4（AgentShield）/ 候補 6（rules 階層化） |
-| ★★★ | 3 | 候補 2（origin/version frontmatter）/ 候補 5（continuous-learning）/ 候補 7（manifests） |
+| ★★★★ | **4** | 候補 1（PROACTIVELY 語彙）/ 候補 4（AgentShield）/ **候補 5（continuous-learning、★★★ から昇格）** / 候補 6（rules 階層化） |
+| ★★★ | 2 | 候補 2（origin/version frontmatter）/ 候補 7（manifests） |
 | ★★ | 1 | 候補 8（SOUL.md） |
 
-→ **8 候補中 7 件が ★★★ 以上**で咀嚼 SPEC で取り込む価値あり。候補 8 のみ議題 2 との重複で優先度低。
+→ **8 候補中 8 件が ★★★ 以上**（候補 8 を含む）で全件取り込み価値あり。候補 5 の昇格はユーザー方針補足「AI 自律駆動 + 哲学ガードレール」を反映。
 
-### B. DH 哲学との緊張分布
+### B. DH 哲学との緊張分布（v2、ユーザー方針補足反映）
 
 | 緊張度 | 件数 | 候補番号 | 必要な咀嚼深度 |
 |---|---|---|---|
 | 軽微 | 4 | 候補 1, 2, 4, 6 | DH 流語彙翻訳、サブセット選別 |
-| 中 | 1 | 候補 7 | skill 相互依存性を破壊しない再構成 |
-| 大 | 2 | 候補 5, 8 | 哲学的止揚が必要、議題 2 と連動 |
+| 中 | **2** | 候補 7, **5（前回「大」から低下）** | skill 相互依存性 / 哲学ガードレール経路の SPEC 化 |
+| 大 | 1 | 候補 8 | 議題 2 と直接重複、議題 2 再上程時に統合判断 |
 | 最高 | 1 | 候補 3 | exit code 2 (block) の取捨選択 |
 
-→ **緊張度「大」の候補（5, 8）は議題 2 再上程時に統合判断**が必要。「最高」の候補 3 は **取り込み優先度最高でありながら、最も慎重な咀嚼が必要**という二重性を持つ。
+→ ユーザー方針補足「AI 自律駆動学習を支持、哲学・原則抵触時のみ人間関与」により、候補 5 の咀嚼角度が単純化（auto promotion 採用 + verifier-philosophy/drift 経由 + feedback-loop 抵触時献上）。緊張度「大」候補は議題 2 関連の候補 8 のみ。
 
 ### C. 動機 (a) プラグマティック / 動機 (b) 認識論的の分布
 
@@ -183,10 +183,10 @@
 
 本リストを入力素材として、咀嚼 SPEC で以下を策定:
 
-1. **取り込み優先順位の確定**: ★★★ 以上の 7 候補を 3 wave に分割
+1. **取り込み優先順位の確定**: 全 8 候補を 3 wave に分割（v2、候補 5 昇格反映）
    - Wave 1（v5.12.x 第 1 PR）: 候補 3（hooks.json）+ 候補 1（PROACTIVELY 語彙）+ 候補 6（rules 階層化）
-   - Wave 2（v5.12.x 第 2 PR）: 候補 2（origin/version）+ 候補 4（AgentShield サブセット）
-   - Wave 3（v5.13.0 候補）: 候補 5（continuous-learning 止揚）+ 候補 7（manifests CTL 翻訳）+ 候補 8（議題 2 と統合）
+   - Wave 2（v5.12.x 第 2 PR）: 候補 2（origin/version）+ 候補 4（AgentShield サブセット）+ **候補 5（continuous-learning + 哲学ガードレール、ユーザー方針補足を反映）**
+   - Wave 3（v5.13.0 候補）: 候補 7（manifests CTL 翻訳）+ 候補 8（議題 2 と統合）
 2. **参照形態の規格**: 各候補について「template 複写 / 設計パターン embed / 読み専用参照」のいずれを採るかを決定
 3. **更新追随戦略**: ECC v2.0.0-rc.1 の rc 段階での型固定問題への対応（version pin / 6 ヶ月再観察予約 等）
 4. **咀嚼判定基準の明文化**: 「DH 哲学のフィルター」を恣意的に適用しないための SPEC レベル基準（例: 「DH 既存原則と緊張する候補は哲学者ペルソナ Council 必須」「業界そのまま採用は禁止、必ず DH 流に翻訳・再構成」）
