@@ -297,11 +297,23 @@ Wave 4 Phase C 完了後、PR #79 の archive 方針に倣い `history/wave4/CHE
 
 ---
 
-## 7. 起票時点の未確定事項
+## 7. 起票時点の未確定事項（Phase B 採決後の解消ログ）
 
-- W4-Q1 採決後の第 8 条本文最終形（3 段階 / 4 段階 / ハイブリッドの 3 候補）
-- W4-Q2 採決後の subphase 改修範囲（A フル / B 段階 / C 最小の 3 候補）
-- Wave 4 Phase B 実施日時（W4-Q1 → W4-Q2 順序で Council 諮問、現状未着手）
-- Wave 4 Phase C 実装担当（spec-architect L0 経由 + 必要に応じて autonomous-dev L1 委譲）
+| 未確定事項（起票時点） | Phase B 採決後の解消結果 |
+|---|---|
+| W4-Q1 採決後の第 8 条本文最終形（3 段階 / 4 段階 / ハイブリッド） | **A 採決: 3 段階モデル維持**（conf 0.65、部分実装領域）。philosophy.md 改修なし、PHILOSOPHY-CHANGELOG に追記、Wave 4 末観測項目 3 種を必須化、minority C は Wave 5 温存。`council-2026-05-11T19:00:00Z-w4qb01` |
+| W4-Q2 採決後の subphase 改修範囲（A フル / B 段階 / C 最小） | **B 採決: 段階組込**（conf 0.78、全会一致、採決確定）。`subphase-common-protocol.md` Phase γ に業界叡智照合フック (Phase γ-i) を新規追加、subphase-l03〜l06 + scaffold-checklist は Wave 5 申し送り。`council-2026-05-11T19:30:00Z-w4qb02` |
+| Wave 4 Phase B 実施日時 | **2026-05-11T19:00:00Z 〜 19:35:00Z 実施完了**（W4-Q1 → W4-Q2 順序厳守、§3.1 規約通り） |
+| Wave 4 Phase C 実装担当 | **本 PR (Wave 4 Phase B+C 統合) で実装**: Phase γ-i フック追加 (`subphase-common-protocol.md`) + COUNCIL-LOG 追記 + PHILOSOPHY-CHANGELOG 追記。subphase 個別改修は Wave 5 申し送り |
 
-Phase B 諮問結果に応じて Phase A starter を更新（修正版を `history/wave4/` に保存、`delivery/` の本ファイルは Phase C 完了まで active）。
+## 8. Wave 4 末振り返り儀式観測項目（Phase B 採決で必須化）
+
+W4-Q1 + W4-Q2 採決の合流結果として、Wave 4 末振り返り儀式（spec-architect L0 が主催）で **以下 5 項目を必須観測** する:
+
+1. **Council 経由率**（W4-Q1 D 案吸収）— 3 段階運用時に Council を実際に経由した判断の割合、minority C 再諮問の Wave 5 起票判断材料
+2. **3 段階運用実績**（W4-Q1）— 観測 → 候補化 → 人間最終承認の各段階での通過件数、漏れ検出
+3. **minority C 再評価データ蓄積**（W4-Q1）— Council 経由率 ≤ 20% 観測時の Wave 5 再諮問可否
+4. **業界叡智参照を経た SPEC の unedited merged 率**（W4-Q2 哲学者 concerns）— DH 哲学独占性希釈リスク監視
+5. **業界叡智照合フック起動回数 / 候補リスト採用率 / 却下率**（W4-Q2）— Phase γ-i フック運用実績
+
+Phase B 諮問結果を本ファイルに反映済。Phase C 実装完了後 `history/wave4/` に archive 予定（`delivery/CHEW-PROTOCOL-SPEC-wave3-starter.md` も Wave 3 完了済繰越 archive 対象）。

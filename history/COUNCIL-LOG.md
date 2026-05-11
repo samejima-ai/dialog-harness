@@ -1508,3 +1508,133 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-05-11T09:04:00Z"
   follow_up_questions_count: 0
   cascade_to: "history/PHILOSOPHY-CHANGELOG.md 新設、Wave 3 第 8 条追加と同時に初回エントリ追加。dev-env-spec.md に手動追記手順明記"
+
+- invocation_id: "council-2026-05-11T19:00:00Z-w4qb01"
+  judgment_type: "tradeoff"
+  category: "conception"
+  context: "Wave 4 Phase B 諮問 1。Wave 3 w3qb01 (philosophy 第 8 条 3 段階明文化、conf 0.55 接近採決、minority C 温存) の minority opinion C (4 段階モデル拡張) 再諮問。delivery/CHEW-PROTOCOL-SPEC-wave4-starter.md §2.1 参照。council-weights.md §situational_modifier.conception 適用 (経営者 0 / 開発者 -1 / 哲学者 +2)"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "3 段階モデル維持（Wave 3 採用版を再確認、minority C は温存継続として Wave 5/6 に申し送り）"
+    - id: "B"
+      stance: "4 段階モデルへ拡張（minority C 採用、第 8 条改訂、Council 採決を観測 → 候補化 → Council 採決 → 人間最終承認の明示的段階化）"
+    - id: "C"
+      stance: "ハイブリッド（CTL 連動で 3 段階 / 4 段階を切替、CTL 0-1 = 4 段階で Council 必須、CTL 2+ = 3 段階で Council 任意）"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "Wave 3 PR #81 merged 直後で 3 段階運用データ蓄積 0、1 Wave で覆すのは経営判断として情報不足、4 段階拡張は Council 起動コスト + 既存自律機構の検証コストで運用負荷増、ハイブリッド C は条文に CTL 連動を持ち込む複雑化で更にコスト膨張、Wave 4 末で「Council 経由率」観測後の Wave 5 再諮問が経済合理的"
+      confidence: 0.72
+    - persona: "開発者"
+      stance_id: "A"
+      reasoning: "4 段階拡張は philosophy.md 三層実装 (harness-verifier/PHILOSOPHY.md / spec-architect references / 起点参考版) への第 8 条改訂反映に加え continuous-learning / issue-implementer / instinct promotion 等の既存自律機構を 4 段階準拠でコード経路検証が必要でスコープ大、ハイブリッド C は ctl-maturity-strategy.md に CTL 連動規約追加で条文 + 実装規約の二層構造化で保守性低下、Shift Left 原則として Wave 4 末で「Council 経由率」集計後の Wave 5 再諮問が決定論的"
+      confidence: 0.80
+    - persona: "哲学者"
+      stance_id: "C"
+      reasoning: "Wave 3 で C を強く主張した立場の一貫継続、CTL 連動で観測データ蓄積前 (CTL 0-1) は 4 段階で安全側、蓄積後 (CTL 2+) は 3 段階で効率化、というアウフヘーベン的解決、「先にガードレール、後で取込拡張」のユーザー方針は 4 段階支持を含意、ただし条文に CTL 連動規約を持ち込む点で「条文の薄さ」原則からの逸脱リスクと Wave 4 起票時点で運用データ未蓄積による揺らぎで conf 下落 (Wave 3 conf 0.85 → Wave 4 conf 0.55)、第 3 の道として条文不変 + Wave 4 末振り返り儀式の観測項目強化 (D 案) も並列提示"
+      confidence: 0.55
+  weighted_scoring:
+    weight_basis:
+      経営者: 3
+      開発者: 3
+      哲学者: 5
+    weight_basis_note: "council-weights.md §base_weights.business (3/4/3) + §situational_modifier.conception (0/-1/+2) = 3/3/5、starter §2.1 と一致"
+    stance_scores:
+      - stance: "A: 3 段階モデル維持"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.56
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 3, confidence: 0.80 }
+      - stance: "B: 4 段階モデル拡張"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+      - stance: "C: ハイブリッド (CTL 連動)"
+        supporters: ["哲学者"]
+        weight_sum: 5
+        weighted_score: 2.75
+        components:
+          - { persona: "哲学者", weight: 5, confidence: 0.55 }
+    third_way_excluded: ["D: 条文不変 + Wave 4 末振り返り儀式観測項目強化（哲学者 concerns 経由で提示、stance A の補強として吸収）"]
+    max_score_stance: "A: 3 段階モデル維持"
+    tie_break_applied: false
+    score_gap_note: "max (4.56) vs 次点 (2.75) の差 1.81。Wave 3 w3qb01 の差 0.10 とは異なり接近採決ではない。哲学者 conf が Wave 3 の 0.85 から 0.55 に下落（運用データ未蓄積 + 条文の薄さ原則からの逸脱リスク自認）したことで連合 stance A が明確差で勝利。judgment-agent.md §confidence 算出指針「重み配分が最大重み Persona の stance と不一致 + スコア差大 + 連合 conf 中庸 + 最大重み Persona conf 低」で judgment_confidence 0.65"
+  weight_calculation_retry_count: 0
+  recommended: "A: 3 段階モデル維持（Wave 3 採決を再確認）+ Wave 4 末振り返り儀式観測項目強化を必須化（哲学者 D 案吸収）"
+  minority_opinion: "哲学者 (C): Wave 3 から一貫主張の 4 段階拡張（CTL 連動ハイブリッド）。Wave 4 末振り返り儀式で「Council 経由率」「3 段階運用実績」を観測し、Council 経由率 ≤ 20% が確認されれば Wave 5 で C 案または B 案（純粋 4 段階）を再諮問。条文不変 + 観測項目強化 D 案は本採決で stance A の補強として吸収済"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T19:05:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "philosophy.md 第 8 条改訂なし（A 採決）、history/PHILOSOPHY-CHANGELOG.md に W4-Q1 結果追記（minority C 再諮問 + 3 段階維持再確認 + conf 0.65）、Wave 4 末振り返り儀式観測項目に「Council 経由率」「3 段階運用実績」「minority C 再評価データ蓄積」を必須化。Phase C 実装は本 Wave starter §3.3 に従う"
+  judgment_confidence: 0.65
+  starter_decision_threshold: "starter §2.1 判定基準: conf ≥ 0.70 採決確定 / 0.55 < x < 0.70 部分実装 / ≤ 0.55 Wave 5 再諮問。本採決 conf 0.65 は部分実装領域、philosophy.md 改修なし + Wave 4 末観測項目強化を Phase C で実装"
+
+- invocation_id: "council-2026-05-11T19:30:00Z-w4qb02"
+  judgment_type: "tradeoff"
+  category: "implementation"
+  context: "Wave 4 Phase B 諮問 2。L0 対話パイプラインへの ECC 参照モード組込（HANDOFF 旧タスク B の Wave 4 着地）。ユーザー 3 不満（自立駆動の甘さ / Copilot レビュー耐性 / 多様な開発対応）の核心解決議題。delivery/CHEW-PROTOCOL-SPEC-wave4-starter.md §2.2 参照。council-weights.md §situational_modifier.implementation 適用 (経営者 -1 / 開発者 +2 / 哲学者 -1)。W4-Q1 採決結果 (3 段階モデル維持) と整合する実装範囲を採決"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "フル組込（subphase-l03〜l06 + common-protocol + scaffold-checklist の 6 ファイル全改修、Wave 4 Phase C で一括着地）"
+    - id: "B"
+      stance: "段階組込（common-protocol Phase γ の業界叡智照合フックのみ Wave 4 で先行追加、subphase 5 ファイルは Wave 5 で個別改修）"
+    - id: "C"
+      stance: "最小組込（scaffold-checklist の出力規約強化のみ、subphase / common-protocol は不変、Wave 5/6 で subphase 改修判断）"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "B"
+      reasoning: "ユーザー 3 不満の核心解決議題で即時着地は重要、A フル組込は Wave 4 で完遂困難で Phase C 肥大化、B 段階組込は core 価値 (Phase γ 業界叡智照合フック) を Wave 4 で実現してユーザー 3 不満の経路を開き subphase は Wave 5 着地で許容、C 最小組込は core 価値に届かずユーザー 3 不満を解決しきれない"
+      confidence: 0.70
+    - persona: "開発者"
+      stance_id: "B"
+      reasoning: "6 ファイル全改修は L0 対話中核に影響し Wave 4 内完遂困難、Shift Left 原則として 1 機構 (Phase γ フック) 先行実装 → 運用観測 → subphase 個別改修が決定論的順序、Phase γ フックは観測駆動 (CTL 連動) で出力候補リストのみ自動採用なし → W4-Q1 採決の第 8 条 3 段階準拠と整合、可逆性高で実装ミスリスク小"
+      confidence: 0.85
+    - persona: "哲学者"
+      stance_id: "B"
+      reasoning: "業界叡智組込深化による DH 哲学独占性希釈リスクはあるが starter §2.2 哲学的整合性節で示された「業界叡智 = 生成材料、ユーザー承認 = 最終出力」構造が第 5 条献上哲学 + 第 8 条 3 段階で担保される、A フル組込は Wave 4 で深化しすぎ W4-Q1 minority C 再評価データ蓄積を阻害、C 最小組込はユーザー 3 不満を放置することで spec-architect 対話の質劣化を招きむしろ自己意図の保持を侵蝕、B 段階組込は哲学的にバランス取れる"
+      confidence: 0.60
+  weighted_scoring:
+    weight_basis:
+      経営者: 2
+      開発者: 6
+      哲学者: 2
+    weight_basis_note: "council-weights.md §base_weights.business (3/4/3) + §situational_modifier.implementation (-1/+2/-1) = 2/6/2、starter §2.2 と一致"
+    stance_scores:
+      - stance: "A: フル組込"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+      - stance: "B: 段階組込 (Phase γ フック先行)"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 7.70
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.70 }
+          - { persona: "開発者", weight: 6, confidence: 0.85 }
+          - { persona: "哲学者", weight: 2, confidence: 0.60 }
+      - stance: "C: 最小組込"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+    third_way_excluded: []
+    max_score_stance: "B: 段階組込"
+    tie_break_applied: false
+    score_gap_note: "全会一致 (unanimous)。weighted_score B = 7.70、他 stance 0。judgment-agent.md §全会一致時の扱い: 多様性として質を評価、judgment_confidence は 0.7-0.9 範囲、3 ペルソナの conf 平均 0.717、最大重み Persona (開発者) の conf 0.85 で stance 一致、3 ペルソナが異なる軸 (ROI/Shift Left/哲学的バランス) で B 支持の多様性高品質"
+  weight_calculation_retry_count: 0
+  conflict_type: "unanimous"
+  recommended: "B: 段階組込（Phase γ 業界叡智照合フックを Wave 4 で先行追加、subphase-l03〜l06 + scaffold-checklist は Wave 5 申し送り）"
+  minority_opinion: "全会一致のため stance ベースの minority なし。論点ベース温存: (A 側) ユーザー 3 不満の subphase レベル解決は Wave 5 で段階的着地、Wave 5 起票時の優先順位調整で確保 / (C 側) DH 哲学独占性希釈リスクは哲学者 concerns で温存、Wave 4 末振り返り儀式に「業界叡智参照を経た SPEC の unedited merged 率」観測項目を追加"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T19:35:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "subphase-common-protocol.md Phase γ に「業界叡智照合フック (Phase γ-i)」節を新規追加 (本 commit で実装)、Phase δ 差分サマリに業界叡智照合候補項目を追加 (本 commit で実装)、Wave 4 末振り返り儀式観測項目に「業界叡智参照を経た SPEC の unedited merged 率」「業界叡智照合フック起動回数 / 採用率 / 却下率」追加、subphase-l03〜l06 + scaffold-checklist 改修は Wave 5 申し送り"
+  judgment_confidence: 0.78
+  starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 5 再諮問。本採決 conf 0.78 は採決確定領域、Phase C で Phase γ-i フック実装を本 PR で着地"
