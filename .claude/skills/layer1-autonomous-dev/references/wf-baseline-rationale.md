@@ -61,7 +61,7 @@ v6.0.0 major 昇格時の検討候補として温存される。本 reference �
 - `history/ARCH-DECISIONS.md` AD-015（WF 基底）/ AD-016（Type D 献上）/ AD-017（WF 選択責任）
 - `history/INTENT.md` v5.3.0 セクション「設計意図 (a)〜(d)」
 - `history/COUNCIL-LOG.md` `council-2026-04-30T14:30:00Z-wfsurf1`（論点 2）/ `council-2026-04-30T14:50:00Z-wfbase1`（論点 1）
-- `delivery/L0-WF-DESIGN-2026-04-30.md`（L0 設計献上）
+- `history/L0-WF-DESIGN-2026-04-30.md`（L0 設計献上、Wave 2 で history/ archive）
 - `.claude/skills/layer0-spec-architect/references/philosophy.md` §1（フラクタル原則 P1）/ §5（献上哲学、Type D）
 
 ## 改訂履歴
