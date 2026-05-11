@@ -855,3 +855,152 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   modification_note: "C ハイブリッド採用 + minority_opinion 由来の 4 実装要件を v5.9.0 SPEC に同梱: (1) 境界の SPEC 不変化（opt-out 領域 / opt-in 領域の分類を philosophy.md または専用 SPEC に明記、AI が境界を動かせない構造）、(2) roll-back プロトコル（6 ヶ月後検証で事故 1 件以上 → opt-in に戻す手順を v5.9.0 SPEC に同梱）、(3) 既存 `auto-merge` ラベルの廃止（二重ラベル方式の腐敗回避、stop ラベルへの単一情報源化）、(4) メタ承認機構（AI 自身の『判定基準該当判定』の信頼性検査、Council<0.5 自動付与など、PR1 では sensor の placeholder 実装で温存）"
   follow_up_questions_count: 0
   agreed_at: "2026-05-06T08:35:00Z"
+
+- invocation_id: "council-2026-05-11T03:14:18Z-vbxdnd"
+  timestamp: "2026-05-11T03:14:18Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "ECC 参照カタログ 5 ファイルを A〜E のどのディレクトリに配置すべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "A", confidence: 0.70 }
+    開発者: { stance: "A", confidence: 0.85 }
+    哲学者: { stance: "第3の道（C 精神化、intent/references/industry/ecc/ + README 明文化）", confidence: 0.65 }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "A"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "第3の道: intent/references/industry/ecc/ + README 明文化（C の精神化）"
+        weight: 5
+        confidence: 0.65
+        reason: "options 外 stance のため weight 加算対象外（PR1 暫定運用）"
+    max_score_stance: "A"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "A `.claude/refs/industry/ecc/` を採用。経営者・開発者が独立に同一 stance に収束、weighted_score 4.65。哲学者の第3の道（C 精神化）は weight 5/11=45.5% を占める少数意見として保持し、人間承認時に『業界実装は参照標本であり吸収対象ではない』旨の README 明文化を A の付帯条件として検討すべき"
+  reasoning: "category=conception 重み配分 (経営者 3 / 開発者 3 / 哲学者 5) で options 内集計は A のみ。weighted_score(A) = 3×0.70 + 3×0.85 = 4.65。哲学者は options 外で third_way_excluded（weight 5/11=45.5% > 30% 閾値）のため judgment_confidence 0.45 に抑制。decision_category=C3（構造変更）"
+  minority_opinion: "哲学者: A は『業界を `.claude/` 内部化し DH 自身の一部と誤認させる危険』。第3の道として『intent/references/industry/ecc/ + README で存在論的境界を明文化』を提案。配置先の議論が『なぜ ECC を参照する必要があるのか』本来の問いを覆い隠しているという根本批判も保持"
+  weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。哲学者 stance は options 外につき third_way_excluded（PR2 で third_way 類型として正式化予定）"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
+  implementer_consent: "deferred_pending_dependent"
+  deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程"
+  agreed_at: "2026-05-11T04:14:26Z"
+  follow_up_questions_count: 0
+
+- invocation_id: "council-2026-05-11T03:14:18Z-5v4xqq"
+  timestamp: "2026-05-11T03:14:18Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "philosophy.md 追記 package（P1/P2/P3）と関連論点を A〜D のどの粒度で採用すべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B", confidence: 0.70 }
+    開発者: { stance: "B", confidence: 0.85 }
+    哲学者: { stance: "B + 第 3 の道：P1/P2/P3 を「問いの形」で残し断定を避ける", confidence: 0.55 }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "B"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "B + 第 3 の道：P1/P2/P3 を「問いの形」で残し断定を避ける"
+        weight: 5
+        confidence: 0.55
+        reason: "options 外 stance（B + 修飾語の自由記述）のため weight 加算対象外（PR1 暫定運用）"
+    max_score_stance: "B"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B P1+P2+P3 のみ採用、CaaF/CDD 用語/第 8 条新設 vs 補論/二層配分は別議題（v5.13.0 以降）に分離。経営者・開発者が独立に同一 stance に収束、weighted_score 4.65。decision_category=H1（哲学変更）に該当するため Council 推奨 B は人間最終承認を要する"
+  reasoning: "category=conception 重み配分 (経営者 3 / 開発者 3 / 哲学者 5) で options 内集計は B のみ。weighted_score(B) = 3×0.70 + 3×0.85 = 4.65。哲学者の『B + 第 3 の道（問いの形）』は options 外で third_way_excluded（weight 5/11=45.5%）。judgment_confidence 0.45。さらに decision_category=H1 哲学変更により compute_consensus_mode は無条件 escalate_to_human"
+  minority_opinion: "哲学者: P1/P2/P3 を断定形（〜である）でなく問いの形で残すべき。『独占 4 軸』語彙の排他性が第 6 条（人間最終承認）の謙抑性と緊張する。第 8 条新設は DH 自己定義が他者依存（業界差異化）になる倒錯を招く。CaaF/CDD 出現数 0 を理由に却下するのは経験主義的"
+  weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。哲学者 stance は options 外（B + 修飾語）につき third_way_excluded。decision_category=H1 哲学変更により consensus_mode は confidence によらず escalate_to_human"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
+  implementer_consent: "deferred_pending_dependent"
+  deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程（特に P1「同等以上を生成できる方法論」の経験的根拠が必要）"
+  agreed_at: "2026-05-11T04:14:26Z"
+  follow_up_questions_count: 0
+
+- invocation_id: "council-2026-05-11T03:49:01Z-4go7g1"
+  timestamp: "2026-05-11T03:49:01Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "「私の哲学をベースにエンジニアの叡智を咀嚼して取り込む」前提のもとで、ECC 吸収案件をどう進めるべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B", confidence: 0.70 }
+    開発者: { stance: "B", confidence: 0.85 }
+    哲学者: { stance: "B+C の止揚 — 咀嚼方法論 SPEC 化と素材 5-10 件具体化の二段構え", confidence: 0.65 }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "B"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+    third_way_excluded:
+      - persona: "哲学者"
+        stance: "B+C の止揚 — 咀嚼方法論 SPEC 化と素材 5-10 件具体化の二段構え"
+        weight: 5
+        confidence: 0.65
+        reason: "options 外 stance（B+C 止揚の自由記述）のため weight 加算対象外（PR1 暫定運用）。ただし内容的には B を否定せず B+C の実装統合を提案する建設的止揚"
+    max_score_stance: "B"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B 採択 + 哲学者の止揚を吸収。咀嚼プロトコル SPEC 化議題を v5.12.x で新規上程し、その第 1 ステップに『ECC から具体例 5-10 件抽出』（哲学者の C 精神）を組み込む。SPEC 確定後に議題 1/2 を再上程"
+  reasoning: "category=conception 重み配分 (経営者 3 / 開発者 3 / 哲学者 5) で options 内集計は B のみ。weighted_score(B) = 3×0.70 + 3×0.85 = 4.65。哲学者の B+C 止揚は options 外で third_way_excluded（weight 5/11=45.5%）。decision_category=H3（方向性発案）により無条件 escalate_to_human。哲学者の第 3 の道は議題 1/2 と異なり B を否定する第 3 の道ではなく『B の中に素材具体化を組み込む』建設的止揚で、経営者の『咀嚼プロトコル自体が抽象論に流れ実装に落ちないリスク』懸念と完全に整合。3 ペルソナは異なる次元（ROI / 保守性 / 意味）で B+ 素材具体化を補強しており、判断としての一致度は judgment_confidence 数値以上に高い"
+  minority_opinion: "哲学者: 『咀嚼』メタファーが実装に翻訳される過程で生命論的含意が機械的 transform に矮小化される危険。ECC の『型』を選択肢として embed する瞬間、ECC の前提（人間的分業）が暗黙裏に DH に侵入する可能性。非エンジニア創始者の『凡て握らない』立場が技術的細部での暗黙のエンジニア支配を許す逆説。これらは咀嚼 SPEC 化議題で必ず参照されるべき哲学的歯止め"
+  weight_note: "council-weights.md §situational_modifier.conception (経営者 0 / 開発者 -1 / 哲学者 +2) を適用。最終配分 3/3/5。哲学者 stance は options 外につき third_way_excluded。decision_category=H3 方向性発案により consensus_mode は無条件 escalate_to_human"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  # 議題 1/2 への波及記録（議題 0 の結果として両者保留推奨）
+  cascade_effect: "council-2026-05-11T03:14:18Z-vbxdnd (議題1) / council-2026-05-11T03:14:18Z-5v4xqq (議題2) を両者保留に推奨。咀嚼 SPEC 確定後に再上程"
+  # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z「合意、そして 2 の PR 拡張して SPEC 化を進めます」）
+  implementer_consent: "agreed_recommended"
+  modification_note: "Council 推奨をそのまま採用 + 人間が選択肢 2 を選択（本 PR #75 を draft 維持で咀嚼 SPEC 議題着手の起点として保持、Phase 0.5「素材 5-10 件具体化」まで本 PR で完遂、Step 2 SPEC 化と Step 3 議題 1/2 再上程は後続 PR に分離）"
+  agreed_at: "2026-05-11T04:14:26Z"
+  follow_up_questions_count: 0
