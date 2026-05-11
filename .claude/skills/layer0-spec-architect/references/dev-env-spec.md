@@ -684,3 +684,73 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 ### deployment 経路
 
 `crosscut-autonomous-drive` skill が `templates/github-workflows/issue-pickup.yml.template` を placeholder 置換して `.github/workflows/issue-pickup.yml` に配置する。`autonomous_scope` 別の deploy 対象は `autonomous-drive-deployment.md` で詳述。
+
+---
+
+## skill description トリガー語彙規約（Wave 1 候補 1、PR #76）
+
+**origin**: ECC-derived（everything-claude-code v2.0.0-rc.1 `agents/*.md` frontmatter の `Use PROACTIVELY when ... Automatically activated for ...` 規約）
+**chewing translation**: T2（語彙翻訳、構造保持）
+**chewing council ref**: `council-2026-05-11T05:00:00Z-w1qb02`（既存 17 skill description の修正タイミングは「逐次」採決）
+
+### 規約
+
+新規 skill の `SKILL.md` frontmatter `description:` には、AI の自動起動判定を **明示的な日本語動詞** で構造化する。曖昧な期待（「〜できます」「〜のためのスキル」）ではなく契約として語彙化する。
+
+### 推奨語彙（自動起動契約を形成するもの）
+
+| 語彙 | 用途 | 例 |
+|---|---|---|
+| 「**自動的に検討する**」 | hook 経路や条件成立時の自動発動 | 「hook 経路の発火時に本 skill 起動を自動的に検討する」 |
+| 「**明示されなくても起動を必ず検討する**」 | 文脈成立時の主体起動 | 「LC ≥ 1 + REGIME.md 存在時は、明示されなくても起動を必ず検討する」 |
+| 「**主体的に発動を検討する**」 | 周辺条件成立での裁量起動 | 「『迷っている』発話を検出した場合、主体的に発動を検討する」 |
+| 「**……の発話で本スキルの起動を必ず検討する**」 | trigger 句の正規形 | 既存 17 skill で広く採用済 |
+
+### 禁止語彙
+
+| 禁止 | 理由 |
+|---|---|
+| `Use PROACTIVELY` | ECC 固有の英語語彙。DH は日本語規約 |
+| `Automatically activated for X` | 同上 |
+| 「〜できるツールです」「〜を提供します」 | 自動起動契約として弱い、case studies 系の弱発火語彙 |
+
+### 採用例（既存 skill から抜粋）
+
+- `crosscut-autonomous-drive`: 「……等、autonomous-drive 機構の利用者プロジェクトへの配置・workflow テンプレ展開・ラベル/Secrets セットアップに関する発話で本スキルの起動を必ず検討する」
+- `layer1-autonomous-dev`: 「明示されなくても本スキルの起動を必ず検討する（コーディングだけでなくビルド・テスト・配布の依頼も含めて……）」
+- `crosscut-hook-observer`（Wave 1 新設）: 「hooks.json bootstrap からの自動起動で発動」
+
+### 既存 17 skill 監査タイミング
+
+Council 諮問 `council-2026-05-11T05:00:00Z-w1qb02` の判決により、既存 17 skill の description 監査・修正は **各 skill の次回更新時に逐次** 実施する。
+
+監査チェックリスト: `delivery/SKILL-DESCRIPTION-AUDIT-checklist-wave1.md`（Wave 1 で作成、修正は各 skill 次回更新時に組み込み）。Wave 2 末の振り返り儀式で監査進捗を観測項目化。
+
+---
+
+## templates/rules/ 階層化規約（Wave 1 候補 6、PR #76）
+
+**origin**: ECC-derived（everything-claude-code v2.0.0-rc.1 `rules/` の common + 14 言語別配置 + 相対 `../common/` 参照規約）
+**chewing translation**: T1 + T3（構造保持 + サブセット選別：言語先取りなし）
+**chewing council ref**: `council-2026-05-11T05:00:00Z-w1qb03`（言語先取りは A: 遅延戦略）
+
+### 規約
+
+`templates/rules/` に **common 規約のみ** scaffold 配置し、言語別 rules は **L0 対話で確定後に必要言語のみ生成** する（DH 流遅延戦略、philosophy 第 1 条フラクタル原則と整合）。
+
+### 配置
+
+```
+templates/rules/
+├── README.md             # 階層化規約 + override 規則 + 相対参照ルール
+└── common/               # 言語横断 rules（Wave 1 では空 scaffold、後続 PR で内容充填）
+    └── .gitkeep
+```
+
+L0 対話で「多言語プロジェクトか?」「言語別 coding-standards を設けるか?」を確認後、必要な言語の `templates/rules/<lang>/` を生成。詳細は `dialog-questions.md` の「多言語プロジェクト判定」セクション参照。
+
+### 命名衝突回避（ECC 由来規約）
+
+`common/` と `<lang>/` に同名ファイルが存在する場合、`<lang>/` が `common/` を override する。**flatten 配置は禁止**（相対 `../common/` 参照が壊れる）。
+
+詳細は `templates/rules/README.md` 参照。

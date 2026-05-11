@@ -206,10 +206,23 @@ CONTRIBUTING.md 規約:
 | Phase | 内容 | 完了基準 | 状態 |
 |---|---|---|---|
 | **Phase A**（本 PR 起点） | Wave 1 SPEC ドラフト枠組み | 本ファイルの commit + draft PR 作成 | ✅ 完遂 |
-| **Phase B** | 各候補の SPEC 詳細起草 + Council 諮問（Wave 1 一括） | 候補 3/1/6 の SPEC 確定、Council judgment 取得 | ✅ 完遂（本 commit） |
-| **Phase C** | SPEC 実装（hooks.json + dev-env-spec 規約 + templates/rules/）| harness-verifier 拡張 + 既存 skill 監査完了 | 後続 commit |
-| **Phase D** | 検証 + verifier 経由で抵触チェック | 全検証項目 ✓、philosophy / drift 抵触 0 | 後続 commit |
-| **Phase E** | merge + REGIME-LOG 記録 + 次 Wave への申し送り | v5.12.x minor リリース | 後続 |
+| **Phase B** | 各候補の SPEC 詳細起草 + Council 諮問（Wave 1 一括） | 候補 3/1/6 の SPEC 確定、Council judgment 取得 | ✅ 完遂 |
+| **Phase C** | SPEC 実装（hooks.json + dev-env-spec 規約 + templates/rules/）| harness-verifier 拡張 + 既存 skill 監査完了 | ✅ 完遂（本 commit） |
+| **Phase D** | 検証 + verifier 経由で抵触チェック | 全検証項目 ✓、philosophy / drift 抵触 0 | レビュー時に実施 |
+| **Phase E** | merge + REGIME-LOG 記録 + 次 Wave への申し送り | v5.12.x minor リリース | merge 後 |
+
+### Phase C 完遂時の追加ファイル一覧
+
+- `.claude/hooks.json` — Claude Code 公式 schema 準拠、5 event 採用、warn-only
+- `.claude/skills/crosscut-hook-observer/SKILL.md` — 観測 bridge skill
+- `.claude/skills/crosscut-hook-observer/scripts/bootstrap.py` — Python bootstrap
+- `.claude/skills/crosscut-hook-observer/scripts/observe.py` — JSONL append writer
+- `.claude/skills/crosscut-hook-observer/references/output-format.md` — 観測ログ規格
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` — トリガー語彙規約 + rules 階層化規約セクション追記
+- `.claude/skills/layer0-spec-architect/references/dialog-questions.md` — 多言語プロジェクト判定セクション追記
+- `delivery/SKILL-DESCRIPTION-AUDIT-checklist-wave1.md` — 17 skill 監査チェックリスト
+- `templates/rules/README.md` — 階層化規約
+- `templates/rules/common/.gitkeep` — 空 scaffold
 
 ---
 
