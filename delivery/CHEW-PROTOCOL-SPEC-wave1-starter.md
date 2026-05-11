@@ -83,7 +83,7 @@ ECC `hooks/hooks.json`:
 
 | 採用要素 | DH 内 target | 翻訳タイプ |
 |---|---|---|
-| `$schema` 参照 | `harness-verifier/hooks.json`（新設） | T1 構造保持 |
+| `$schema` 参照 | `.claude/hooks.json`（新設、Claude Code 公式 schema 位置） | T1 構造保持 |
 | 6 event types | DH 用 hooks.json で 5 event のみ採用（PreCompact は v5.13.0 以降に温存） | T3 サブセット選別 |
 | matcher 構文 | DH 用 hooks.json で同構文採用 | T1 構造保持 |
 | **exit code 2 (block)** | **採用せず**（warn のみ採用、exit 0 のみ） | T3 サブセット選別 |
@@ -101,10 +101,10 @@ ECC `hooks/hooks.json`:
 
 #### 1.1.4 Wave 1 実装スコープ
 
-- 新設ファイル: `harness-verifier/hooks.json`（Claude Code schema 準拠、PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd 5 event）
-- 新設 skill: `crosscut-hook-observer`（PreToolUse 観測ログを harness-verifier に流す bridge skill）
-- 既存 `harness-verifier/verify.py` 拡張: hook 観測ログを D5 監視層の入力として受領
-- DH 用 hooks.json bootstrap: `harness-verifier/hooks/bootstrap.py`（Python 実装、ECC の Node.js bootstrap を翻訳）
+- 新設ファイル: `.claude/hooks.json`（Claude Code 公式 schema 位置、PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd 5 event）
+- 新設 skill: `crosscut-hook-observer`（PreToolUse 観測ログを `harness-verifier/reports/hook-observations.jsonl` に append-only 書き込みする bridge skill）
+- DH 用 hooks.json bootstrap: `.claude/skills/crosscut-hook-observer/scripts/bootstrap.py`（Python 実装、ECC の Node.js bootstrap を翻訳）
+- **Wave 2 予定**: 既存 `harness-verifier/verify.py` 拡張で hook 観測ログを D5 監視層の入力として受領（Wave 1 では未実装、観測ログ生成のみ）
 
 #### 1.1.5 検証項目（Step D）
 
@@ -264,10 +264,12 @@ Phase B 諮問結果を反映した実装スコープ:
 
 ### 4.1 hooks.json 機構（諮問 1 採決反映）
 
-- 新設: `harness-verifier/hooks.json`（Claude Code schema 準拠、5 event のみ）
-- 新設 skill: `crosscut-hook-observer`（PreToolUse 観測ログ → harness-verifier bridge）
-- 新設: `harness-verifier/hooks/bootstrap.py`（Python bootstrap、ECC の Node.js 翻訳）
-- 拡張: `harness-verifier/verify.py`（hook 観測ログを D5 監視層の入力として受領）
+- 新設: `.claude/hooks.json`（Claude Code 公式 schema 準拠、5 event のみ、warn-only）
+  - 当初本ドキュメント Phase A ドラフトでは `harness-verifier/hooks.json` 配置を想定したが、harness-verifier 独立性原則（一方向依存）と整合させるため、Claude Code 公式の `.claude/hooks.json` 位置に配置決定
+- 新設 skill: `crosscut-hook-observer`（PreToolUse 観測ログ writer、harness-verifier reports に bridge）
+- 新設: `.claude/skills/crosscut-hook-observer/scripts/bootstrap.py`（Python bootstrap、ECC の Node.js 翻訳）
+- 新設: `.claude/skills/crosscut-hook-observer/scripts/observe.py`（JSONL append writer）
+- **Wave 2 予定**: `harness-verifier/verify.py` 拡張で hook 観測ログを D5 監視層の入力として受領（Wave 1 段階では未実装、観測ログは将来の消費者に向けた素材として蓄積）
 
 ### 4.2 dev-env-spec トリガー語彙規約（諮問 2 採決反映）
 
@@ -282,13 +284,14 @@ Phase B 諮問結果を反映した実装スコープ:
 
 ---
 
-## 4. 後続 Wave への申し送り
+## 5. 後続 Wave への申し送り
 
 ### Wave 2（候補 2 + 4 + 5）の前提条件
 
 - Wave 1 で hooks.json 機構が動作していること（候補 5 continuous-learning は PreToolUse hook を入力源とするため）
 - origin/version frontmatter 規格（候補 2）は Wave 2 で全 chewed skill に必須化
 - AgentShield ルールサブセット選別（候補 4）は Wave 2 で哲学者ペルソナ Council 必須
+- **harness-verifier/verify.py の hook 観測ログ読み取り経路を Wave 2 で本実装**（Wave 1 では未実装、観測ログ生成のみ）
 
 ### Wave 3（候補 7 + 8 + 議題 2 再上程）の前提条件
 
@@ -297,7 +300,7 @@ Phase B 諮問結果を反映した実装スコープ:
 
 ---
 
-## 5. 哲学的注記
+## 6. 哲学的注記
 
 本 SPEC ドラフトは Council 議題 0 の「B + 哲学者止揚」（B 採択 + C 精神を Step 1 に組込）の **Step 2 第 1 段** であり、哲学者の懸念「咀嚼プロトコル自体が抽象論に流れ実装に落ちないリスク」（議題 0 経営者懸念）への構造的歯止めとして機能する。
 

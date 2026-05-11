@@ -61,13 +61,17 @@ crosscut-hook-observer/scripts/bootstrap.py
 crosscut-hook-observer/scripts/observe.py
     ↓ append-only
 harness-verifier/reports/hook-observations.jsonl
-    ↑ 読み取りのみ
-harness-verifier/verify.py（独立検証層、DH 本体に依存しない）
+
+    [Wave 2 以降の予定]
+        ↑ 読み取りのみ
+    harness-verifier/verify.py の hook-observations 消費機構（独立検証層、DH 本体に依存しない）
 ```
 
+**Wave 1 のスコープ**: 観測ログ JSONL の生成までを実装する（skill → ログ書き込み）。harness-verifier 側の読み取り・解析実装は Wave 2 候補（候補 5 continuous-learning と同時に着手）。Wave 1 段階では JSONL は将来の消費者に向けた素材として蓄積される。
+
 **矢印方向の重要性**:
-- skill → harness-verifier は「観測ログを書く」だけの一方向
-- harness-verifier が skill 内部に依存することはない（独立性原則）
+- skill → harness-verifier reports は「観測ログを書く」だけの一方向（Wave 1 で実装済）
+- harness-verifier 側からの読み取り経路は Wave 2 で実装予定、その際も skill 内部には依存しない（独立性原則）
 - bootstrap.py が落ちても harness-verifier の動作は影響を受けない（fail-open）
 
 ## 起動経路

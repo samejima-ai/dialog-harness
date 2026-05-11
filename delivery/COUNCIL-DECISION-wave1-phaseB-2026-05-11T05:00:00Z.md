@@ -171,7 +171,7 @@ conception
 
 | 諮問 | recommended | 実装反映 |
 |---|---|---|
-| 1: hooks event types | A: 5 event 採用 | `harness-verifier/hooks.json` に PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd の 5 event のみ定義、PreCompact は v5.13.0 候補として温存メモ |
+| 1: hooks event types | A: 5 event 採用 | `.claude/hooks.json`（Claude Code 公式 schema 準拠位置）に PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd の 5 event のみ定義、PreCompact は v5.13.0 候補として温存メモ。当初 SPEC starter で harness-verifier 配下配置を想定したが、harness-verifier 独立性原則と整合させるため Claude Code 標準位置に配置決定 |
 | 2: skill description 修正時期 | B: 逐次修正 | Wave 1 では `dev-env-spec.md` に規約追加 + 17 skill 監査チェックリスト作成のみ、修正は各 skill 次回更新時 |
 | 3: rules 言語先取り | A: 言語先取りなし | `templates/rules/common/` + `templates/rules/README.md` のみ作成、言語別ディレクトリは L0 対話で生成 |
 

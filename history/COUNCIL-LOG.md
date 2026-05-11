@@ -1045,7 +1045,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   agreed_at: "2026-05-11T05:02:00Z"
   follow_up_questions_count: 0
-  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md §1.1.4 へ反映、Wave 1 Phase C 実装で `harness-verifier/hooks.json` を 5 event のみで定義"
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md §1.1.4 へ反映、Wave 1 Phase C 実装で `.claude/hooks.json` を 5 event のみで定義（Claude Code 公式 schema 準拠、観測専用、warn-only。当初 SPEC starter で harness-verifier 配下配置を想定したが独立性原則と整合させるため Claude Code 標準位置に配置決定。実装 PR #76 commit c31604a）"
 
 - invocation_id: "council-2026-05-11T05:00:00Z-w1qb02"
   timestamp: "2026-05-11T05:00:00Z"

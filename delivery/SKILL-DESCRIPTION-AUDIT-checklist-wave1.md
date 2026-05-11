@@ -1,7 +1,7 @@
 # 既存 17 skill description 監査チェックリスト — Wave 1
 
 **作成日時**: 2026-05-11T05:30:00Z
-**起点 PR**: [PR #76](https://github.com/samejima-ai/samejima-ai/dialog-harness/pull/76)（Wave 1 Phase C）
+**起点 PR**: [PR #76](https://github.com/samejima-ai/dialog-harness/pull/76)（Wave 1 Phase C）
 **Council 採決根拠**: `council-2026-05-11T05:00:00Z-w1qb02`（recommended B: 逐次修正、Wave 1 内では監査チェックリストのみ作成）
 **規約根拠**: `dev-env-spec.md` §「skill description トリガー語彙規約」
 

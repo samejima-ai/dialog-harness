@@ -44,28 +44,29 @@ def main() -> int:
         return 0
     event = sys.argv[1]
 
+    raw = ""
     try:
         raw = sys.stdin.read()
         payload = json.loads(raw) if raw.strip() else {}
     except json.JSONDecodeError:
-        payload = {"_parse_error": True, "_raw_len": len(raw) if "raw" in dir() else 0}
-
-    entry = {
-        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "event": event,
-        "tool": payload.get("tool_name") or payload.get("tool"),
-        "session_id": payload.get("session_id"),
-        "fields": _truncate({k: v for k, v in payload.items() if k not in ("tool_name", "tool", "session_id")}),
-    }
-
-    log_dir = repo_root() / "harness-verifier" / "reports"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    log_path = log_dir / "hook-observations.jsonl"
+        payload = {"_parse_error": True, "_raw_len": len(raw)}
+    except Exception:
+        payload = {"_read_error": True}
 
     try:
+        entry = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "event": event,
+            "tool": payload.get("tool_name") or payload.get("tool"),
+            "session_id": payload.get("session_id"),
+            "fields": _truncate({k: v for k, v in payload.items() if k not in ("tool_name", "tool", "session_id")}),
+        }
+        log_dir = repo_root() / "harness-verifier" / "reports"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / "hook-observations.jsonl"
         with log_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    except OSError:
+    except Exception:
         pass
 
     return 0
