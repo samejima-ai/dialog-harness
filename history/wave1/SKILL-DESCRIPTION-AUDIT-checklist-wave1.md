@@ -64,8 +64,8 @@
 
 ### 既存 skill の自然観察データ（PR #69, v5.10.0 由来）
 
-`delivery/SKILL-CREATOR-AUDIT-v5.10.x.md`（master の既存ファイル）で 16 skill 横断診断が
-既に実施済。下記弱点パターンは Wave 2 以降の逐次修正で参照素材になる:
+`history/SKILL-CREATOR-AUDIT-v5.10.x.md`（v5.10.x 監査記録、Wave 2 で archive 移動）で
+16 skill 横断診断が既に実施済。下記弱点パターンは Wave 2 以降の逐次修正で参照素材になる:
 
 - **P0-2 trigger phrase 二極化**（5 skill: 自然言語 trigger 欠落 + 過剰汎化）
 - **P1 L0 兄弟 trigger 衝突** / spec-architect 557 行 over-budget

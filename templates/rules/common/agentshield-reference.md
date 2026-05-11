@@ -1,7 +1,7 @@
 # AgentShield 参照導入規約（Wave 2 候補 4、PR #78）
 
 **Council 採決**: `council-2026-05-11T07:00:00Z-w2qb02`（recommended B: warn のみ参照導入）
-**observation**: `delivery/refs-draft/ecc/agentshield-spec.md`
+**observation**: `history/refs-draft/ecc/agentshield-spec.md`
 
 ---
 
