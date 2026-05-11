@@ -1004,3 +1004,139 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   modification_note: "Council 推奨をそのまま採用 + 人間が選択肢 2 を選択（本 PR #75 を draft 維持で咀嚼 SPEC 議題着手の起点として保持、Phase 0.5「素材 5-10 件具体化」まで本 PR で完遂、Step 2 SPEC 化と Step 3 議題 1/2 再上程は後続 PR に分離）"
   agreed_at: "2026-05-11T04:14:26Z"
   follow_up_questions_count: 0
+
+- invocation_id: "council-2026-05-11T05:00:00Z-w1qb01"
+  timestamp: "2026-05-11T05:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "Wave 1 で採用する Claude Code hooks.json の event types はどのサブセットか?"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "A: 5 event 採用（PreCompact 除外）", confidence: 0.7, dimension: "ROI / 運用コスト" }
+    開発者: { stance: "A: 5 event 採用（PreCompact 除外）", confidence: 0.85, dimension: "保守性 / 実装容易性" }
+    哲学者: { stance: "A: 5 event 採用（PreCompact 除外）", confidence: 0.75, dimension: "観測温存 / 5 次元" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "A: 5 event 採用（PreCompact 除外）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 8.0
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.7 }
+          - { persona: "開発者", weight: 6, confidence: 0.85 }
+          - { persona: "哲学者", weight: 2, confidence: 0.75 }
+    third_way_excluded: []
+    max_score_stance: "A: 5 event 採用（PreCompact 除外）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "A: 5 event 採用（PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd）。PreCompact は v5.13.0 候補で温存"
+  minority_opinion: ""
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T05:02:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md §1.1.4 へ反映、Wave 1 Phase C 実装で `harness-verifier/hooks.json` を 5 event のみで定義"
+
+- invocation_id: "council-2026-05-11T05:00:00Z-w1qb02"
+  timestamp: "2026-05-11T05:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "候補 1（PROACTIVELY トリガー語彙）の規約確定後、既存 17 skill の description 監査・修正をいつ実施するか?"
+  council_type: "business"
+  category: "operation"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "B: 各 skill 次回更新時に逐次修正", confidence: 0.75, dimension: "ROI / 機会損失" }
+    開発者: { stance: "B: 各 skill 次回更新時に逐次修正", confidence: 0.85, dimension: "保守性 / 並列性" }
+    哲学者: { stance: "C: Wave 1 内で実施", confidence: 0.55, dimension: "第 7 条 AI 組織論" }
+  judgment_confidence: 0.7
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "B: 各 skill 次回更新時に逐次修正"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 8
+        weighted_score: 6.4
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.75 }
+          - { persona: "開発者", weight: 4, confidence: 0.85 }
+      - stance: "C: Wave 1 内で実施"
+        supporters: ["哲学者"]
+        weight_sum: 3
+        weighted_score: 1.65
+        components:
+          - { persona: "哲学者", weight: 3, confidence: 0.55 }
+    third_way_excluded: []
+    max_score_stance: "B: 各 skill 次回更新時に逐次修正"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B: 各 skill 次回更新時に逐次修正。Wave 1 では dev-env-spec.md に規約追加 + 17 skill 監査チェックリスト作成のみ"
+  minority_opinion: "哲学者: 自動起動精度を即時改善することは第 7 条 AI 組織論の規範性と整合。逐次修正の選択は『品質保証 vs 規範速度』のトレードオフで、品質保証側に寄った判断。Wave 2 末で監査進捗を観測し進捗が遅い場合は Wave 3 で一括修正を再諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T05:02:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md §1.2.4 へ反映、Wave 2 末振り返り儀式で 17 skill 監査進捗を観測項目化"
+
+- invocation_id: "council-2026-05-11T05:00:00Z-w1qb03"
+  timestamp: "2026-05-11T05:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "候補 6（rules common + 14 言語別）の Wave 1 採用において、言語別 rules を先取りで含めるか?"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B: 3 言語先取り（python / typescript / go）", confidence: 0.65, dimension: "市場想定 / 初期コスト" }
+    開発者: { stance: "A: 言語先取りなし（DH 流遅延戦略）", confidence: 0.80, dimension: "実装範囲管理 / 可逆性" }
+    哲学者: { stance: "A: 言語先取りなし（DH 流遅延戦略）", confidence: 0.70, dimension: "フラクタル原則 / 観測温存" }
+  judgment_confidence: 0.72
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "A: 言語先取りなし（DH 流遅延戦略）"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 5.9
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.80 }
+          - { persona: "哲学者", weight: 5, confidence: 0.70 }
+      - stance: "B: 3 言語先取り（python / typescript / go）"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 1.95
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+    third_way_excluded: []
+    max_score_stance: "A: 言語先取りなし（DH 流遅延戦略）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "A: 言語先取りなし。templates/rules/common/ + templates/rules/README.md のみ作成、言語別ディレクトリは L0 対話で生成"
+  minority_opinion: "経営者: python / typescript / go は ECC 14 言語の中でも実利用率上位 3 で、L0 対話確定の手間を削減できる。Wave 2 末で実プロジェクト適用例を観測し、L0 対話で 3 言語が頻出する場合は『推奨言語プリセット』として再諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T05:02:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md §1.3.4 へ反映、Wave 2 末振り返り儀式で L0 対話頻出言語を観測項目化"

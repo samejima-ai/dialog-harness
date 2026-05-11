@@ -203,39 +203,69 @@ CONTRIBUTING.md 規約:
 
 ## 2. Wave 1 全体マイルストーン
 
-| Phase | 内容 | 完了基準 |
-|---|---|---|
-| **Phase A**（本 PR 起点） | Wave 1 SPEC ドラフト枠組み | 本ファイルの commit + draft PR 作成 |
-| **Phase B** | 各候補の SPEC 詳細起草 + Council 諮問（Wave 1 一括） | 候補 3/1/6 の SPEC 確定、Council judgment 取得 |
-| **Phase C** | SPEC 実装（hooks.json + dev-env-spec 規約 + templates/rules/）| harness-verifier 拡張 + 既存 skill 監査完了 |
-| **Phase D** | 検証 + verifier 経由で抵触チェック | 全検証項目 ✓、philosophy / drift 抵触 0 |
-| **Phase E** | merge + REGIME-LOG 記録 + 次 Wave への申し送り | v5.12.x minor リリース |
-
-本 PR は Phase A まで完遂、Phase B 以降は後続 commit / 追加 PR 分割を Council 諮問結果に応じて判断。
+| Phase | 内容 | 完了基準 | 状態 |
+|---|---|---|---|
+| **Phase A**（本 PR 起点） | Wave 1 SPEC ドラフト枠組み | 本ファイルの commit + draft PR 作成 | ✅ 完遂 |
+| **Phase B** | 各候補の SPEC 詳細起草 + Council 諮問（Wave 1 一括） | 候補 3/1/6 の SPEC 確定、Council judgment 取得 | ✅ 完遂（本 commit） |
+| **Phase C** | SPEC 実装（hooks.json + dev-env-spec 規約 + templates/rules/）| harness-verifier 拡張 + 既存 skill 監査完了 | 後続 commit |
+| **Phase D** | 検証 + verifier 経由で抵触チェック | 全検証項目 ✓、philosophy / drift 抵触 0 | 後続 commit |
+| **Phase E** | merge + REGIME-LOG 記録 + 次 Wave への申し送り | v5.12.x minor リリース | 後続 |
 
 ---
 
-## 3. Council 諮問予定（Phase B）
+## 3. Council 諮問結果（Phase B 完遂）
 
-Wave 1 SPEC 詳細起草時に以下を Council に上程:
+`delivery/COUNCIL-DECISION-wave1-phaseB-2026-05-11T05:00:00Z.md` で 3 諮問を一括実施、`history/COUNCIL-LOG.md` に 3 invocation 追記済。全件 `agreed_recommended` 成立、`human_escalated: false`。
 
-### 諮問 1: hooks.json の event types サブセット選別
+### 諮問 1: hooks.json event types サブセット選別
 
-- options: 5 event 採用（PreCompact 除外） / 6 event 全採用 / 3 event 最小採用
-- category: implementation
-- decision_category: C2 / C3
+- **invocation_id**: `council-2026-05-11T05:00:00Z-w1qb01`
+- **recommended**: **A: 5 event 採用**（PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd、PreCompact 除外）
+- **conflict_type**: unanimous（3 ペルソナ全会一致）
+- **judgment_confidence**: 0.78
+- **Wave 1 への反映**: §1.1.4 実装スコープを「5 event のみ採用」で確定。PreCompact は v5.13.0 候補で温存
 
-### 諮問 2: 既存 17 skill の description 修正タイミング
+### 諮問 2: 既存 17 skill description 修正タイミング
 
-- options: Wave 2 で一括修正 / 各 skill の次回更新時に逐次修正 / Wave 1 内で実施
-- category: maintenance
+- **invocation_id**: `council-2026-05-11T05:00:00Z-w1qb02`
+- **recommended**: **B: 各 skill 次回更新時に逐次修正**（経営者・開発者 6.4 vs 哲学者 1.65）
+- **conflict_type**: simple_conflict
+- **judgment_confidence**: 0.70
+- **Wave 1 への反映**: §1.2.4 実装スコープを「dev-env-spec.md 規約追加 + 17 skill 監査チェックリスト作成のみ」で確定、修正は次回更新時
+- **minority opinion 温存**: Wave 2 末振り返り儀式で 17 skill 監査進捗を観測、進捗遅延時は Wave 3 で一括修正を再諮問
 
 ### 諮問 3: templates/rules/ 言語先取りの是非
 
-- options: 言語先取りなし（DH 流遅延戦略） / よく使う 3 言語のみ先取り（python / typescript / go） / ECC 14 言語全部先取り
-- category: conception
+- **invocation_id**: `council-2026-05-11T05:00:00Z-w1qb03`
+- **recommended**: **A: 言語先取りなし**（開発者・哲学者 5.9 vs 経営者 1.95）
+- **conflict_type**: simple_conflict
+- **judgment_confidence**: 0.72
+- **Wave 1 への反映**: §1.3.4 実装スコープを「templates/rules/common/ + templates/rules/README.md のみ作成、言語別は L0 対話で生成」で確定
+- **minority opinion 温存**: Wave 2 末振り返り儀式で L0 対話頻出言語を観測、頻出時は「推奨言語プリセット」を再諮問
 
-これらは Phase B 開始時に新規 invocation_id で起動。
+---
+
+## 4. Phase C 実装スコープ（後続 commit で実行）
+
+Phase B 諮問結果を反映した実装スコープ:
+
+### 4.1 hooks.json 機構（諮問 1 採決反映）
+
+- 新設: `harness-verifier/hooks.json`（Claude Code schema 準拠、5 event のみ）
+- 新設 skill: `crosscut-hook-observer`（PreToolUse 観測ログ → harness-verifier bridge）
+- 新設: `harness-verifier/hooks/bootstrap.py`（Python bootstrap、ECC の Node.js 翻訳）
+- 拡張: `harness-verifier/verify.py`（hook 観測ログを D5 監視層の入力として受領）
+
+### 4.2 dev-env-spec トリガー語彙規約（諮問 2 採決反映）
+
+- 拡張: `dev-env-spec.md` に「skill description トリガー語彙規約」セクション追加
+- 新設: 17 skill description 監査チェックリスト（修正自体は Wave 2 以降の各 skill 次回更新時）
+
+### 4.3 templates/rules/ scaffold（諮問 3 採決反映）
+
+- 新設: `templates/rules/README.md`（common + override 規約 + 相対参照ルール）
+- 新設: `templates/rules/common/`（最初は空 scaffold）
+- 拡張: L0 dialog-questions に多言語プロジェクト関連質問を追加
 
 ---
 
