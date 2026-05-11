@@ -125,7 +125,7 @@ version: 2.1.0
 - **command 構造**: Node.js bootstrap で `CLAUDE_PLUGIN_ROOT` 解決 → `scripts/hooks/plugin-hook-bootstrap.js` → 個別 hook script
 - **exit code 規約**: `2` = block / `0` = warn
 
-### PreToolUse hook（6 件抜粋）
+### PreToolUse hook（9 件抜粋）
 
 | Hook ID | Matcher | 用途 | Exit |
 |---|---|---|---|
