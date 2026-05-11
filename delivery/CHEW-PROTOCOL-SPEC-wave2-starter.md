@@ -1,7 +1,7 @@
 # 咀嚼プロトコル Wave 2 SPEC ドラフト起点
 
 **作成日時**: 2026-05-11T06:30:00Z
-**起点 PR**: TBD（本ファイル commit + draft PR 作成時に確定）
+**起点 PR**: [PR #77](https://github.com/samejima-ai/dialog-harness/pull/77)（Wave 2 Phase A）
 **前提 PR**: [PR #76](https://github.com/samejima-ai/dialog-harness/pull/76)（Wave 1、merged）
 **Council 採決根拠**: 議題 0 `council-2026-05-11T03:49:01Z-4go7g1`（B 採択 + 哲学者止揚、咀嚼プロトコル 4 ステップ規格化）
 **ユーザー方針補足**: 「AI 自律駆動 + 哲学ガードレール経路」（DH の自律性は philosophy 6 条 + 第 8 条候補で保護）

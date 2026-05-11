@@ -188,6 +188,29 @@ delivery/ 配下に置けるのは以下のみ：
 
 これらは `refactor-intent-map.md` 存在時のみ生成される（archeo を一度も起動していないプロジェクトには現れない）。`layer1-independent-reviewer` §5.5 配置規則チェックは本ディレクトリ群を許可リストに含める（`refactor-intent-map.md` の同梱が条件）。
 
+#### dialog-harness 自プロジェクト用 meta-skill 開発ドキュメント（v5.12.0 追加、本 repo 専用例外）
+
+**本カテゴリは `dialog-harness` リポジトリ自身（規約の発信元）にのみ適用される例外規則であり、利用者プロジェクトには配布されない。** dialog-harness が ECC 等の業界素材を咀嚼してメタスキル群を成長させる過程で必要となる中間成果物・採決記録・哲学ノート群を、本リポジトリの `delivery/` に蓄積することを許可する。
+
+- `delivery/CHEW-PROTOCOL-SPEC-wave*-starter.md` — 咀嚼プロトコル Wave 別 SPEC ドラフト（Phase A 起点ファイル）
+- `delivery/CHEW-CANDIDATES-*.md` — 咀嚼候補一覧と評価
+- `delivery/COUNCIL-AGENDA-*.md` — Council 諮問 agenda
+- `delivery/COUNCIL-DECISION-*.md` — Council 採決記録（append-only、`history/COUNCIL-LOG.md` の詳細版）
+- `delivery/PHILOSOPHY-NOTE-*.md` — philosophy.md 第 N 条候補の素材ノート
+- `delivery/ECC-SURVEY-*.md` / `delivery/refs-draft/` — 業界素材の観察・素材スナップショット
+- `delivery/SKILL-CREATOR-AUDIT-*.md` / `delivery/SKILL-DESCRIPTION-AUDIT-checklist-*.md` — 自プロジェクト skill 群の監査記録
+- `delivery/SELF-VERIFICATION-*.md` / `delivery/D4-AUDIT-*.md` / `delivery/RITUAL-*.md` — 自プロジェクトの振り返り / 検証記録
+- `delivery/HANDOFF-*.md` / `delivery/L0-WF-DESIGN-*.md` / `delivery/L1-DELIVERY-*.md` / `delivery/REGIME-CONFIRM-*.md` / `delivery/HANDOFF-RECONCILE-*.md` — Layer 間引継ぎ・設計ノート
+
+**根拠**:
+- dialog-harness 自身は規約の **発信元** であり、自プロジェクトの開発過程で「規約 vs 実装」「咀嚼プロトコル運用」等のメタ開発を行う特殊文脈にある
+- 咀嚼プロトコル（議題 0 採決 `council-2026-05-11T03:49:01Z-4go7g1`）は Wave 単位で SPEC → 採決 → 実装 → 検証を反復するため、Wave 別の中間記録が `delivery/` に蓄積される
+- これらは利用者プロジェクトの L1/L2 開発フローには関与しないため、配布対象外（`harness-verifier/BOUNDARY.md` の配布境界と整合）
+
+**禁止**:
+- 上記カテゴリ以外の進行管理ファイル（PLAN.md / PHASE*.md / TODO.md 等）は本例外でも禁止のまま
+- 利用者プロジェクト側で本カテゴリのファイルを `delivery/` に配置することは禁止（dialog-harness 専用例外）
+
 #### 禁止
 
 - PLAN.md / PHASE*.md / TODO.md 等の進行管理ファイル
