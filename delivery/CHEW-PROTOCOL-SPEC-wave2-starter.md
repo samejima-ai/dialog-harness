@@ -287,7 +287,7 @@ Phase A 完遂後、後続セッションの Phase B で以下を諮問する:
 |---|---|---|---|
 | **Phase A**（PR #77） | Wave 2 SPEC ドラフト + 優先順位確定 + Council 諮問 agenda 提示 | SPEC starter commit + draft PR | ✅ 完遂（PR #77 merged） |
 | **Phase B**（本 PR） | Council 諮問 3 件採決 + 予備 1 件省略判定 | 諮問 1-3 agreed_recommended、諮問 4 省略 | ✅ 完遂（本 commit） |
-| **Phase C**（本 PR） | SPEC 実装（HV → 候補 5 → 候補 2 → 候補 4 の順） | 実装 + harness-verifier --strict PASS | 後続 commit |
+| **Phase C**（本 PR） | SPEC 実装（HV → 候補 5 → 候補 2 → 候補 4 の順） | 実装 + harness-verifier --strict PASS | ✅ 完遂（本 commit） |
 | **Phase D** | 検証 + verifier 経由抵触チェック | philosophy / drift 抵触 0 | レビュー時 |
 | **Phase E** | merge + REGIME-LOG 記録 + Wave 3 への申し送り | v5.13.x minor リリース | merge 後 |
 

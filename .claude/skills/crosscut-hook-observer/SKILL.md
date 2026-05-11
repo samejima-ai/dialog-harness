@@ -61,18 +61,19 @@ crosscut-hook-observer/scripts/bootstrap.py
 crosscut-hook-observer/scripts/observe.py
     ↓ append-only
 harness-verifier/reports/hook-observations.jsonl
-
-    [Wave 2 以降の予定]
-        ↑ 読み取りのみ
-    harness-verifier/verify.py の hook-observations 消費機構（独立検証層、DH 本体に依存しない）
+    ↑ 読み取りのみ
+harness-verifier/checks/hook_observations.py（検査項目 6「hook 観測一貫性」、Wave 2 で実装）
+    ↑
+harness-verifier/verify.py（独立検証層、DH 本体に依存しない）
 ```
 
-**Wave 1 のスコープ**: 観測ログ JSONL の生成までを実装する（skill → ログ書き込み）。harness-verifier 側の読み取り・解析実装は Wave 2 候補（候補 5 continuous-learning と同時に着手）。Wave 1 段階では JSONL は将来の消費者に向けた素材として蓄積される。
+**Wave 2 で消費側を本実装** (`harness-verifier/checks/hook_observations.py`): JSONL parse error / 必須フィールド欠落 / 不正 event 値を検出。観測ログ不在は PASS（fail-open）。
 
 **矢印方向の重要性**:
-- skill → harness-verifier reports は「観測ログを書く」だけの一方向（Wave 1 で実装済）
-- harness-verifier 側からの読み取り経路は Wave 2 で実装予定、その際も skill 内部には依存しない（独立性原則）
+- skill → harness-verifier reports は「観測ログを書く」だけの一方向（Wave 1）
+- harness-verifier → 観測ログ は「読み取りのみ」の一方向（Wave 2、独立性原則準拠）
 - bootstrap.py が落ちても harness-verifier の動作は影響を受けない（fail-open）
+- harness-verifier が観測ログ消費に失敗しても skill 動作は影響を受けない（独立性双方向）
 
 ## 起動経路
 

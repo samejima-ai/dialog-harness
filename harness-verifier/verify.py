@@ -32,6 +32,7 @@ from checks import (
     five_layer_structure,
     frontmatter,
     glossary as glossary_check,
+    hook_observations,
     references,
 )
 
@@ -42,6 +43,7 @@ CHECK_REGISTRY: list[tuple[str, Any]] = [
     ("SK 間参照の健全性", dependency_graph),
     ("5 層構造保全", five_layer_structure),
     ("用語辞書整合", glossary_check),
+    ("hook 観測一貫性", hook_observations),
 ]
 
 

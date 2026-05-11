@@ -46,20 +46,23 @@ observe.py / bootstrap.py のいかなる失敗（JSON parse error / file write 
 **exit code 0** で帰る。Claude Code セッションをブロックしない（philosophy.md 第 6 条
 「人間最終承認」準拠 + harness-verifier 独立性原則）。
 
-## harness-verifier 側の読み取り規約（Wave 2 以降の予定）
+## harness-verifier 側の読み取り規約（Wave 2 で実装、検査項目 6「hook 観測一貫性」）
 
-**Wave 1 段階では `harness-verifier/verify.py` に hook 観測ログの読み取り実装は含まれない**。本 PR 範囲は観測ログ JSONL の生成までで、消費側は将来実装する設計の骨格として記録する。
+**Wave 2 で `harness-verifier/checks/hook_observations.py` を新設**し、`hook-observations.jsonl` を読み取り専用で消費する:
 
-Wave 2 で候補 5（continuous-learning v2.1）取り込みと同時に、以下の仕様で読み取り経路を実装予定:
-
-1. 末尾 N 行を読む（N は config 化候補、暫定 1000）
-2. JSONL parse error 行は無視
-3. event / tool / session_id のパターン分析を verify.py の D5 観測項目に組み込む
-4. 観測結果は `harness-verifier/reports/<run-id>.md` に独立出力（observation ファイルは改変しない）
+1. 末尾 1000 行を読む（`TAIL_LINES_LIMIT`）
+2. JSONL parse error 行をカウント、検出件数を FAIL として報告
+3. 必須フィールド（`ts` / `event`）欠落をカウント
+4. 不正な `event` 値（5 event 以外）をカウント
+5. 観測結果は `harness-verifier/reports/<YYYY-MM>.md` の検査項目 6 として独立出力（observation ファイルは改変しない）
 
 これにより skill → 観測ログ → verifier の一方向依存が保持される（独立性原則）。
 
-Wave 1 のスコープでは観測ログは「将来の消費者に向けて蓄積される素材」として機能し、ログ自体の append-only 性質と fail-open 契約が独立性原則を予防的に保証する。
+### fail-open 契約
+
+- 観測ログファイル不在 → PASS（hook 未起動状態を許容）
+- ファイル読取エラー → FAIL として報告するが、verify.py 自体は exit 0 で完走
+- 個別 check 例外は `verify.py` 側で catch、他 check の実行を停止しない
 
 ## バージョン
 

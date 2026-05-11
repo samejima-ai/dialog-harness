@@ -811,3 +811,107 @@ L0 対話で「多言語プロジェクトか?」「言語別 coding-standards �
 `common/` と `<lang>/` に同名ファイルが存在する場合、`<lang>/` が `common/` を override する。**flatten 配置は禁止**（相対 `../common/` 参照が壊れる）。
 
 詳細は `templates/rules/README.md` 参照。
+
+---
+
+## origin/version frontmatter 規格（Wave 2 候補 2、PR #78）
+
+**origin**: ECC-derived（everything-claude-code v2.0.0-rc.1 `agents/*.md` / `skills/**/SKILL.md` の frontmatter 慣例）
+**chewing translation**: T1（構造保持）+ DH 拡張（chewing_translation / chewing_pr / chewing_council_ref フィールド追加）
+**chewing council ref**: `council-2026-05-11T07:00:00Z-w2qb03`（既存 17 skill への適用タイミングは「逐次」採決）
+
+### 規約
+
+ECC からの咀嚼で取り込まれた / 取り込まれる skill の `SKILL.md` frontmatter には、素材出自と咀嚼経路を明示する以下のフィールドを **必須** とする:
+
+```yaml
+---
+name: <kebab-case-skill-name>
+dimension: D4
+origin: <ECC-derived | DH-native | external>
+origin_source: "<ecc:path | url | reference>"
+origin_version: "<source version, e.g. ECC v2.0.0-rc.1>"
+chewing_translation: "<T1 | T2 | T3 | T1+T3 | T3+ガードレール語彙化 | ...>"
+chewing_pr: "<repo#PR_number>"
+chewing_council_ref: "<council-ID, optional>"
+chewed_at: "<ISO8601 UTC>"
+description: ...
+---
+```
+
+### フィールド意味
+
+| フィールド | 必須 | 意味 |
+|---|---|---|
+| `origin` | ✓ | 素材出自分類（ECC-derived / DH-native / external） |
+| `origin_source` | ECC-derived のみ ✓ | 元素材の参照ポインタ（ecc:path / URL / 参照） |
+| `origin_version` | ECC-derived のみ ✓ | 元素材の version 固定（drift verifier 接続点） |
+| `chewing_translation` | ECC-derived のみ ✓ | T1/T2/T3 タイプまたは複合表示 |
+| `chewing_pr` | ECC-derived のみ ✓ | 取り込み PR 番号 |
+| `chewing_council_ref` | 諮問あり時 ✓ | Council invocation_id |
+| `chewed_at` | ECC-derived のみ ✓ | 取り込み日時（ISO8601 UTC） |
+
+DH-native skill（origin = DH-native）では `origin_source` 以降は不要（または `chewing_translation: "DH-native"`）。
+
+### 翻訳タイプ語彙
+
+| タイプ | 意味 |
+|---|---|
+| **T1** | 構造保持（素材構造をそのまま採用） |
+| **T2** | 語彙翻訳（Node.js → Python 等の言語翻訳） |
+| **T3** | サブセット選別（素材の一部のみ採用、残りは棄却 / 温存） |
+| **T1+T3** | 構造保持 + サブセット選別の組合せ |
+| **T3+ガードレール語彙化** | サブセット選別 + 適用条件のガードレール明文化（Wave 2 中心戦略） |
+
+複合は `+` で連結。新規パターンは Wave N の Phase B 諮問で確定する。
+
+### 既存 skill への適用タイミング（諮問 w2qb03 採決）
+
+Council 諮問 `council-2026-05-11T07:00:00Z-w2qb03` の判決により、既存 17 skill への frontmatter 適用は **各 skill の次回更新時に逐次** 実施する（Wave 1 諮問 w1qb02 と同型）。
+
+監査チェックリスト: `delivery/SKILL-FRONTMATTER-AUDIT-checklist-wave2.md`。Wave 2 末振り返り儀式で進捗 ≤ 50% なら Wave 3 で一括修正再諮問（minority opinion A 温存先）。
+
+### Wave 1 + Wave 2 で先取り適用済の skill
+
+- `crosscut-hook-observer`（Wave 1 PR #76、5 フィールド適用）
+- `crosscut-continuous-learning`（Wave 2 PR #78、7 フィールド適用、chewing_council_ref 含む）
+
+---
+
+## AgentShield 参照導入規約（Wave 2 候補 4、PR #78）
+
+**origin**: ECC-derived（everything-claude-code v2.0.0-rc.1 周辺、`ecc-agentshield` npm package として独立配布、observation: `delivery/refs-draft/ecc/agentshield-spec.md`）
+**chewing translation**: T3 + ガードレール語彙化
+**chewing council ref**: `council-2026-05-11T07:00:00Z-w2qb02`（哲学者重み増強で `--fix` / `--opus --stream` 経路を棄却）
+
+### 規約
+
+AgentShield（`ecc-agentshield` npm package、102 静的解析ルール × 5 カテゴリ）は DH 自前実装を行わず、**利用者プロジェクト側で手動 install + warn のみ参照導入** とする。
+
+### 採否
+
+| カテゴリ | DH 採用 | 経路 |
+|---|---|---|
+| Secrets detection | ✓ | warn のみ参照 |
+| Permission auditing | ✓ | warn のみ参照 |
+| Injection analysis | ✓ | warn のみ参照 |
+| Hook risk scoring | ✓ | warn のみ参照 |
+| Configuration weaknesses | ✓ | warn のみ参照 |
+| **`--fix` 自動修復経路** | ✗ | **棄却**（第 6 条「人間最終承認」侵食） |
+| **`--opus --stream` 外部 LLM 経路** | ✗ | **棄却**（独立性原則・観察温存と緊張） |
+
+### 利用者プロジェクトでの導入手順（推奨、自動連携なし）
+
+```bash
+# 利用者プロジェクト側で手動 install（DH 側からの強制起動なし）
+npm install --save-dev ecc-agentshield
+npx ecc-agentshield scan  # warn のみ、--fix なし
+```
+
+DH 側 workflow / hooks による自動起動は **行わない**（minority opinion w2qb02 A の温存範囲）。
+
+### DH 自前実装の不存在
+
+Council 諮問 w2qb02 採決により、DH 側に 102 ルールの自前実装は **行わない**。Wave 3 で `v6.0.0` 候補として再評価予定（philosophy 第 8 条候補確定後）。
+
+詳細は `templates/rules/common/agentshield-reference.md` 参照。
