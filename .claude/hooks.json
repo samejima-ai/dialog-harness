@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_meta": {
+    "origin": "ECC-derived (everything-claude-code v2.0.0-rc.1, hooks/hooks.json)",
+    "chewing_translation": "T1+T3 (構造保持 + サブセット選別)",
+    "chewing_pr": "samejima-ai/dialog-harness#76",
+    "chewing_council_ref": "council-2026-05-11T05:00:00Z-w1qb01",
+    "rejected_elements": [
+      "PreCompact event (v5.13.0 候補で温存、DH の /compact 連携未確立)",
+      "exit code 2 (block) — philosophy.md 第 6 条「人間最終承認」と緊張、warn のみ採用",
+      "Node.js bootstrap (DH では Python bootstrap に置換)"
+    ],
+    "adopted_events": ["PreToolUse", "PostToolUse", "Stop", "SessionStart", "SessionEnd"],
+    "observation_target": "harness-verifier (read-only 一方向依存、独立性原則準拠)"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py PreToolUse"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py Stop"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py SessionStart"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py SessionEnd"
+          }
+        ]
+      }
+    ]
+  }
+}
