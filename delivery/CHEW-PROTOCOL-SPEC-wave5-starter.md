@@ -93,7 +93,7 @@ DH 第 1 条フラクタル原則（DH を使って DH を改良する）によ�
 #### 実装内容
 
 1. `.claude/hooks.json` を本リポジトリに新設（または既存設定の有効化確認）
-2. `crosscut-hook-observer/SKILL.md` SUPPORTED_EVENTS（PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact の 6 event、Wave 3 PR #81 で PreCompact 追加済）が hooks.json schema に整合していることを確認
+2. `.claude/skills/crosscut-hook-observer/scripts/bootstrap.py` の `SUPPORTED_EVENTS` 定義（および `.claude/hooks.json` の `adopted_events`、PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact の 6 event、Wave 3 PR #81 で PreCompact 追加済）が hooks.json schema に整合していることを確認
 3. `harness-verifier/reports/hook-observations.jsonl` を append-only で初期化（exit code 常 0 / warn のみ / block しない、philosophy 第 6 条「人間最終承認」準拠）
 4. 初回観測（本 starter 起票セッションの SessionStart / Stop event）が hook-observations.jsonl に記録されることを smoke test として確認
 
@@ -129,7 +129,7 @@ Wave 4 W4-Q2 では `subphase-common-protocol.md` Phase γ に「業界叡智照
 
 #### Council 諮問の重み配分
 
-`category: implementation` 適用（W4-Q2 と同一カテゴリ、subphase ファイル改修で条文改修なし）。`crosscut-council/council-weights.md` の規約に従い：
+`category: implementation` 適用（W4-Q2 と同一カテゴリ、subphase ファイル改修で条文改修なし）。`.claude/skills/crosscut-council/council-weights.md` の規約に従い：
 
 - base_weights.business: 経営者 3 / 開発者 4 / 哲学者 3
 - situational_modifier.implementation: 経営者 -1 / 開発者 +2 / 哲学者 -1
@@ -306,7 +306,7 @@ Wave 5 Phase C 完了後、Wave 4 starter（PR #84 で archive）の方針に倣
 
 ## 8. Wave 5 末振り返り儀式観測項目
 
-Wave 4 末で必須化された 5 観測項目（Wave 4 starter §8）を Wave 5 末でも継続観測する。Wave 5 では W5-Q0 完遂により観測機構が稼働するため、以下 5 項目のすべてで Wave 4 から実データ蓄積が始まる：
+Wave 4 末で必須化された 5 観測項目（Wave 4 starter §8）を Wave 5 末でも継続観測する。Wave 5 では W5-Q0 完遂により観測機構が稼働するため、**項目 1-3 は Wave 5 起算で hook 観測機構稼働により自然蓄積が始まる**。**項目 4-5 は subphase L0-3/4/5/6 を起動する L0 対話（新規 crosscut-* skill 策定 or 既存 skill 改修等）が発生すれば蓄積開始**（§1.3「観測データの取得経路」表と整合）：
 
 1. **Council 経由率**（W4-Q1 D 案吸収継承）— Wave 5 起算の COUNCIL-LOG.md エントリ件数 + Council 経由判断の割合。Wave 6 で W5-Q1（minority C 再諮問）起票判断材料
 2. **3 段階運用実績**（W4-Q1 継承）— hook-observations.jsonl entry 件数 / continuous-learning 候補出力件数 / 該当承認件数の 3 段階通過カウント
