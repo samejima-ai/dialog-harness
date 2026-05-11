@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v5.14.0 (released 2026-05-11)
+## v5.14.0 (in progress, target 2026-05-11)
 
 **咀嚼プロトコル Wave 5 完遂**。観測駆動 Wave として、Wave 4 末で必須化された 5 観測項目を BL=0 から起算開始。W5-Q0（観測機構稼働化）+ W5-Q2（subphase 個別組込）の二本柱で進行、観測依存議題（W5-Q1 = minority C 再諮問 / W5-Q3 = 残 3 hook event 再評価）は観測サイクル経過後の Wave 6/7 に申し送り。
 
@@ -52,7 +52,7 @@ subphase 3 ファイルに業界叡智参照モードを追加（合計 +195 行
 
 - `subphase-common-protocol.md` Phase γ-i フック連携（Wave 4 PR #83 で骨格実装済）
 - CTL 0 inactive / CTL ≥ 1 active の動作明記
-- 出力フォーマット `industry_wisdom_match_candidates`（自動採用なし、philosophy 第 6 条準拠）
+- 出力フォーマット `industry_wisdom_match_candidates`（自動採用なし、philosophy 第 8 条「採用段階での AI 自動経路は本条で禁止」準拠、第 6 条「人間 ≒ Council」とも整合）
 - 観測 → 候補化 → 人間最終承認 の第 8 条 3 段階明記
 - **既存内容不変、追加層として組込** → W5-Q2 哲学者 concerns「DH 哲学独占性希釈リスク」を最小化
 
