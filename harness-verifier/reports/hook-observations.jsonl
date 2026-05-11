@@ -1,0 +1,2 @@
+{"ts": "2026-05-11T12:08:47Z", "event": "SessionStart", "tool": "smoke_test", "session_id": "wave5-phase-a-smoke", "fields": {"_smoke_test": true, "_wave": "wave5-phase-a-w5q0", "_purpose": "hook mechanism physical activation verification"}}
+{"ts": "2026-05-11T12:08:47Z", "event": "Stop", "tool": null, "session_id": "wave5-phase-a-smoke", "fields": {"_smoke_test": true, "_wave": "wave5-phase-a-w5q0"}}
