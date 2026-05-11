@@ -11,7 +11,7 @@ crosscut-hook-observer が生成した観測ログの形式整合性を検査す
 検出対象:
     - JSONL 形式違反行（parse error）
     - 必須フィールド欠落（ts / event / 等）
-    - 不正な event 値（5 event 以外）
+    - 不正な event 値（6 event 以外、Wave 3 で PreCompact 追加）
 """
 
 from __future__ import annotations
@@ -27,6 +27,7 @@ SUPPORTED_EVENTS = {
     "Stop",
     "SessionStart",
     "SessionEnd",
+    "PreCompact",
 }
 REQUIRED_FIELDS = ["ts", "event"]
 TAIL_LINES_LIMIT = 1000

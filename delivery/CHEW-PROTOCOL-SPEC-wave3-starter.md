@@ -188,7 +188,7 @@ Wave 2 末振り返りで蓄積された運用実績に基づき、Wave 1 + Wave
 |---|---|---|---|
 | **Phase A**（PR #80） | Wave 3 SPEC ドラフト + 優先順位確定 + Council 諮問 agenda 提示 | 本 commit + draft PR | ✅ 完遂（PR #80） |
 | **Phase B**（本 PR） | Council 諮問 3 件採決 + 予備 1 件省略判定 | 諮問 1-3 採決、諮問 4 省略 | ✅ 完遂（本 commit） |
-| **Phase C**（本 PR） | SPEC 実装（第 8 条追加 → 議題 2 残 → 候補 7 → 候補 8） | 実装 + harness-verifier --strict PASS | 後続 commit |
+| **Phase C**（本 PR） | SPEC 実装（第 8 条追加 → 議題 2 残 → 候補 7 → 候補 8） | 実装 + harness-verifier --strict PASS | ✅ 完遂（本 commit） |
 | **Phase D** | 検証 + verifier 経由抵触チェック | philosophy / drift 抵触 0 | レビュー時 |
 | **Phase E** | merge + REGIME-LOG / PHILOSOPHY-CHANGELOG 記録 + Wave 4 申し送り | v5.14.x minor リリース | merge 後 |
 

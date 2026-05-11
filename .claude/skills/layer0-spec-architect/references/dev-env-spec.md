@@ -915,3 +915,48 @@ DH 側 workflow / hooks による自動起動は **行わない**（minority opi
 Council 諮問 w2qb02 採決により、DH 側に 102 ルールの自前実装は **行わない**。Wave 3 で `v6.0.0` 候補として再評価予定（philosophy 第 8 条候補確定後）。
 
 詳細は `templates/rules/common/agentshield-reference.md` 参照。
+
+---
+
+## philosophy.md 改訂時の手動 CHANGELOG 運用（Wave 3 候補 7、PR #81）
+
+**Council 採決**: `council-2026-05-11T09:00:00Z-w3qb03`（recommended B: 手動運用、自動 emit は不採用）
+
+### 規約
+
+`.claude/skills/layer0-spec-architect/references/philosophy.md` を変更する PR では、同 PR 内で `history/PHILOSOPHY-CHANGELOG.md` に新規エントリを **手動追記** する。
+
+### 追記項目
+
+1. 改訂日時（ISO8601 UTC）
+2. 変更条文（第 N 条 新設 / 第 N 条 改訂）
+3. 変更概要（1-3 文）
+4. Council 採決 invocation_id
+5. weighted_score / confidence / category / weights
+6. minority opinion 温存条件（該当時）
+7. 経験的根拠（観測サンプル数等）
+8. 関連 PR
+
+### append-only 性質
+
+過去エントリの編集・削除は **禁止**。philosophy の append-only 性質と整合する。誤記訂正は新規エントリ「<元エントリ ID> の訂正」として追記する。
+
+### 自動 emit 化の再諮問条件（minority opinion w3qb03 A）
+
+Wave 4 末で `history/PHILOSOPHY-CHANGELOG.md` の改訂頻度が **≥ 2 件/Wave** 観測された場合、Wave 5 で自動 emit 化（commit hook or PR action）を再諮問する。手動運用負荷の実観測データに基づく判断。
+
+---
+
+## Wave 末振り返り儀式テンプレート（Wave 3 候補 8、PR #81）
+
+**Council 採決**: `council-2026-05-11T09:00:00Z-w3qb04`（諮問省略、`confidence ≥ 0.7`）
+
+### 規約
+
+Wave 完遂時、`templates/rituals/wave-end-retrospective.template.md` をコピーして `history/wave<N>/RITUAL-<YYYY-MM-DD>-wave<N>.md` を作成し、振り返り儀式を実施する。
+
+### Wave 1 の例外
+
+Wave 1 の `history/wave1/RITUAL-2026-05-11-metaskill.md` は本テンプレート不在の時期に個別形式で記録された。Wave 2 は振り返り儀式記録ファイル自体が不在（PR #79 archive 整理時に確認）。Wave 3 以降は本テンプレート準拠とする。
+
+詳細は `templates/rituals/wave-end-retrospective.template.md` 参照。

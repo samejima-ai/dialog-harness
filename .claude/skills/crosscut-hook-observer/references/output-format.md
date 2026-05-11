@@ -7,7 +7,7 @@
 ```jsonc
 {
   "ts": "2026-05-11T05:30:00Z",   // ISO 8601 UTC、observe.py 実行時刻
-  "event": "PreToolUse",            // 5 event のいずれか
+  "event": "PreToolUse",            // 6 event のいずれか (Wave 3 で PreCompact 追加)
   "tool": "Bash",                   // tool name（PreToolUse/PostToolUse のみ、それ以外は null）
   "session_id": "abc123",           // Claude Code 提供の session UUID
   "fields": {                       // event 固有データ（512 char で truncate）
@@ -26,6 +26,7 @@
 | `Stop` | null | `reason`, `final_message_excerpt` |
 | `SessionStart` | null | `cwd`, `env_vars_truncated` |
 | `SessionEnd` | null | `duration_sec`, `tool_call_count` |
+| `PreCompact` | null | `trigger`, `transcript_size`（context 圧縮前の状態スナップショット） |
 
 ## 設計原則
 
@@ -53,7 +54,7 @@ observe.py / bootstrap.py のいかなる失敗（JSON parse error / file write 
 1. 末尾 1000 行を読む（`TAIL_LINES_LIMIT`）
 2. JSONL parse error 行をカウント、検出件数を FAIL として報告
 3. 必須フィールド（`ts` / `event`）欠落をカウント
-4. 不正な `event` 値（5 event 以外）をカウント
+4. 不正な `event` 値（6 event 以外）をカウント
 5. 観測結果は `harness-verifier/reports/<YYYY-MM>.md` の検査項目 6 として独立出力（observation ファイルは改変しない）
 
 これにより skill → 観測ログ → verifier の一方向依存が保持される（独立性原則）。
@@ -67,6 +68,7 @@ observe.py / bootstrap.py のいかなる失敗（JSON parse error / file write 
 ## バージョン
 
 - v0.1.0（Wave 1）— 5 event + 基本 fields + 512 char truncate + fail-open
+- v0.2.0（Wave 3 PR #81）— PreCompact event 追加で 6 event (council-w3qb02 B 採決)
 - 拡張候補（Wave 2 以降）:
   - field schema の event-type 別厳密化（JSON Schema 化）
   - 観測ログの rotation / archival（サイズ上限到達時）

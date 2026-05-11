@@ -2,7 +2,7 @@
 name: crosscut-hook-observer
 dimension: D4
 origin: ECC-derived
-origin_source: "ecc:hooks/hooks.json#PreToolUse,PostToolUse,Stop,SessionStart,SessionEnd"
+origin_source: "ecc:hooks/hooks.json#PreToolUse,PostToolUse,Stop,SessionStart,SessionEnd,PreCompact"
 origin_version: "ECC v2.0.0-rc.1"
 chewing_translation: "T1+T3 (構造保持 + サブセット選別)"
 chewing_pr: "samejima-ai/dialog-harness#76"
@@ -10,10 +10,10 @@ chewed_at: "2026-05-11T05:30:00Z"
 description: >
   Claude Code 公式 hooks.json schema 経由で Claude Code セッションの tool call と
   session lifecycle を観測し、harness-verifier に観測ログを引き渡す bridge skill。
-  PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd の 5 event を購読、
+  PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact の 6 event を購読、
   exit code は常に 0 で warn のみ、block しない（philosophy.md 第 6 条「人間最終承認」準拠）。
-  Council 諮問 (council-2026-05-11T05:00:00Z-w1qb01) により PreCompact は除外、
-  v5.13.0 候補で温存。
+  PreCompact は Wave 3 諮問 (council-2026-05-11T09:00:00Z-w3qb02) で追加採用。
+  UserPromptSubmit / Notification / SubagentStop は Wave 4 申し送り。
   「hook 観測機構を有効化」「PreToolUse 観測ログを取得」「Claude Code hook で session
   lifecycle を観測」「harness-verifier に観測ログを渡す bridge」等の発話、または
   hooks.json bootstrap からの自動起動で発動。
@@ -25,7 +25,7 @@ description: >
 # crosscut-hook-observer — Claude Code hook 観測機構
 
 ECC `hooks/hooks.json` の event-types / matcher 構文 / Node.js bootstrap 設計から
-**5 event + Python bootstrap + warn-only exit** をサブセット選別 + 翻訳して導入した
+**6 event + Python bootstrap + warn-only exit**（Wave 1 で 5 event、Wave 3 で PreCompact 追加）をサブセット選別 + 翻訳して導入した
 DH 独自の hook 観測機構。
 
 ## 設計原則
@@ -33,7 +33,7 @@ DH 独自の hook 観測機構。
 ### 1. 観測専用（命令層と観測層の分離）
 
 本 skill は tool call の事前検出（PreToolUse）と事後ログ（PostToolUse）、
-session lifecycle 通知（Stop / SessionStart / SessionEnd）を **観測** するのみ。
+session lifecycle 通知（Stop / SessionStart / SessionEnd）、context 圧縮前イベント（PreCompact）を **観測** するのみ。
 
 - **exit code は常に 0**: block は行わない
 - **tool call の改変なし**: hook output は stdout に書かれず、observation-log にのみ追記
@@ -86,7 +86,7 @@ harness-verifier/verify.py（独立検証層、DH 本体に依存しない）
 
 「hook 観測機構を有効化」「観測ログを確認」等の発話で発動し、以下を実施:
 
-1. `.claude/hooks.json` の状態確認（5 event 全て登録済か）
+1. `.claude/hooks.json` の状態確認（6 event 全て登録済か: PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact）
 2. `harness-verifier/reports/hook-observations.jsonl` の末尾 N 件を表示
 3. 観測機構が動作していない場合の診断（permission / Python path / 書き込み権限）
 
@@ -110,5 +110,6 @@ harness-verifier/verify.py（独立検証層、DH 本体に依存しない）
 ## バージョン
 
 - v0.1.0（Wave 1 walking skeleton）— 5 event 観測 + Python bootstrap + 一方向依存
+- v0.2.0（Wave 3 PR #81）— PreCompact event 追加で 6 event 観測 (council-w3qb02 B 採決)
 - Wave 2 予定: continuous-learning v2.1 観測機構との連携（候補 5 取り込み）
 - v5.13.0 候補: PreCompact event の採否再諮問（DH の `/compact` 連携 SPEC 確定後）
