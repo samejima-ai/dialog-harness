@@ -294,13 +294,13 @@ Wave 5 Phase C 完了後、Wave 4 starter（PR #84 で archive）の方針に倣
 
 ## 7. 起票時点の未確定事項（Phase B 採決後の解消ログ）
 
-| 未確定事項（起票時点） | Phase B 採決後の解消結果（TBD） |
+| 未確定事項（起票時点） | Phase B 採決後の解消結果 |
 |---|---|
-| W5-Q2 採決結果（A フル / B 部分 / C 全延期） | Phase B 後に追記 |
-| W5-Q2 採決結果が B の場合の改修対象 2-3 ファイル選定 | Phase B 後に追記 |
-| Wave 5 Phase B 実施日時 | Phase B 実施後に追記 |
-| Wave 5 Phase C 実装担当 | Phase B 後に追記 |
-| W5-Q0 完遂後の初回 hook 観測 entry 件数（smoke test 結果） | W5-Q0 Phase A 完遂後に追記 |
+| W5-Q2 採決結果（A フル / B 部分 / C 全延期） | **B 採決: 2-3 ファイル先行改修**（conf 0.72、採決確定領域）。`subphase-l03-api.md` + `scaffold-checklist.md` + `subphase-l05-authz.md` の 3 ファイル先行、残 `subphase-l04-transition.md` + `subphase-l06-invariants.md` は Wave 6 申し送り。`council-2026-05-11T12:15:00Z-w5qb02` |
+| W5-Q2 採決結果が B の場合の改修対象 2-3 ファイル選定 | **3 ファイル選定**: subphase-l03-api（外部結合度最高）+ scaffold-checklist（L1 影響度最高）+ subphase-l05-authz（AgentShield カテゴリ最小スコープ）。開発者 Persona 推奨優先順準拠 |
+| Wave 5 Phase B 実施日時 | **2026-05-11T12:15:00Z 〜 12:15:30Z 実施完了**（W5-Q2 単独諮問、§3.1 規約通り）|
+| Wave 5 Phase C 実装担当 | **別 PR で実装着地**（本 Phase B PR は諮問記録 + COUNCIL-LOG append のみ、scope 中規模のため Phase C は分離）|
+| W5-Q0 完遂後の初回 hook 観測 entry 件数（smoke test 結果） | **SessionStart + Stop の 2 entry**（PR #86 で hook-observations.jsonl 物理生成、HV 検査 6 項目 PASS、観測サイクル起算 2026-05-11T12:08:47Z）|
 
 ---
 

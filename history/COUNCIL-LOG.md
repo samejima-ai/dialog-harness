@@ -1637,4 +1637,70 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   cascade_to: "subphase-common-protocol.md Phase γ に「業界叡智照合フック (Phase γ-i)」節を新規追加 (本 commit で実装)、Phase δ 差分サマリに業界叡智照合候補項目を追加 (本 commit で実装)、Wave 4 末振り返り儀式観測項目に「業界叡智参照を経た SPEC の unedited merged 率」「業界叡智照合フック起動回数 / 採用率 / 却下率」追加、subphase-l03〜l06 + scaffold-checklist 改修は Wave 5 申し送り"
   judgment_confidence: 0.78
+
+- invocation_id: "council-2026-05-11T12:15:00Z-w5qb02"
+  timestamp: "2026-05-11T12:15:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "W5-Q2 subphase 5 ファイル改修の Wave 5 Phase C 着地範囲は A 全 / B 部分 / C 全延期 のうちどれか"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  context: "Wave 5 Phase B 単独諮問。Wave 4 W4-Q2 採決 B (段階組込、conf 0.78 全会一致、council-2026-05-11T19:30:00Z-w4qb02) の Wave 5 申し送り直接後続。subphase-common-protocol.md Phase γ-i フックは Wave 4 PR #83 で先行追加済、残作業として subphase-l03-api / subphase-l04-transition / subphase-l05-authz / subphase-l06-invariants + scaffold-checklist の 5 ファイル改修が Wave 5 申し送り。Wave 5 Phase A で W5-Q0 観測機構稼働化完遂 (PR #86 merged、2026-05-11T12:08:47Z 観測サイクル起算)。delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md §2.2 参照。council-weights.md §situational_modifier.implementation 適用 (経営者 -1 / 開発者 +2 / 哲学者 -1)"
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者:
+      stance: "A: 5 ファイル一括改修"
+      confidence: 0.82
+      dimension: "ROI / 価値実現速度"
+      reasoning: "W4-Q2 採決 B が Wave 4 でスコープを Phase γ-i フック先行実装に集中させた経済合理性の続編として、Wave 5 では骨格固定済を最大活用する一括改修が最短経路。ユーザー 3 不満の核心解決を Wave 5 内で完遂。B 部分は Wave 6 残作業の判断コストが残り価値遅延、C は W4-Q2 撤回でユーザー価値遅延最大"
+    開発者:
+      stance: "B: 2-3 ファイル先行改修"
+      confidence: 0.78
+      dimension: "実装コスト / Shift Left / 可逆性"
+      reasoning: "5 subphase ファイルは参照ドメイン別 (ECC agents / hooks / AgentShield / Instincts / 出力規約) で個別設計が必要、Phase γ-i は呼び出し点共通化のみ。Shift Left 原則として 1 機構先行 → 段階的個別改修 → 運用観測 → 残実装が決定論的順序。優先 3 ファイルは subphase-l03-api (外部結合度最高) + scaffold-checklist (L1 影響度最高) + subphase-l05-authz (AgentShield カテゴリ数最小)。subphase-l04 は ECC hooks と Phase γ-i 自己参照リスク、subphase-l06 は Gherkin と Instincts 分類対応付け非自明で Wave 6 申し送りが妥当"
+    哲学者:
+      stance: "A: 5 ファイル一括改修"
+      confidence: 0.65
+      dimension: "哲学整合 / 条文影響度"
+      reasoning: "W4-Q2 採決 B の Wave 5 完結着地は DH 哲学独占性希釈リスクを Wave 5 末観測項目 4 で集約観測する設計。A 一括は哲学整合最高、独占性希釈リスク集中暴露も観測項目 4 で監視可能。B 部分は Wave 6 残改修で哲学者 concerns 二重発生、観測 independence 困難化。C は W4-Q2 撤回で第 5 条献上哲学違反"
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "A: 5 ファイル一括改修"
+        supporters: ["経営者", "哲学者"]
+        weight_sum: 4
+        weighted_score: 2.94
+        components:
+          - {persona: "経営者", weight: 2, confidence: 0.82}
+          - {persona: "哲学者", weight: 2, confidence: 0.65}
+      - stance: "B: 2-3 ファイル先行改修"
+        supporters: ["開発者"]
+        weight_sum: 6
+        weighted_score: 4.68
+        components:
+          - {persona: "開発者", weight: 6, confidence: 0.78}
+      - stance: "C: 全延期"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.00
+        components: []
+    third_way_excluded: []
+    max_score_stance: "B: 2-3 ファイル先行改修"
+    tie_break_applied: false
+    score_gap_note: "max (4.68) vs 次点 (A 2.94) の差 1.74、tie_break 不要の明確判定。implementation category で開発者重み 6 が支配的、A 連合 (経営者 + 哲学者 = 4) でも開発者単独 (6) を逆転できず。judgment-agent.md §confidence 算出指針「最大重み Persona stance 一致 + スコア差大 + 次点連合 conf 中庸 + 最大重み Persona conf 高め」で judgment_confidence 0.72"
+  recommended: "B: 2-3 ファイル先行改修 (subphase-l03-api + scaffold-checklist + subphase-l05-authz の推奨優先順、残 subphase-l04-transition + subphase-l06-invariants は Wave 6 申し送り)"
+  minority_opinion: "経営者 (A) + 哲学者 (A) 連合 (weighted_score 2.94): Phase γ-i 骨格固定済を派生作業と評価する前提に立てば A も合理的、Wave 5 末観測項目 4 を集約観測する哲学的整合性は B より高い。Wave 6 で残 2 ファイル改修判断時に Wave 5 内 A 一括だった場合の比較データ不在が課題化する可能性は温存"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T12:15:30Z"
+  follow_up_questions_count: 0
+  cascade_to: "Wave 5 Phase C で subphase-l03-api.md + scaffold-checklist.md + subphase-l05-authz.md の 3 ファイル改修を別 PR で実装着地。残 subphase-l04-transition.md + subphase-l06-invariants.md は Wave 6 申し送り。delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md §7 未確定事項テーブルを採決結果で部分解消 (本 commit で実装)、Phase C 実装後に最終解消"
+  judgment_confidence: 0.72
+  starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 6 再諮問。本採決 conf 0.72 は採決確定領域、Phase C で B 採用の 3 ファイル改修を別 PR で実装"
   starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 5 再諮問。本採決 conf 0.78 は採決確定領域、Phase C で Phase γ-i フック実装を本 PR で着地"
