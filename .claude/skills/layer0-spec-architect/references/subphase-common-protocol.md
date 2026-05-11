@@ -58,6 +58,51 @@ L0 の各サブフェーズ（L0-2〜L0-6）が従う共通の対話・生成・
   - 軽微（命名揺れ等）→ AI が自動修正し、`subphase-manifest.md` に修正ログ
   - 重大（仕様矛盾）→ 該当サブフェーズに差し戻す。人間には矛盾箇所のみ提示
 
+#### Phase γ-i: 業界叡智照合フック（W4-Q2 採決追加、CTL ≥ 1）
+
+Wave 4 W4-Q2 採決 (`council-2026-05-11T19:30:00Z-w4qb02`、段階組込 B、conf 0.78) で確定した業界叡智参照モード組込機構。Phase γ 本流（共通観点クロスチェック）の **補強層** として動作し、L0 対話で生成された SPEC ドラフトが業界叡智 (ECC / hooks / AgentShield 等) と整合的かを観測駆動で照合する。
+
+**第 8 条 3 段階モデル準拠**（W4-Q1 採決で再確認、minority C は Wave 5 温存）:
+
+- **観測**: SPEC ドラフトと業界叡智 (`history/refs-draft/ecc/` 配下 5 ファイル / `templates/rules/common/agentshield-reference.md` / `.claude/hooks.json` schema 等) の照合
+- **候補化**: 不整合・補強候補をリスト化、L0 対話の判断材料として提示（自動採用なし）
+- **人間最終承認**: Phase δ でユーザー承認 (philosophy 第 6 条「人間最終承認」)
+
+**起動条件 (CTL 連動)**:
+
+| CTL | 動作 |
+|---|---|
+| CTL 0 | inactive（観察温存、候補化も抑止） |
+| CTL ≥ 1 | active、候補出力のみ（採用判断は人間） |
+
+**出力フォーマット**（候補リストのみ、自動採用なし）:
+
+```yaml
+industry_wisdom_match_candidates:
+  - source: "ECC agents-pattern.md"  # 参照ソース
+    aspect: "agents 定義の YAML frontmatter (tools/model 指定)"
+    spec_draft_reference: "SPEC.md §3.2 agent 定義節"
+    match_type: "complementary"  # complementary / contradictory / redundant
+    suggestion: "tools 指定で読み取り専用 agent を明示する慣例あり、検討候補"
+    confidence: 0.7
+```
+
+**運用観測項目（Wave 4 末振り返り儀式で集計）**:
+
+- W4-Q1 採決で必須化された 3 観測項目（Council 経由率 / 3 段階運用実績 / minority C 再評価データ蓄積）
+- 「業界叡智参照を経た SPEC の unedited merged 率」（W4-Q2 哲学者 concerns 由来、DH 哲学独占性希釈リスク監視）
+- 「業界叡智照合フック起動回数 / 候補リスト採用率 / 却下率」
+
+**Wave 5 申し送り**（W4-Q2 stance A フル組込の繰越分）:
+
+- `subphase-l03-api.md` / `l04-transition.md` / `l05-authz.md` / `l06-invariants.md` / `scaffold-checklist.md` の個別改修
+- 各 subphase の業界叡智参照モード詳細仕様
+
+**関連諮問**:
+
+- `council-2026-05-11T19:00:00Z-w4qb01`（W4-Q1、3 段階モデル維持確定）
+- `council-2026-05-11T19:30:00Z-w4qb02`（W4-Q2、段階組込 B 確定、全会一致 conf 0.78）
+
 ### Phase δ: 判定（人間レビュー・承認）
 
 - AI は Phase β/γ の結果を**差分サマリ**で提示（全文は提示しない）
@@ -65,6 +110,7 @@ L0 の各サブフェーズ（L0-2〜L0-6）が従う共通の対話・生成・
   - 生成ファイルとモード（完全 / 簡易）
   - 前サブフェーズからの継承要素（型名・状態名等）
   - γ で検出・修正した不整合（あれば）
+  - **γ-i 業界叡智照合候補**（CTL ≥ 1 のみ、`industry_wisdom_match_candidates` リスト。0 件なら省略可。採用判断は人間最終承認、自動採用なし）
   - 次サブフェーズへの引き渡し要素
 - 人間の応答:
   - 承認 → 次サブフェーズへ
