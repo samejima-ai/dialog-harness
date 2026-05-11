@@ -72,9 +72,11 @@ T3 (サブセット選別) + ガードレール語彙化 が DH 哲学の自然�
 - **B**: 第 8 条候補のまま PHILOSOPHY-NOTE で温存、Wave 4 / Wave 5 で再諮問
 - **C**: 第 8 条として明文化、ただし「観測 → 候補化 → 人間最終承認」の 3 段階を「観測 → 候補化 → 採決 → 適用」の 4 段階に拡張（Council 必須を明示）
 
-#### 哲学者ペルソナ意見の事前収集
+#### Council 諮問の重み配分
 
-第 8 条本格採決には **議題 0 採決 `council-2026-05-11T03:49:01Z-4go7g1`** で確立した「議題 2 = 哲学的に重大なケースは哲学者重み増強」が適用される。Phase B 諮問では業務 Council + 哲学者単独追加（重み 5 → 7 程度）で諮問する。
+第 8 条本格採決には `category: conception` を適用する。`crosscut-council/council-weights.md` の規約に従い、`base_weights.business` (経営者 3 / 開発者 4 / 哲学者 3) + `situational_modifier.conception` (経営者 0 / 開発者 -1 / 哲学者 +2) により、**final_weights = 経営者 3 / 開発者 3 / 哲学者 5** で計算される。
+
+これは議題 0 採決 `council-2026-05-11T03:49:01Z-4go7g1`（同じく `category: conception` 適用）と同一規約準拠。Wave 3 諮問では council-weights.md の編集（L0 経由のみ可）は行わず、既存規約のカテゴリ選択で対応する（私が以前のドラフトで書いた「哲学者重み 5 → 7/8 増強」記述は規約根拠を持たない誤記で、本改訂で訂正）。
 
 #### 緊張度
 
@@ -150,7 +152,7 @@ Wave 2 末振り返りで蓄積された運用実績に基づき、Wave 1 + Wave
 ### agenda 1 (議題 3): philosophy 第 8 条本格諮問 — `council-w3qb01`
 
 - **judgment_type**: tradeoff（philosophy 改訂 vs 候補温存）
-- **persona**: business council + **哲学者重み増強**（重み 5 → 8、議題 0 採決 `council-2026-05-11T03:49:01Z-4go7g1` の議題 2 / 議題 3 哲学者重み増強規約）
+- **persona**: business council、`category: conception` 適用（council-weights.md §situational_modifier.conception）。final_weights = 経営者 3 / 開発者 3 / 哲学者 5（base 3/4/3 + conception 補正 0/-1/+2）。
 - **options**: A (第 8 条として明文化) / B (候補ノートのまま温存) / C (3 段階 → 4 段階拡張)
 - **expected**: A or C への収束、B は Wave 4 申し送り
 - **緊張度**: 最高（philosophy 改訂）
@@ -159,7 +161,7 @@ Wave 2 末振り返りで蓄積された運用実績に基づき、Wave 1 + Wave
 
 - **judgment_type**: tradeoff（観測実績 2 サンプル後の判断）
 - **persona**: business council 標準
-- **options**: A (全 4 event 採用) / B (PreCompact のみ) / C (Wave 4 / 5 再申送)
+- **options**: A (全 4 event 採用) / B (PreCompact のみ) / C (Wave 4 / 5 再申し送り)
 - **expected**: B 系（PreCompact のみ）または C 系収束、A は時期尚早
 - **緊張度**: 中
 
@@ -213,4 +215,4 @@ Wave 3 は咀嚼プロトコルの **第 2 段階完成期**:
 
 議題 2 残候補と候補 7/8 は本 Wave の哲学言語化を補完する位置づけで、本質的な重心は agenda 1 (第 8 条本格諮問) にある。
 
-哲学者重み増強 (5 → 8) は議題 0 採決の規約に基づく適用で、philosophy 改訂時の保守バイアスを意図的に強化する。これは「philosophy 改訂は慎重に、撤回困難な変更は最小限に」という DH 設計原則の素直な反映。
+`category: conception` 適用（哲学者 5 / 経営者 3 / 開発者 3）は council-weights.md 既存規約準拠の素直な選択で、新規 / 構想カテゴリの判断では既に哲学者重みが優位な配分になる。これは「philosophy 改訂は慎重に、撤回困難な変更は最小限に」という DH 設計原則と council-weights 設計の整合反映。
