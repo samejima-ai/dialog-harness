@@ -2,7 +2,7 @@
 
 **起票**: 2026-05-11T18:00:00Z（Wave 3 PR #81 merged 後続）
 **起票元**: spec-architect L0 経由、Wave 3 PR #81 merged（第 8 条明文化、conf 0.55 接近採決、minority C 温存）の後続として Wave 4 起票
-**branch**: `claude/integrate-dialogharness-2XsY3`（タスク指示準拠、master 命名規則 `claude/chew-protocol-spec-wave4` は次回以降で整合化検討）
+**branch**: `claude/chew-protocol-spec-wave4`（master の Wave 命名規則準拠、旧 branch `claude/integrate-dialogharness-2XsY3` は PR #74 close の歴史的アーティファクトとして remote 残置）
 **Phase**: Phase A — SPEC ドラフト起草 + 優先順位確定 + Council 諮問 agenda 提示
 
 ---
@@ -29,14 +29,14 @@ Wave 4 の最重要議題は **議題 W4-Q1「第 8 条 3 段階モデル vs 4 �
 | Wave 2 Phase A | #77 | Wave 2 SPEC ドラフト、ファイル意図ベース配置規則の確立 |
 | Wave 2 Phase B+C | #78 | HV 検査項目 6（hook 観測一貫性）、crosscut-continuous-learning 新設、origin/version frontmatter 規格、AgentShield 参照導入規約 |
 | 移行 | #79 | PR #77 規約準拠で過去 Wave ファイル 36 件を `history/` archive |
-| Wave 3 Phase A | #76 | Wave 3 SPEC ドラフト、議題 3（第 8 条本格諮問）優先 1 確定 |
+| Wave 3 Phase A | #80 | Wave 3 SPEC ドラフト、議題 3（第 8 条本格諮問）優先 1 確定 |
 | Wave 3 Phase B+C | #81 | philosophy 第 8 条明文化（候補 A 採用、3 段階モデル「観測 → 候補化 → 人間最終承認」、conf 0.55、minority C 温存） |
 
 ### 1.2 確認された経験的事実
 
-#### B 系収束パターンの 3 サンプル蓄積
+#### B 系収束パターンと部分破綻
 
-Wave 1 Phase B（3 諮問 + 1 省略）+ Wave 2 Phase B（3 諮問 + 1 省略）+ Wave 3 Phase B（第 8 条 A 採用）のすべてが B 系（保守的・人間最終承認尊重）に収束した。
+Wave 1 Phase B（3 諮問 + 1 省略）+ Wave 2 Phase B（3 諮問 + 1 省略）+ Wave 3 Phase B（4 諮問）の多くが B 系（保守的・人間最終承認尊重）に向かったが、例外として **w1qb03 = A**（言語先取りなし）および **w3qb01 = A**（第 8 条 3 段階モデル明文化、conf 0.55 接近採決）が存在する。w3qb01 の A 採用は `history/wave3/COUNCIL-DECISION-wave3-phaseB-2026-05-11T09:00:00Z.md` で記録された通り **純粋な B 系収束パターンの部分破綻** を示しており、Wave 4 で minority C 再諮問が経験的に妥当となる根拠でもある。
 
 | 諮問 | recommended | confidence |
 |---|---|---|
@@ -47,7 +47,7 @@ Wave 1 Phase B（3 諮問 + 1 省略）+ Wave 2 Phase B（3 諮問 + 1 省略）
 | w2qb02（AgentShield 採用範囲） | B: 5 カテゴリ warn のみ参照導入 | — |
 | w2qb03（frontmatter 適用タイミング） | B: 逐次適用 | — |
 | w3qb01（第 8 条候補数） | **A: 3 段階モデル明文化** | **0.55（接近採決）** |
-| w3qb02（PreCompact 採用是非） | A: PreCompact 採用、hook 観測機構を 6 event に拡張 | — |
+| w3qb02（hooks 残候補 + continuous-learning CTL 連動） | B: PreCompact のみ採用、他 3 event は Wave 4 申し送り、continuous-learning は候補出力のみ継続 | 0.79 |
 
 T3（サブセット選別）+ ガードレール語彙化が DH 哲学の自然な帰結として動作する **3 サンプル目** を蓄積。同時に **Wave 3 conf 0.55 は接近採決** であり、minority opinion C（4 段階モデル拡張）が Wave 4 再諮問に値するという経験的根拠も確立した。
 
@@ -149,7 +149,7 @@ Wave 1-3 で ECC 由来要素は以下に着地済:
 
 本議題は **第 8 条 3 段階モデルに完全に乗る**:
 
-- **観測**: ECC SURVEY（既存）+ refs-draft/ecc/（既存、history/ archive 済）
+- **観測**: `history/ECC-SURVEY-2026-05-11.md` + `history/refs-draft/ecc/` 配下 5 ファイル（Wave 1 で archive 済）
 - **候補化**: L0 対話中に subphase が業界叡智を参照、候補を SPEC 生成材料として提示
 - **人間最終承認**: spec-architect 対話の末尾で SPEC 確定（ユーザー承認、philosophy 第 6 条）
 
@@ -166,8 +166,8 @@ Wave 1-3 で ECC 由来要素は以下に着地済:
 `category: implementation` 推奨（条文改修なし、機構実装）。`crosscut-council/council-weights.md` の規約に従い:
 
 - base_weights.business: 経営者 3 / 開発者 4 / 哲学者 3
-- situational_modifier.implementation: 経営者 +1 / 開発者 0 / 哲学者 -1
-- **final_weights = 経営者 4 / 開発者 4 / 哲学者 2**
+- situational_modifier.implementation: 経営者 -1 / 開発者 +2 / 哲学者 -1
+- **final_weights = 経営者 2 / 開発者 6 / 哲学者 2**
 
 #### 判定基準
 
@@ -218,9 +218,9 @@ W4-Q1 で 4 段階モデル（候補 B）が採用された場合、W4-Q2 の「
 
 ### 3.3 Phase C 実装担当
 
-- W4-Q1 採決結果が「3 段階維持」: `philosophy.md` 改修なし、`PHILOSOPHY-CHANGELOG.md` に「W4-Q1 で minority C を再諮問、3 段階維持を確認」を追記
-- W4-Q1 採決結果が「4 段階拡張」: `harness-verifier/PHILOSOPHY.md` + `.claude/skills/layer0-spec-architect/references/philosophy.md` の二層実装に第 8 条改訂を反映、`PHILOSOPHY-CHANGELOG.md` 追記
-- W4-Q1 採決結果が「ハイブリッド」: 上記 + `references/ctl-maturity-strategy.md` に CTL 連動規約追加
+- W4-Q1 採決結果が「3 段階維持」: `philosophy.md` 改修なし、`history/PHILOSOPHY-CHANGELOG.md` に「W4-Q1 で minority C を再諮問、3 段階維持を確認」を追記
+- W4-Q1 採決結果が「4 段階拡張」: `harness-verifier/PHILOSOPHY.md` + `.claude/skills/layer0-spec-architect/references/philosophy.md` の二層実装に第 8 条改訂を反映、`history/PHILOSOPHY-CHANGELOG.md` 追記
+- W4-Q1 採決結果が「ハイブリッド」: 上記 + `.claude/skills/crosscut-council/references/ctl-maturity-strategy.md` に CTL 連動規約追加
 - W4-Q2 採決結果に応じて subphase / common-protocol / scaffold-checklist を改修
 
 ### 3.4 Wave 4 完遂条件
@@ -284,7 +284,7 @@ Wave 4 Phase C 完了後、PR #79 の archive 方針に倣い `history/wave4/CHE
 
 ### 6.4 Council 規約
 
-- `.claude/skills/crosscut-council/references/council-weights.md`（L0 編集権、本 Wave では編集なし）
+- `.claude/skills/crosscut-council/council-weights.md`（L0 編集権、本 Wave では編集なし）
 
 ### 6.5 L0 サブフェーズ（W4-Q2 改修対象候補）
 
