@@ -1140,3 +1140,184 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-05-11T05:02:00Z"
   follow_up_questions_count: 0
   cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave1-starter.md §1.3.4 へ反映、Wave 2 末振り返り儀式で L0 対話頻出言語を観測項目化"
+
+- invocation_id: "council-2026-05-11T07:00:00Z-w2qb01"
+  judgment_type: "tradeoff"
+  context: "PR #77 後続、咀嚼プロトコル Wave 2 Phase B。候補 5 (continuous-learning v2.1) で pattern 検出 → instinct promote の自動度を確定。philosophy 第 6 条「人間最終承認」+ 第 7 条 P4 介入権 + 第 8 条候補との同時整合が必須"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "CTL に応じた段階的自動度（CTL 0 = inactive / CTL 1 = 候補出力のみ / CTL 2+ = 自動 promote だが Council 必須）"
+    - id: "B"
+      stance: "全 CTL で候補出力のみ、適用は人間最終承認（最も保守的）"
+    - id: "C"
+      stance: "自動 promote を 1 度も実装せず、Wave 3 でも候補出力のみで運用継続"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "効率重視、CTL 連動で生産性向上、開発体験を ECC に近づける"
+      confidence: 0.70
+    - persona: "開発者"
+      stance_id: "B"
+      reasoning: "誤 promote の影響大、観測データ不足の段階で自動経路を開くのはリスク高、まず候補出力で運用実証"
+      confidence: 0.80
+    - persona: "哲学者"
+      stance_id: "B"
+      reasoning: "第 6 条「人間最終承認」原則の厳格適用、自動 promote は哲学ガードレールを侵食、第 8 条候補語彙化前の自動経路は哲学侵食の先行"
+      confidence: 0.85
+  weighted_scoring:
+    weight_basis:
+      経営者: 3
+      開発者: 3
+      哲学者: 5
+    stance_scores:
+      - stance: "A: CTL 段階的自動度"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.10
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+      - stance: "B: 候補出力のみ、人間最終承認"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 6.65
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.80 }
+          - { persona: "哲学者", weight: 5, confidence: 0.85 }
+      - stance: "C: 自動 promote 永久不実装"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+    third_way_excluded: []
+    max_score_stance: "B: 候補出力のみ、人間最終承認"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B: 候補出力のみ、適用は人間最終承認。crosscut-continuous-learning skill を「候補出力 / CTL 0 inactive / 自動 promote なし」で実装"
+  minority_opinion: "経営者: Wave 2 末振り返り儀式で候補出力経路の運用実績 / 誤 promote 発生回数 / 人間レビュー負荷を観測、健全運用が確認できれば Wave 3 で CTL 連動自動度を再諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T07:02:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave2-starter.md §2.2.4 へ反映、Phase C で crosscut-continuous-learning skill を実装。Wave 2 末振り返り儀式の観測項目に追加"
+
+- invocation_id: "council-2026-05-11T07:00:00Z-w2qb02"
+  judgment_type: "tradeoff"
+  context: "Wave 2 Phase B 諮問 2。候補 4 (AgentShield ルールサブセット選別)。観察結果 (delivery/refs-draft/ecc/agentshield-spec.md) により AgentShield は 102 静的解析ルール × 5 カテゴリ、ecc-agentshield npm package で独立配布。`--fix` 自動修復経路と `--opus --stream` 外部 LLM 経路は DH 哲学 (独立性原則・観察温存) と緊張。哲学者重み増強 (5 → 6) で諮問"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "全 5 カテゴリ採用 + --fix 自動修復推奨、利用者プロジェクトに ecc-agentshield npm install を強推奨"
+    - id: "B"
+      stance: "5 カテゴリは warn のみ参照導入、--fix 自動修復は採用せず、--opus --stream 経路も採用せず"
+    - id: "C"
+      stance: "採用せず、Wave 3 で 102 ルール詳細観察後に再判断"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "ECC 連携で利用者プロジェクトの脆弱性検査を強化、エコシステム接続点として価値高"
+      confidence: 0.65
+    - persona: "開発者"
+      stance_id: "B"
+      reasoning: "--fix 自動修復は破壊的変更可能、CI 統合の運用負荷大、warn のみ参照導入が現実的"
+      confidence: 0.85
+    - persona: "哲学者"
+      stance_id: "B"
+      reasoning: "--fix は第 6 条「人間最終承認」を侵食、--opus --stream は外部 LLM 呼出で独立性原則・観察温存と緊張、warn のみ参照導入は philosophy 整合範囲"
+      confidence: 0.90
+  weighted_scoring:
+    weight_basis:
+      経営者: 3
+      開発者: 3
+      哲学者: 6
+    weight_basis_note: "candidate 4 仕様により哲学者重み 5 → 6 に増強（緊張度「高」のため）"
+    stance_scores:
+      - stance: "A: 全 5 カテゴリ + --fix + npm install 強推奨"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 1.95
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+      - stance: "B: warn のみ参照導入、--fix と --opus 不採用"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 9
+        weighted_score: 7.95
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+          - { persona: "哲学者", weight: 6, confidence: 0.90 }
+      - stance: "C: Wave 3 まで保留"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+    third_way_excluded: ["DH 自前実装は ECC-SURVEY §6 を踏まえ Wave 3 で v6.0.0 候補として別議題化"]
+    max_score_stance: "B: warn のみ参照導入"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B: 5 カテゴリ warn のみ参照導入。dev-env-spec.md AgentShield 参照導入規約 + templates/rules/common/agentshield-reference.md。DH 自前実装は行わない"
+  minority_opinion: "経営者: 利用者プロジェクト側で ecc-agentshield を手動 install することは推奨可。DH 側からの自動連携・強制起動は採用しない"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T07:03:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave2-starter.md §2.4.4 へ反映、Phase C で dev-env-spec.md AgentShield 参照導入規約セクション + templates/rules/common/agentshield-reference.md 配置。Wave 3 で v6.0.0 候補として DH 自前実装是非を別議題化"
+
+- invocation_id: "council-2026-05-11T07:00:00Z-w2qb03"
+  judgment_type: "simple_conflict"
+  context: "Wave 2 Phase B 諮問 3。候補 2 (origin/version frontmatter 規格) を Wave 1 で crosscut-hook-observer/SKILL.md に先取り適用済。既存 17 skill への展開タイミングを確定。Wave 1 諮問 w1qb02 (skill description 監査) と同型問題"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "Wave 2 内で 17 skill 一括適用（PR 規模大、frontmatter 既存形式との衝突 risk あり）"
+    - id: "B"
+      stance: "各 skill 次回更新時に逐次適用（Wave 1 諮問 w1qb02 と同型、運用負荷分散）"
+    - id: "C"
+      stance: "Wave 2 で 5 skill のみ先行（layer0 / layer1 / layer2 兄弟）、残り 12 skill は Wave 3 申し送り"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "一括の方が後の運用効率良い、frontmatter 完全性を早期に確立"
+      confidence: 0.70
+    - persona: "開発者"
+      stance_id: "B"
+      reasoning: "一括は変更範囲大、PR review 負担増、frontmatter 既存形式との衝突 risk"
+      confidence: 0.80
+    - persona: "哲学者"
+      stance_id: "B"
+      reasoning: "Wave 1 諮問 w1qb02 の判決を踏襲、逐次は哲学的に並列性高、Wave 2 末で進捗評価後 Wave 3 で再判断"
+      confidence: 0.78
+  weighted_scoring:
+    weight_basis:
+      経営者: 3
+      開発者: 3
+      哲学者: 5
+    stance_scores:
+      - stance: "A: Wave 2 内で 17 skill 一括適用"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.10
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+      - stance: "B: 各 skill 次回更新時に逐次適用"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 6.30
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.80 }
+          - { persona: "哲学者", weight: 5, confidence: 0.78 }
+      - stance: "C: 5 skill 先行、残り Wave 3"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+    third_way_excluded: []
+    max_score_stance: "B: 各 skill 次回更新時に逐次適用"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B: 各 skill 次回更新時に逐次適用。Wave 1 諮問 w1qb02 と同パターン。dev-env-spec.md frontmatter 規格セクション正式化 + 監査チェックリスト作成、新設 skill (crosscut-continuous-learning) に先取り適用、既存 17 skill は次回更新時"
+  minority_opinion: "経営者: Wave 2 末振り返り儀式で逐次適用の進捗 ≤ 50% が観測された場合、Wave 3 で一括適用を再諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T07:04:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave2-starter.md §2.3.4 へ反映、Phase C で dev-env-spec.md frontmatter 規格正式化 + 監査チェックリスト作成。本 PR では新設 skill に先取り適用、既存 17 skill は逐次"

@@ -285,11 +285,24 @@ Phase A 完遂後、後続セッションの Phase B で以下を諮問する:
 
 | Phase | 内容 | 完了基準 | 状態 |
 |---|---|---|---|
-| **Phase A**（本 PR） | Wave 2 SPEC ドラフト + 優先順位確定 + Council 諮問 agenda 提示 | 本ファイルの commit + draft PR 作成 | ✅ 完遂（本 commit） |
-| **Phase B** | Council 諮問 3〜4 件（agenda 1-4） | 諮問 1-3 採決、諮問 4 採決 or 省略判定 | 後続セッション |
-| **Phase C** | SPEC 実装（HV → 候補 5 → 候補 2 → 候補 4 の順） | 各候補で実装ファイル commit + harness-verifier --strict PASS | 後続セッション |
-| **Phase D** | 検証 + verifier 経由抵触チェック | 全検証項目 ✓、philosophy / drift 抵触 0 | レビュー時に実施 |
+| **Phase A**（PR #77） | Wave 2 SPEC ドラフト + 優先順位確定 + Council 諮問 agenda 提示 | SPEC starter commit + draft PR | ✅ 完遂（PR #77 merged） |
+| **Phase B**（本 PR） | Council 諮問 3 件採決 + 予備 1 件省略判定 | 諮問 1-3 agreed_recommended、諮問 4 省略 | ✅ 完遂（本 commit） |
+| **Phase C**（本 PR） | SPEC 実装（HV → 候補 5 → 候補 2 → 候補 4 の順） | 実装 + harness-verifier --strict PASS | 後続 commit |
+| **Phase D** | 検証 + verifier 経由抵触チェック | philosophy / drift 抵触 0 | レビュー時 |
 | **Phase E** | merge + REGIME-LOG 記録 + Wave 3 への申し送り | v5.13.x minor リリース | merge 後 |
+
+### Phase B 諮問結果サマリ（本 commit で確定）
+
+| invocation_id | recommended | confidence | conflict_type |
+|---|---|---|---|
+| `council-2026-05-11T07:00:00Z-w2qb01`（continuous-learning 自動度） | **B**: 候補出力のみ、人間最終承認 | 0.82 | tradeoff、B 系収束 |
+| `council-2026-05-11T07:00:00Z-w2qb02`（AgentShield 採用範囲） | **B**: 5 カテゴリ warn のみ参照導入 | 0.85 | tradeoff、B 系収束（哲学者重み増強） |
+| `council-2026-05-11T07:00:00Z-w2qb03`（frontmatter 適用タイミング） | **B**: 逐次適用（Wave 1 と同型） | 0.76 | simple_conflict、B 系収束 |
+| `council-2026-05-11T07:00:00Z-w2qb04`（HV 拡張 yml 経路） | 諮問省略（confidence ≥ 0.7） | — | 緊張度軽微 |
+
+3 件すべて `human_escalated: false` + `agreed_recommended`、`history/wave2/COUNCIL-DECISION-wave2-phaseB-2026-05-11T07:00:00Z.md` に詳細記録、`history/COUNCIL-LOG.md` に append-only 追記済。
+
+minority opinion 3 件は Wave 2 末 / Wave 3 末の振り返り儀式で再評価項目として温存。Wave 2 Phase B は Wave 1 Phase B と同様 **B 系（保守的・人間最終承認尊重）に収束** し、咀嚼プロトコル T3 + ガードレール語彙化が DH 哲学の自然な帰結として動作することが実証された。
 
 ---
 
