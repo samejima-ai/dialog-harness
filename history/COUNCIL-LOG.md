@@ -1321,3 +1321,190 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-05-11T07:04:00Z"
   follow_up_questions_count: 0
   cascade_to: "delivery/CHEW-PROTOCOL-SPEC-wave2-starter.md §2.3.4 へ反映、Phase C で dev-env-spec.md frontmatter 規格正式化 + 監査チェックリスト作成。本 PR では新設 skill に先取り適用、既存 17 skill は逐次"
+
+- invocation_id: "council-2026-05-11T09:00:00Z-w3qb01"
+  judgment_type: "tradeoff"
+  category: "conception"
+  context: "Wave 3 Phase B 諮問 1。philosophy 第 8 条本格諮問。Wave 1 PHILOSOPHY-NOTE-autonomy-with-guardrails-2026-05-11 で起草、Wave 1 + Wave 2 の B 系収束 2 サンプルを経験的根拠として philosophy.md に正式追加するかを諮問。council-weights.md §situational_modifier.conception 適用 (経営者 0 / 開発者 -1 / 哲学者 +2)"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "第 8 条として明文化、philosophy.md に追加（3 段階: 観測 → 候補化 → 人間最終承認）"
+    - id: "B"
+      stance: "第 8 条候補のまま PHILOSOPHY-NOTE で温存、Wave 4 / Wave 5 で再諮問"
+    - id: "C"
+      stance: "第 8 条として明文化、ただし「観測 → 候補化 → 採決 → 適用」の 4 段階に拡張（Council 必須を明示）"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "規範の明文化は意思決定速度を上げ後続 Wave の判断負荷を減らす、3 段階で十分、4 段階は Council 起動コスト大"
+      confidence: 0.70
+    - persona: "開発者"
+      stance_id: "A"
+      reasoning: "第 8 条は B 系収束パターンの言語化で判断基準として実装に役立つ、3 段階の運用負荷が低い、4 段階拡張は Wave 4 末で再評価"
+      confidence: 0.75
+    - persona: "哲学者"
+      stance_id: "C"
+      reasoning: "4 段階拡張案は philosophy 第 7 条「AI 組織論」P3 責務分離と整合、Council 経由が必須の構造化が望ましい"
+      confidence: 0.85
+  weighted_scoring:
+    weight_basis:
+      経営者: 3
+      開発者: 3
+      哲学者: 5
+    weight_basis_note: "council-weights.md §base_weights.business (3/4/3) + §situational_modifier.conception (0/-1/+2) = 3/3/5"
+    stance_scores:
+      - stance: "A: 3 段階明文化"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.35
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.75 }
+      - stance: "B: PHILOSOPHY-NOTE 温存"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+      - stance: "C: 4 段階拡張明文化"
+        supporters: ["哲学者"]
+        weight_sum: 5
+        weighted_score: 4.25
+        components:
+          - { persona: "哲学者", weight: 5, confidence: 0.85 }
+    third_way_excluded: []
+    max_score_stance: "A: 3 段階明文化"
+    tie_break_applied: false
+    score_gap_note: "max (4.35) vs 次点 (4.25) の差 0.10。judgment-agent.md §confidence 算出規則「差 < 0.5 → 0.4-0.6」適用で confidence 0.55"
+  weight_calculation_retry_count: 0
+  recommended: "A: 第 8 条として明文化、philosophy.md に追加（3 段階: 観測 → 候補化 → 人間最終承認）"
+  minority_opinion: "哲学者 (C): 4 段階拡張は第 7 条 P3 責務分離と整合。Wave 4 末で 3 段階運用実績観測、Council 経由率 ≤ 20% なら Wave 5 で 4 段階拡張を再諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T09:02:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "philosophy.md 第 8 条として明文化 (3 段階)、history/PHILOSOPHY-CHANGELOG.md に追加記録、Wave 4 末振り返りで 4 段階拡張再評価の観測項目設定"
+
+- invocation_id: "council-2026-05-11T09:00:00Z-w3qb02"
+  judgment_type: "tradeoff"
+  category: "judgment"
+  context: "Wave 3 Phase B 諮問 2。議題 2 残候補 (hooks 9 event 残り 4 / continuous-learning CTL 連動自動度) の Wave 3 採用判断。council-weights.md §situational_modifier.judgment 適用 (経営者 +1 / 開発者 0 / 哲学者 0)"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "Wave 3 で全 4 event 採用 + continuous-learning CTL 連動自動度を実装"
+    - id: "B"
+      stance: "PreCompact のみ採用、他 3 event + CTL 連動は Wave 4 申し送り、continuous-learning は候補出力のみ継続"
+    - id: "C"
+      stance: "全 4 event を Wave 3 でも採用せず Wave 4 / 5 で再諮問"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "観測経路の拡張は実利大、4 event 採用で観測カバレッジ向上、CTL 連動は効率化に寄与"
+      confidence: 0.60
+    - persona: "開発者"
+      stance_id: "B"
+      reasoning: "observation log volume 増は HV 負荷増、4 event 一括は時期尚早、CTL 連動は w2qb01 判決を 1 Wave で覆すのは経験不足"
+      confidence: 0.78
+    - persona: "哲学者"
+      stance_id: "B"
+      reasoning: "第 8 条 (A 採決) 後の自律拡張は 3 段階を経由必要、CTL 連動は Wave 4 で第 8 条運用観測後に判断、PreCompact は単機能で緊張低"
+      confidence: 0.80
+  weighted_scoring:
+    weight_basis:
+      経営者: 4
+      開発者: 4
+      哲学者: 3
+    weight_basis_note: "council-weights.md §base_weights.business (3/4/3) + §situational_modifier.judgment (+1/0/0) = 4/4/3"
+    stance_scores:
+      - stance: "A: 全 4 event 採用 + CTL 連動"
+        supporters: ["経営者"]
+        weight_sum: 4
+        weighted_score: 2.40
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.60 }
+      - stance: "B: PreCompact のみ採用"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 7
+        weighted_score: 5.52
+        components:
+          - { persona: "開発者", weight: 4, confidence: 0.78 }
+          - { persona: "哲学者", weight: 3, confidence: 0.80 }
+      - stance: "C: 全 4 event 不採用"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+    third_way_excluded: []
+    max_score_stance: "B: PreCompact のみ採用"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B: PreCompact のみ採用、他 3 event と continuous-learning CTL 連動は Wave 4 申し送り"
+  minority_opinion: "経営者 (A): Wave 4 末で PreCompact 採用の運用実績観測 (observation log ≥ 500 件 + PreCompact entry が ≥ 5% 占有) で UserPromptSubmit / Notification を Wave 5 で追加諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T09:03:00Z"
+  follow_up_questions_count: 0
+  cascade_to: ".claude/hooks.json + crosscut-hook-observer/SKILL.md SUPPORTED_EVENTS + harness-verifier/checks/hook_observations.py に PreCompact 追加。continuous-learning CTL 連動は SPEC starter §5 に Wave 4 申し送り素材として記録"
+
+- invocation_id: "council-2026-05-11T09:00:00Z-w3qb03"
+  judgment_type: "simple_conflict"
+  category: "operation"
+  context: "Wave 3 Phase B 諮問 3。philosophy.md 改訂時の delta を history/PHILOSOPHY-CHANGELOG.md に追記する機構の運用方式選定。council-weights.md §situational_modifier.operation 適用 (経営者 +1 / 開発者 0 / 哲学者 -1)"
+  questions_count: 0
+  proposed_stances:
+    - id: "A"
+      stance: "PHILOSOPHY-CHANGELOG.md 新設 + 自動 emit (commit hook or PR action)、Wave 3 で第 8 条追加と同時に運用開始"
+    - id: "B"
+      stance: "PHILOSOPHY-CHANGELOG.md 新設 + 改訂時手動追記、自動 emit は不要"
+    - id: "C"
+      stance: "CHANGELOG 不要、commit message 規約のみで運用"
+  persona_votes:
+    - persona: "経営者"
+      stance_id: "A"
+      reasoning: "改訂履歴の集中管理は意思決定速度に寄与、自動 emit で運用負荷ゼロ"
+      confidence: 0.80
+    - persona: "開発者"
+      stance_id: "B"
+      reasoning: "自動 emit の実装は重い (commit hook or PR action 設計)、手動運用で十分"
+      confidence: 0.70
+    - persona: "哲学者"
+      stance_id: "B"
+      reasoning: "philosophy 改訂は append-only な歴史記録として制度化、CHANGELOG 形式適切、手動運用がプロセス可視化に寄与"
+      confidence: 0.75
+  weighted_scoring:
+    weight_basis:
+      経営者: 4
+      開発者: 4
+      哲学者: 2
+    weight_basis_note: "council-weights.md §base_weights.business (3/4/3) + §situational_modifier.operation (+1/0/-1) = 4/4/2"
+    stance_scores:
+      - stance: "A: 自動 emit"
+        supporters: ["経営者"]
+        weight_sum: 4
+        weighted_score: 3.20
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.80 }
+      - stance: "B: 手動運用"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 6
+        weighted_score: 4.30
+        components:
+          - { persona: "開発者", weight: 4, confidence: 0.70 }
+          - { persona: "哲学者", weight: 2, confidence: 0.75 }
+      - stance: "C: CHANGELOG 不要"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0
+    third_way_excluded: []
+    max_score_stance: "B: 手動運用"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B: PHILOSOPHY-CHANGELOG.md 新設、改訂時に手動追記、自動 emit は不要"
+  minority_opinion: "経営者 (A): Wave 4 末で philosophy 改訂頻度 ≥ 2 件/Wave 観測時、自動 emit 化を再諮問"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-11T09:04:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "history/PHILOSOPHY-CHANGELOG.md 新設、Wave 3 第 8 条追加と同時に初回エントリ追加。dev-env-spec.md に手動追記手順明記"

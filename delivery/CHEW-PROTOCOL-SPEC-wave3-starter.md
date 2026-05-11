@@ -186,11 +186,32 @@ Wave 2 末振り返りで蓄積された運用実績に基づき、Wave 1 + Wave
 
 | Phase | 内容 | 完了基準 | 状態 |
 |---|---|---|---|
-| **Phase A**（本 PR） | Wave 3 SPEC ドラフト + 優先順位確定 + Council 諮問 agenda 提示 | 本 commit + draft PR | 起草中 |
-| **Phase B** | Council 諮問 3 件採決 + 予備 1 件省略判定 | 諮問 1-3 採決、諮問 4 省略 | 後続セッション |
-| **Phase C** | SPEC 実装（第 8 条追加 → 議題 2 残 → 候補 7 → 候補 8） | 実装 + harness-verifier --strict PASS | 後続セッション |
+| **Phase A**（PR #80） | Wave 3 SPEC ドラフト + 優先順位確定 + Council 諮問 agenda 提示 | 本 commit + draft PR | ✅ 完遂（PR #80） |
+| **Phase B**（本 PR） | Council 諮問 3 件採決 + 予備 1 件省略判定 | 諮問 1-3 採決、諮問 4 省略 | ✅ 完遂（本 commit） |
+| **Phase C**（本 PR） | SPEC 実装（第 8 条追加 → 議題 2 残 → 候補 7 → 候補 8） | 実装 + harness-verifier --strict PASS | 後続 commit |
 | **Phase D** | 検証 + verifier 経由抵触チェック | philosophy / drift 抵触 0 | レビュー時 |
 | **Phase E** | merge + REGIME-LOG / PHILOSOPHY-CHANGELOG 記録 + Wave 4 申し送り | v5.14.x minor リリース | merge 後 |
+
+### Phase B 諮問結果サマリ（本 commit で確定）
+
+| invocation_id | recommended | confidence | category | 適用 weights |
+|---|---|---|---|---|
+| `council-w3qb01`（第 8 条本格諮問） | **A**: 3 段階明文化 | 0.55 | conception | 3/3/5 |
+| `council-w3qb02`（議題 2 残候補） | **B**: PreCompact のみ採用 | 0.79 | judgment | 4/4/3 |
+| `council-w3qb03`（philosophy-changelog） | **B**: 手動運用 | 0.72 | operation | 4/4/2 |
+| `council-w3qb04`（儀式テンプレート） | 諮問省略 | ≥ 0.7 | — | — |
+
+3 件すべて `human_escalated: false` + `agreed_recommended`、`history/wave3/COUNCIL-DECISION-wave3-phaseB-2026-05-11T09:00:00Z.md` に詳細記録、`history/COUNCIL-LOG.md` に append-only 追記済。
+
+### Wave 1 / 2 との収束パターン差異
+
+| Wave | 諮問 | 収束方向 |
+|---|---|---|
+| Wave 1 (3 諮問) | w1qb01-03 | すべて B 系（保守的） |
+| Wave 2 (3 諮問) | w2qb01-03 | すべて B 系（保守的） |
+| **Wave 3 (3 諮問)** | w3qb01-03 | **w3qb01: A（接近採決、minority C 温存）、w3qb02/03: B** |
+
+Wave 3 諮問 1 では Wave 1 / 2 の純粋な B 系収束パターンが **崩れて** A 系（哲学者の C と接近採決、confidence 0.55）に収束した。これは第 8 条本格諮問の特殊性（philosophy 改訂は不可逆度高、3 段階先行 + 4 段階拡張を minority opinion 温存）の反映で、Wave 4 / 5 で minority opinion 再評価機構の実証機会となる。
 
 ## 5. Wave 3 末申し送り素材（暫定枠）
 
