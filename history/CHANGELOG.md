@@ -56,13 +56,13 @@ v5.16.0 (feat) が PR #92 で先行 merge されたため、本 chore は v5.16.
 ### L-1: 5 本柱 vs 5本柱 表記揺れの統一
 
 - 非アーカイブの活性ドキュメント 2 ファイルで `5本柱` → `5 本柱`（半角スペース版）へ正規化:
-  - `dh-upgrades/upgrade-spec-v5.0.0.md`（17 箇所）
+  - `dh-upgrades/upgrade-spec-v5.0.0.md`（16 箇所）
   - `docs/migration-guide-v5.0.0.md`（1 箇所）
 - `history/` 配下のアーカイブファイル（SELF-VERIFICATION / SKILL-CREATOR-AUDIT / deliveries / D4-AUDIT-2026-04-30 自体）は append-only 規約により対象外。スナップショット時の事実を保持。
 
 ### L-2: harness-verifier/PHILOSOPHY.md バージョン記載（既出消化確認）
 
-- `harness-verifier/PHILOSOPHY.md` 末尾の `## バージョン\nv0.1.0（dialog-harness v5.2.0 で導入、harness-verifier 機構の存在論初版）` が監査以降の中間 PR で既に追加済を確認。本 PR では追加作業なし、消化済として明示記録。
+- `harness-verifier/PHILOSOPHY.md` 末尾に `## バージョン` セクションがあり、`v0.1.0（dialog-harness v5.2.0 で導入、harness-verifier 機構の存在論初版）` が記載済であることを監査以降の中間 PR で確認。本 PR では追加作業なし、消化済として明示記録。
 
 ### cookpato 連動
 
