@@ -286,7 +286,7 @@ UX 3問プロトコル（§2.5）と同じ思想で 3 問に絞る。未回答�
 #### 既存プロジェクトとの後方互換
 
 `DESIGN.md` 不在のプロジェクトはこれまで通り動作する（生成義務なし）。
-LC ≥ 1 プロジェクトへの後付け追加は事後追加プロトコル（`design-system-spec.md` §運用規律）参照。
+LC ≥ 1 プロジェクトへの後付け追加は事後追加プロトコル（`references/design-system-spec.md` §運用規律）参照。
 
 ### 4. モード判定
 
@@ -468,7 +468,7 @@ project-root/
 - `delivery/` を空で作成（L1 献上先として確保）
 - `assets/` を空で作成（共有入力の置き場）
 - `docs/` は**初期生成しない**（L1 が共有出力として必要時に生成）
-- ルート直下は INDEX/SPEC/DONT/REGIME/CLAUDE/DOMAINS と README.md のみ許可
+- ルート直下は INDEX/SPEC/DONT/REGIME/CLAUDE/DOMAINS と README.md のみ許可。DESIGN.md は UI プロジェクトのみ追加で許可（§3.6 で生成判定された場合のみ。v5.15.0 追加）
 - 違反（PLAN.md, TODO.md, MEMO.md 等のルート直下作業メモ）は **Phase B の自動修復対象** として DELIVERY.md にログ化
 
 本ステップは新規（LC=0）のみ実施。既存プロジェクト（LC=1/LC=2）では現状配置を尊重し、違反検出時のみ L1 側で修復を提起する。

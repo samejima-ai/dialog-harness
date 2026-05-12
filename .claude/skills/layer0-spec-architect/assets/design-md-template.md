@@ -90,58 +90,59 @@ components:
 
 ## Colors
 
-- **Primary**: 最も重要な Call To Action (CTA) にのみ使用する。装飾の背景・アイコン色には絶対に使わない（視線誘導を 1 つに絞るため）
-- **Surface vs Background**: 画面のベースは純白 `background`、カードや区切られた要素の背景には `surface` を使用して階層を表現する
-- **Error**: エラー以外の用途で使用禁止。通常の警告・情報表示には別途 `colors.warning` / `colors.info` を必要時に追加する（初版では未定義）
-- **Text**: `text-primary` は本文と見出し、`text-secondary` はメタ情報（タイムスタンプ・補足）のみ
+- **Primary**: 最も重要な Call To Action (CTA) にのみ使用する。`{colors.primary}` は装飾の背景・アイコン色には絶対に使わない（視線誘導を 1 つに絞るため）
+- **Surface vs Background**: 画面のベースは純白 `{colors.background}`、カードや区切られた要素の背景には `{colors.surface}` を使用して階層を表現する
+- **Error**: `{colors.error}` はエラー以外の用途で使用禁止。通常の警告・情報表示には別途 `colors.warning` / `colors.info` を必要時に追加する（初版では未定義）
+- **Text**: `{colors.text-primary}` は本文と見出し、`{colors.text-secondary}` はメタ情報（タイムスタンプ・補足）のみ
 
 ## Typography
 
 - フォントは全て `Inter` を第一候補とし、システムフォントへのフォールバックを必ず設定する
-- 重要な数値・データ表示には `mono-data`（等幅）を適用する
+- 重要な数値・データ表示には `{typography.mono-data}`（等幅）を適用する
 - 1 つの画面内のフォントウェイトは **2 種類まで**（regular 400 + bold 700）。3 種類以上の混在は禁止
 
 ## Layout & Spacing
 
-- ベース単位は `4px` の倍数（推奨は 8 倍数）のスペーシングスケール
-- 要素間の関係性が密なものは `spacing.sm` (8px)、異なるセクション間の区切りは `spacing.xl` (32px) を使い、ゲシュタルト要因（近接の要因）を UI 上で明確にする
+- ベース単位は `{spacing.base}` (4px) の倍数（推奨は 8 倍数）のスペーシングスケール
+- 要素間の関係性が密なものは `{spacing.sm}` (8px)、異なるセクション間の区切りは `{spacing.xl}` (32px) を使い、ゲシュタルト要因（近接の要因）を UI 上で明確にする
 - 1 行の最大文字数は約 75 文字（読みやすさの上限）
 
 ## Elevation & Depth
 
-- インタラクティブなカードには `elevation.card` を適用してクリック可能性を示す
-- hover 時のみ `elevation.hover` に昇格させる（クリック前のフィードバック）
+- インタラクティブなカードには `{elevation.card}` を適用してクリック可能性を示す
+- hover 時のみ `{elevation.hover}` に昇格させる（クリック前のフィードバック）
 - モーダル・ドロワーは別途 z-index 設計で扱う（本ファイル外）
 
 ## Shapes
 
-- 全インタラクティブ要素（ボタン・入力フォーム・カード）には `rounded.md` (8px) を適用し、わずかに柔らかい印象を与える
+- 全インタラクティブ要素（ボタン・入力フォーム・カード）には `{rounded.md}` (8px) を適用し、わずかに柔らかい印象を与える
 - 完全直角（0px）は法定文書・契約系画面のみ
-- `rounded.full` はバッジ・アバター・トグルスイッチ限定
+- `{rounded.full}` はバッジ・アバター・トグルスイッチ限定
 
 ## Components
 
 ### Button (Primary)
 
 - 用途: 画面ごとに 1〜2 個までの CTA
-- 状態: default → hover (`button-primary-hover`) → active (background -10% lightness)
+- 状態: default (`{components.button-primary}`) → hover (`{components.button-primary-hover}`) → active (background -10% lightness)
 - disabled 時は opacity 0.5、cursor: not-allowed
 
 ### Input (Text)
 
+- 定義: `{components.input-text}`
 - ラベルは必ず input の **上**（左横配置は使わない、モバイル対応のため）
 - placeholder は **補足のみ**。ラベル代替には使わない（アクセシビリティ要件）
-- エラー時は border を `colors.error` に切り替え、`spacing.sm` 下にエラーメッセージを `colors.error` text で表示
+- エラー時は border を `{colors.error}` に切り替え、`{spacing.sm}` 下にエラーメッセージを `{colors.error}` text で表示
 
 ## Do's and Don'ts
 
-- **Do**: インタラクティブなカードには微細なシャドウ（`elevation.card`）を用いて、クリック可能であることを示すこと
+- **Do**: インタラクティブなカードには微細なシャドウ（`{elevation.card}`）を用いて、クリック可能であることを示すこと
 - **Do**: すべてのテキストは WCAG 2.1 AA 規格のコントラスト比（通常テキスト 4.5:1 以上、大型テキスト 3:1 以上）を満たすこと
 - **Do**: フォーカスインジケータ（focus ring）を全てのインタラクティブ要素に表示すること（キーボード操作対応）
 - **Don't**: 1 つの画面内に 3 つ以上の異なるフォントウェイトを混在させないこと
-- **Don't**: エラー以外の通常の警告や情報表示に `colors.error` を使用しないこと
-- **Don't**: `colors.primary` を装飾的な背景・大面積塗りつぶしに使わないこと（CTA 専用）
-- **Don't**: 角丸の半径を要素ごとに変えないこと（`rounded.md` で統一）
+- **Don't**: エラー以外の通常の警告や情報表示に `{colors.error}` を使用しないこと
+- **Don't**: `{colors.primary}` を装飾的な背景・大面積塗りつぶしに使わないこと（CTA 専用）
+- **Don't**: 角丸の半径を要素ごとに変えないこと（`{rounded.md}` で統一）
 ````
 
 ---

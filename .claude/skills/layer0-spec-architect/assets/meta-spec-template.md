@@ -36,7 +36,6 @@
 
 ## 視覚仕様（任意・UI プロジェクトのみ）
 → DESIGN.md
-（生成判定は SKILL.md §3.6。詳細規格は `.claude/skills/layer0-spec-architect/references/design-system-spec.md`）
 ```
 
 ---
