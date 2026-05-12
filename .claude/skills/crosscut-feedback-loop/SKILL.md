@@ -62,4 +62,4 @@ description: >
 - `crosscut-verifier-philosophy/SKILL.md` — 思想検証元（v5.1.0）
 - `crosscut-issue-dispatcher/SKILL.md` — drift → Issue 還流の実装
 - `crosscut-council/SKILL.md` — 思想 FAIL 時の判定機構
-- `templates/.github/workflows/drift-feedback.yml` — 自動化雛形
+- `templates/.github/workflows/drift-feedback.yml` — 自動化雛形（dialog-harness リポジトリのテンプレート。利用者プロジェクトに同梱されず、autonomous-drive deployment 経由で `.github/workflows/` へ展開）

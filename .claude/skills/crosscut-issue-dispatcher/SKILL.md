@@ -40,4 +40,4 @@ description: >
 - `references/dispatch-protocol.md` — CTL 別動作詳細
 - `crosscut-council/SKILL.md` — 事前検証時の判定機構
 - `crosscut-issue-quality-gate/SKILL.md` — Issue 品質チェック（発動契機 (a)）
-- `templates/.github/workflows/issue-dispatch.yml` — 自動化雛形
+- `templates/.github/workflows/issue-dispatch.yml` — 自動化雛形（dialog-harness リポジトリのテンプレート。利用者プロジェクトに同梱されず、autonomous-drive deployment 経由で `.github/workflows/` へ展開）
