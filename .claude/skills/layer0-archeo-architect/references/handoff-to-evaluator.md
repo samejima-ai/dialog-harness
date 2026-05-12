@@ -245,7 +245,7 @@ v5.5.0 で改修した L1 側ファイル（先行宣言 1/2/3 を本実装）�
 | アンチパターン | archeo の対応（Phase α 実装済み） | Phase γ で強化される対応 |
 |---|---|---|
 | UI 層からの着手 | 直接対応なし | refactor-intent-map.md の Summary に「推奨着手順序」フィールド追加 |
-| セマンティック境界欠如 | Boundaries セクションで明示 | DDD Bounded Context との接続（`../layer0-spec-architect/references/subphase-l02-domain.md` との連携、v6.0.0 候補） |
+| セマンティック境界欠如 | Boundaries セクションで明示 | DDD Bounded Context との接続（`../../layer0-spec-architect/references/subphase-l02-domain.md` との連携、v6.0.0 候補） |
 | DB 共有の罠 | 射程外 | 射程外（L1 実装パターン） |
 | 90 日の法則 | Git ホットスポット上位 10% を初期対話対象に優先 | 射程外（プロジェクト管理） |
 

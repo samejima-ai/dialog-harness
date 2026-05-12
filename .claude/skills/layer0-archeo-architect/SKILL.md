@@ -21,7 +21,7 @@ description: >
 
 「自分で書いたコードのリファクタを依頼すると意図通りにならない。10 個の修正点を依頼して Evaluator ループを回しても 3〜4 個取りこぼす」という観察に対する構造的解決策。L1 (`layer1-autonomous-dev`) の自己検証/独立検証が「仕様に合う・動く・使える」の 3 軸で評価しており、「**人間の元々の意図に合う**」軸が不在だったことが根因。本スキルは意図マップ (`refactor-intent-map.md`) を生成し、リファクタ前 Layer 0 として L1 の評価軸 4 つ目を準備する。
 
-詳細な経緯は `../../history/INTENT.md` の archeo-architect 導入セクション参照。
+詳細な経緯は `../../../history/INTENT.md` の archeo-architect 導入セクション参照。
 
 ## 原則
 
@@ -92,8 +92,25 @@ description: >
 - 島の paths（ファイル・ディレクトリ単位）
 - 走査時の S/U/R 推定値（Scale: 行数・依存数 / Uncertainty: 仮説の確信度の逆数 / Risk: 壊した時の本番影響度）
 - 仮説生成のヒント（コメント不在・命名混乱・重複ロジック・git log 不在等）
+- **島のタイプ** (v5.16.0 追加): `logic` / `visual` の 2 種類で分類
+  - `logic`: 通常の機能・データ・ロジック領域（既存挙動）
+  - `visual`: UI 視覚仕様の島（CSS / Tailwind config / styled-components / theme.ts / デザイントークン）。**UI プロジェクト & DESIGN.md 存在時のみ起動**
 
 S/U/R の用語は `harness-verifier/glossary.yml` の `score_axes` に準拠。リファクタ文脈での読み替えは `references/intent-hypothesis-protocol.md` 参照。
+
+#### 視覚 Island の検出条件（v5.16.0 追加、UI プロジェクトのみ）
+
+`DESIGN.md` が存在し、リファクタ範囲に以下が含まれる場合に視覚 Island を立てる:
+
+| 検出シグナル | 視覚 Island のヒント |
+|---|---|
+| 同一トークン (色 / spacing / rounded) が複数箇所に直書き | DESIGN.md のトークン化前の遺産。逆抽出→DESIGN.md へ集約する意図仮説 |
+| `colors.primary` が CTA 以外に流用されている | DESIGN.md `## Do's and Don'ts` 違反、「装飾流用」の意図を確認 |
+| 1 画面内にフォントウェイト 3 種以上 | DESIGN.md `## Do's and Don'ts` 違反、「強調の段階分け」の意図を確認 |
+| ダークモード未対応 | 「ダークモード不要」or「将来対応予定」の意図を確認 |
+| ベンダープレフィックス / レガシー CSS の混在 | 「ブラウザ対応範囲」の意図を確認 |
+
+視覚 Island の `paths` は CSS / styled-components ファイルだけでなく、関連する React/Vue コンポーネント（視覚仕様が漏れている可能性のある場所）を含める。
 
 ### 2. 意図仮説提示
 

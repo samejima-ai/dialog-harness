@@ -28,6 +28,70 @@ L0/L1/L2 の三層構造、フラクタル原則、人間⇄AI 協働プロト�
 - layer2-orchestrator
 - layer2-integration-verifier
 
+### Level A 配布性評価 checklist（v5.16.0 追加）
+
+Level A スキル（または crosscut-* スキル）として配布する前に、以下の checklist で配布適格性を評価する。`.claude/skills/` 直下に置く skill 候補が Level A として成立するかの判定基準。新規 skill 追加時、または既存 skill の格上げ・格下げ検討時に必須評価。
+
+#### A. 不変性（プロジェクト中立）
+
+- [ ] **A-1 プロジェクト固有値の不在**: SKILL.md / references/ / assets/ 内にプロジェクト固有のドメイン語（業務用語・社名・商品名）を含まない
+- [ ] **A-2 ドメイン独立性**: 業界（金融・医療・EC 等）に特化した記述が無いか、あっても references/ 配下の任意参照 (`domain-*.md`) に閉じている
+- [ ] **A-3 stack 中立性**: 特定の言語・FW・DB 名がハードコードされていない。stack 固有手順は `scaffold-checklist.md` の対応 stack テンプレに切り出し済み
+
+#### B. 参照整合性（dead-link 不在）
+
+- [ ] **B-1 兄弟 skill 参照**: SKILL.md → 兄弟 skill への参照は `../<sibling-skill>/...`、references/ 配下からは `../../<sibling-skill>/...`（harness-verifier 検査 2「参照 path 有効性」で機械検証）
+- [ ] **B-2 repo 内部参照**: 説明用に `.claude/skills/...` 形式のリポジトリルートからのパスを書く場合は、説明文脈（resolve 不要）であることをバッククォート前後の文脈で明確化
+- [ ] **B-3 frontmatter 整合**: SKILL.md の frontmatter (name / description / model / 等) が `harness-verifier/checks/frontmatter.py` の検査をパス
+- [ ] **B-4 用語辞書整合**: `harness-verifier/glossary.yml` の用語と整合（出現する重要用語が辞書に存在、または辞書から逸脱していない）
+
+#### C. progressive disclosure 規約準拠
+
+- [ ] **C-1 SKILL.md の役割**: 200〜600 行を目安に、起動条件 + 処理フロー + 主要ステップで完結。詳細プロトコルは references/ に切り出し
+- [ ] **C-2 references/ の役割**: 必要時のみ読み込む詳細仕様・参照ドキュメント。SKILL.md から明示的に呼ばれている
+- [ ] **C-3 assets/ の役割**: 埋めて使うテンプレート・素材。生のテンプレ文字列を含む
+- [ ] **C-4 役割分離**: references/（読み参考）と assets/（埋めて使う）の分離が守られている
+
+#### D. 依存方向（フラクタル整合）
+
+- [ ] **D-1 単方向依存**: 上位 layer から下位 layer への参照のみ（L2 → L1 → L0、crosscut → 各 layer は OK、逆方向禁止）
+- [ ] **D-2 兄弟 skill 間の循環なし**: SK 間参照グラフで循環が発生しない（harness-verifier 検査 3「SK 間参照の健全性」で機械検証）
+- [ ] **D-3 harness-verifier 非依存**: 本 skill が harness-verifier の機能を呼び出していない（D4 検査機構と本体の独立性要請）
+
+#### E. 自己完結性（利用者プロジェクト配布性）
+
+- [ ] **E-1 外部ライブラリ依存ゼロ**: SKILL.md の処理フローが Python 標準ライブラリ or 利用者の既存 stack（Node/pnpm 等）だけで動く
+- [ ] **E-2 認証情報不要**: GITHUB_TOKEN 等の secret を**要求する**記述は dev_mode = autonomous 専用 skill に限定
+- [ ] **E-3 OS 非依存**: Linux/Mac/WSL のいずれでも動作する手順（shell-specific な記法 (zsh/bash) を断り無く使わない）
+
+#### F. メタ評価
+
+- [ ] **F-1 SKILL.md description の起動契機網羅**: skill description が起動契機（人間発話例・自動起動条件）を 3 例以上含む
+- [ ] **F-2 LC 互換**: LC=0 (新規) / LC=1 (継続) / LC=2 (振り返り) の各局面で挙動が定義されている、または明示的に「LC=X のみ起動」と書かれている
+- [ ] **F-3 dev_mode 互換**: local_only / github_assisted / autonomous の各 dev_mode で挙動が定義されている、または「dev_mode = X のみ起動」と書かれている
+
+#### 適用ルール
+
+- **新規 skill 追加 PR**: PR 内で本 checklist 全項目を埋め、レビューで承認後にマージ
+- **既存 skill 改修**: 改修範囲に該当する項目のみ再評価。frontmatter / 参照パス変更時は最低 B-1 〜 B-4 を再評価
+- **格上げ・格下げ**: layer1- prefix を crosscut- に移す等の格変更時は全項目を再評価
+- **未充足項目あり**: skill description で「実験的」「PR1 walking skeleton」等と明示してマージは可能。但し未充足項目は dh-upgrades/ に申し送り
+
+#### 検査機構との連携
+
+| checklist 項目 | 機械検証可否 | 検査機構 |
+|---|---|---|
+| A-1 / A-2 / A-3 | 不可（人間判断） | — |
+| B-1（インライン / バッククォート両形式） | 可 | harness-verifier 検査 2「参照 path 有効性」(v5.16.0 で BACKTICK_PATH_RE 追加) |
+| B-3 | 可 | harness-verifier 検査 1「frontmatter 整合性」 |
+| B-4 | 可 | harness-verifier 検査 5「用語辞書整合」 |
+| D-2 | 可 | harness-verifier 検査 3「SK 間参照の健全性」 |
+| 他項目 | 不可 | レビュー時の人間判断 |
+
+機械検証可能な項目は harness-verifier 全 PASS で自動充足、人間判断項目は PR レビューでカバーする。
+
+---
+
 ### Level B（プロジェクト固有スキル）
 
 プロジェクト固有の開発支援スキル。

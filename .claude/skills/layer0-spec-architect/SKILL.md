@@ -557,6 +557,23 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
+### v5.16.0 追加（共有可能スキル整理・参照整合性確立・AI 駆動 PR 運用の実証、minor 昇格）
+
+後方互換維持の追加のみ。Council 2 件 (`council-2026-05-12T13:32:00Z-sspr01` / `council-2026-05-12T14:30:00Z-adpp01`) 合意の scope_lock 6 項目を 1 PR で実装。
+
+- `references/dev-env-spec.md` に **Level A 配布性評価 checklist**（6 軸 / 21 項目）を新設。新規 skill 追加 / 改修 / 格上げ・格下げ時の判定基準として運用
+- `references/ecc-compat-criteria.md` 新設。ECC 互換配置の規約格上げ判定材料（6 軸）を整備。v5.16.0 時点では観測層継続、規約格上げは v5.17.0 以降に延期
+- `references/deprecation-protocol.md` の dead-backtick-link 1 件修正（references/ 配下からは「2 階層遡る」相対パスが必要、SKILL.md 直下からは「1 階層遡る」で兄弟 skill に届く点を判別）
+
+連動して以下が他 skill / harness 側で更新（詳細は各 skill / `dh-upgrades/upgrade-spec-v5.16.0.md`）:
+- `harness-verifier/checks/references.py` に `BACKTICK_PATH_RE` を追加（バッククォート内相対パスの dead-link 検査）
+- `layer0-onboarding` に reverse-design ステップ追加（既存 src/ から `DESIGN.md` 逆抽出、UI プロジェクトのみ）
+- `layer0-archeo-architect` の意図マップに視覚 Island 追加（`island_type` / `design_md_impact` フィールド）
+- `history/REGIME-LOG.md` に L0 三兄弟マトリクス記録、`history/ARCH-DECISIONS.md` に AD-021 / AD-022 追加
+
+LC ≥ 1 既存プロジェクトは新規開始機能・フェーズに段階適用、既存成果物への遡及修正は不要。
+PR 粒度方針として AD-021「AI 駆動開発における PR 粒度の決定基準」を採択、v5.16.0 を最初の実証 PR とする。
+
 ### v5.15.0 追加（DESIGN.md 生成機能、minor 昇格）
 
 後方互換維持の追加のみ。UI を伴うプロジェクトの視覚的アイデンティティ（カラー / タイポ / spacing / コンポーネント / Do's and Don'ts）を AI コーディングエージェントに伝えるための DESIGN.md 生成機能を導入する。

@@ -629,3 +629,36 @@ DH 本体自身の REGIME.md は本改修スコープ外（メタ案件）。改
 
 - v5.1.0: `crosscut-verifier-philosophy` 本実装（5 本柱整合の自動検証）
 - v5.x: チーム軸（T1-T5）operational 化（dev_mode 推論精度向上）
+
+---
+
+## v5.16.0（2026-05-12 開発開始）
+
+### L0 三兄弟スキルの DESIGN.md 対応マトリクス（v5.16.0 で均質化、AD-022）
+
+v5.15.0 で layer0-spec-architect に DESIGN.md 生成機能を追加した時点では、L0 三兄弟（spec-architect / onboarding / archeo-architect）の対応が非対称だった。v5.16.0 でフラクタル原則に従い均質化する。
+
+| スキル | DESIGN.md 対応 | 起動契機 | 関連 reference |
+|---|---|---|---|
+| **layer0-spec-architect** | ✅ 完全対応 (v5.15.0〜) | 新規 / 継続 / 振り返り。§3.6 で DG1〜DG4 対話 | `references/design-system-spec.md` / `assets/design-md-template.md` |
+| **layer0-onboarding** | ✅ 完全対応 (v5.16.0〜) | harness 後付け onboarding 時。§4.5 で reverse-design ステップ（既存 src/ から逆抽出） | `references/reverse-design-protocol.md` |
+| **layer0-archeo-architect** | ✅ 完全対応 (v5.16.0〜) | リファクタ前の意図復元時。Step 1 構造走査で `visual` Island を検出、Step 2 で視覚意図仮説を提示 | `assets/refactor-intent-map-template.md` の `island_type` / `design_md_impact` フィールド |
+
+### 関連 AD
+
+- AD-021: AI 駆動開発における PR 粒度の決定基準
+- AD-022: L0 三兄弟スキルの DESIGN.md 対応マトリクス
+
+### 改修体制
+
+- Mode: M2 標準（S=中、U=低、R=低、N=低、単一ドメイン、L2 閾値未達）
+- 体制: L0（spec-architect）→ Council（業務 3 ペルソナ）→ scope_lock 6 項目を 1 PR で実装
+- AI 能力バージョン: claude-opus-4-7（v5.15.0 と同じ）
+- PR 粒度方針: AD-021 採用、AI スペック依存型（人間刻みを廃止）
+
+### Council 起動記録
+
+- `council-2026-05-12T13:32:00Z-sspr01` — DH スキル群の共有可能化と参照整合性確立の方向性（A→C 改訂で合意）
+- `council-2026-05-12T14:30:00Z-adpp01` — AI スペック依存の開発スピード方針（β 中核 + α/ε 条件統合で合意）
+
+詳細は `history/COUNCIL-LOG.md` 参照。

@@ -33,5 +33,5 @@
 
 ## 関連
 
-- 過去 INTENT の廃止マーカー記法・回帰検出は `../layer1-independent-reviewer/SKILL.md` 処理フロー 5.8 と連携
+- 過去 INTENT の廃止マーカー記法・回帰検出は `../../layer1-independent-reviewer/SKILL.md` 処理フロー 5.8 と連携
 - 儀式 F2（廃止候補レビュー）の実行タイミングは `references/dialog-questions.md` 参照

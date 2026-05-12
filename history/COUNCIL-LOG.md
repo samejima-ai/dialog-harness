@@ -1704,3 +1704,151 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   cascade_to: "Wave 5 Phase C で subphase-l03-api.md + scaffold-checklist.md + subphase-l05-authz.md の 3 ファイル改修を別 PR で実装着地。残 subphase-l04-transition.md + subphase-l06-invariants.md は Wave 6 申し送り。delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md §7 未確定事項テーブルを採決結果で部分解消 (本 commit で実装)、Phase C 実装後に最終解消"
   judgment_confidence: 0.72
   starter_decision_threshold: "starter §2.2 判定基準: conf ≥ 0.65 採決確定 / 0.50-0.65 部分実装 / ≤ 0.50 Wave 6 再諮問。本採決 conf 0.72 は採決確定領域、Phase C で B 採用の 3 ファイル改修を別 PR で実装"
+
+---
+
+- invocation_id: "council-2026-05-12T13:32:00Z-sspr01"
+  invocation_alias: "shared-skills-priority"  # 人間可読エイリアス（schema 外、コメント目的のみ）
+  timestamp: "2026-05-12T13:32:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "DH スキル群の共有可能化と参照整合性確立の方向性で何を優先すべきか"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: true  # 元議題 governance/strategy は output-format.md §8 許容カテゴリ (implementation/operation/maintenance/issue_triage/error_handling/judgment/conception) に直接該当しないため judgment にフォールバック
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 4
+    哲学者: 3
+  context_summary: "v5.15.0 で DESIGN.md 機能を spec-architect に追加完了。onboarding/archeo-architect は未対応で L0 三兄弟が非対称。Copilot が ../../ 相対パス誤りを 2 件検出、harness-verifier は Markdown リンク検査未実装。ECC 互換配置は scaffold-checklist に観測層として書いたが出力規約として未整備"
+  options:
+    - "A: 参照整合性検査強化を先 (v5.16.0)、三兄弟均質化を次 (v5.17.0)"
+    - "B: 三兄弟均質化を先 (v5.16.0)、参照整合性検査強化を次 (v5.17.0)"
+    - "C: 同一 minor (v5.16.0) で両方"
+    - "D: 共有可能性 (ECC 互換正式化) を先"
+    - "E: 観察期間"
+  persona_summary:
+    経営者:
+      stance: "A: 参照整合性強化を先"
+      confidence: 0.75
+      dimension: "戦略優先順位 / ROI / ブランド"
+      reasoning: "外部レビュアー (Copilot) が検出可能なパス問題は harness 自身が機能していないブランド毀損リスク。土台を固める方が累積 ROI が高い。共有可能性は事後評価で十分"
+    開発者:
+      stance: "A: 参照整合性強化を先"
+      confidence: 0.80
+      dimension: "技術負債 / 検査機構の完全性"
+      reasoning: "../../ パス問題は構造的欠陥。harness-verifier 拡張 (50 行 Python) で高 ROI 対処可能。土台不整合のまま三兄弟均質化に着手すると同じパスバグを再生産"
+    哲学者:
+      stance: "B: 三兄弟均質化を先"
+      confidence: 0.70
+      dimension: "philosophy 第 1/3/5 条 / フラクタル / 情報純度"
+      reasoning: "L0 三兄弟は同一形状の責務。DESIGN.md という関心事は形状に乗るべき横軸で、片足対応はフラクタル違反。参照整合性は脆さで破綻ではない、フラクタル違反は思想の根幹"
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "A: 参照整合性強化を先"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.65
+      - stance: "B: 三兄弟均質化を先"
+        supporters: ["哲学者"]
+        weight_sum: 2
+        weighted_score: 1.40
+  initial_recommendation: "A 段階的アプローチ (v5.16.0 = 土台、v5.17.0 = 均質化)"
+  revision:
+    triggered_by: "user_feedback"
+    user_intervention: "AI 駆動開発では人間と同じような刻み方はしなくて良い。まとめてやれる事はなるべくまとめたい"
+    revised_recommendation: "C を採用、ただし scope_lock で範囲固定"
+    revision_reasoning: "v5.15.0 PR 実証 (Copilot 5+4 件指摘全て妥当) で AI レビュー精度懸念が弱まる。哲学者の minority opinion (フラクタル違反の 1 minor 先送り) が C で自動解消"
+    revised_confidence: 0.78
+  recommended: "C: 同一 minor (v5.16.0) で両方、scope_lock 6 項目に固定"
+  scope_lock:
+    - "(1) harness-verifier に Markdown リンク resolution チェック追加"
+    - "(2) Level A 配布性評価 checklist を dev-env-spec.md §共有可能性 に新設"
+    - "(3) layer0-onboarding に reverse-design ステップ追加"
+    - "(4) layer0-archeo-architect の意図マップに視覚 Island 追加"
+    - "(5) L0 三兄弟の DESIGN.md 対応マトリクスを REGIME-LOG.md / ARCH-DECISIONS.md に記録"
+    - "(6) ECC 互換配置の判定基準だけドキュメント化 (規約格上げは v5.17.0 候補)"
+  minority_opinion: "哲学者 (B) は revised judgment で fractal coverage が早期回復するため minority opinion 自体が解消"
+  human_escalated: false
+  consensus_mode: "auto_agree"  # schema 準拠（auto_agree | escalate_to_human）。ユーザー介入の事実は上記 revision セクション (extension) で表現
+  implementer_consent: "agreed_with_modification"  # 修正点は modification_note 参照
+  modification_note: "initial_recommendation A から user_revised C への変更。詳細は revision セクション参照"
+  agreed_at: "2026-05-12T14:30:00Z"
+  follow_up_questions_count: 1
+  cascade_to: "claude/v5.16.0-shared-skills-foundation ブランチで scope_lock 6 項目を実装"
+  judgment_confidence: 0.78
+
+---
+
+- invocation_id: "council-2026-05-12T14:30:00Z-adpp01"
+  invocation_alias: "ai-driven-pr-pace"  # 人間可読エイリアス（schema 外、コメント目的のみ）
+  timestamp: "2026-05-12T14:30:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "人間の刻み方を捨て AI スペックに依存した開発スピードで進める方針を DH 全体に採用すべきか、その境界条件は何か"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: true  # 元議題 meta-governance は output-format.md §8 許容カテゴリに直接該当しないため judgment にフォールバック
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 4
+    哲学者: 3
+  context_summary: "v5.15.0 PR で Copilot レビュー 5+4 件指摘が全て妥当に機能した実証データあり。前 Council で C 採用に至った経緯から、DH 全体の開発スピード・PR 粒度・minor 粒度を AI スペック依存で進める方針の是非を諮問"
+  options:
+    - "α: 全面採用 — minor は技術的境界のみ、PR 粒度は AI レビュー精度上限まで"
+    - "β: 段階的採用 — semver 維持、1 minor スコープを AI レビュー可能上限まで拡張"
+    - "γ: 限定採用 — 1 minor 1 議題縛り廃止のみ"
+    - "δ: 現状維持"
+    - "ε: ハイブリッド — 領域別 (土台は AI 速度、philosophy/破壊変更は人間刻み)"
+  persona_summary:
+    経営者:
+      stance: "ε: ハイブリッド (α 寄り)"
+      confidence: 0.75
+      dimension: "ROI / 外部コミュニケーション / リスク管理"
+      reasoning: "人間刻みは AI レバレッジを殺す。ただし major bump や philosophy 改訂は外部告知影響大で人間刻み維持の価値あり。Council を粒度判断のゲートに据えるべき"
+    開発者:
+      stance: "β: 段階的採用 (α 移行)"
+      confidence: 0.78
+      dimension: "技術負債 / レビュー精度 / 検査機構の完全性"
+      reasoning: "v5.15.0 PR 実証で AI レビュー精度は OK。ただし harness-verifier が Markdown リンク resolution 未実装の段階で粒度を上げすぎると土台側の欠陥が紛れ込む。検査機構強化と歩調を合わせて段階的に α へ移行"
+    哲学者:
+      stance: "α: 全面採用 (条件付き)"
+      confidence: 0.72
+      dimension: "philosophy 第 1/3/4 条 / フラクタル / 情報純度 / 人間責務"
+      reasoning: "philosophy 第 4 条で PR 粒度判断は形式判断、AI 主導が原則。第 1 条フラクタルで人間刻みは遺産形状。AI 能力バージョン (REGIME.md 記録) を PR スコープ判定基準として明示すれば α 全面採用可能"
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "α: 全面採用"
+        supporters: ["哲学者"]
+        weight_sum: 2
+        weighted_score: 1.44
+      - stance: "β: 段階的採用"
+        supporters: ["開発者"]
+        weight_sum: 6
+        weighted_score: 4.68
+      - stance: "ε: ハイブリッド"
+        supporters: ["経営者"]
+        weight_sum: 2
+        weighted_score: 1.50
+    note: "実態は段階合意 (graduated_consensus, PR2 候補類型)。全員一致で δ 現状維持を却下、AI スペック依存方向は採用確定"
+  recommended: "β を中核採用 + α/ε の各条件を統合した運用ルール"
+  operational_rules:
+    - "(1) semver 体系は維持: major = 破壊変更, minor = 追加機能, patch = 修正"
+    - "(2) 1 minor 1 議題縛りを廃止: 関連議題のバンドルを許可 (v5.16.0 で実証)"
+    - "(3) PR 粒度上限は AI 検査機構が決定論的に PASS を返せる範囲で定義: harness-verifier 全 PASS + Copilot レビュー妥当率 80%+ + 独立検証可能な議題群"
+    - "(4) AI 能力バージョン (REGIME.md 記録) を PR スコープ判定基準として明示"
+    - "(5) 例外領域 (人間刻み維持): major bump / philosophy.md 改訂 / 利用者プロジェクトへの破壊的影響を伴う変更"
+    - "(6) PR 粒度判断のゲート = Council 起動 (なし崩し的拡張を防ぐ構造的歯止め)"
+    - "(7) scope_lock 不在で 5 ファイル超を変更する場合は Council 推奨"
+  minority_opinion: "開発者: harness-verifier の Markdown リンクチェッカ未実装段階で PR 粒度を上げすぎるリスク。mitigation: v5.16.0 内で harness-verifier 強化 (scope_lock #1) を必須項目として優先実装し、それ以降の AI 駆動拡張の前提条件とする"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  agreed_at: "2026-05-12T14:55:00Z"
+  follow_up_questions_count: 0
+  cascade_to: "AD-021 として ARCH-DECISIONS.md に記録、v5.16.0 を AI 駆動運用の最初の実証 PR とする"
+  judgment_confidence: 0.76
