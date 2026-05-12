@@ -188,6 +188,14 @@ delivery/ 配下に置けるのは以下のみ：
 
 これらは `refactor-intent-map.md` 存在時のみ生成される（archeo を一度も起動していないプロジェクトには現れない）。`layer1-independent-reviewer` §5.5 配置規則チェックは本ディレクトリ群を許可リストに含める（`refactor-intent-map.md` の同梱が条件）。
 
+#### UI プロジェクトの視覚検証データ（v5.15.0 追加、DESIGN.md 存在時のみ）
+
+- `delivery/screenshots/` — Playwright で取得した主要画面のスクリーンショット保存先（philosophy 5 層検出スタック第 2 層 E2E の成果物）。L1-autonomous-dev §6 自己検証で生成、L1-independent-reviewer 5.5.1 で第 5 層 Vision モデル判定の入力として消費
+- `delivery/screenshots/baseline/` — baseline 比較を導入している場合の基準スクショ（任意、プロジェクト方針による）
+- `delivery/screenshots/diff/` — baseline 比較の差分画像（任意、CI で生成）
+
+これらは `DESIGN.md` 存在時のみ生成される（DESIGN.md がないプロジェクトには現れない）。`layer1-independent-reviewer` §5.5 配置規則チェックは本ディレクトリ群を許可リストに含める（DESIGN.md の同梱が条件）。
+
 #### dialog-harness 自プロジェクト用 meta-skill 開発の進行中スコープ（v5.12.0 追加、本 repo 専用例外）
 
 **本カテゴリは `dialog-harness` リポジトリ自身（規約の発信元）にのみ適用される例外規則であり、利用者プロジェクトには配布されない。** dialog-harness が ECC 等の業界素材を咀嚼してメタスキル群を成長させる過程で生じるドキュメント群は、**ファイルの意図に応じて `delivery/` または `history/` のいずれかに配置する**。「規約発信元の例外だから全部 delivery/ に置く」のではなく、**履歴記録か進行中作業文書か** の意図で振り分ける。
