@@ -1,10 +1,14 @@
-# rtk-integration install script (Windows native / PowerShell)
+# rtk-integration install script (Windows native / Windows PowerShell 5.1+ and PowerShell 7+)
 # Installs rtk v0.37.1, configures PATH, runs `rtk init -g --auto-patch` (non-interactive), and applies cross-skill patches.
 
 $ErrorActionPreference = 'Stop'
 $RtkVersion = '0.37.1'
 $ZipName = 'rtk-x86_64-pc-windows-msvc.zip'
 $DownloadUrl = "https://github.com/rtk-ai/rtk/releases/download/v$RtkVersion/$ZipName"
+# SHA256 of the published zip on GitHub Releases (rtk v0.37.1). Maintainer must
+# update this when bumping $RtkVersion. Source: release page checksum file.
+# An empty value disables verification only if $env:RTK_SKIP_VERIFY -eq '1'.
+$ExpectedSha256 = ''
 $InstallDir = Join-Path $env:USERPROFILE '.local\bin\rtk'
 $SkillsDir = Join-Path $env:USERPROFILE '.claude\skills'
 $TargetSkills = @(
@@ -19,7 +23,8 @@ function Write-Step($msg) {
 
 # Step 1: Precondition checks
 Write-Step 'Checking preconditions...'
-if (-not $IsWindows -and -not ($PSVersionTable.Platform -eq $null)) {
+$IsWindowsHost = if ($null -ne $PSVersionTable.Platform) { $IsWindows } else { $true }
+if (-not $IsWindowsHost) {
     Write-Error 'This installer supports Windows native only.'
     exit 1
 }
@@ -30,7 +35,35 @@ if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 }
 $ZipPath = Join-Path $env:TEMP $ZipName
-Invoke-WebRequest -Uri $DownloadUrl -OutFile $ZipPath -UseBasicParsing
+# -UseBasicParsing is required and accepted on Windows PowerShell 5.1, and is
+# a no-op accepted alias on PowerShell 7+ when present. Conditionally pass it
+# only on 5.x to remain compatible with both shells.
+$IwrArgs = @{ Uri = $DownloadUrl; OutFile = $ZipPath }
+if ($PSVersionTable.PSVersion.Major -lt 6) {
+    $IwrArgs['UseBasicParsing'] = $true
+}
+Invoke-WebRequest @IwrArgs
+
+# Step 2.1: Verify integrity (SHA256). Pinned to a known-good hash to prevent
+# tampering (MITM via proxy, compromised mirror, etc.).
+if ([string]::IsNullOrEmpty($ExpectedSha256)) {
+    if ($env:RTK_SKIP_VERIFY -ne '1') {
+        Remove-Item $ZipPath -ErrorAction SilentlyContinue
+        Write-Error 'ExpectedSha256 is empty. Set the constant in this script or run with RTK_SKIP_VERIFY=1 to bypass (not recommended).'
+        exit 1
+    }
+    Write-Step 'WARNING: skipping SHA256 verification (RTK_SKIP_VERIFY=1).'
+} else {
+    Write-Step 'Verifying SHA256...'
+    $ActualSha256 = (Get-FileHash -Path $ZipPath -Algorithm SHA256).Hash.ToUpperInvariant()
+    $Expected = $ExpectedSha256.ToUpperInvariant()
+    if ($ActualSha256 -ne $Expected) {
+        Remove-Item $ZipPath -ErrorAction SilentlyContinue
+        Write-Error "SHA256 mismatch for ${ZipName}: expected $Expected, got $ActualSha256. Refusing to install."
+        exit 1
+    }
+    Write-Step 'SHA256 OK.'
+}
 
 Write-Step "Extracting to $InstallDir..."
 Expand-Archive -Path $ZipPath -DestinationPath $InstallDir -Force

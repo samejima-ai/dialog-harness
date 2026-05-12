@@ -13,7 +13,7 @@ description: >
 
 ## 発動条件
 
-- PR 作成時の CI 実行（`templates/.github/workflows/spec-drift.yml`）
+- PR 作成時の CI 実行（雛形は dialog-harness リポジトリ `templates/.github/workflows/spec-drift.yml`。利用者プロジェクト (D3) には同梱されず、autonomous-drive deployment で展開される upstream テンプレートを参照）
 - REGIME.md の CTL ≥ 1
 - 明示コマンド（「drift チェック」等）
 
@@ -49,4 +49,4 @@ description: >
 
 - `references/verify-protocol.md` — CTL 別動作詳細
 - `crosscut-feedback-loop/SKILL.md` — 還流先
-- `templates/.github/workflows/spec-drift.yml` — 自動化雛形
+- `templates/.github/workflows/spec-drift.yml` — 自動化雛形（dialog-harness リポジトリのテンプレート。利用者プロジェクトに同梱されず、autonomous-drive deployment 経由で `.github/workflows/` へ展開）

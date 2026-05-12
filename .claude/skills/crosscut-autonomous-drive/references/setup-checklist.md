@@ -14,21 +14,23 @@
 
 ## 必須 GitHub Labels
 
-`autonomous_scope` に応じて以下を作成:
+v5.9.0 で opt-in→opt-out モデルに反転（`auto-merge` ラベル廃止）。`autonomous_scope` に応じて以下の **stop labels** + **ready-for-ai** を作成:
 
 | Label | autonomous_scope | 役割 |
 |---|---|---|
-| `auto-merge` | full のみ | opt-in で auto-merge workflow をトリガー |
+| `do-not-merge` | full のみ（必須）| auto-merge workflow を block する stop label（opt-out の主軸）|
+| `human-review-needed` | full のみ（必須）| 人間レビュー要請を明示する stop label（do-not-merge と同等扱い）|
 | `ready-for-ai` | 全 scope | crosscut-issue-implementer が picking up する Issue マーカー |
-| `do-not-merge` | full のみ（推奨）| auto-merge workflow を block する safety net |
 
 ラベルは GitHub UI（Settings → Labels → New label）で作成、または gh CLI で：
 
 ```
-gh label create auto-merge --color 0e8a16 --description "Trigger auto-merge workflow"
+gh label create do-not-merge --color d73a4a --description "Block auto-merge (opt-out stop label)"
+gh label create human-review-needed --color d73a4a --description "Request human review (opt-out stop label)"
 gh label create ready-for-ai --color a2eeef --description "Issue ready for AI implementation"
-gh label create do-not-merge --color d73a4a --description "Block auto-merge"
 ```
+
+境界 SPEC（不変仕様）は `references/auto-merge-boundary.md` を一次情報源とする。
 
 ## Branch Protection（任意）
 
@@ -40,11 +42,24 @@ auto-merge workflow は branch protection なしでも動作するが、追加 h
 
 ## 動作確認手順
 
+opt-out モデルでは「stop label が無く required checks が success」で自動 merge される。
+動作確認は以下の 2 シナリオで実施:
+
+### シナリオ A: 自動 merge 経路
+
 1. 適当な軽量変更（例: README.md の typo 修正）で PR を作成
 2. PR を ready-for-review に切替（draft でないことを確認）
-3. `auto-merge` label を付与
-4. workflow run の `evaluate` job が `success` で完了することを確認（notice 出力で skip 理由が無いこと）
-5. PR が自動 merge され、branch が削除されることを確認
+3. **stop labels（`do-not-merge` / `human-review-needed`）を付与しない**
+4. required checks（`verify` 等）が success で完了することを確認
+5. workflow run の `evaluate` job が `success` で完了し、`::notice::` 出力で skip 理由が無いことを確認
+6. PR が自動 merge され、branch が削除されることを確認
+
+### シナリオ B: stop label による block
+
+1. 別の軽量変更で PR を作成
+2. PR に `do-not-merge`（または `human-review-needed`）label を付与
+3. workflow run が **skip**（`::notice::stop label detected ...`）することを確認
+4. label を外すと再度 evaluate が走り、merge 経路へ復帰することを確認
 
 ## 失敗時のチェック
 
