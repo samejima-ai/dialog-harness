@@ -35,7 +35,42 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 
 ---
 
-## v5.14.0 (in progress, target 2026-05-11)
+## v5.16.1 (in progress, target 2026-05-12)
+
+**D4-AUDIT-2026-04-30 minor 指摘の消化 + cookpato D3 同期前段**。`history/D4-AUDIT-2026-04-30.md` §3.2/§3.3 の MEDIUM・LOW 指摘 (M-1 / M-2 / L-1 / L-2) を消化し、cookpato `.claude/skills/` への 18 skill 同期前段を整備。H-1（P1-P5 vs P1-P6 表記不整合）は council 諮問必須のため本 PR では deferred、別 issue で追跡。
+
+v5.16.0 (feat) が PR #92 で先行 merge されたため、本 chore は v5.16.1 patch としてリナンバーして共存させる（commit 8f1da8d との CHANGELOG header 衝突を回避）。
+
+### M-1: CHANGELOG `(in progress)` 完了マーク漏れの正規化
+
+- v5.14.0 `(in progress, target 2026-05-11)` → `(released 2026-05-11)`（PR #89 merged commit 71ef671）
+- v5.10.0 `(in progress)` → `(released 2026-05-08)`（PR #69 merged commit 0eb9b33）
+- v5.9.0 `(in progress)` → `(released 2026-05-06)`（PR #59 merged commit fb04f39）
+- 同セクション内の `**minor 昇格 (in progress)**` 表現も `**minor 昇格**` に統一
+- v5.16.0 自身の `(in progress, target 2026-05-12)` → `(released 2026-05-12)` 化は本 patch では実施せず、v5.16.0 merge 完了後の次 patch（v5.16.2 以降の housekeeping）で扱う
+
+### M-2: S/U/R 三軸用語の単一箇所宣言（既出消化確認）
+
+- `harness-verifier/glossary.yml` の `score_axes` キー（S = 規模 = Scale / U = 不確実性 = Uncertainty / R = リスク = Risk）が監査 (2026-04-30) 以降の中間 PR で既に追加済を確認。本 PR では追加作業なし、消化済として明示記録。
+
+### L-1: 5 本柱 vs 5本柱 表記揺れの統一
+
+- 非アーカイブの活性ドキュメント 2 ファイルで `5本柱` → `5 本柱`（半角スペース版）へ正規化:
+  - `dh-upgrades/upgrade-spec-v5.0.0.md`（17 箇所）
+  - `docs/migration-guide-v5.0.0.md`（1 箇所）
+- `history/` 配下のアーカイブファイル（SELF-VERIFICATION / SKILL-CREATOR-AUDIT / deliveries / D4-AUDIT-2026-04-30 自体）は append-only 規約により対象外。スナップショット時の事実を保持。
+
+### L-2: harness-verifier/PHILOSOPHY.md バージョン記載（既出消化確認）
+
+- `harness-verifier/PHILOSOPHY.md` 末尾の `## バージョン\nv0.1.0（dialog-harness v5.2.0 で導入、harness-verifier 機構の存在論初版）` が監査以降の中間 PR で既に追加済を確認。本 PR では追加作業なし、消化済として明示記録。
+
+### cookpato 連動
+
+本 v5.16.1 と並行して `samejima-ai/cookpato` PR `claude/update-dialog-d4-layer-Dce69` で `.claude/skills/` 18 skill 同期を実施。cookpato 側は `dimension: D3` で配備（council `d3d4b1` 規格準拠）。
+
+---
+
+## v5.14.0 (released 2026-05-11)
 
 **咀嚼プロトコル Wave 5 完遂**。観測駆動 Wave として、Wave 4 末で必須化された 5 観測項目を BL=0 から起算開始。W5-Q0（観測機構稼働化）+ W5-Q2（subphase 個別組込）の二本柱で進行、観測依存議題（W5-Q1 = minority C 再諮問 / W5-Q3 = 残 3 hook event 再評価）は観測サイクル経過後の Wave 6/7 に申し送り。
 
@@ -213,9 +248,9 @@ Wave 4 末必須化 5 項目を継続観測 + Wave 5 固有の補助 2 項目を
 
 ---
 
-## v5.10.0 (in progress)
+## v5.10.0 (released 2026-05-08)
 
-**minor 昇格 (in progress)**。**issue-pickup.yml body_check の type-aware 化（discussion-style 起票への対応）**。
+**minor 昇格**。**issue-pickup.yml body_check の type-aware 化（discussion-style 起票への対応）**。
 
 ### 動機
 
@@ -300,11 +335,11 @@ claude-code-action@v0 が direct_prompt の `gh pr create` 指示を default で
 
 ---
 
-## v5.9.0 (in progress)
+## v5.9.0 (released 2026-05-06)
 
 > **記録規約**: 本 v5.9.0 は (1) cookpato バックアップサイクル retro (`samejima-ai/cookpato` PR #22) からの A1〜A5 汎用パターン取り込み + (2) auto-merge 人間承認モデルの opt-in→opt-out 反転 の 2 系列を含む。
 
-**minor 昇格 (in progress)**。**cookpato retro A1〜A5 汎用パターン取り込みポートフォリオ確定 + auto-merge opt-out 反転**。
+**minor 昇格**。**cookpato retro A1〜A5 汎用パターン取り込みポートフォリオ確定 + auto-merge opt-out 反転**。
 
 実装は別 PR / issue 群で進行（#53 A1 / #57 A2 / #54 A5 / PR #56 A4 / #46 follow-up A3）、本 PR は履歴層 F3 (COUNCIL-LOG.md 諮問エントリ + INTENT.md 取り込み計画) + auto-merge 反転の SPEC 改修 + 境界 SPEC 新設。
 
