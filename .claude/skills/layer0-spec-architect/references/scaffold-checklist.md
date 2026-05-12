@@ -49,6 +49,21 @@ pnpm run test             # exit 0（テスト 0 件でも構わない、framewo
 
 UX Priority が `standard` 以上のプロジェクトでは `pnpm run build && pnpm run preview` 後に Lighthouse PWA カテゴリが Installable 判定になることを目視確認する。`critical` プロジェクトでは sensors/computational に CI 化を追記する。
 
+### DESIGN.md 連携（v5.15.0 追加、UI stack 共通）
+
+Vite + TypeScript + React + PWA stack（および将来追加される全ての UI 含み stack）は DESIGN.md の生成対象。**コードファーストでは UX を保証できない**ため、philosophy 三拍子「仕様に合う・動く・使える」を満たすには **E2E 視覚検証が最も重要** という認識を持つこと。
+
+L0 §3.6 で生成された `DESIGN.md` を L1 (autonomous-dev) は以下の形で消費する:
+
+- `CLAUDE.md` の `## 参照` セクションに `視覚仕様: DESIGN.md` が含まれることを確認
+- `src/` 配下の CSS / Tailwind config / CSS-in-JS / styled-components で **DESIGN.md の YAML トークンを参照** し、HEX リテラルや px 直書きを避ける（第 1 層・静的）
+- 新規 UI コンポーネント実装時は `DESIGN.md` の `## Components` セクションに該当コンポーネント定義を追加（YAML + Markdown の 2 層を維持）
+- **第 2 層 E2E**: Playwright で主要画面のスクショを `delivery/screenshots/` 配下に保存。`expect(page).toHaveScreenshot()` で baseline 比較を CI に組み込むことを推奨
+- **第 5 層 Vision 判定**（UX Priority `standard` 以上で必須）: 保存したスクショと DESIGN.md `## Do's and Don'ts` を Vision モデルに入力し違反パターンを検出
+- WCAG コントラスト比は `critical` Priority で Lighthouse Accessibility / axe-core を CI 化
+
+DESIGN.md の規格・対話プロトコル詳細は `references/design-system-spec.md` 参照（§E2E 視覚検証 セクション必読）。非 UI stack（将来の純 Node.js CLI 等）では DESIGN.md は生成されず、本セクションも適用されない。
+
 ---
 
 ## 将来拡張ポイント

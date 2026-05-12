@@ -112,6 +112,7 @@ INDEX.mdから読み込みを開始し、必要なドキュメントを動的に
 5. DONT.md（スコープ外定義）
 6. sensors/（センサー定義）
 7. L2の場合は DOMAINS.md も読む（ただし L2 判定なら layer2-orchestrator に委譲）
+8. **DESIGN.md が存在する場合**（v5.15.0 追加、UI プロジェクトのみ）: 視覚仕様 + デザイントークン。UI 実装時は YAML フロントマターのトークンを参照し、HEX リテラル・px 直書きを避ける。`## Do's and Don'ts` セクションをデフォルト遵守する。規格詳細は `.claude/skills/layer0-spec-architect/references/design-system-spec.md`
 
 ### 1.1 依存導入の事前チェック
 
@@ -247,6 +248,7 @@ CLAUDE.mdのRLに従いコーディングを実行する。
 - 仕様の曖昧さは合理的に解釈して進める（「仕様に合う・動く・使える」なら許容）
 - 外部ライブラリの選定はAI判断で行う
 - ARC原則モノリスに従う
+- **DESIGN.md が存在する場合**（v5.15.0 追加）: UI 実装は DESIGN.md の YAML トークンを参照し、CSS / Tailwind config / CSS-in-JS / styled-components で HEX リテラル・px 直書きを避ける。新規 UI コンポーネント実装時は `## Components` セクションに該当定義を追加（YAML + Markdown の 2 層を維持）。`## Do's and Don'ts` をデフォルト遵守
 
 ### 6. 自己検証
 
@@ -262,6 +264,26 @@ sensors/ の定義に従い、成果物を検証する。
 - 「仕様に合う・動く・使える」の3条件で判定（リファクタ時は **+ 意図合致** で 4 条件）
 - 不合格なら自力修正を試みる
 - 修正不可能な場合はフィードバックレポートに記載
+
+#### DESIGN.md 検証（v5.15.0 追加、DESIGN.md 存在時のみ）
+
+**重要**: トークン整合の grep 検査だけでは UX を保証できない（philosophy 三拍子「仕様に合う・動く・使える」のうち「使える」は静的検査で判定不可能）。philosophy 5 層検出スタックの第 2/5 層を必ず通す。
+
+第 1 層（計算的・静的）:
+- src/ 配下に HEX リテラル（`#[0-9A-Fa-f]{6}`）や px 直書きが含まれていないか grep
+- 含まれている場合は DESIGN.md の YAML トークン参照（CSS 変数 / Tailwind theme / styled-components theme）に置換
+
+第 2 層（E2E スクショ）— **DESIGN.md 存在時は必須**:
+- Playwright で主要画面を起動し `page.screenshot()` で `delivery/screenshots/` 配下に保存（ファイル名は `<screen-name>.png` 形式）
+- baseline 比較（`expect(page).toHaveScreenshot()`）を導入している場合は同時実行
+- 第 1 層通過後に発動（Console エラー残置時は中断）
+
+第 5 層（Vision モデル判定）— UX Priority `standard` 以上で必須:
+- 保存した screenshots と DESIGN.md `## Do's and Don'ts` を Vision モデルに入力
+- 検出対象: フォントウェイト混在、`colors.error` 流用、`colors.primary` 装飾流用、角丸不統一、コントラスト比違反など
+- 違反検出時は自力修正サイクルに戻る
+
+検査結果は DELIVERY.md「DESIGN.md 検証」セクションに 3 層分（静的 / E2E / Vision）記載。コードファーストでは検出できない不整合（フォントフォールバック、レスポンシブ崩れ、ダークモードのコントラスト等）は第 2/5 層でのみ検出される。詳細は `../layer0-spec-architect/references/design-system-spec.md` §E2E 視覚検証 参照。
 
 #### 意図合致検証（v5.5.0 Phase γ コア 3 件、起動条件は AND 結合）
 
