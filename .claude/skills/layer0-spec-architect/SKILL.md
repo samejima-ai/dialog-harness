@@ -78,6 +78,8 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 3. ドキュメント化（メタ仕様に従い構造化）
 3.5. サブフェーズ選定と実行（基本5問で L0-2〜L0-6 を動的起動、`spec/` 配下に成果物生成）
      条件を満たさないプロジェクトは完全スキップ。詳細は `references/subphase-selection.md`
+3.6. DESIGN.md 生成判定（UI 有無を 1 問で確認、UI ありなら 3 問で視覚仕様を取得）
+     非 UI プロジェクト（CLI / API サーバ / ライブラリ）は完全スキップ。詳細は `references/design-system-spec.md`
 4. モード判定（S/U/Rスコアリング + L2発動閾値チェック + LC 記録）
 5. 人間レビュー → 認識ズレがあれば2に戻る
 6. 認識ズレなし → モードに応じた開発環境の設計・構築
@@ -89,6 +91,7 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 ステップ5→2のループが最も重要。ここを省略しない。
 ステップ1.5は LC ≥ 1 の場合のみ実行する。**Pre-flight (v5.1.0)**: 起動前に `references/ritual-protocol.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
 ステップ3.5は DB/API/状態遷移/認可のいずれかが関与する場合に起動する。判定と実行のプロトコル詳細は `references/subphase-selection.md` を参照。
+ステップ3.6は UI を伴うプロジェクトでのみ起動する。判定と対話プロトコルの詳細は `references/design-system-spec.md` を参照。
 
 ## ステップ詳細
 
@@ -174,6 +177,7 @@ UX 3問は独立軸ではなく、NFR 軸の補足として扱う（詳細は `r
 - **SPEC.md** — 機能仕様（WHY / WHAT / 条件 / 優先順位 / 制約）。該当プロジェクトはデータモデル進化セクションを含む（詳細: `references/schema-evolution.md`）
 - **DONT.md** — スコープ外の明示（現時点でAI自律開発が困難な領域）
 - **DOMAIN-CONTEXT.md**（任意） — 業界・業務固有の前提条件。該当プロジェクトのみ。機密は `DOMAIN-CONTEXT.secret.md` に分離
+- **DESIGN.md**（任意） — 視覚仕様（デザイントークン + 運用ルール）。UI を伴うプロジェクトのみ。生成判定は §3.6 で実施
 
 ### 3.5. サブフェーズ選定と実行
 
@@ -237,6 +241,52 @@ spec/
 #### 事後追加
 
 プロジェクト進行中のサブフェーズ追加・モード昇格・判定誤り訂正は独立した AI 呼び出しで実行する。プロトコルは `references/subphase-selection.md` の「事後追加プロトコル」を参照。
+
+### 3.6. DESIGN.md 生成判定（v5.15.0 追加）
+
+**Pre-flight (v5.15.0)**: 起動前に `references/design-system-spec.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
+
+UI を伴うプロジェクトに対して `DESIGN.md`（視覚仕様 + デザイントークン）を生成する。
+AGENTS.md（CLAUDE.md, 振る舞い）/ SKILL.md（個別タスク）/ DESIGN.md（外観）の **3 層分離** により、視覚仕様を CLAUDE.md に詰め込むアンチパターンを避ける。
+
+#### 起動判定
+
+1 問だけ投げる。AI 推定で「明らかに UI あり」なら投げずに仮判定（通知のみ）。
+
+| # | 質問 | 起動判定 |
+|---|---|---|
+| DG1 | 「このプロジェクトは画面（UI）を持ちますか？ Web / モバイル / デスクトップのいずれでも」 | UI あり=**起動** / 非対面（CLI / API / ライブラリ）=**スキップ** |
+
+#### 対話プロトコル（DG2〜DG4、起動時のみ）
+
+UX 3問プロトコル（§2.5）と同じ思想で 3 問に絞る。未回答時は AI が実践デフォルトで自動補完する。
+
+| # | 質問 | 格納先 | 未回答時のデフォルト |
+|---|---|---|---|
+| DG2 | ブランド・トーンを 1 行で言うと？ | DESIGN.md `## Overview` | 「クリーン、プロフェッショナル、高密度」 |
+| DG3 | 「あの UI が好き」という参考はある？ | DESIGN.md `## Overview` 末尾 | UX 3問 Q3 の参考類似サービスを流用 |
+| DG4 | プライマリカラー（CTA 色）は？ HEX / 色名 / 「お任せ」のいずれかで | YAML `colors.primary` | `#1A73E8`（Material Blue、WCAG AA 適合） |
+
+詳細な対話例・自動補完根拠・YAML スキーマ・Do's and Don'ts の重要性は `references/design-system-spec.md` を参照。
+
+#### 生成物
+
+- **DESIGN.md** — プロジェクトルート直下に配置。`assets/design-md-template.md` のテンプレートにプレースホルダー置換した実体
+- **INDEX.md** に視覚仕様への 1 行参照を追加
+- **CLAUDE.md** の `## 参照` に `視覚仕様: DESIGN.md` を 1 行追加
+
+#### 非起動条件
+
+以下では DG1 を投げずに DESIGN.md スキップを確定する:
+
+- SPEC.md に「CLI」「ライブラリ」「バッチ」「webhook ハンドラ」のみ記載
+- ARC = event-sourcing で対面 UI なし
+- DOMAIN-CONTEXT.md に「ヘッドレス」「内部 API のみ」明示
+
+#### 既存プロジェクトとの後方互換
+
+`DESIGN.md` 不在のプロジェクトはこれまで通り動作する（生成義務なし）。
+LC ≥ 1 プロジェクトへの後付け追加は事後追加プロトコル（`design-system-spec.md` §運用規律）参照。
 
 ### 4. モード判定
 
@@ -384,6 +434,7 @@ project-root/
 ├── SPEC.md             # 機能仕様
 ├── DONT.md             # スコープ外定義
 ├── REGIME.md           # モード判定結果（AI能力バージョン含む）
+├── DESIGN.md           # 視覚仕様（任意・UI プロジェクトのみ。§3.6 で生成判定）
 ├── DOMAINS.md          # L2のみ。ドメイン境界定義
 ├── CLAUDE.md           # エージェントRL
 ├── .claude/
@@ -401,10 +452,11 @@ project-root/
 
 §7（出力）に進む前に、§0「L0 完了の受け入れ基準」4 条件を逐項確認する。1 件でも FAIL があれば §7 へは進まず原因を解消する。検査項目は ls / grep / cat 等の手作業で十分（shell script 雛形は配置しない）。
 
-- [ ] **broken reference 検査**: 生成した `INDEX.md` / `SPEC.md` / `DONT.md` / `REGIME.md` / `DOMAIN-CONTEXT.md` 等が引用するファイル・パスが実体として存在する（dead link なし）
+- [ ] **broken reference 検査**: 生成した `INDEX.md` / `SPEC.md` / `DONT.md` / `REGIME.md` / `DOMAIN-CONTEXT.md` / `DESIGN.md` 等が引用するファイル・パスが実体として存在する（dead link なし）
 - [ ] **scaffold smoke test 検査**: `references/scaffold-checklist.md` の対応 stack の必須ファイルが全て揃い、smoke test コマンド（`pnpm install` / `dev` / `build` / `test`）が exit 0。通らない場合は理由を `delivery/SELF-VERIFICATION-*.md` または DELIVERY.md に明記
 - [ ] **DONT 自己照合**: `SPEC.md` 内に `DONT.md` のいずれかの禁止条項に違反する記述・機能定義が混入していない（目視 + grep）
-- [ ] **Pre-flight 充足**: 本セッションで通過した §1.5 / §3.5 / §4 / §6 / §7 の各 Pre-flight 行が指定するリファレンスを実際に読んだ
+- [ ] **DESIGN.md トークン一貫性検査**（DESIGN.md 生成時のみ）: YAML フロントマターで定義したトークンキーが Markdown 本体の `{colors.primary}` 等の参照と整合する（未定義参照なし・未使用定義なし）。詳細は `references/design-system-spec.md` §7.4 自己検証への組込
+- [ ] **Pre-flight 充足**: 本セッションで通過した §1.5 / §3.5 / §3.6 / §4 / §6 / §7 の各 Pre-flight 行が指定するリファレンスを実際に読んだ
 - [ ] **受け入れ基準充足**: §0 受け入れ基準の 4 条件（仕様充足 / scaffold 実体 / smoke test / 本 §7.4 PASS）を逐項チェック
 
 検証結果は `delivery/SELF-VERIFICATION-*.md`（任意ファイル名、L0 自己検証用）または DELIVERY.md の冒頭に記録する。LC ≥ 1 の既存プロジェクトでは、本ステップは v5.1.0 以降に追加開始する機能・フェーズに段階適用する（既存成果物の遡及検証は要求しない）。
@@ -480,6 +532,8 @@ project-root/
 - `references/schema-evolution.md` — データモデル進化プロトコル（互換性ポリシー / デプロイ戦略 / upcasting）
 - `references/permission-delegation.md` — 段階的権限委譲（L0-2/L0-3、介入チャネル C1/C2/C3、判断献上 5 カテゴリ）
 - `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
+- `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）
+- `assets/design-md-template.md` — DESIGN.md 実践テンプレート（v5.15.0 追加、YAML トークン + Markdown 本体 + Components 拡張ガイド）
 
 ### v3.1 追加（配置規則・クレジット）
 
@@ -498,6 +552,26 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v5.15.0 追加（DESIGN.md 生成機能、minor 昇格）
+
+後方互換維持の追加のみ。UI を伴うプロジェクトの視覚的アイデンティティ（カラー / タイポ / spacing / コンポーネント / Do's and Don'ts）を AI コーディングエージェントに伝えるための DESIGN.md 生成機能を導入する。
+
+- §処理フロー に 3.6 を新設（UI 有無を 1 問で判定、UI ありなら 3 問で視覚仕様取得）
+- §3 ドキュメント化に DESIGN.md（任意・UI プロジェクトのみ）を生成物として追加
+- §3.6 を新設し、起動判定（DG1）/ 対話プロトコル（DG2〜DG4）/ 生成物 / 非起動条件 / 既存プロジェクト後方互換を規定
+- §7 出力ツリーに `DESIGN.md` を追加
+- §7.4 自己検証チェックリストに「DESIGN.md トークン一貫性検査」を追加（DESIGN.md 生成時のみ）
+- `references/design-system-spec.md` 新設。Google Labs 公式仕様（YAML フロントマター + Markdown 本体の 2 層構造、標準セクション順序）/ 対話プロトコル / Do's and Don'ts の重要性（アンカリング効果の正方向活用）/ 意図のコード化 / 盆栽運用規律 / LC ≥ 1 後付け追加プロトコル を規定
+- `assets/design-md-template.md` 新設。実践テンプレート（YAML トークン + Markdown 本体 + Components 拡張ガイド）を提供
+- `assets/meta-spec-template.md` の INDEX.md テンプレに DESIGN.md への参照行を追加（UI プロジェクトのみ条件付）
+- `references/dev-env-spec.md` のルート直下許可ファイル一覧に DESIGN.md を追加
+- `references/scaffold-checklist.md` に Vite + React + PWA stack での DESIGN.md 参照ガイドを追加（L1 連携情報）
+
+LC ≥ 1 既存プロジェクトは新規開始の UI 機能から段階適用、既存 UI 実装への遡及生成は不要（事後追加プロトコル経由で任意追加可）。
+非 UI プロジェクト（CLI / API サーバ / ライブラリ）では DG1 を投げずにスキップ確定（時間コストゼロ）。
+
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（継続検討）。
 
 ### v5.2.0 追加（次元論導入・D4 検査機構の独立配置、minor 昇格）
 

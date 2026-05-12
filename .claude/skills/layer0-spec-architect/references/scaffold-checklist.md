@@ -49,6 +49,17 @@ pnpm run test             # exit 0（テスト 0 件でも構わない、framewo
 
 UX Priority が `standard` 以上のプロジェクトでは `pnpm run build && pnpm run preview` 後に Lighthouse PWA カテゴリが Installable 判定になることを目視確認する。`critical` プロジェクトでは sensors/computational に CI 化を追記する。
 
+### DESIGN.md 連携（v5.15.0 追加、UI stack 共通）
+
+Vite + TypeScript + React + PWA stack（および将来追加される全ての UI 含み stack）は DESIGN.md の生成対象。L0 §3.6 で生成された `DESIGN.md` を L1 (autonomous-dev) は以下の形で消費する:
+
+- `CLAUDE.md` の `## 参照` セクションに `視覚仕様: DESIGN.md` が含まれることを確認
+- `src/` 配下の CSS / Tailwind config / CSS-in-JS / styled-components で **DESIGN.md の YAML トークンを参照** し、HEX リテラルや px 直書きを避ける
+- 新規 UI コンポーネント実装時は `DESIGN.md` の `## Components` セクションに該当コンポーネント定義を追加（YAML + Markdown の 2 層を維持）
+- `DESIGN.md` の `## Do's and Don'ts` をデフォルトで尊重し、違反する実装は L1 自己検証（§7.4 相当）で検出
+
+DESIGN.md の規格・対話プロトコル詳細は `references/design-system-spec.md` 参照。非 UI stack（将来の純 Node.js CLI 等）では DESIGN.md は生成されず、本セクションも適用されない。
+
 ---
 
 ## 将来拡張ポイント

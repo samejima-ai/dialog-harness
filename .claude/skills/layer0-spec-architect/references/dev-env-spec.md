@@ -119,7 +119,7 @@ dialog-harness-layers は以下を前提に設計される：
 
 #### A領域（AI処理の入出力）
 
-- **ルート直下規格ファイル**: INDEX.md, CLAUDE.md, SPEC.md, DONT.md, REGIME.md, DOMAIN-CONTEXT.md
+- **ルート直下規格ファイル**: INDEX.md, CLAUDE.md, SPEC.md, DONT.md, REGIME.md, DOMAIN-CONTEXT.md, DESIGN.md（UI プロジェクトのみ、v5.15.0 追加）
 - **sensors/**: センサー定義
 - **history/**: 履歴層（LC ≥ 1）
 - **.claude/**: スキル定義

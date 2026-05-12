@@ -33,6 +33,10 @@
 ## ドメイン文脈（任意・該当プロジェクトのみ）
 → DOMAIN-CONTEXT.md
 （機密情報は DOMAIN-CONTEXT.secret.md に分離。Git 管理外）
+
+## 視覚仕様（任意・UI プロジェクトのみ）
+→ DESIGN.md
+（生成判定は SKILL.md §3.6。詳細規格は `.claude/skills/layer0-spec-architect/references/design-system-spec.md`）
 ```
 
 ---
