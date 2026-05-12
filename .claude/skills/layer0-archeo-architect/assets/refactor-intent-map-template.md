@@ -35,8 +35,17 @@ paths:
   - <ファイルパスまたはディレクトリ、例: src/auth/register.ts>
   - <例: src/auth/register.ts:42-78 で行範囲も指定可>
 
+island_type: <logic | visual>
+  # v5.16.0 追加。logic = 機能・データ・ロジック領域（既存挙動）。
+  # visual = UI 視覚仕様の島（CSS / Tailwind config / styled-components / theme.ts /
+  # デザイントークン）。UI プロジェクト & DESIGN.md 存在時のみ visual を採用。
+  # 未指定時は logic とみなす（後方互換）
+
 inferred_intent: |
   <AI が仮説として提示した意図、自然言語 1-3 文>
+  # visual Island の場合: 「なぜこの色を採用したか」「なぜこの spacing にしたか」等の
+  # 視覚的判断の意図を仮説化する（例: 「primary を CTA 専用にしているのは視線誘導を
+  # 1 つに絞るため」「mono-data を等幅にしているのは数値の桁揃え目的」）
 
 human_confirmation: <confirmed | corrected | forgotten | absent>
   # confirmed: AI 仮説が合っていると人間が確認
@@ -63,9 +72,19 @@ refactor_directive: <preserve | restructure | discard_and_redesign>
   # restructure: 既存意図を保ったまま再構造化
   # discard_and_redesign: 破棄して新規設計（absent 時の典型）
 
+design_md_impact: <none | tokens_only | dos_and_donts | both>
+  # v5.16.0 追加、island_type: visual の場合のみ意味を持つ
+  # none: DESIGN.md への影響なし（純粋なコード整理）
+  # tokens_only: DESIGN.md YAML フロントマターのトークン定義に影響（追加 / 改名 / 削除）
+  # dos_and_donts: DESIGN.md Markdown 本体の Do's and Don'ts に影響（規約追加 / 緩和）
+  # both: 両方に影響
+  # logic Island では常に "none"
+
 notes: |
   <自由記述。human_confirmation: absent の場合は人間の明示宣言を引用すること>
   <例: 「ひでさん発話: 思い出せない、当時から意図がなかった (2026-05-01)」>
+  # visual Island の場合は DESIGN.md 該当セクションへの言及を含めると後続 L1 が
+  # 意図合致検証時に参照しやすい
 ```
 
 ### Island-002: ...

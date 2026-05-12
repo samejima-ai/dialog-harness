@@ -2,6 +2,39 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v5.16.0 (in progress, target 2026-05-12)
+
+**共有可能スキル整理 + 参照整合性確立 + AI 駆動 PR 運用の実証**。Council 2 件起動で合意した scope_lock 6 項目を 1 PR で実装。AI 駆動開発における PR 粒度の決定基準 (AD-021) と L0 三兄弟スキルの DESIGN.md 対応マトリクス (AD-022) を確立。
+
+### 起点 Council
+
+- `council-2026-05-12T13:32:00Z-shared-skills-priority` — DH スキル群の共有可能化と参照整合性確立の方向性（initial A → user_revised C 採用）
+- `council-2026-05-12T14:30:00Z-ai-driven-pr-pace` — AI スペック依存の開発スピード方針（β 中核 + α/ε 条件統合）
+
+### scope_lock 6 項目
+
+1. **harness-verifier 拡張**: `references.py` に `BACKTICK_PATH_RE` を追加、`` `../path` `` 形式のバッククォート内相対パスを dead-link 検査対象化。PR #91 で Copilot 検出済み 2 件 + 既存 3 件を新規発見し全件修正
+2. **Level A 配布性 checklist**: `dev-env-spec.md` に 6 軸 / 21 項目の評価基準を新設（不変性 / 参照整合性 / progressive disclosure / 依存方向 / 自己完結性 / メタ評価）
+3. **layer0-onboarding に reverse-design 追加**: §4.5 で UI プロジェクトの既存 src/ から色・font・spacing を逆抽出して `DESIGN.md` 初版生成。新規 `references/reverse-design-protocol.md`
+4. **layer0-archeo-architect に視覚 Island**: Step 1 構造走査で `island_type: visual` を検出、`refactor-intent-map-template.md` に `island_type` / `design_md_impact` フィールド追加
+5. **REGIME-LOG.md に L0 三兄弟マトリクス記録**: spec-architect (v5.15.0〜) / onboarding (v5.16.0〜) / archeo-architect (v5.16.0〜) の対応状況を表形式で
+6. **ECC 互換配置の判定基準**: 新規 `ecc-compat-criteria.md` で 6 軸の格上げ判定材料を整備。規約格上げ自体は v5.17.0 以降に延期
+
+### 関連 ADR
+
+- AD-021: AI 駆動開発における PR 粒度の決定基準
+- AD-022: L0 三兄弟スキルの DESIGN.md 対応マトリクス
+
+### 後方互換
+
+- 既存 SKILL.md / references / crosscut-* の挙動は完全不変
+- DESIGN.md 非生成プロジェクトは v5.15.0 と同一動作
+- LC ≥ 1 既存プロジェクトでの遡及適用は不要（新規開始機能・フェーズに段階適用）
+
+詳細: `dh-upgrades/upgrade-spec-v5.16.0.md`
+
+---
+
 ## v5.14.0 (in progress, target 2026-05-11)
 
 **咀嚼プロトコル Wave 5 完遂**。観測駆動 Wave として、Wave 4 末で必須化された 5 観測項目を BL=0 から起算開始。W5-Q0（観測機構稼働化）+ W5-Q2（subphase 個別組込）の二本柱で進行、観測依存議題（W5-Q1 = minority C 再諮問 / W5-Q3 = 残 3 hook event 再評価）は観測サイクル経過後の Wave 6/7 に申し送り。

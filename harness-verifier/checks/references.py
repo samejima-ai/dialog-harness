@@ -5,6 +5,7 @@
 
 検出対象:
     - [text](path) 形式の Markdown インラインリンクで、path が相対パスのもの
+    - `path` 形式のバッククォート内の相対パス（v5.16.0 追加、./..// 開始 or / を含むもの）
     - 検査対象拡張子は TRACKED_EXTS（.md / .yml / .yaml / .json / .ts / .py / .feature / .tsp / .fga）
 """
 
@@ -17,6 +18,21 @@ import re
 
 # Markdown インラインリンク [text](path)
 INLINE_LINK_RE = re.compile(r"\[([^\]\n]+)\]\(([^)\n]+)\)")
+
+# バッククォート内の相対パス参照（v5.16.0 追加）
+# 検出条件: ./ または ../ で始まり、TRACKED_EXTS の拡張子で終わる
+# スコープを ./ ../ 開始に限定する理由:
+#   - リポジトリルートからの説明パス (`.claude/skills/...`) は source file からの相対では解決不可能で別機構が必要
+#   - ~/ 開始のホームディレクトリ参照、<timestamp> 等のプレースホルダー、* グロブは実在チェック対象外
+#   - Copilot が PR #91 で指摘した dead-backtick-link ケース (../layer1-...) は本パターンで完全カバーされる
+# 将来拡張: リポジトリルートからの説明パスを resolve するモードは別 minor で検討
+BACKTICK_PATH_RE = re.compile(
+    r"`("
+    r"\.{1,2}/[^`\s]+"
+    r"\.(?:md|yml|yaml|json|ts|py|feature|tsp|fga)"
+    r"(?:#[^`]*)?"
+    r")`"
+)
 
 # 検査対象拡張子
 TRACKED_EXTS = {".md", ".yml", ".yaml", ".json", ".ts", ".py", ".feature", ".tsp", ".fga"}
@@ -78,7 +94,21 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # no
                 if not resolved.exists():
                     issues.append({
                         "location": f"{md_path.relative_to(repo_root)}:{line_no}",
-                        "message": f"dead link: {link} (resolved: {resolved})",
+                        "message": f"dead link (inline): {link} (resolved: {resolved})",
+                        "severity": "FAIL",
+                    })
+
+            for match in BACKTICK_PATH_RE.finditer(line):
+                link = match.group(1).strip()
+                if is_external(link) or not link:
+                    continue
+                resolved = resolve_link(md_path, link)
+                if str(resolved) == "/__skipped_absolute__":
+                    continue
+                if not resolved.exists():
+                    issues.append({
+                        "location": f"{md_path.relative_to(repo_root)}:{line_no}",
+                        "message": f"dead link (backtick): `{link}` (resolved: {resolved})",
                         "severity": "FAIL",
                     })
 
