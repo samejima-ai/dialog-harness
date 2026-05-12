@@ -1,7 +1,7 @@
 # ECC 互換配置 判定基準（v5.16.0 追加）
 
 ECC (Everything Claude Code) 互換配置を **観測層** から **出力規約** に格上げするための判定基準。
-v5.16.0 では基準だけドキュメント化し、規約格上げは v5.17.0 候補として継続検討（Council `council-2026-05-12T13:32:00Z-shared-skills-priority` revised C 採用、scope_lock #6）。
+v5.16.0 では基準だけドキュメント化し、規約格上げは v5.17.0 候補として継続検討（Council `council-2026-05-12T13:32:00Z-sspr01` revised C 採用、scope_lock #6）。
 
 スキャフォールド側（観測層）は `references/scaffold-checklist.md` §ECC 互換配置 を参照。本ファイルは規約格上げの是非を判定する材料を提供する。
 
@@ -9,7 +9,7 @@ v5.16.0 では基準だけドキュメント化し、規約格上げは v5.17.0 
 
 ## 原則
 
-- **観測層 = scaffold-checklist.md**: Phase γ-i フックで候補リスト出力、自動採用なし、人間最終承認（philosophy 第 8 条準拠）
+- **観測層 = scaffold-checklist.md**: Phase γ-i フックで候補リスト出力、自動採用なし、人間最終承認（philosophy 第 8 条「自律性原則 + 哲学ガードレール」の 3 段階モデル（観測 / 候補化 / 人間最終承認）に準拠）
 - **規約格上げの意味**: 「候補出力」から「scaffold 必須生成ファイル」への昇格。L1 が DESIGN.md と同じ強制参照対象として扱う
 - **慎重に進める理由**: ECC は外部規約。DH 自身の internal-only 規約と混ぜると独立性原則（D4 / harness-verifier）に違反するリスク
 - **CTL 連動**: CTL ≥ 1 で active、CTL 0 では本判定自体が非該当（観測層も inactive）
@@ -109,6 +109,6 @@ v5.16.0 では基準だけドキュメント化し、規約格上げは v5.17.0 
 ## 関連参照
 
 - `scaffold-checklist.md` §ECC 互換配置（任意推奨） — 観測層のフック規約
-- `philosophy.md` 第 8 条 3 段階モデル — 観測 / 候補化 / 人間最終承認
+- `philosophy.md` 第 8 条「自律性原則 + 哲学ガードレール」3 段階モデル — 観測 / 候補化 / 人間最終承認
 - `history/ECC-SURVEY-2026-05-11.md` — ECC 規約サーベイ記録（Wave 4 〜 5）
 - `history/refs-draft/ecc/` — ECC 規約のローカルキャッシュ（agents-catalog / hooks-trigger-points / skills-pattern 等）

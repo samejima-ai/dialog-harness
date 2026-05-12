@@ -320,7 +320,7 @@ v5.2.0 リリース後に L0 で確定し、L1（layer1-autonomous-dev）が同�
 
 | 項目 | 内容 |
 |---|---|
-| 状況 | v5.15.0 PR (#91) で Copilot レビュー 5+4 件指摘が全て妥当に機能した実証データ取得。Council `council-2026-05-12T14:30:00Z-ai-driven-pr-pace` で「人間刻みではなく AI スペック依存の開発スピード」方針の是非を諮問 |
+| 状況 | v5.15.0 PR (#91) で Copilot レビュー 5+4 件指摘が全て妥当に機能した実証データ取得。Council `council-2026-05-12T14:30:00Z-adpp01` で「人間刻みではなく AI スペック依存の開発スピード」方針の是非を諮問 |
 | 判断 | β 中核採用 (semver 維持、1 minor スコープを AI レビュー可能上限まで拡張) + α/ε 条件統合。7 項目の運用ルールを採択 |
 | 根拠 | philosophy 第 1/3/4 条。3 ペルソナ全員が現状維持 (δ) を却下し AI スペック依存方向を支持。重み付き判定で β=4.68 / ε=1.50 / α=1.44。判定 confidence 0.76 |
 | 影響 | (1) semver は技術的境界のみ (major/minor/patch) (2) 1 minor 1 議題縛り廃止 (3) PR 粒度上限は harness-verifier 全 PASS + Copilot 妥当率 80%+ で定義 (4) AI 能力バージョンを判定基準として明示 (5) 例外領域 = major bump / philosophy.md 改訂 / 破壊的影響 (6) PR 粒度判断ゲート = Council 起動 (7) scope_lock 不在で 5 ファイル超変更は Council 推奨。v5.16.0 を最初の実証 PR とする |
@@ -331,5 +331,5 @@ v5.2.0 リリース後に L0 で確定し、L1（layer1-autonomous-dev）が同�
 |---|---|
 | 状況 | v5.15.0 で DESIGN.md 機能を layer0-spec-architect に追加完了。layer0-onboarding (既存プロジェクトの harness 後付け) と layer0-archeo-architect (リファクタ前の意図復元) は未対応で L0 三兄弟が非対称 |
 | 判断 | v5.16.0 で三兄弟均質化。onboarding に reverse-design ステップ (既存 src/ から色・font・spacing 逆抽出して DESIGN.md 初版生成)、archeo-architect の意図マップに視覚 Island (リファクタ前の視覚仕様意図復元) を追加 |
-| 根拠 | philosophy 第 1 条フラクタル原則: L0 三兄弟は同一形状の責務、関心事 (DESIGN.md) は形状に乗るべき横軸。第 5 条献上哲学: 利用者プロジェクトに片足対応を献上することは情報純度違反。Council `council-2026-05-12T13:32:00Z-shared-skills-priority` revised C 採用 |
+| 根拠 | philosophy 第 1 条フラクタル原則: L0 三兄弟は同一形状の責務、関心事 (DESIGN.md) は形状に乗るべき横軸。第 5 条献上哲学: 利用者プロジェクトに片足対応を献上することは情報純度違反。Council `council-2026-05-12T13:32:00Z-sspr01` revised C 採用 |
 | 影響 | layer0-onboarding/SKILL.md と references/ に reverse-design 手順追加。layer0-archeo-architect の意図マップスキーマに visual_intent_island フィールド追加。L0 三兄弟対応マトリクスを REGIME-LOG.md に記録 |

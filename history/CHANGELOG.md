@@ -8,8 +8,8 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 
 ### 起点 Council
 
-- `council-2026-05-12T13:32:00Z-shared-skills-priority` — DH スキル群の共有可能化と参照整合性確立の方向性（initial A → user_revised C 採用）
-- `council-2026-05-12T14:30:00Z-ai-driven-pr-pace` — AI スペック依存の開発スピード方針（β 中核 + α/ε 条件統合）
+- `council-2026-05-12T13:32:00Z-sspr01` — DH スキル群の共有可能化と参照整合性確立の方向性（initial A → user_revised C 採用）
+- `council-2026-05-12T14:30:00Z-adpp01` — AI スペック依存の開発スピード方針（β 中核 + α/ε 条件統合）
 
 ### scope_lock 6 項目
 

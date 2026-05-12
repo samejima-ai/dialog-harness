@@ -1,6 +1,6 @@
 # Reverse Design Protocol（v5.16.0 追加）
 
-既存プロジェクトの harness 後付け onboarding で、既存 src/ から視覚仕様 + デザイントークンを逆抽出し `DESIGN.md` 初版を生成するプロトコル。layer0-onboarding/SKILL.md §4.5 から参照される。
+既存プロジェクトの harness 後付け onboarding で、既存 src/ から視覚仕様 + デザイントークンを逆抽出し `DESIGN.md` 初版を生成するプロトコル。layer0-onboarding/SKILL.md §4.4 から参照される。
 
 DESIGN.md 規格そのものは `../../layer0-spec-architect/references/design-system-spec.md`、テンプレートは `../../layer0-spec-architect/assets/design-md-template.md` を参照（spec-architect の資産を借用、onboarding 側で再生成しない）。
 
@@ -18,7 +18,7 @@ DESIGN.md 規格そのものは `../../layer0-spec-architect/references/design-s
 
 ## UI 検出条件
 
-以下のいずれかに該当する場合に本プロトコルを起動する。AI が SKILL.md §4.5.1 で機械的判定。
+以下のいずれかに該当する場合に本プロトコルを起動する。AI が SKILL.md Step 4.4.1 で機械的判定。
 
 | 検出シグナル | 判定 |
 |---|---|

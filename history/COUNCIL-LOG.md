@@ -1707,15 +1707,20 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 ---
 
-- invocation_id: "council-2026-05-12T13:32:00Z-shared-skills-priority"
+- invocation_id: "council-2026-05-12T13:32:00Z-sspr01"
+  invocation_alias: "shared-skills-priority"  # 人間可読エイリアス（schema 外、コメント目的のみ）
   timestamp: "2026-05-12T13:32:00Z"
   source_skill: "layer0-spec-architect"
   question_to_answer: "DH スキル群の共有可能化と参照整合性確立の方向性で何を優先すべきか"
   council_type: "business"
-  category: "governance_strategy"
-  category_fallback: false
+  category: "judgment"
+  category_fallback: true  # 元議題 governance/strategy は output-format.md §8 許容カテゴリ (implementation/operation/maintenance/issue_triage/error_handling/judgment/conception) に直接該当しないため judgment にフォールバック
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 4
+    哲学者: 3
   context_summary: "v5.15.0 で DESIGN.md 機能を spec-architect に追加完了。onboarding/archeo-architect は未対応で L0 三兄弟が非対称。Copilot が ../../ 相対パス誤りを 2 件検出、harness-verifier は Markdown リンク検査未実装。ECC 互換配置は scaffold-checklist に観測層として書いたが出力規約として未整備"
   options:
     - "A: 参照整合性検査強化を先 (v5.16.0)、三兄弟均質化を次 (v5.17.0)"
@@ -1767,8 +1772,9 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
     - "(6) ECC 互換配置の判定基準だけドキュメント化 (規約格上げは v5.17.0 候補)"
   minority_opinion: "哲学者 (B) は revised judgment で fractal coverage が早期回復するため minority opinion 自体が解消"
   human_escalated: false
-  consensus_mode: "user_revised"
-  implementer_consent: "agreed_revised_C"
+  consensus_mode: "auto_agree"  # schema 準拠（auto_agree | escalate_to_human）。ユーザー介入の事実は上記 revision セクション (extension) で表現
+  implementer_consent: "agreed_with_modification"  # 修正点は modification_note 参照
+  modification_note: "initial_recommendation A から user_revised C への変更。詳細は revision セクション参照"
   agreed_at: "2026-05-12T14:30:00Z"
   follow_up_questions_count: 1
   cascade_to: "claude/v5.16.0-shared-skills-foundation ブランチで scope_lock 6 項目を実装"
@@ -1776,15 +1782,20 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 ---
 
-- invocation_id: "council-2026-05-12T14:30:00Z-ai-driven-pr-pace"
+- invocation_id: "council-2026-05-12T14:30:00Z-adpp01"
+  invocation_alias: "ai-driven-pr-pace"  # 人間可読エイリアス（schema 外、コメント目的のみ）
   timestamp: "2026-05-12T14:30:00Z"
   source_skill: "layer0-spec-architect"
   question_to_answer: "人間の刻み方を捨て AI スペックに依存した開発スピードで進める方針を DH 全体に採用すべきか、その境界条件は何か"
   council_type: "business"
-  category: "meta_governance"
-  category_fallback: false
+  category: "judgment"
+  category_fallback: true  # 元議題 meta-governance は output-format.md §8 許容カテゴリに直接該当しないため judgment にフォールバック
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 4
+    哲学者: 3
   context_summary: "v5.15.0 PR で Copilot レビュー 5+4 件指摘が全て妥当に機能した実証データあり。前 Council で C 採用に至った経緯から、DH 全体の開発スピード・PR 粒度・minor 粒度を AI スペック依存で進める方針の是非を諮問"
   options:
     - "α: 全面採用 — minor は技術的境界のみ、PR 粒度は AI レビュー精度上限まで"

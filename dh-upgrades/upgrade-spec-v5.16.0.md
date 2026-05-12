@@ -3,8 +3,8 @@
 **リリース予定**: 2026-05-12
 **バージョン昇格**: minor（v5.15.0 → v5.16.0、後方互換維持の追加のみ）
 **起点 Council**:
-- `council-2026-05-12T13:32:00Z-shared-skills-priority` (scope 確定)
-- `council-2026-05-12T14:30:00Z-ai-driven-pr-pace` (運用ルール確定)
+- `council-2026-05-12T13:32:00Z-sspr01` (scope 確定)
+- `council-2026-05-12T14:30:00Z-adpp01` (運用ルール確定)
 
 ---
 

@@ -658,7 +658,7 @@ v5.15.0 で layer0-spec-architect に DESIGN.md 生成機能を追加した時�
 
 ### Council 起動記録
 
-- `council-2026-05-12T13:32:00Z-shared-skills-priority` — DH スキル群の共有可能化と参照整合性確立の方向性（A→C 改訂で合意）
-- `council-2026-05-12T14:30:00Z-ai-driven-pr-pace` — AI スペック依存の開発スピード方針（β 中核 + α/ε 条件統合で合意）
+- `council-2026-05-12T13:32:00Z-sspr01` — DH スキル群の共有可能化と参照整合性確立の方向性（A→C 改訂で合意）
+- `council-2026-05-12T14:30:00Z-adpp01` — AI スペック依存の開発スピード方針（β 中核 + α/ε 条件統合で合意）
 
 詳細は `history/COUNCIL-LOG.md` 参照。

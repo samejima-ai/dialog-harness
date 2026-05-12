@@ -55,17 +55,17 @@ description: >
    4.1. as-is / to-be を分離して SPEC.md を生成
    4.2. F 番号採番（既存機能を F1 から順番に）
    4.3. 確度メタデータ付与（AI 推定 / コード確認 / 人間確定）
-4.5. 逆視覚仕様化（Reverse Design）（v5.16.0 追加、UI プロジェクトのみ）
-   4.5.1. UI 検出: src/ 配下に React/Vue/Svelte/HTML/CSS が存在、または `index.html` / `manifest.webmanifest` が存在
-   4.5.2. 検出された場合のみ起動。CLI / API サーバ / ライブラリでは完全スキップ
-   4.5.3. 既存 src/ から色 (HEX/RGB)・font 名・spacing (px/rem)・rounded・shadow を grep + 集計で逆抽出
-   4.5.4. 抽出結果を `assets/design-md-template.md`（spec-architect 配下）の YAML プレースホルダに代入して DESIGN.md 初版生成
-   4.5.5. YAML フロントマター先頭に `# v0.1 (extracted from existing code on YYYY-MM-DD)` 注記を入れる
-   4.5.6. Markdown 本体の `## Overview` / `## Do's and Don'ts` は AI 推定で埋め、確度メタデータを付与（人間承認待ち）
-   4.5.7. 詳細プロトコルは `references/reverse-design-protocol.md` 参照
+   4.4. 逆視覚仕様化（Reverse Design）（v5.16.0 追加、UI プロジェクトのみ）
+       4.4.1. UI 検出: src/ 配下に React/Vue/Svelte/HTML/CSS が存在、または `index.html` / `manifest.webmanifest` が存在
+       4.4.2. 検出された場合のみ起動。CLI / API サーバ / ライブラリでは完全スキップ
+       4.4.3. 既存 src/ から色 (HEX/RGB)・font 名・spacing (px/rem)・rounded・shadow を grep + 集計で逆抽出
+       4.4.4. 抽出結果を `assets/design-md-template.md`（spec-architect 配下）の YAML プレースホルダに代入して DESIGN.md 初版生成
+       4.4.5. YAML フロントマター先頭に `# v0.1 (extracted from existing code on YYYY-MM-DD)` 注記を入れる
+       4.4.6. Markdown 本体の `## Overview` / `## Do's and Don'ts` は AI 推定で埋め、確度メタデータを付与（人間承認待ち）
+       4.4.7. 詳細プロトコルは `references/reverse-design-protocol.md` 参照
 5. DONT.md 生成（凍結線・抽出不能領域・既存バグ許容範囲）
 6. REGIME.md 生成（初期 LC=1・onboarded_at 記録・モードは暫定 M2）
-7. 人間承認（SPEC/DONT/REGIME/DESIGN のレビュー）
+7. 人間承認（SPEC/DONT/REGIME のレビュー、Step 4.4 で DESIGN.md を生成した場合はそれも含めてレビュー）
 8. spec-architect への引き継ぎ（handoff-to-spec-architect.md 準拠）
 9. 自身の停止（onboarded_at 記録により再起動禁止）
 ```

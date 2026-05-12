@@ -559,7 +559,7 @@ project-root/
 
 ### v5.16.0 追加（共有可能スキル整理・参照整合性確立・AI 駆動 PR 運用の実証、minor 昇格）
 
-後方互換維持の追加のみ。Council 2 件 (`council-2026-05-12T13:32:00Z-shared-skills-priority` / `council-2026-05-12T14:30:00Z-ai-driven-pr-pace`) 合意の scope_lock 6 項目を 1 PR で実装。
+後方互換維持の追加のみ。Council 2 件 (`council-2026-05-12T13:32:00Z-sspr01` / `council-2026-05-12T14:30:00Z-adpp01`) 合意の scope_lock 6 項目を 1 PR で実装。
 
 - `references/dev-env-spec.md` に **Level A 配布性評価 checklist**（6 軸 / 21 項目）を新設。新規 skill 追加 / 改修 / 格上げ・格下げ時の判定基準として運用
 - `references/ecc-compat-criteria.md` 新設。ECC 互換配置の規約格上げ判定材料（6 軸）を整備。v5.16.0 時点では観測層継続、規約格上げは v5.17.0 以降に延期

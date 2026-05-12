@@ -5,7 +5,7 @@
 
 検出対象:
     - [text](path) 形式の Markdown インラインリンクで、path が相対パスのもの
-    - `path` 形式のバッククォート内の相対パス（v5.16.0 追加、./..// 開始 or / を含むもの）
+    - `path` 形式のバッククォート内の相対パス（v5.16.0 追加、./ または ../ 開始のもの）
     - 検査対象拡張子は TRACKED_EXTS（.md / .yml / .yaml / .json / .ts / .py / .feature / .tsp / .fga）
 """
 
@@ -19,6 +19,9 @@ import re
 # Markdown インラインリンク [text](path)
 INLINE_LINK_RE = re.compile(r"\[([^\]\n]+)\]\(([^)\n]+)\)")
 
+# 検査対象拡張子（単一情報源）
+TRACKED_EXTS = {".md", ".yml", ".yaml", ".json", ".ts", ".py", ".feature", ".tsp", ".fga"}
+
 # バッククォート内の相対パス参照（v5.16.0 追加）
 # 検出条件: ./ または ../ で始まり、TRACKED_EXTS の拡張子で終わる
 # スコープを ./ ../ 開始に限定する理由:
@@ -26,16 +29,14 @@ INLINE_LINK_RE = re.compile(r"\[([^\]\n]+)\]\(([^)\n]+)\)")
 #   - ~/ 開始のホームディレクトリ参照、<timestamp> 等のプレースホルダー、* グロブは実在チェック対象外
 #   - Copilot が PR #91 で指摘した dead-backtick-link ケース (../layer1-...) は本パターンで完全カバーされる
 # 将来拡張: リポジトリルートからの説明パスを resolve するモードは別 minor で検討
+_BACKTICK_EXT_PATTERN = "|".join(re.escape(ext.lstrip(".")) for ext in sorted(TRACKED_EXTS))
 BACKTICK_PATH_RE = re.compile(
     r"`("
     r"\.{1,2}/[^`\s]+"
-    r"\.(?:md|yml|yaml|json|ts|py|feature|tsp|fga)"
+    rf"\.(?:{_BACKTICK_EXT_PATTERN})"
     r"(?:#[^`]*)?"
     r")`"
 )
-
-# 検査対象拡張子
-TRACKED_EXTS = {".md", ".yml", ".yaml", ".json", ".ts", ".py", ".feature", ".tsp", ".fga"}
 
 # 外部リンク判定
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "ftp://")
