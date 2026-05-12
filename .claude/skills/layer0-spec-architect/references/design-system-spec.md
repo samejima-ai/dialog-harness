@@ -234,7 +234,7 @@ L0 自己検証チェックリストに以下 1 項目を追加（UI プロジ�
 以下では DG1 を投げずに DESIGN.md スキップを確定する:
 
 - SPEC.md に「CLI」「ライブラリ」「バッチ」「webhook ハンドラ」のみ記載
-- ARC = event-sourcing で対面 UI なし
+- バックエンドサービス単体運用で対面 UI を持たない（例: event-sourcing バックエンド、API サーバ単体、メッセージブローカー）。event-sourcing でもイベント履歴ダッシュボード等の UI を持つ場合は **起動** する
 - DOMAIN-CONTEXT.md に「ヘッドレス」「内部 API のみ」明示
 - M1 単体モード × 1 機能未満（実験プロトタイプ）
 

@@ -280,7 +280,7 @@ UX 3問プロトコル（§2.5）と同じ思想で 3 問に絞る。未回答�
 以下では DG1 を投げずに DESIGN.md スキップを確定する:
 
 - SPEC.md に「CLI」「ライブラリ」「バッチ」「webhook ハンドラ」のみ記載
-- ARC = event-sourcing で対面 UI なし
+- バックエンドサービス単体運用で対面 UI を持たない（event-sourcing バックエンド単体 / API サーバ単体 等。イベント履歴ダッシュボード等の UI を持つ場合は起動する）
 - DOMAIN-CONTEXT.md に「ヘッドレス」「内部 API のみ」明示
 
 #### 既存プロジェクトとの後方互換
@@ -567,6 +567,9 @@ project-root/
 - `assets/meta-spec-template.md` の INDEX.md テンプレに DESIGN.md への参照行を追加（UI プロジェクトのみ条件付）
 - `references/dev-env-spec.md` のルート直下許可ファイル一覧に DESIGN.md を追加
 - `references/scaffold-checklist.md` に Vite + React + PWA stack での DESIGN.md 参照ガイドを追加（L1 連携情報）
+- `layer1-autonomous-dev/SKILL.md` §1 ドキュメント受領に DESIGN.md（存在時）の条件付き読込を追加。§5 タスク実行に DESIGN.md トークン参照ルールを追加。§6 自己検証に「DESIGN.md トークン整合検査」を新設（HEX リテラル / px 直書きの grep 検査）
+- `layer1-independent-reviewer/SKILL.md` の入力リストに DESIGN.md（存在時）を追加。処理フロー 5.5.1 として「DESIGN.md トークン整合検査」を新設（YAML 定義と Markdown `{...}` 参照の整合 / src/ への HEX 直書き混入検出 / Do's and Don'ts 違反パターン検出）
+- `design-system-spec.md` §非起動条件と SKILL.md §3.6 非起動条件で event-sourcing 表現を精緻化（event-sourcing でも UI ありなら起動、UI なしのバックエンド単体運用に限定）
 
 LC ≥ 1 既存プロジェクトは新規開始の UI 機能から段階適用、既存 UI 実装への遡及生成は不要（事後追加プロトコル経由で任意追加可）。
 非 UI プロジェクト（CLI / API サーバ / ライブラリ）では DG1 を投げずにスキップ確定（時間コストゼロ）。
