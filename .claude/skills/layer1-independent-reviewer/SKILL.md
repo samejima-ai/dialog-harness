@@ -58,11 +58,13 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
      - ルート直下の作業メモ混入検出（PLAN.md, TODO.md 等）
      - assets/ 参照規約・docs/ 書き込み規約の遵守確認
      - DESIGN.md は UI プロジェクトのみルート許可（v5.15.0 追加、非 UI プロジェクトでの誤生成は違反）
-5.5.1. DESIGN.md トークン整合検査（v5.15.0 追加、DESIGN.md 存在時のみ）
-     - YAML フロントマター定義トークンと Markdown 本体 `{...}` 参照の整合（未定義参照なし・未使用定義なし）
-     - src/ 配下に HEX リテラル（`#[0-9A-Fa-f]{6}`）や px 直書きが含まれていないか grep
-     - DESIGN.md の Do's and Don'ts に違反する実装パターン検出（例: 1 画面内フォントウェイト 3 種以上混在）
-     - 違反は VERIFICATION.md 「視覚仕様整合性」セクションに記録、軽微なら自動修復候補として L1 に差戻し
+5.5.1. DESIGN.md 検証（v5.15.0 追加、DESIGN.md 存在時のみ）
+     - **重要**: トークン静的検査だけでは UX 保証不可。philosophy 5 層検出スタックの第 2/5 層を独立視点で再検証する
+     - 第 1 層（静的）: YAML フロントマター定義トークンと Markdown 本体 `{...}` 参照の整合（未定義参照なし・未使用定義なし）/ src/ 配下の HEX リテラル `#[0-9A-Fa-f]{6}` や px 直書きの grep
+     - 第 2 層（E2E スクショ）: L1 が `delivery/screenshots/` 配下に保存したスクショの存在確認。不在時は L1 に E2E 実行を要請して差戻し
+     - 第 5 層（Vision モデル判定、UX Priority `standard` 以上で必須）: スクショと DESIGN.md `## Do's and Don'ts` を Vision モデルに入力し独立に再判定（フォントウェイト混在 / colors.primary 装飾流用 / コントラスト比違反 等）
+     - 違反は VERIFICATION.md 「視覚仕様整合性」セクションに 3 層分記録、軽微なら自動修復候補として L1 に差戻し。コードファーストでは検出不能な不整合（フォントフォールバック / レスポンシブ崩れ / ダークモードコントラスト）は第 2/5 層でのみ検出される
+     - 詳細プロトコルは `../layer0-spec-architect/references/design-system-spec.md` §E2E 視覚検証 参照
 5.6. クレジット検証（README.md のマーカーコメント + credit-template.md 準拠）
      - マーカー有無、クレジット要素（バージョン/モデル/構築日）の妥当性
      - 拒否権行使時は REGIME.md 記載との整合性確認

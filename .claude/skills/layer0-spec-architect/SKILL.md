@@ -275,6 +275,10 @@ UX 3問プロトコル（§2.5）と同じ思想で 3 問に絞る。未回答�
 - **INDEX.md** に視覚仕様への 1 行参照を追加
 - **CLAUDE.md** の `## 参照` に `視覚仕様: DESIGN.md` を 1 行追加
 
+#### 検証経路（重要）
+
+DESIGN.md の真の検証は **コードファーストの静的検査では完結しない**。philosophy 三拍子「仕様に合う・動く・使える」のうち「使える」は E2E + Vision 経路でのみ判定可能。L1 (autonomous-dev) と L1-independent-reviewer は philosophy 5 層検出スタックの第 2 層 (Playwright スクショ) と第 5 層 (Vision モデル判定) を必ず通す。§7.4 自己検証のトークン一貫性検査は第 1 層（必要条件）であり、これ単独で UX を保証しない。詳細は `references/design-system-spec.md` §E2E 視覚検証 参照。
+
 #### 非起動条件
 
 以下では DG1 を投げずに DESIGN.md スキップを確定する:
@@ -570,6 +574,8 @@ project-root/
 - `layer1-autonomous-dev/SKILL.md` §1 ドキュメント受領に DESIGN.md（存在時）の条件付き読込を追加。§5 タスク実行に DESIGN.md トークン参照ルールを追加。§6 自己検証に「DESIGN.md トークン整合検査」を新設（HEX リテラル / px 直書きの grep 検査）
 - `layer1-independent-reviewer/SKILL.md` の入力リストに DESIGN.md（存在時）を追加。処理フロー 5.5.1 として「DESIGN.md トークン整合検査」を新設（YAML 定義と Markdown `{...}` 参照の整合 / src/ への HEX 直書き混入検出 / Do's and Don'ts 違反パターン検出）
 - `design-system-spec.md` §非起動条件と SKILL.md §3.6 非起動条件で event-sourcing 表現を精緻化（event-sourcing でも UI ありなら起動、UI なしのバックエンド単体運用に限定）
+- **E2E 視覚検証経路の組込**: コードファーストでは UX を保証できないため、philosophy 5 層検出スタックの第 2 層 (Playwright スクショ) と第 5 層 (Vision モデル判定) に DESIGN.md を必ず乗せる。`design-system-spec.md` に §E2E 視覚検証 セクションを新設し、L1-autonomous-dev §6 自己検証と L1-independent-reviewer 5.5.1 にスクショ取得と Vision 判定を組込。§7.4 のトークン一貫性検査は必要条件であり十分条件ではないことを明記
+- scaffold-checklist.md DESIGN.md 連携セクションに「E2E 視覚検証が最も重要」を明記
 
 LC ≥ 1 既存プロジェクトは新規開始の UI 機能から段階適用、既存 UI 実装への遡及生成は不要（事後追加プロトコル経由で任意追加可）。
 非 UI プロジェクト（CLI / API サーバ / ライブラリ）では DG1 を投げずにスキップ確定（時間コストゼロ）。

@@ -265,10 +265,25 @@ sensors/ の定義に従い、成果物を検証する。
 - 不合格なら自力修正を試みる
 - 修正不可能な場合はフィードバックレポートに記載
 
-#### DESIGN.md トークン整合検査（v5.15.0 追加、DESIGN.md 存在時のみ）
-- 実装の src/ 配下に HEX リテラル（`#[0-9A-F]{6}`）や px 直書きが含まれていないか grep
+#### DESIGN.md 検証（v5.15.0 追加、DESIGN.md 存在時のみ）
+
+**重要**: トークン整合の grep 検査だけでは UX を保証できない（philosophy 三拍子「仕様に合う・動く・使える」のうち「使える」は静的検査で判定不可能）。philosophy 5 層検出スタックの第 2/5 層を必ず通す。
+
+第 1 層（計算的・静的）:
+- src/ 配下に HEX リテラル（`#[0-9A-Fa-f]{6}`）や px 直書きが含まれていないか grep
 - 含まれている場合は DESIGN.md の YAML トークン参照（CSS 変数 / Tailwind theme / styled-components theme）に置換
-- 検査結果は DELIVERY.md「DESIGN.md トークン整合」セクションに記載
+
+第 2 層（E2E スクショ）— **DESIGN.md 存在時は必須**:
+- Playwright で主要画面を起動し `page.screenshot()` で `delivery/screenshots/` 配下に保存（ファイル名は `<screen-name>.png` 形式）
+- baseline 比較（`expect(page).toHaveScreenshot()`）を導入している場合は同時実行
+- 第 1 層通過後に発動（Console エラー残置時は中断）
+
+第 5 層（Vision モデル判定）— UX Priority `standard` 以上で必須:
+- 保存した screenshots と DESIGN.md `## Do's and Don'ts` を Vision モデルに入力
+- 検出対象: フォントウェイト混在、`colors.error` 流用、`colors.primary` 装飾流用、角丸不統一、コントラスト比違反など
+- 違反検出時は自力修正サイクルに戻る
+
+検査結果は DELIVERY.md「DESIGN.md 検証」セクションに 3 層分（静的 / E2E / Vision）記載。コードファーストでは検出できない不整合（フォントフォールバック、レスポンシブ崩れ、ダークモードのコントラスト等）は第 2/5 層でのみ検出される。詳細は `../layer0-spec-architect/references/design-system-spec.md` §E2E 視覚検証 参照。
 
 #### 意図合致検証（v5.5.0 Phase γ コア 3 件、起動条件は AND 結合）
 

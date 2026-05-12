@@ -229,6 +229,41 @@ L0 自己検証チェックリストに以下 1 項目を追加（UI プロジ�
 
 ---
 
+## E2E 視覚検証が最も重要（コードファーストの限界）
+
+**前提**: dialog-harness の判定基準は philosophy 三拍子「**仕様に合う・動く・使える**」。DESIGN.md トークン整合検査（grep ベースの静的検査）は **第 1 層に毛が生えた程度** の検査でしかなく、これだけで UX を保証することはできない。コードファーストの検査では「画面が実際にユーザーの目にどう映るか」を検証できない。
+
+**真の検証経路**: philosophy 5 層検出スタック（`philosophy.md` §第2条 Shift Left 原則、`layer1-autonomous-dev/references/inferential-sensor-v2.md`）の第 2/3/5 層に DESIGN.md を必ず乗せる:
+
+| 層 | 検査内容 | DESIGN.md との対応 |
+|---|---|---|
+| 第 1 層 計算的 | HEX リテラル / px 直書きの grep、YAML トークンキーと `{...}` 参照の整合 | 静的検査（必要条件、十分条件ではない）|
+| **第 2 層 E2E (Playwright)** | 実画面起動 + スクリーンショット取得 + baseline 比較 | **DESIGN.md トークンが実画面に反映されているか** を機械検証 |
+| 第 3 層 Interaction Cost | クリック数 / 遷移深度 / 応答時間（UX 3問の Must 閾値） | 「使える」の定量代理指標 |
+| 第 4 層 推論的センサー | SPEC.md と画面の照合 | 「仕様に合う」「動く」の判定 |
+| **第 5 層 Vision モデル判定** | スクリーンショットを Vision モデルで読み、DESIGN.md `## Overview` のブランドトーン・`## Do's and Don'ts` 違反を判定 | **DESIGN.md の意図通りの見た目になっているか** の最終確認 |
+
+### 必須経路
+
+- 第 1 層通過後に **必ず第 2 層 E2E でスクショ取得**（Playwright の `expect(page).toHaveScreenshot()` または `page.screenshot()` で保存）
+- UX Priority が `standard` 以上の機能は **第 5 層 Vision 判定** を必ず通す（Vision モデルにスクショと DESIGN.md `## Do's and Don'ts` を入力し、違反パターンを検出）
+- `critical` Priority の機能は加えて **WCAG コントラスト比測定**（Lighthouse Accessibility / axe-core）を CI 化する
+
+### コードファーストでは検出できない不整合の例
+
+- フォント読み込み失敗で system-ui にフォールバックしているのにコード上は `Inter` 指定 → スクショで判別可能
+- ダークモード切替時にコントラスト比 4.5:1 を割っている → Vision / 計測のみ判別可能
+- `colors.primary` を CTA 以外に流用してしまった（コードでは正しいトークン名でも、運用上 Do's and Don'ts 違反）→ Vision 判定でのみ検出可能
+- レスポンシブ崩れで spacing が破綻 → スクショ比較でのみ検出可能
+
+### L1 への要請
+
+L1-autonomous-dev は実装完了時、`pnpm run test:e2e` 等で Playwright を起動し DESIGN.md の影響範囲（主要画面）の **スクショを delivery/screenshots/ 配下に保存** すること。L1-independent-reviewer は処理フロー 5.5.1 でこのスクショを Vision モデル経由で DESIGN.md と照合する。
+
+詳細プロトコルは `../layer1-autonomous-dev/references/inferential-sensor-v2.md` の第 2/5 層を参照。
+
+---
+
 ## 非起動条件の明示
 
 以下では DG1 を投げずに DESIGN.md スキップを確定する:
