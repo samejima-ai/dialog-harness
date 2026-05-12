@@ -43,7 +43,7 @@ session lifecycle 通知（Stop / SessionStart / SessionEnd）、context 圧縮�
 
 | 要素 | ECC | DH（咀嚼後） |
 |---|---|---|
-| event types | 6（5 + PreCompact） | **5**（PreCompact 除外、Council w1qb01 採決） |
+| event types | 6（5 + PreCompact） | **6**（Wave 3 諮問 w3qb02 で PreCompact 追加採用、Council w1qb01 の初期 5 件から +1） |
 | exit code | 2=block / 0=warn 両方使用 | **0 のみ**（warn 専用） |
 | bootstrap | Node.js (`scripts/hooks/plugin-hook-bootstrap.js`) | **Python** (`scripts/bootstrap.py`) |
 | matcher 構文 | `Bash` / `Write` / `*` / `Bash\|Write\|Edit` 等 | **同構文採用**（T1 構造保持） |
