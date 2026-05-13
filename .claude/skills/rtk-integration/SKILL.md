@@ -150,3 +150,4 @@ M src/auth/{register,login}.py, tests/test_auth.py
 - `references/troubleshoot.md` — 典型的な失敗ケースと対処
 - `references/claude-md-template.md` — 導入先 CLAUDE.md 追記テンプレ
 - `references/cross-skill-patch.md` — 越境パッチの内容と撤去手順
+- `references/sha-update-protocol.md` — `$RtkVersion` bump 時の `$ExpectedSha256` 更新プロトコル（Council 諮問 `rtkSHA` 採決、philosophy 第 2 条 Shift Left + 第 6 条 人間最終承認 と整合）
