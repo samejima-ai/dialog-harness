@@ -33,7 +33,21 @@ MIN_OCCURRENCE = 3  # この件数以上繰返したパターンのみ候補化
 
 
 def repo_root() -> Path:
-    p = Path(__file__).resolve()
+    """Walk up from this script's parent directory looking for repo markers.
+
+    The previous implementation started from ``Path(__file__).resolve()`` (a file
+    path), wasting the first iteration on a check against the script file
+    itself, and fell back to ``parents[4]`` — a fragile assumption only valid
+    for the standard ``.claude/skills/<skill>/scripts/`` layout. Non-standard
+    installs (user-scope ``~/.claude/skills/...`` etc.) silently dropped output
+    into an unrelated ancestor directory.
+
+    Now starts from the script's parent directory and falls back to
+    ``Path.cwd()`` so output lands somewhere discoverable rather than in an
+    unrelated tree. Aligned with the broader "warn-only" stance of the
+    observation layer (philosophy 第 6 条).
+    """
+    p = Path(__file__).resolve().parent
     for _ in range(8):
         if (p / ".git").exists() or (
             (p / "harness-verifier").is_dir() and (p / ".claude" / "skills").is_dir()
@@ -42,7 +56,7 @@ def repo_root() -> Path:
         if p.parent == p:
             break
         p = p.parent
-    return Path(__file__).resolve().parents[4]
+    return Path.cwd()
 
 
 def load_observations(log_path: Path) -> list[dict[str, Any]]:

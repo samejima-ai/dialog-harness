@@ -16,14 +16,28 @@ from pathlib import Path
 
 
 def repo_root() -> Path:
-    p = Path(__file__).resolve()
+    """Walk up from this script's parent directory looking for repo markers.
+
+    The previous implementation started from ``Path(__file__).resolve()`` (a file
+    path), which wasted the first iteration on a check against the script file
+    itself, and fell back to ``parents[4]`` — a fragile assumption that only
+    holds for the standard ``.claude/skills/<skill>/scripts/`` layout. For
+    non-standard installs (e.g. ``~/.claude/skills/...`` user-scope), the
+    fallback silently landed in an unrelated ancestor directory.
+
+    Now starts from the script's parent directory and falls back to
+    ``Path.cwd()`` so that, when no repo marker is found, logs land somewhere
+    discoverable rather than buried in an unrelated tree. Aligns with
+    philosophy 第 6 条 "warn-only, never block" — never raises.
+    """
+    p = Path(__file__).resolve().parent
     for _ in range(8):
-        if (p / ".git").exists() or (p / "harness-verifier").exists():
+        if (p / ".git").exists() or (p / "harness-verifier").is_dir():
             return p
         if p.parent == p:
             break
         p = p.parent
-    return Path(__file__).resolve().parents[4]
+    return Path.cwd()
 
 
 MAX_FIELD_LEN = 512
