@@ -58,7 +58,9 @@ rm -f "$TMP_ZIP"
 
 `checksums.txt` の値と `sha256sum` の出力が **完全一致** することを確認する。一致しない場合は本プロトコル中止 + dialog-harness Issue 起票（supply chain compromise の可能性）。
 
-### 3. `install.ps1` line 11 を更新
+### 3. `install.ps1` の `$ExpectedSha256` 定数を更新
+
+`install.ps1` 冒頭の `$ExpectedSha256` 代入行を新しい SHA 値に書き換える:
 
 ```powershell
 # Before
@@ -68,7 +70,9 @@ $ExpectedSha256 = '<OLD_SHA>'
 $ExpectedSha256 = '<NEW_SHA_FROM_STEP_2>'
 ```
 
-合わせて line 5 の `$RtkVersion` も新バージョンに更新する（こちらが先でも後でもよい、commit を 1 つにまとめる）。
+合わせて `$RtkVersion` 定数も新バージョンに更新する（こちらが先でも後でもよい、commit を 1 つにまとめる）。
+
+> 行番号は将来のコメント追記等で容易にずれるため、本プロトコル内では定数名（`$ExpectedSha256` / `$RtkVersion`）で参照する。最新の行番号は `grep -n '^\$ExpectedSha256\|^\$RtkVersion' .claude/skills/rtk-integration/scripts/install.ps1` で都度確認のこと。
 
 ### 4. Windows 実機で動作確認（推奨、Council 諮問 rtkSHA の test plan）
 

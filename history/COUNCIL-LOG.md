@@ -1855,70 +1855,45 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 ---
 
-## council-2026-05-13T03:35:00Z-rtkSHA
-
+- invocation_id: "council-2026-05-13T03:35:00Z-rtkSHA"
   timestamp: "2026-05-13T03:35:00Z"
   source_skill: "human_direct_invocation"
-  invocation_trigger: "samejima-ai/kakuman-platform-v3.0 PR #75 Copilot review — rtk-integration/scripts/install.ps1:56 で $ExpectedSha256 default-fail 挙動の妥当性が問われた。kakuman 側で touch せず DH 側で Council 諮問する方針を本セッション L0 spec-architect / human と合意"
+  question_to_answer: "rtk-integration/scripts/install.ps1 の `$ExpectedSha256` が空文字のままだと default で install 失敗する挙動について、(A) v0.37.1 の公式 SHA を populate (B) empty → warn のみ install 続行 (C) 現状維持 + Copilot 指摘 close (D) A + SHA 更新 protocol を SKILL.md / references で明文化、のいずれを採るか (kakuman PR #75 Copilot review 起点、kakuman 側で touch せず DH 側で諮問する方針)"
   council_type: "business"
   category: "operation"
   category_fallback: false
-  phase_reached: "1->3"
+  phase_reached: "phase_3"
   conflict_type: "unanimous"
-  question_to_answer: "rtk-integration/scripts/install.ps1 line 11 の $ExpectedSha256 が空文字のままだと default で install 失敗する挙動について、(A) v0.37.1 の公式 SHA を populate (B) empty → warn のみ install 続行 (C) 現状維持 + Copilot 指摘 close (D) A + SHA 更新 protocol を SKILL.md / references で明文化、のいずれを採るか"
-  options:
-    - "A: rtk v0.37.1 の公式 SHA (3b9f207e8e...) を populate、現状の 'empty → reject + escape hatch' 構造は維持"
-    - "B: empty → warn のみで install 続行、escape hatch 廃止"
-    - "C: 現状維持 (DH PR #93 意図確認のみ、Copilot 指摘 close)"
-    - "D: A の上位互換 — SHA populate + SHA 更新 protocol を references/sha-update-protocol.md に新設"
   final_weights:
     経営者: 4
     開発者: 4
-    哲学者: 3
+    哲学者: 2
   persona_summary:
-    経営者:
-      stance: "案 A 推奨"
-      confidence: 0.75
-      dimension: "ROI / 採用障壁"
-      reasoning: "現状の $ExpectedSha256 = '' は default で install 失敗 = 採用障壁。SHA を populate すれば DH PR #93 の security 構造を破壊せず採用障壁を解消できる。案 B (warn のみ) は MITM リスクを default で受容するため経営的に軽率に決定すべきでない"
-    開発者:
-      stance: "案 A 推奨"
-      confidence: 0.85
-      dimension: "保守性 / Shift Left"
-      reasoning: "SHA populate は 1 行変更の事務作業。本セッションで公式 checksums.txt + self-compute cross-verify 済の値 (3b9f207e8e...) が確定済。案 B は philosophy 第 2 条 Shift Left 原則 (発生防止 > 検出) と緊張する security regression、案 C は技術的負債放置"
-    哲学者:
-      stance: "案 A 推奨 + minority opinion (long-term D 寄り)"
-      confidence: 0.70
-      dimension: "意味 / 前提への問い / philosophy 整合性"
-      reasoning: "DH PR #93 の 'empty → reject + escape hatch' は philosophy 第 6 条「人間最終承認」の具現として読める。empty SHA は『Maintainer が未承認』状態を表し block する意義あり。RTK_SKIP_VERIFY=1 は明示意思表示で第 7 条 P4 介入権の事前付与と整合。案 A は意味論を維持しつつ Maintainer 責務を果たす。Option B は第 2 条と第 6 条の二重侵食。long-term は SHA 更新 protocol を SKILL.md / references で明文化したい (minority、別 PR or 同 PR 拡張余地)"
+    経営者: { stance: "案 A 推奨", confidence: 0.75, dimension: "ROI / 採用障壁" }
+    開発者: { stance: "案 A 推奨", confidence: 0.85, dimension: "保守性 / Shift Left" }
+    哲学者: { stance: "案 A + minority (long-term D 寄り)", confidence: 0.70, dimension: "意味 / philosophy 第 2/6 条整合" }
+  judgment_confidence: 0.78
   weight_calculation:
     method: "weight_times_confidence"
     scores:
-      - stance: "案 A"
+      - stance: "案 A: $ExpectedSha256 populate + escape hatch 維持"
         supporters: ["経営者", "開発者", "哲学者"]
-        weight_sum: 11
-        weighted_score: 8.5
+        weight_sum: 10
+        weighted_score: 7.8
         components:
-          - {persona: "経営者", weight: 4, confidence: 0.75}
-          - {persona: "開発者", weight: 4, confidence: 0.85}
-          - {persona: "哲学者", weight: 3, confidence: 0.70}
+          - { persona: "経営者", weight: 4, confidence: 0.75 }
+          - { persona: "開発者", weight: 4, confidence: 0.85 }
+          - { persona: "哲学者", weight: 2, confidence: 0.70 }
     third_way_excluded: []
-    max_score_stance: "案 A"
+    max_score_stance: "案 A: $ExpectedSha256 populate + escape hatch 維持"
     tie_break_applied: false
   weight_calculation_retry_count: 0
-  judgment_confidence: 0.77
-  recommended: "案 A: $ExpectedSha256 = '3b9f207e8ea360d744649760788cbcf7d6ce62d8ccb8677aa3c8d1513a9d2cc2' を populate。現状の 'empty → reject + escape hatch' 構造は維持。SHA 値の信頼根拠は公式 GitHub Release checksums.txt + 本セッション self-compute cross-verify"
-  minority_opinion: "哲学者: long-term は SHA 更新 protocol を SKILL.md / references で明文化 (Option D 寄り)。経営者・開発者の minor concerns (将来 $RtkVersion bump 時の Maintainer 責務、信頼チェーンの fragility) と整合"
+  recommended: "案 A: $ExpectedSha256 = '3b9f207e8ea360d744649760788cbcf7d6ce62d8ccb8677aa3c8d1513a9d2cc2' を populate。現状の 'empty → reject + escape hatch (RTK_SKIP_VERIFY=1)' 構造は維持。SHA 値の信頼根拠は公式 GitHub Release checksums.txt (https://github.com/rtk-ai/rtk/releases/download/v0.37.1/checksums.txt) + 本セッションで zip 独立 download + sha256sum self-compute の cross-verify (公式値と完全一致)"
+  minority_opinion: "哲学者: long-term は SHA 更新 protocol を SKILL.md / references で明文化したい (Option D 寄り)。経営者・開発者の minor concerns (将来 $RtkVersion bump 時の Maintainer 責務、信頼チェーンの fragility) と整合"
   human_escalated: false
-  consensus_mode: "council_consult"
-  source_data:
-    official_checksums_url: "https://github.com/rtk-ai/rtk/releases/download/v0.37.1/checksums.txt"
-    self_computed_sha256: "3b9f207e8ea360d744649760788cbcf7d6ce62d8ccb8677aa3c8d1513a9d2cc2"
-    cross_verify_status: "match (official = self-computed)"
+  consensus_mode: "auto_agree"
   implementer_consent: "agreed_with_modification"
   follow_up_questions_count: 0
   agreed_at: "2026-05-13T03:40:00Z"
-  modification_note: "案 A 採用 + 哲学者 minority opinion を同 PR に併合: references/sha-update-protocol.md を新設し SKILL.md の参照ドキュメント節からリンクする (Option D に格上げ実装)。本 cycle で long-term 課題を解消することで Maintainer 責務を SPEC レベルで明示化"
-  escalation_reason: null
-  final_decision: null
-  cascade_to: "本 PR (claude/fix-rtk-install-sha-TDmT8) で install.ps1 line 11 SHA populate + sha-update-protocol.md 新設 + SKILL.md 参照追記を 1 commit で実施。kakuman 側は本 PR merge 後の D3 sync で自動追従する (PR #93 / #75 と同型サイクル)"
+  modification_note: "案 A 採用 + 哲学者 minority opinion を同 PR (claude/fix-rtk-install-sha-TDmT8) に併合 (Option D 格上げ): references/sha-update-protocol.md を新設し SKILL.md の参照ドキュメント節からリンク。本 cycle で long-term 課題を解消することで Maintainer 責務を SPEC レベルで明示化"
+  cascade_to: "本 PR で install.ps1 $ExpectedSha256 populate + sha-update-protocol.md 新設 + SKILL.md 参照追記を 1 commit で実施。kakuman 側は本 PR merge 後の D3 sync で自動追従 (PR #93 / #75 と同型サイクル)"
