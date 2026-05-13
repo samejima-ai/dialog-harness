@@ -2,6 +2,31 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-05-12 kakuman-platform-v3.0 連動: D3 同期 + COUNCIL-LOG 献上（v5.16.x 帯 chore、no DH version bump）
+
+**PR #93 (v5.16.1, 2026-05-12 merged) で cookpato に対して実施した D3 同期と同型の作業を `samejima-ai/kakuman-platform-v3.0` に対して実施。並行して kakuman 側で蓄積された Council 判定ログを DH 側へ献上受領した**。本 chore は DH 本体の skill/spec を一切変更しないため version bump なし、`history/project-derived-councils/` 新設のみ。
+
+### kakuman 側 (samejima-ai/kakuman-platform-v3.0)
+
+別 PR で実施。`.claude/skills/` 配下 18 skill を DH e33f8808 から 1:1 同期し `dimension: D3` で配備 (council `d3d4b1` 規格準拠)。16 共通 skill 上書き + 2 新規 (`crosscut-hook-observer` / `crosscut-continuous-learning`) 追加。kakuman 固有 4 skill (`article-forge` / `caaf-wiring` / `news-publish` / `supabase-migration-safe`) は touch せず。
+
+### DH 側 (本リポジトリ、本 PR)
+
+- `history/project-derived-councils/` を新設。利用者プロジェクト由来 COUNCIL-LOG のミラー専用フォルダ
+- `history/project-derived-councils/README.md` で **DH 自身の `history/COUNCIL-LOG.md` と論理的に分離する規約**を明文化:
+  - F1〜F3 振り返り儀式・council-weights 再校正の対象は `history/COUNCIL-LOG.md` のみ
+  - project-derived は別軸で集計、混合集計禁止
+  - council `d4at01` (S/U/R 独立維持) と council `l0agg1-4` (cross-project ログ集約) の運用具現
+- `history/project-derived-councils/kakuman-platform-v3.0/COUNCIL-LOG.md` に kakuman の COUNCIL-LOG.md 全文を配置 (19 エントリ、内 17 件は DH 起源コピー + 2 件は kakuman 固有: `council-x52-home-launcher-2026-05-10` / `council-2026-05-12T-ux-patterns-lib`)
+- `harness-verifier/verify.py` の検査 scope は `.claude/skills/` のみで `history/` を一切スキャンしないため、`history/project-derived-councils/` への scope 拡張は不要 (BOUNDARY.md §3 と整合、scope は既に disjoint)
+
+### 関連 council
+
+- `council-2026-04-30T11:00:00Z-l0agg1` 〜 `l0agg4` — cross-project ログ集約設計。schema-only + 経路分離の哲学を「プロジェクト別フォルダ + ファイル配置」で擬似実現する MVP。`~/.claude/dh-data/` user-scope schema-only push の本格実装 (`l0agg4` 案 D-2) は別サイクル
+- `council-2026-04-30T09:00:00Z-d4at01` — S/U/R 独立維持。利用者プロジェクトの判定統計を DH 自身の改修判定統計と混合しない論理的根拠
+
+---
+
 ## v5.16.0 (in progress, target 2026-05-12)
 
 **共有可能スキル整理 + 参照整合性確立 + AI 駆動 PR 運用の実証**。Council 2 件起動で合意した scope_lock 6 項目を 1 PR で実装。AI 駆動開発における PR 粒度の決定基準 (AD-021) と L0 三兄弟スキルの DESIGN.md 対応マトリクス (AD-022) を確立。
@@ -831,7 +856,7 @@ adrv01-Ph2（独立観測機構新設、新規 crosscut-* skill）は v5.6.0 候
 
 - `python harness-verifier/verify.py --strict` 全 PASS（D4 整合性維持確認、5 検査全項目）
 - `harness-verifier/reports/2026-05.md` 上書き（最新実行記録）
-- `delivery/SELF-VERIFICATION-v5.5.0.md` 作成（L0 §7.4 の 5 項目 + harness-verifier 5 検査 + β止揚運用の SPEC 化過程内包記録）
+- `delivery/SELF-VERIFICATION-v5.5.0.md` 作成（L0 §7.4 自己検証の 5 項目 + harness-verifier 5 検査 + β止揚運用の SPEC 化過程内包記録）
 - 計算的センサー: SKILL.md / references の構文整合・broken reference なし
 - ルートに draft PR #34 を作成、Copilot review #34 で発見された category 誤選択の連鎖は本リリースで Shift Left 修正
 
@@ -1175,7 +1200,7 @@ major 昇格。dev_mode 軸追加 / crosscut- prefix 統一 / 仕様 1〜4 Skill
 
 - `layer0-spec-architect/SKILL.md` §4 モード判定に「dev_mode 軸（v5.0.0 追加）」サブセクション追加
 - `references/regime-assessment.md` 末尾に「dev_mode 判定（v5.0.0 追加）」セクション追加（モード境界 / 2 段階判定プロトコル / REGIME.md 記録形式 / 昇格降格規則）
-- `assets/meta-spec-template.md` の REGIME.md テンプレに `## dev_mode` セクション追加（mode / ctl / 判定根拠）
+- `assets/meta-spec-template.md` の REGIME.md テンプレに `## dev_mode` セクション追加(mode / ctl / 判定根拠)
 - 注記: spec §3.1.1 のチーム軸（T1-T5）は v5.0.0 では未実装。規模 + Lifecycle を proxy として運用。チーム軸 operational 化は v5.x で扱う（INTENT.md 記録）
 
 ### Step 3: 仕様 1〜4 Skill 追加
@@ -1269,3 +1294,4 @@ PR #18 への Copilot レビュー 3 件すべてに対応。GitHub Actions の�
 - `templates/.github/workflows/spec-drift.yml`: `contents: read` + `issues: write` + `pull-requests: write` + `actions: write`（github-script + gh workflow run drift-feedback.yml）
 
 テンプレートとして最小権限を明示することで、デフォルト read-only な GITHUB_TOKEN 設定のリポジトリでもそのまま動作する形になった。yaml syntax は引き続き全 PASS。
+
