@@ -1897,3 +1897,52 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-05-13T03:40:00Z"
   modification_note: "案 A 採用 + 哲学者 minority opinion を同 PR (claude/fix-rtk-install-sha-TDmT8) に併合 (Option D 格上げ): references/sha-update-protocol.md を新設し SKILL.md の参照ドキュメント節からリンク。本 cycle で long-term 課題を解消することで Maintainer 責務を SPEC レベルで明示化"
   cascade_to: "本 PR で install.ps1 $ExpectedSha256 populate + sha-update-protocol.md 新設 + SKILL.md 参照追記を 1 commit で実施。kakuman 側は本 PR merge 後の D3 sync で自動追従 (PR #93 / #75 と同型サイクル)"
+
+---
+
+- invocation_id: "council-2026-05-13T03:55:00Z-clrdbl"
+  timestamp: "2026-05-13T03:55:00Z"
+  source_skill: "human_direct_invocation"
+  question_to_answer: "Council 判定の最終出力 (history/COUNCIL-LOG.md) は schema 準拠 YAML (machine-readable) で記録されているが、人間が離席復帰時の判断スピード向上のための human-readable form の永続化をどう扱うか (A=現状維持 / B-1=本件のみ markdown 追加 / B-2=consensus-protocol.md に規約追記 + 併合 / 第4の道=schema 拡張)。本 council 自身が確立 council となるメタ反復"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案 B-1: 本件のみ漸進採用", confidence: 0.65, dimension: "ROI / 機会損失 / 段階導入" }
+    開発者: { stance: "案 B-2: 規約化 + 併合", confidence: 0.75, dimension: "保守性 / Shift Left" }
+    哲学者: { stance: "案 B-2 + minority (B-1 pragmatic)", confidence: 0.80, dimension: "philosophy 第 4 条 UX 代理指標 / 第 1 条 フラクタル" }
+  judgment_confidence: 0.72
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案 B-1: 本件のみ漸進採用"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 1.95
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+      - stance: "案 B-2: 規約化 + 併合"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 6.25
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.75 }
+          - { persona: "哲学者", weight: 5, confidence: 0.80 }
+    third_way_excluded: []
+    max_score_stance: "案 B-2: 規約化 + 併合"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案 B-2 + 哲学者 minority pragmatic 採用: consensus-protocol.md に「人間可読並存規約」追記 + 本件 markdown 併合 (4 section format / history/council-readable/<id>.md 配置 / 同 commit 規約)。適用範囲は本規約確立 PR (#96) merge 後の次の council から、既存 council 群への遡及はしない (経営者 minority 採用)。例外として本 PR で 2 件 retroactive 作成: 本 council 自身 (規約のメタ council) + rtkSHA (本規約の起動契機)"
+  minority_opinion: "経営者: 「即時 ROI 不在」懸念。本 cycle で B-2 規約化と本件 markdown 併合を同時に行うことで「規約変更 + 実例 1 件」が同 PR に揃い即時に効果検証可能 → 経営者懸念は新規規約の運用観察責任として保持 (今後 1〜2 cycle の効果観察を F1-F3 振り返り儀式で行う)"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-13T04:30:00Z"
+  cascade_to: "本 PR (claude/fix-rtk-install-sha-TDmT8) で consensus-protocol.md §人間可読並存規約 追加 + history/council-readable/{rtkSHA,clrdbl}.md 作成 + 本 council YAML entry append を 1 commit で実施。kakuman 側は本 PR merge 後の D3 sync で規約を自動追従"

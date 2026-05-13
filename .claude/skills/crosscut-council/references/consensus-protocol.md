@@ -349,3 +349,70 @@ H カテゴリ（哲学変更・ルール変更・方向性発案・根本設計
 2. `orchestrator.md` に `compute_consensus_mode` 導出ルール表と計算式を追加
 3. 本ファイルに「モード別の正しい合意形式」と「やってはいけないパターン」節を上記 memo 参照で追加
 4. 受信側 skill（L1 / L0 / skill-creator 等）に `auto_agree` / `escalate_to_human` 分岐のテンプレ挙動を規定
+
+---
+
+## 人間可読並存規約（Council 諮問 `clrdbl` 採決、`agreed_recommended`）
+
+### 背景
+
+Council 判定の最終出力（`history/COUNCIL-LOG.md`）は schema 準拠の **YAML（machine-readable）** で記録される。これは harness-verifier / F1-F3 振り返り儀式 / council-weights 再校正等の **機械処理経路** には適しているが、人間が離席復帰時に「あの判定どんな議論だったか」と振り返るときの **判断スピード（philosophy 第 4 条 UX 代理指標）** には弱い。
+
+本規約は YAML エントリと並存する **人間可読 markdown** の発行を義務化する。
+
+### 配置
+
+```
+history/council-readable/<invocation_id>.md
+```
+
+`<invocation_id>` は YAML エントリの `invocation_id` と同一。1 council = 1 markdown ファイル。
+
+### 内容形式（4 section）
+
+各 markdown は以下 4 セクションを **必ず** 含む（[philosophy.md](../../layer0-spec-architect/references/philosophy.md) 第 4 条 UX 代理指標 — 「クリック数 / 遷移深度 / 完了率」と同型に「**復帰判断スピード**」を最大化する構造）:
+
+1. **議題** — 問いの背景（発動契機）+ 選択肢一覧
+2. **発言** — 3 persona の `stance` / `confidence` / `dimension` / `reasoning`（独立記載、Phase 1 規格と整合）
+3. **結果** — `conflict_type` / `final_weights` / `weight_calculation` 要約 / `judgment_confidence` / `recommended` / `minority_opinion` / `consensus_mode`
+4. **選択** — 人間判断の選択肢 3 択（`agreed_recommended` / `agreed_with_modification` / `escalated`）+ 確定後の `implementer_consent` / `modification_note` / `agreed_at`
+
+### 発行タイミング
+
+- **draft**: Council Phase 3（Judgment Agent 出力確定）と並行して作成、人間判断点（`implementer_consent` 入力前）に提示する
+- **確定**: `implementer_consent` 確定後、選択結果 / `modification_note`（該当時）/ `agreed_at` を追記して commit
+- **同 commit 配置**: YAML エントリ（`history/COUNCIL-LOG.md`）と markdown（`history/council-readable/<id>.md`）は **同一 commit** で配置し、内容 drift を防ぐ
+
+### 適用範囲
+
+本規約は **PR で本規約を確立した時点（次の merge）の次の council から適用**する。既存 council 群への遡及適用はしない（経営者 minority 採用、即時 ROI 観点 + 過去ログの append-only 規約と整合）。
+
+ただし、本規約を確立した PR 自身では **2 件の retroactive 作成を例外的に許容** する:
+
+1. 本規約のメタ council 自身（`clrdbl`）— 規約と同 commit で人間可読版を併合することで「規約変更 + 実例 1 件」が同 PR に揃い即時に効果検証可能
+2. 本規約の起動契機となった council（`rtkSHA`）— 人間が「人間可読に整備された?」と問うた具体例
+
+以降の PR では retroactive 作成を行わない（規約を本規約発動以降の council にのみ適用）。
+
+### 責務
+
+- 起動側 skill（L1 / L0 / 他）: Council Phase 3 と同タイミングで markdown を draft
+- 実装者: 人間判断点で markdown を提示、`implementer_consent` 確定後に追記 commit
+- 受信側 skill: YAML をパースして機械処理経路、markdown を grep / open で人間振り返り経路
+
+両経路は **責務分離**: YAML は機械可読の正本、markdown は presentation。drift 発生時は YAML を正とする。
+
+### harness-verifier との関係
+
+`harness-verifier/verify.py` の検査スコープは `.claude/skills/` 配下に限定されており、`history/council-readable/` は対象外（scope disjoint、`harness-verifier/BOUNDARY.md` §3 と整合）。本規約による追加検証コストはゼロ。
+
+### 関連 council
+
+- `council-2026-05-13T03:55:00Z-clrdbl` — 本規約の確立（メタ council、本規約 §4 結果に基づき `agreed_recommended`）
+- `council-2026-05-13T03:35:00Z-rtkSHA` — 本規約の起動契機（PR #96、人間が「Council 最終出力は人間可読に整備された?」と問うた）
+- `council-2026-04-21T15:30:00Z-m4t4q1`（kakuman / DH 共通履歴）— Council を Council に諮るメタ反復の先例
+
+### 関連ドキュメント
+
+- `output-format.md` §8 — COUNCIL-LOG YAML schema（本規約は schema を変更しない）
+- `../../layer0-spec-architect/references/philosophy.md` 第 4 条 UX 代理指標 — 復帰判断スピードの位置づけ根拠
