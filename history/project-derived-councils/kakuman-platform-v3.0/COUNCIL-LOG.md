@@ -25,6 +25,8 @@ project-derived COUNCIL-LOG mirror — DO NOT MERGE WITH DH'S OWN COUNCIL-LOG
   - `council-2026-05-12T-ux-patterns-lib` (UX Patterns library 配置 / 統合タイミング、cycle L0-UI-LIB-CONSOLIDATE)
 
   本 2 件は **kakuman で固有に発生した判定**であり、利用者プロジェクトの運用傾向観察の対象となる。
+- **kakuman 固有 2 件のスキーマ差分** (重要、Copilot review #94 で指摘): 上記 2 件 (`council-x52-home-launcher-2026-05-10` / `council-2026-05-12T-ux-patterns-lib`) は、本ファイル冒頭で定義されている **標準スキーマ (`timestamp` / `## <invocation_id>` 見出し / `persona_summary` 等)** と異なる **kakuman 側の独自記法** (`invoked_at` / 別形式の見出し / `personas` / `weighted_score` 等) で記録されている。将来の集計・機械処理 (DH 側 / kakuman 側いずれも) では **同一スキーマ前提でパースしてはならない**。kakuman 側で append された時点のスナップショットを保持する目的のため、本ミラーでは形式統一の正規化は **行わない** (philosophy 第 4 条「人間最終承認」「人間の判断種別」+ append-only 規約準拠)。kakuman 側でスキーマ統一が必要と判断された場合は、kakuman リポ側で訂正 → 次回ミラー時に追従する。
+- **本文内の相対リンクは kakuman リポ相対** (重要、Copilot review #94 で指摘): 本ミラー body 内に出現する `[../references/output-format.md](../references/output-format.md)` 等の相対リンクは、源泉 (`.claude/skills/crosscut-council/history/COUNCIL-LOG.md` from kakuman リポ) から見た相対パスであり、DH 内の現在配置 (`history/project-derived-councils/kakuman-platform-v3.0/COUNCIL-LOG.md`) では **解決できない dead link** である。これは mirror の append-only / body 編集禁止規約により意図的に未補正のまま残されている。DH 内で対応する実在スキーマを参照する場合は **`.claude/skills/crosscut-council/references/output-format.md`** を直接参照すること (本ミラーの相対リンクは追わない)。
 
 
 ---
