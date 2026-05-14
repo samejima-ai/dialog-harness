@@ -6,9 +6,11 @@ $RtkVersion = '0.37.1'
 $ZipName = 'rtk-x86_64-pc-windows-msvc.zip'
 $DownloadUrl = "https://github.com/rtk-ai/rtk/releases/download/v$RtkVersion/$ZipName"
 # SHA256 of the published zip on GitHub Releases (rtk v0.37.1). Maintainer must
-# update this when bumping $RtkVersion. Source: release page checksum file.
+# update this when bumping $RtkVersion. Source: release page checksum file
+# (https://github.com/rtk-ai/rtk/releases/download/v$RtkVersion/checksums.txt).
 # An empty value disables verification only if $env:RTK_SKIP_VERIFY -eq '1'.
-$ExpectedSha256 = ''
+# Update protocol (when bumping $RtkVersion): see references/sha-update-protocol.md
+$ExpectedSha256 = '3b9f207e8ea360d744649760788cbcf7d6ce62d8ccb8677aa3c8d1513a9d2cc2'
 $InstallDir = Join-Path $env:USERPROFILE '.local\bin\rtk'
 $SkillsDir = Join-Path $env:USERPROFILE '.claude\skills'
 $TargetSkills = @(
