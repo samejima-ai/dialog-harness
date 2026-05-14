@@ -385,14 +385,24 @@ history/council-readable/<invocation_id>.md
 
 ### 適用範囲
 
-本規約は **PR で本規約を確立した時点（次の merge）の次の council から適用**する。既存 council 群への遡及適用はしない（経営者 minority 採用、即時 ROI 観点 + 過去ログの append-only 規約と整合）。
+本規約は **upstream (dialog-harness) で本規約を確立した PR (DH PR #96) の merge 時点の、次の council から適用**する。既存 council 群への遡及適用はしない（経営者 minority 採用、即時 ROI 観点 + 過去ログの append-only 規約と整合）。
 
-ただし、本規約を確立した PR 自身では **2 件の retroactive 作成を例外的に許容** する:
+ただし、本規約を **upstream で確立した PR (DH #96) 自身** では **2 件の retroactive 作成を例外的に許容** する:
 
 1. 本規約のメタ council 自身（`clrdbl`）— 規約と同 commit で人間可読版を併合することで「規約変更 + 実例 1 件」が同 PR に揃い即時に効果検証可能
 2. 本規約の起動契機となった council（`rtkSHA`）— 人間が「人間可読に整備された?」と問うた具体例
 
 以降の PR では retroactive 作成を行わない（規約を本規約発動以降の council にのみ適用）。
+
+#### Downstream プロジェクト (D3 sync 受領側) での扱い
+
+本規約は dialog-harness (D4 マスタ) から cookpato / kakuman 等 (D3 配備) へ D3 sync で **byte-identical** に伝播する (council `d3d4b1` 規格 + DIMENSIONS.md §3.2)。**downstream プロジェクトでは本例外条項 (retroactive 2 件作成) は適用しない**:
+
+- downstream は規約を「確立」ではなく「受領」する立場であり、`clrdbl` / `rtkSHA` の人間可読版は upstream DH project-scope に閉じている
+- downstream 側の既存 council 群 (PR1 walking-skeleton 起源 + 利用者プロジェクト固有 council 等) も遡及作成しない
+- downstream は **規約受領 PR の merge 後** に新規発動する council から本規約を適用する (`.claude/skills/crosscut-council/history/council-readable/<id>.md` を 4 section format で作成)
+
+D3 = D4 byte-identical 不変性の維持を優先するため、downstream 側で本規約本文を modify することも禁止する。文言の改善は upstream DH 側で行い、D3 sync で全 downstream に伝播させる経路を保つ。
 
 ### 責務
 
