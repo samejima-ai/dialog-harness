@@ -400,7 +400,7 @@ history/council-readable/<invocation_id>.md
 
 - downstream は規約を「確立」ではなく「受領」する立場であり、`clrdbl` / `rtkSHA` の人間可読版は upstream DH project-scope に閉じている
 - downstream 側の既存 council 群 (PR1 walking-skeleton 起源 + 利用者プロジェクト固有 council 等) も遡及作成しない
-- downstream は **規約受領 PR の merge 後** に新規発動する council から本規約を適用する (`.claude/skills/crosscut-council/history/council-readable/<id>.md` を 4 section format で作成)
+- downstream は **規約受領 PR の merge 後** に新規発動する council から本規約を適用する (本ドキュメント §配置 と同じく、リポジトリ root 直下の `history/council-readable/<invocation_id>.md` を 4 section format で作成。`.claude/skills/crosscut-council/history/` 等の skill 内 prefix は誤り)
 
 D3 = D4 byte-identical 不変性の維持を優先するため、downstream 側で本規約本文を modify することも禁止する。文言の改善は upstream DH 側で行い、D3 sync で全 downstream に伝播させる経路を保つ。
 
