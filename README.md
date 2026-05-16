@@ -82,19 +82,31 @@ flowchart LR
     HARNESS --> L1[L1 autonomous-dev<br/>自律実装]:::l1
     L1 --> REVIEW[L1 independent-reviewer<br/>独立検証]:::l1
     REVIEW --> VERIFY{{多層検証<br/>CI / drift / philosophy}}:::cc
-    VERIFY --> COUNCIL[Council<br/>拮抗時のみ合議]:::council
-    COUNCIL --> MERGE[auto-merge]:::cc
+    VERIFY --> MERGE[auto-merge]:::cc
     MERGE --> H3([人間：事後評価 P3]):::human
     H3 == 次の発想 / 改修要望 ==> H1
     H3 -.停止介入 P4.-> VERIFY
+
+    COUNCIL{{Council<br/>横断的・判断専用機構<br/>独立並列 × 加重判定}}:::council
+    L0 <-. 判断諮問 .-> COUNCIL
+    L1 <-. 判断諮問 .-> COUNCIL
+    REVIEW <-. 判断諮問 .-> COUNCIL
+    VERIFY <-. 判断諮問 .-> COUNCIL
 
     classDef human fill:#fef3c7,stroke:#d97706,color:#78350f
     classDef l0 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef l1 fill:#dcfce7,stroke:#16a34a,color:#14532d
     classDef harness fill:#fef9c3,stroke:#ca8a04,color:#713f12
     classDef cc fill:#f3e8ff,stroke:#9333ea,color:#581c87
-    classDef council fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef council fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:3px
 ```
+
+### 図の読み方
+
+- **太い実線（`==>`）= L0 ループ** — 事後評価から次の発案に戻り、ハーネスが対話の蓄積として育つ
+- **細い実線 = 開発パイプライン** — 対話 → ハーネス → 実装 → 検証 → merge
+- **破線（横断、`<-..->`）= Council 諮問** — Council は **固定ステップではなく横断機構**。L0 の方針判断・L1 の実装トレードオフ・独立検証の境界判断・多層検証の閾値判定など、**判断が要る全ての地点から起動可能**
+- **停止介入（P4）** — 暴走時に人間が VERIFY 層に割り込む
 
 ### L0 ループ — DH の核心
 

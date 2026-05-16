@@ -82,19 +82,31 @@ flowchart LR
     HARNESS --> L1[L1 autonomous-dev<br/>autonomous build]:::l1
     L1 --> REVIEW[L1 independent-reviewer<br/>independent check]:::l1
     REVIEW --> VERIFY{{Multi-layer verify<br/>CI / drift / philosophy}}:::cc
-    VERIFY --> COUNCIL[Council<br/>only on conflict]:::council
-    COUNCIL --> MERGE[auto-merge]:::cc
+    VERIFY --> MERGE[auto-merge]:::cc
     MERGE --> H3([Human: retrospective P3]):::human
     H3 == next idea / change request ==> H1
     H3 -.stop / intervene P4.-> VERIFY
+
+    COUNCIL{{Council<br/>cross-cutting judgment organ<br/>independent parallel × weighted}}:::council
+    L0 <-. consult .-> COUNCIL
+    L1 <-. consult .-> COUNCIL
+    REVIEW <-. consult .-> COUNCIL
+    VERIFY <-. consult .-> COUNCIL
 
     classDef human fill:#fef3c7,stroke:#d97706,color:#78350f
     classDef l0 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef l1 fill:#dcfce7,stroke:#16a34a,color:#14532d
     classDef harness fill:#fef9c3,stroke:#ca8a04,color:#713f12
     classDef cc fill:#f3e8ff,stroke:#9333ea,color:#581c87
-    classDef council fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef council fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:3px
 ```
+
+### How to read this diagram
+
+- **Thick solid line (`==>`) = L0 loop** — the retrospective feeds back into ideation; the harness grows as an accumulation of dialogue
+- **Thin solid lines = development pipeline** — dialogue → harness → build → verify → merge
+- **Dashed lines (cross-cutting, `<-..->`) = Council consultation** — Council is **not a fixed pipeline step but a cross-cutting organ**. It can be invoked from anywhere a judgment is needed: L0 design choices, L1 implementation trade-offs, independent-reviewer boundary calls, multi-layer verify thresholds, etc.
+- **Stop / intervene (P4)** — humans cut into the VERIFY layer when needed
 
 ### The L0 loop — DH's core
 
