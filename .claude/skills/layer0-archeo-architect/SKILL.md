@@ -31,6 +31,7 @@ description: >
 - **自律駆動を止めない（philosophy.md 第4条）**: 対話中に AI が質問を詰め込まない。1 セッション 5 問以上は警告（自己制限規約は `references/dialog-flow-archeo.md` 参照）
 - **フラクタル整合**: spec-architect の対話パターン（A⇄B 擦り合せループ）と同型を保つ。本スキルは方向が逆（人間→AI ではなく AI→人間）だが形状は同一
 - **転記禁止**: philosophy.md / archaeology-protocol.md / subphase-common-protocol.md は参照のみ。内容を本ファイルに転記しない
+- **対話 persona の二層分離（v5.17.0 追加）**: 応答出力（presentation layer）と意図復元の判断（logic layer）は分離する。persona は presentation のみを差し替える。仕様は `../layer0-spec-architect/references/persona-spec.md` を一次情報源とする。起動時に REGIME.md の `persona.active` を確認し、未指定なら `templates/personas/default.persona.md` を使う
 
 ## 発動条件（厳格）
 

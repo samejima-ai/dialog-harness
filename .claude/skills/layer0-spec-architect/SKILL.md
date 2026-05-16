@@ -33,6 +33,7 @@ description: >
 - 開発モードは規模・不確実性・リスクから判定する。人間組織論に基づく職種軸分業は採用しない
 - 単体エージェントで足りる場合は単体で回す。分業は根拠がある場合のみ
 - **フラクタル原則**: L0⇄人間の対話パターン = L1内 spec⇄code 照合 = L2⇄L1群 指示⇄検証 は同一形状。本拡張でも L3 運用層を新設しない方針を徹底する（運用インシデントは新仕様発見として L0 対話へ戻す）
+- **対話 persona の二層分離（v5.17.0 追加）**: 応答出力（presentation layer）と仕様策定の判断（logic layer）は分離する。persona は presentation のみを差し替える。philosophy 第 6 条「人間最終承認」は logic 側で守られる。詳細は `references/persona-spec.md` を参照。
 
 ### L0 完了の受け入れ基準（v5.1.0 追加）
 
@@ -67,6 +68,7 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 ## 処理フロー
 
 ```
+0. 対話 persona ロード（v5.17.0 追加。REGIME.md `persona.active` または default を読み込む）
 1. 人間のイメージ受領
 1.5. 振り返り儀式（LC 判定 → 儀式レベル判定 → F1〜F3 実行）
      新規プロジェクト（LC=0）ではレベル0で完全スキップ
@@ -94,6 +96,16 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 ステップ3.6は UI を伴うプロジェクトでのみ起動する。判定と対話プロトコルの詳細は `references/design-system-spec.md` を参照。
 
 ## ステップ詳細
+
+### 0. 対話 persona ロード（v5.17.0 追加）
+
+**Pre-flight**: 対話開始の最初のアクションとして `references/persona-spec.md` を読み、persona の二層モデル（Logic / Presentation）と出力パイプライン（XML AI-data → Character Output）を内部化する。
+
+- 既存プロジェクト（REGIME.md 存在）: REGIME.md の `## persona` セクションを確認。`active:` が指定されていればその persona を `templates/personas/<active>.persona.md` から読み込む。未指定なら `templates/personas/default.persona.md`
+- 新規プロジェクト（REGIME.md 未存在）: `templates/personas/default.persona.md` で開始。対話の中で「ペルソナを ◯◯ に切り替えて」と人間が指示した場合は即時切替し、§4 のモード判定時に REGIME.md へ反映する
+- 切替成功時は新 persona の口調で 1 行告げる（例: 羊 persona なら「これからは羊さんモードで進めますねぇ」）
+
+本ステップは presentation layer の初期化のみ。仕様策定の中身（logic layer）は persona に依存しない。
 
 ### 1. イメージ受領
 
@@ -523,6 +535,7 @@ project-root/
 - `references/dev-env-spec.md` — 開発環境ドキュメント規格（RL/SK/センサーのフォーマット、モード別差分）
 - `references/regime-assessment.md` — モード判定プロトコル（S/U/Rスコアリング、L2発動閾値、LC 判定）
 - `references/dialog-questions.md` — 非エンジニア向け対話質問例集（振り返り儀式テンプレ含む）
+- `references/persona-spec.md` — 対話 persona 仕様（v5.17.0 追加。Logic/Presentation 二層分離、State Machine、出力パイプライン、philosophy 整合）
 - `references/model-recommendations.md` — 実行前の推奨モデル提示（モード別・ハイブリッド運用・AI能力バージョン別差分対策）
 - `references/history-layer-spec.md` — 履歴層（history/）のスキーマ・訂正・archive・承認レベル
 - `references/ritual-protocol.md` — 振り返り儀式プロトコル（4レベル判定・F1〜F3・E1/E2対応）
@@ -556,6 +569,20 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v5.17.0 追加（対話 persona 層・presentation 差替インフラ、minor 昇格）
+
+後方互換維持の追加のみ。DH の応答出力（presentation layer）を persona ごとに差し替え可能にする。
+仕様策定の判断（logic layer）は persona に依存しない（philosophy 第 6 条「人間最終承認」を維持）。
+
+- `references/persona-spec.md` 新設。二層モデル（Logic / Presentation）/ State Machine 規約（Normal / Overflow / Attention）/ 出力パイプライン（XML AI-data → Character Output）/ 切替方法 / 適用範囲 / philosophy 整合を規定
+- `../../../templates/personas/` 新設。`README.md` / `default.persona.md`（中立・既定）/ `sheep-navigator.persona.md`（サンプル: 羊系ナビゲーター）を同梱
+- §原則 に「対話 persona の二層分離」1 行を追加
+- §ステップ 0「対話 persona ロード」を新設（処理フロー先頭に挿入）。REGIME.md `persona.active` を読むか default を使う
+- `assets/meta-spec-template.md` の REGIME.md テンプレに `## persona`（任意）セクションを追加
+- 適用対象は L0 三兄弟（spec-architect / archeo-architect / onboarding）のみ。L1/L2/crosscut は人間対話なしのため対象外（フラクタル原則の対話形状境界に揃える）
+
+LC ≥ 1 既存プロジェクトは REGIME.md に `persona` 未指定なら default が active になり、既存挙動と完全同一（後方互換）。
 
 ### v5.16.0 追加（共有可能スキル整理・参照整合性確立・AI 駆動 PR 運用の実証、minor 昇格）
 

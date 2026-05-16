@@ -205,6 +205,12 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 
 （判定プロトコルは `regime-assessment.md` §autonomous_scope 判定 参照。詳細は `dev-env-spec.md` Level C 参照。Person 責務 P1〜P4 と autonomous_scope の対応は `philosophy.md` 第 7 条参照。）
 
+## persona（v5.17.0 追加、任意）
+- active: [persona 名（拡張子なし） / 例: default, sheep-navigator]
+- override_state: [Normal / Overflow / Attention / null]
+
+（持続切替の永続化先。未指定時は `default` が active になり既存挙動と同一（後方互換）。対話中の一時切替は人間発話で即時可能。詳細は `persona-spec.md` 参照。適用対象は L0 三兄弟の対話面のみ。）
+
 ## current_focus（v5.7.0 追加、autonomous-drive 入口側 Issue pickup で参照）
 - type: [bug-fix / feature / refactor / docs / chore]   # 今このプロジェクトで何に集中しているか
 - target: [master / develop / 等のブランチ名]
