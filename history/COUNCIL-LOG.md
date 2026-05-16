@@ -1946,3 +1946,48 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-13T04:30:00Z"
   cascade_to: "本 PR (claude/fix-rtk-install-sha-TDmT8) で consensus-protocol.md §人間可読並存規約 追加 + history/council-readable/{rtkSHA,clrdbl}.md 作成 + 本 council YAML entry append を 1 commit で実施。kakuman 側は本 PR merge 後の D3 sync で規約を自動追従"
+
+---
+
+- invocation_id: "council-2026-05-16T06:00:00Z-coddag"
+  timestamp: "2026-05-16T06:00:00Z"
+  source_skill: "human_direct_invocation"
+  question_to_answer: "CoDD (Coherence-Driven Development) の DAG (有向非巡回グラフ) 概念を Dialog Harness (DH) に咀嚼すべきか。咀嚼するなら 5 本柱との関係をどう位置づけるか (A=新規 P6 として独立追加 / B=P1 フラクタル原則の派生概念として吸収 / C=実装詳細として棄却 / 第 4 の道=哲学を変えず業界 Layer 3 観測リストに追加)。ローカルブレスト議案 BRAINSTORMCoDDDAGvsDH.md を Issue #98 として起票後の人間直接諮問"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案 B 推奨", confidence: 0.65, dimension: "ROI / 機会損失" }
+    開発者: { stance: "案 B 推奨", confidence: 0.78, dimension: "保守性 / Shift Left" }
+    哲学者: { stance: "案 B + minority 第 4 の道 (観測リスト追加)", confidence: 0.75, dimension: "philosophy 第 1 条フラクタル / 第 2 条 Shift Left / 長期意味" }
+  judgment_confidence: 0.74
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案 B: P1 フラクタル原則の派生概念として吸収"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.04
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+          - { persona: "開発者", weight: 3, confidence: 0.78 }
+          - { persona: "哲学者", weight: 5, confidence: 0.75 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第 4 の道 (CoDD を業界 Layer 3 観測リストに追加)", weight: 5, confidence: 0.75, reason: "B と併合可能な minority opinion として recommended 内に保持。philosophy 本体を変えずに観測経路を増やす方策、経営者 concerns (業界収束時の遅延感) を mitigate" }
+    max_score_stance: "案 B: P1 フラクタル原則の派生概念として吸収"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案 B (P1 フラクタル原則の派生概念として「追跡可能性 (traceability)」を明文化) + 哲学者 第 4 の道 minority 併合 (CoDD を業界 Layer 3 観測リストに追加)。具体的アクション (実装者の合意プロセスで方針化): (1) philosophy.md 第 1 条フラクタル原則に派生節を追加し「依存トポロジーの追跡可能性」を明文化、新規 P6 化はせず 5 本柱の直交性を保つ; (2) DAG 実装機構自体は autonomous-dev / independent-reviewer / harness-verifier の references 層に配置候補 (別 ADR 案件); (3) 問い 3 の「攻撃設計 (DAG verify)」不在は AD-022 候補として独立扱い; (4) 問い 2 の献上フロー統合は第 5 条 献上哲学のサブ条件として位置づけ可能; (5) DOMAINS.md または philosophy.md 末尾に業界 Layer 3 観測リスト節を新設し CoDD を最初の項目として記録"
+  minority_opinion: "哲学者 第 4 の道 (観測リスト追加) は recommended に併合済。経営者 concerns (B 採用後の references 文書化コスト未定 / CoDD 業界収束時の遅延感) は次の F1-F3 振り返り儀式で運用観察責任として保持。開発者 concerns (DAG 機構の具体実装 / Hard Gate との非対称化) は本 council スコープ外 — ARCH-DECISIONS 案件として独立扱い (AD-022 候補)"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  cascade_to: "本 PR (claude/council-judgment-generation-My87x) で history/council-readable/council-2026-05-16T06:00:00Z-coddag.md 作成 + 本 council YAML entry append を 1 commit で実施。Issue #98 に判定サマリを comment で投稿。実装者合意プロセスは Issue #98 上で進行 (philosophy.md 第 1 条派生節追加 + 観測リスト新設の具体 PR は本 council 採決後に独立 PR で扱う)"
