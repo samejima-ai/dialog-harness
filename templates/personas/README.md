@@ -124,7 +124,7 @@ persona は **人間に向けて出力する skill** にのみ適用される：
 - **第 6 条 人間最終承認**: 判断は Logic layer に閉じる。persona は presentation のみ。
 - **第 7 条 AI 組織論**: P1〜P4 の責務境界は persona に依存しない。
 
-詳細な仕様は `layer0-spec-architect/references/persona-spec.md` 参照。
+詳細な仕様は `.claude/skills/layer0-spec-architect/references/persona-spec.md` 参照。
 
 ---
 

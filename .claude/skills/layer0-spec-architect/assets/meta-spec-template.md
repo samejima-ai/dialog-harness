@@ -211,6 +211,12 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 
 （持続切替の永続化先。未指定時は `default` が active になり既存挙動と同一（後方互換）。対話中の一時切替は人間発話で即時可能。詳細は `persona-spec.md` 参照。適用対象は L0 三兄弟の対話面のみ。）
 
+ロード規約（L0 三兄弟で共通）:
+- `active` の解決順: (1) `<project-root>/.dh/personas/<active>.persona.md` → (2) `<dialog-harness>/templates/personas/<active>.persona.md`、最初に見つかったものを採用。両方なければ default にフォールバック
+- `override_state` が null（既定）: State Machine 自動遷移
+- `override_state` が非 null（`Normal` / `Overflow` / `Attention`）: その状態に強制固定。STEP 1 の `<system_state>` も固定値を出力
+- ユーザーが指定しない場合は `override_state: null` を明示記録する（仕様齟齬防止）
+
 ## current_focus（v5.7.0 追加、autonomous-drive 入口側 Issue pickup で参照）
 - type: [bug-fix / feature / refactor / docs / chore]   # 今このプロジェクトで何に集中しているか
 - target: [master / develop / 等のブランチ名]

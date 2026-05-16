@@ -150,18 +150,36 @@ persona 固有のタグを追加してよいが、必須 4 タグ（`system_stat
 
 | key | 値 | 意味 |
 |---|---|---|
-| `active` | persona ファイル名（拡張子なし）| `templates/personas/<value>.persona.md` を読み込む |
-| `override_state` | `Normal` / `Overflow` / `Attention` / `null` | 強制状態指定（通常は null = State Machine 自動遷移） |
+| `active` | persona ファイル名（拡張子なし）| 下記「解決順」で persona ファイルを探索 |
+| `override_state` | `Normal` / `Overflow` / `Attention` / `null` | 強制状態指定（null = State Machine 自動遷移） |
+
+### persona ファイルの解決順（override 規約）
+
+`active: <name>` で指定された persona は以下の優先順位で探索する。最初に見つかった
+ファイルを採用し、後段はスキップする：
+
+1. **利用者プロジェクト override**: `<project-root>/.dh/personas/<name>.persona.md`
+2. **DH 同梱**: `<dialog-harness>/templates/personas/<name>.persona.md`
+
+両方とも存在しない場合は default にフォールバックし、その旨を 1 行告げる（例: 「指定された persona が見つからないため default で進めますねぇ」）。`templates/rules/` と同じ階層化規約。
+
+### `override_state` の適用ルール
+
+- `null`（既定）: State Machine が条件に従って自動遷移する（Normal / Overflow / Attention を切り替える）
+- 非 null（`Normal` / `Overflow` / `Attention`）: その状態に **強制固定**。State Machine の自動遷移は無効化される
+- 固定中でも STEP 1 の `<system_state>` は固定された値を出力する（観測層の整合のため）。`fact_summary` / `path_logic` / `memory_context` は通常どおり生成する
+- 固定解除は REGIME.md の `override_state: null` への書き換えか、人間発話「自動切替に戻して」等で行う
+
+`override_state` の典型用途: デモ・テスト用に Attention 状態の応答を確認したい / Overflow を意図的に再現したい等。本番運用では通常 null。
 
 ### 対話中の一時切替
 
-人間が「ペルソナを羊に切り替えて」「default に戻して」と発話した場合、L0 skill は
-即座に切替を実行する。永続化したい場合は REGIME.md を更新する。
+人間が「ペルソナを羊に切り替えて」「default に戻して」「Overflow 状態にして」等と発話した場合、L0 skill は即座に切替を実行する。永続化したい場合は REGIME.md の `persona.active` / `override_state` を更新する。
 
 ### 切替時の挙動
 
-1. 新 persona の frontmatter を読み込む
-2. `default_state` で State Machine を初期化する
+1. 新 persona の frontmatter を読み込む（解決順に従う）
+2. State Machine を初期化する: REGIME.md の `override_state` が非 null ならその状態に固定、null なら `default_state` で初期化
 3. 切替成功を新 persona の口調で告げる（最初の応答から新 persona）
 
 ---
@@ -198,7 +216,7 @@ persona は対話形状（A⇄B 擦り合せループ）の **外側** の prese
 
 ### 第 7 条 AI 組織論
 
-P1〜P4 の責務境界は persona に依存しない。誰の責務がどこに分掛されるかは REGIME.md /
+P1〜P4 の責務境界は persona に依存しない。誰の責務がどこに分割されるかは REGIME.md /
 philosophy の規定で決まり、persona を変えても変わらない。
 
 ---

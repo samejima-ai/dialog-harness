@@ -101,10 +101,27 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 
 **Pre-flight**: 対話開始の最初のアクションとして `references/persona-spec.md` を読み、persona の二層モデル（Logic / Presentation）と出力パイプライン（XML AI-data → Character Output）を内部化する。
 
-- 既存プロジェクト（REGIME.md 存在）: REGIME.md の `## persona` セクションを確認。`active:` が指定されていればその persona を `templates/personas/<active>.persona.md` から読み込む。未指定なら `templates/personas/default.persona.md`
-- 新規プロジェクト（REGIME.md 未存在）: `templates/personas/default.persona.md` で開始。対話の中で「ペルソナを ◯◯ に切り替えて」と人間が指示した場合は即時切替し、§4 のモード判定時に REGIME.md へ反映する
-- 切替成功時は新 persona の口調で 1 行告げる（例: 羊 persona なら「これからは羊さんモードで進めますねぇ」）
+#### ロード順（override 規約）
 
+REGIME.md の `persona.active` で指定された persona を以下の優先順位で探索する。最初に見つかったファイルを採用する：
+
+1. `<project-root>/.dh/personas/<active>.persona.md`（利用者プロジェクト override）
+2. `<dialog-harness>/templates/personas/<active>.persona.md`（DH 同梱）
+
+両方とも存在しない場合は default にフォールバックし、その旨を 1 行告げる。
+
+#### 起動シナリオ別
+
+- 既存プロジェクト（REGIME.md 存在）: `## persona` セクションを確認。`active:` 未指定なら `default` 扱い
+- 新規プロジェクト（REGIME.md 未存在）: `default.persona.md` で開始。対話中に人間が「ペルソナを ◯◯ に切り替えて」と指示した場合は即時切替し、§4 のモード判定時に REGIME.md へ `persona.active` と `override_state` を反映する
+
+#### `override_state` の適用
+
+- `null`（既定）: persona の `default_state` で State Machine を初期化、以降は条件に従って自動遷移
+- 非 null: その状態に **強制固定**。自動遷移は無効化（STEP 1 の `<system_state>` も固定値）
+- 対話中に「自動切替に戻して」と発話されたら null に戻し、永続化したければ REGIME.md を更新
+
+切替成功時は新 persona の口調で 1 行告げる（例: 羊 persona なら「これからは羊さんモードで進めますねぇ」）。
 本ステップは presentation layer の初期化のみ。仕様策定の中身（logic layer）は persona に依存しない。
 
 ### 1. イメージ受領
