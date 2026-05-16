@@ -135,7 +135,8 @@ DH は **「人間が手を動かさずに済む開発」を本気で追求す�
 2. `templates/rituals/wave-end-retrospective.template.md` で振り返りを書いて PR を出す
 3. Council 諮問（`history/COUNCIL-LOG.md`）の判定に異論があれば、minority opinion を立てる
 
-> 「無関心 = 委譲」は構造で守るが、「無関心 = 思考停止」は人間が引き受ける。— [`history/INTENT.md` v5.9.0 §(b)](history/INTENT.md)（哲学者ペルソナ懸念）
+> AI ができないことを人間がする。人間がしなくていいことを AI がする。
+> だから **人間 ≒ Council** — 判断機構として対称になる。（philosophy [第 4 条](.claude/skills/layer0-spec-architect/references/philosophy.md) × [第 6 条](.claude/skills/layer0-spec-architect/references/philosophy.md)）
 
 ---
 

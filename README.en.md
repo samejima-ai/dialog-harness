@@ -135,7 +135,8 @@ DH is an experimental project that **seriously chases the goal of "development w
 2. Write a retrospective using `templates/rituals/wave-end-retrospective.template.md` and send a PR
 3. If you disagree with a Council judgment in `history/COUNCIL-LOG.md`, raise a minority opinion
 
-> "Indifference = delegation" is protected by structure, but "indifference = abdication of thought" is something humans must carry. — [`history/INTENT.md` v5.9.0 §(b)](history/INTENT.md) (philosopher persona's concern)
+> Humans do what AI cannot. AI does what humans don't need to.
+> That's why **humans ≒ Council** — symmetric as judgment organs. (Philosophy [Article 4](.claude/skills/layer0-spec-architect/references/philosophy.md) × [Article 6](.claude/skills/layer0-spec-architect/references/philosophy.md))
 
 ---
 
