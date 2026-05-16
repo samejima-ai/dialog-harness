@@ -76,37 +76,43 @@ DH **does not replace** the layers above. It sits on top of Claude Code, **compo
 ## How it works — dialogue → harness → implementation → next dialogue
 
 ```mermaid
-flowchart LR
-    H1([Human: idea / new feature / spec change<br/>P1 + P2]):::human --> L0
+flowchart TB
+    COUNCIL{{Council<br/>cross-cutting judgment hub<br/>independent parallel × weighted<br/>used by AI and humans alike}}:::council
+
+    H1([Human P1/P2<br/>ideate / brainstorm]):::human --> L0
     L0[L0 spec-architect<br/>generate/update harness via dialogue]:::l0 --> HARNESS[(Harness<br/>SPEC / DONT / REGIME<br/>Workflow / Sensors)]:::harness
     HARNESS --> L1[L1 autonomous-dev<br/>autonomous build]:::l1
     L1 --> REVIEW[L1 independent-reviewer<br/>independent check]:::l1
     REVIEW --> VERIFY{{Multi-layer verify<br/>CI / drift / philosophy}}:::cc
     VERIFY --> MERGE[auto-merge]:::cc
-    MERGE --> H3([Human: retrospective P3]):::human
+    MERGE --> H3([Human P3<br/>retrospective]):::human
     H3 == next idea / change request ==> H1
-    H3 -.stop / intervene P4.-> VERIFY
+    H3 -. P4 intervene .-> VERIFY
 
-    COUNCIL{{Council<br/>cross-cutting judgment organ<br/>independent parallel × weighted}}:::council
+    H1 <-. consult .-> COUNCIL
     L0 <-. consult .-> COUNCIL
     L1 <-. consult .-> COUNCIL
     REVIEW <-. consult .-> COUNCIL
     VERIFY <-. consult .-> COUNCIL
+    H3 <-. consult .-> COUNCIL
 
     classDef human fill:#fef3c7,stroke:#d97706,color:#78350f
     classDef l0 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
     classDef l1 fill:#dcfce7,stroke:#16a34a,color:#14532d
     classDef harness fill:#fef9c3,stroke:#ca8a04,color:#713f12
     classDef cc fill:#f3e8ff,stroke:#9333ea,color:#581c87
-    classDef council fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:3px
+    classDef council fill:#fee2e2,stroke:#dc2626,color:#7f1d1d,stroke-width:4px
 ```
 
 ### How to read this diagram
 
+- **Council = central judgment hub** — invokable from every point that needs a judgment. Not only AI nodes (L0 / L1 / independent-review / multi-layer verify), but **humans themselves can consult Council too**. "I'm stuck deciding the design," "I'm unsure if this direction is right" — **Council offloads the human's cognitive load as well**
 - **Thick solid line (`==>`) = L0 loop** — the retrospective feeds back into ideation; the harness grows as an accumulation of dialogue
 - **Thin solid lines = development pipeline** — dialogue → harness → build → verify → merge
-- **Dashed lines (cross-cutting, `<-..->`) = Council consultation** — Council is **not a fixed pipeline step but a cross-cutting organ**. It can be invoked from anywhere a judgment is needed: L0 design choices, L1 implementation trade-offs, independent-reviewer boundary calls, multi-layer verify thresholds, etc.
+- **Dashed lines (bidirectional) = Council consultation** — consult → weighted judgment → result returned (only escalates to a human when truly split)
 - **Stop / intervene (P4)** — humans cut into the VERIFY layer when needed
+
+> **The cycle revolves around Council.** Neither AI nor humans need to stall at decision points. Council shoulders the call; humans only sign off at the end.
 
 ### The L0 loop — DH's core
 
@@ -168,8 +174,13 @@ L0 updates the harness, and L1 starts the extended implementation. The harness k
 
 ## Council — offloading judgment to reduce cognitive load
 
-A consensus mechanism that offloads "A vs B" / "is this safe to merge?" decisions to AI.
+A consensus mechanism that offloads "A vs B" / "is this safe to merge?" decisions — usable by **both AI nodes and humans themselves**.
 **Three personas (Businessperson, Engineer, Philosopher) produce opinions independently and in parallel; the system aggregates them by weight.** No deliberation — that's deliberate (to avoid AI context-noise and herd bias).
+
+| Caller | When to consult |
+|---|---|
+| **AI nodes** | L0 design choices, L1 implementation trade-offs, independent-review boundary calls, multi-layer verify thresholds |
+| **Humans** | "I can't decide the design," "Not sure if this direction is right," "Three plans look equally good" — any moment when you want to offload the cognitive load of judgment |
 
 ### The aggregation formula
 
