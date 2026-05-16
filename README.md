@@ -120,6 +120,52 @@ flowchart LR
 
 ---
 
+## 環境設定（人間が手を動かす範囲）
+
+セキュリティ上の理由で **AI が代行できない設定** があります。これは「AI ができないことを人間がする」（philosophy 第 4 条）の具体例です。
+**非エンジニアでも、Claude Code に直接聞けばステップを教えてくれます。**
+
+### 必須項目
+
+| 項目 | なぜ AI がやれないか | AI のサポート |
+|---|---|---|
+| Claude Code のインストール | OS への実行権限・ブラウザ認証が必要 | インストール手順を対話で案内 |
+| GitHub アカウント / Repo 作成 | 認証が個人に紐づく | 手順説明・初期化ガイド |
+| Personal Access Token 発行 | 秘密鍵の生成権限は人間専属 | スコープ選択・発行画面の案内 |
+| Repository Secrets 設定 | Settings 編集に admin 権限が必須 | 必要 Secret 名と取得元を説明 |
+| GitHub Labels 作成 | autonomous-drive が要求 | `crosscut-autonomous-drive` Skill が一括作成手順を案内 |
+
+### `autonomous` モードで必要な Secrets
+
+| Secret 名 | 用途 |
+|---|---|
+| `CLAUDE_CODE_OAUTH_TOKEN` | GitHub Actions 上で Claude Code を起動 |
+| `GH_REVIEW_PAT` | auto-merge / gemini-review workflow が PR 操作に使用 |
+| `GEMINI_API_KEY` | gemini-review（任意 / fallback） |
+
+### autonomous-drive 用のラベル
+
+| ラベル | 役割 |
+|---|---|
+| `ready-for-ai` | Issue を AI 着手対象にする GO サイン |
+| `do-not-merge` | auto-merge を停止（P4 介入） |
+| `human-review-needed` | 人間レビューを必須化（P4 介入） |
+| `pickup-failed` | 自動 pickup の中断記録 |
+
+### 「分からないことは AI に聞く」が前提
+
+DH は **非エンジニアのための対話型ハーネス** です。上記の設定で詰まったら、Claude Code に直接こう聞けば OK：
+
+```
+> GH_REVIEW_PAT の発行手順を教えて
+> Repository Secrets の設定画面はどこ？
+> autonomous-drive のラベルを一括作成して
+```
+
+`crosscut-autonomous-drive` Skill がガイド役を担います。手を動かすのは人間ですが、考える内容は AI が肩代わりします。
+
+---
+
 ## 協力者募集
 
 DH は **「人間が手を動かさずに済む開発」を本気で追求する** 実験プロジェクトです。以下のような方を歓迎します。

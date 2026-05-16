@@ -120,6 +120,52 @@ Humans touch only four points — **Ideation (P1) / Brainstorming (P2) / Retrosp
 
 ---
 
+## Environment setup (what humans must do by hand)
+
+Some setup **AI cannot do for you, for security reasons**. This is exactly the "humans do what AI cannot" half of Article 4.
+**Even non-engineers can get through it — just ask Claude Code for step-by-step guidance.**
+
+### Required
+
+| Item | Why AI can't do it | AI's support |
+|---|---|---|
+| Install Claude Code | Needs OS exec permission & browser auth | Walks you through install steps |
+| Create GitHub account / repo | Auth is personal | Step-by-step explanation |
+| Issue Personal Access Tokens | Secret-key generation is human-only | Guides scope selection & issue screen |
+| Set Repository Secrets | Settings editing needs admin rights | Explains required Secret names & sources |
+| Create GitHub Labels | Required by autonomous-drive | `crosscut-autonomous-drive` skill scripts the bulk creation |
+
+### Secrets needed for `autonomous` mode
+
+| Secret | Purpose |
+|---|---|
+| `CLAUDE_CODE_OAUTH_TOKEN` | Run Claude Code from GitHub Actions |
+| `GH_REVIEW_PAT` | Used by auto-merge / gemini-review workflows for PR ops |
+| `GEMINI_API_KEY` | gemini-review (optional / fallback) |
+
+### Labels for autonomous-drive
+
+| Label | Role |
+|---|---|
+| `ready-for-ai` | GO signal — Issue is AI-pickup ready |
+| `do-not-merge` | Halt auto-merge (P4 intervention) |
+| `human-review-needed` | Force human review (P4 intervention) |
+| `pickup-failed` | Record an auto-pickup abort |
+
+### "Ask AI when stuck" is the premise
+
+DH is **a dialogue harness for non-engineers**. If you get stuck on the setup above, just ask Claude Code directly:
+
+```
+> Walk me through issuing a GH_REVIEW_PAT
+> Where is the Repository Secrets screen?
+> Bulk-create the autonomous-drive labels for me
+```
+
+The `crosscut-autonomous-drive` skill plays the guide role. Humans move the hands; AI shoulders the thinking.
+
+---
+
 ## Call for Collaborators
 
 DH is an experimental project that **seriously chases the goal of "development where humans don't move their hands."** We welcome people who:
