@@ -1990,3 +1990,49 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-16T07:00:00Z"
   cascade_to: "本 PR (#99 / claude/council-judgment-generation-My87x) で 3-commit cycle として咀嚼吸収完遂: (commit A) 本 closure、(commit B) sub-Council p1embed 発動・採決 (philosophy 第 1 条派生節の埋込み形式判定)、(commit C) philosophy.md 第 1 条派生節追加 + .claude/skills/layer0-spec-architect/references/observed-peers.md 新設 (CoDD を最初の項目として記録、業界 Layer 3 観測リスト) + history/ARCH-DECISIONS.md AD-032 候補追加 (Hard Gate ⇄ DAG verify 対称化検討、温存項目)。なお recommended テキスト内の「AD-022 候補」は実装時に最新 AD 番号確認の結果 AD-022 が既存 (v5.5.3 autonomous-drive 出口側 label opt-in) と判明したため、実番号は AD-032 に訂正 (最新 AD-031 の次)。問い 2 (献上フロー第 5 条への DAG verify 統合) は本 PR スコープ外、将来別 PR で扱う"
+
+---
+
+- invocation_id: "council-2026-05-16T07:15:00Z-p1embd"
+  timestamp: "2026-05-16T07:15:00Z"
+  source_skill: "human_direct_invocation"
+  parent_invocation_id: "council-2026-05-16T06:00:00Z-coddag"
+  question_to_answer: "philosophy.md 第 1 条 フラクタル原則 への派生節「依存トポロジーの追跡可能性 = 形状保存メカニズム」をどの形式で埋め込むべきか (案 α=新規小節として独立追加 / 案 β=既存「分岐の決定責務」を 1〜2 段落延長して統合 / 案 γ=philosophy.md 本体は最小変更、詳細を references/dependency-topology.md に切り出す)。Council coddag の sub-scope として、人間 Q1 回答「咀嚼のための Council 起動」で発動"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案 α", confidence: 0.65, dimension: "ROI / 機会損失 / コミュニケーションコスト" }
+    開発者: { stance: "案 α", confidence: 0.78, dimension: "保守性 / Shift Left / 責務単一性" }
+    哲学者: { stance: "案 α + minority (案 α と案 β の止揚: 新小節内で既存「分岐の決定責務」との接続点を明示)", confidence: 0.70, dimension: "philosophy 第 1 条フラクタル自己整合 / 長期意味 / 美学" }
+  judgment_confidence: 0.72
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案 α: 新規小節として独立追加"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.79
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.65 }
+          - { persona: "開発者", weight: 3, confidence: 0.78 }
+          - { persona: "哲学者", weight: 5, confidence: 0.70 }
+    third_way_excluded: []
+    max_score_stance: "案 α: 新規小節として独立追加"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案 α (新規小節として独立追加) + 哲学者 minority 併合 (新小節内で既存「分岐の決定責務」との接続点を明示することで、責務独立性 (案 α) と軸の深化 (案 β) を哲学的に止揚)。具体的アクション: (1) philosophy.md 第 1 条 行 36 (「分岐の決定責務」末尾) と 行 38 (「L3 を新設しない」) の間に新小節「依存トポロジーの追跡可能性」を挿入、(2) 新小節は前提条件補足という位置づけを明記し新原則化ではないことを宣言、(3) 哲学者 minority の止揚採用として新小節内に「L0 の分岐判定が依存 DAG 確定と同時に進行する責務として『分岐の決定責務』の前提条件となる」旨を 1 段落含める、(4) 具体的な追跡機構 (DAG 構造保持・影響分析エンジン等) は本原則の implementation detail として autonomous-dev / independent-reviewer / harness-verifier の references 層に委譲することを明記、(5) 業界先行事例 CoDD への参照リンクを新小節末尾に配置 (observed-peers.md)"
+  minority_opinion: "哲学者 minority (案 α と案 β の止揚) は recommended に併合済 — 新小節内で既存『分岐の決定責務』との接続点を明示することで責務独立性 (案 α) と軸の深化 (案 β) を両立、scores 側に一意出現の不変条件を保つため third_way_excluded には入れない。経営者 concerns (D3 sync impact 観察 / 文章量肥大化監視) は次の F1-F3 振り返り儀式で運用観察責任として保持。開発者 concerns (用語辞書 glossary.yml への新用語追加要否) は本 PR 内 Step 5 整合性検証で確認"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-16T07:15:00Z"
+  cascade_to: "本 PR (#99) commit C で philosophy.md 第 1 条 行 36-38 の間に新小節『依存トポロジーの追跡可能性』を挿入 (案 α + 哲学者 minority の止揚)。新小節内に『分岐の決定責務』との接続点を明示する 1 段落を含め、DAG 機構の implementation detail は references 層に委譲することを明記、CoDD 業界先行事例への参照リンクを Step 3 で作成する observed-peers.md へ配置する"
+
