@@ -93,6 +93,53 @@ flowchart LR
 
 ---
 
+## Council — 判断を肩代わりして認知負荷を下げる
+
+開発中に「A と B どっちにする？」「この変更、本当に入れていい？」という判断が連続する。人間が都度考えると認知負荷が高くなり、開発が止まる。
+
+**Council は 3 つの AI ペルソナ（経営者・開発者・哲学者）が独立して議論し、加重判定で推薦を出す合議機構**です。人間は推薦を見て「OK」か「待って」を言うだけ。拮抗した時だけ最終判断を人間に返す。
+
+### Council が引き受ける判断の例
+
+- 実装方針 A vs B vs C のトレードオフ
+- リリースバージョンの判定（minor 昇格か major か）
+- 既存の承認モデルを変更してよいか
+- 不可逆な操作に踏み込んでよいか
+
+### Council ログの実例
+
+これは auto-merge の承認モデルを「明示 GO ラベル必須（opt-in）」から「沈黙 = 承認（opt-out）」に変えるかどうかを Council に諮った判定です。
+
+```yaml
+invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
+question_to_answer: >
+  auto-merge の人間承認モデルを opt-in（明示 GO ラベル）から
+  opt-out（暗黙オート + stop ラベル）に反転すべきか
+
+persona_summary:
+  経営者: { stance: "C: ハイブリッド", confidence: 0.70 }  # ROI・流速改善
+  開発者: { stance: "C: ハイブリッド", confidence: 0.82 }  # 保守性・可逆性
+  哲学者: { stance: "C: ハイブリッド", confidence: 0.55 }  # 倫理・長期影響
+
+judgment_confidence: 0.80
+recommended: >
+  C: ハイブリッド採用。philosophy / harness 領域は opt-in 維持、
+  定型領域のみ opt-out。境界を SPEC で不変化する。
+
+consensus_mode: "auto_agree"    # 全員一致 → 人間エスカレーション不要
+human_escalated: false
+implementer_consent: "agreed_with_modification"
+```
+
+3 ペルソナが全員 C に収束 → `auto_agree` → **人間は結果を確認するだけ**。
+もし 3 者が割れて `human_escalated: true` になれば、その時だけ人間が最終判断する。
+
+> 普段は Council に任せ、本当に割れた時だけ人間が出る。認知負荷を絞って、最終判断の精度を上げる。
+
+全判定は [`history/COUNCIL-LOG.md`](history/COUNCIL-LOG.md) に append-only で蓄積され、透明性と振り返りを保証します。
+
+---
+
 ## 主要な Skill
 
 | Layer | Skill | 役割 |
