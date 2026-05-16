@@ -138,23 +138,39 @@ CoDD の DAG (依存関係の構造保持 + 変更伝播追跡) 概念を DH に
 
 ---
 
-## 選択 (人間判断、未確定)
+## 選択 (人間判断、確定済)
 
-> 本セクションは `implementer_consent` 確定後に追記する。Council 判断は **判断 (judgment) であって決定 (decision) ではない** — 実装者の合意プロセスで方針化される。
+**`agreed_recommended`** — 案 B + 第 4 の道 minority をそのまま採用。咀嚼吸収プラン (`/root/.claude/plans/council-playful-steele.md`) を緻密化し、本 PR (#99) 内で 3-commit cycle として実行する。
 
-### 選択肢
+### 採決の補足: AD 番号訂正
 
-- **`agreed_recommended`** — 案 B + 第 4 の道 minority をそのまま採用
-- **`agreed_with_modification`** — 案 B 採用するが、philosophy への反映粒度 / 観測リスト配置等を修正
-- **`escalated`** — 人間最終承認に献上 (philosophy 第 6 条)
+Council recommended 内で「AD-022 候補」と記述したのは、実装時に最新 AD 番号を確認した結果、AD-022 は既存 (v5.5.3 autonomous-drive 出口側 label opt-in 自動 merge) と判明した。実番号は **AD-032** (最新 AD-031 の次) に訂正する。
+
+### 採決の補足: 観測リスト配置
+
+Council 内では「DOMAINS.md または philosophy.md 末尾」の or 表現にしていたが、人間判断 (Q2) で `.claude/skills/layer0-spec-architect/references/observed-peers.md` (L0 references 層、D3 sync 対象外、upstream DH 専有) に確定。
+
+### 採決の補足: 派生節埋込み形式
+
+Council `coddag` recommended は「P1 派生として明文化」までを定義し、philosophy.md 第 1 条への具体的な埋込み形式は本採決の sub-scope。人間判断 (Q1)「咀嚼のための Council 起動」に従い、新規 sub-Council `p1embed` を本 PR 内 commit B で発動・採決して埋込み形式を確定する (案 α: 新規小節として独立追加 / 案 β: 既存「分岐の決定責務」を拡張 / 案 γ: 別ファイル切出し)。
 
 ### `implementer_consent`
 
-(未確定)
+`agreed_recommended`
 
 ### `agreed_at`
 
-(未確定)
+2026-05-16T07:00:00Z
+
+### `cascade_to`
+
+本 PR (#99 / `claude/council-judgment-generation-My87x`) で 3-commit cycle として咀嚼吸収完遂:
+
+1. **commit A**: 本 closure (本 markdown 確定 + COUNCIL-LOG.md coddag entry の `implementer_consent` / `agreed_at` / `cascade_to` 更新)
+2. **commit B**: sub-Council `p1embed` 発動・採決 (philosophy 第 1 条派生節の埋込み形式判定)
+3. **commit C**: philosophy.md 第 1 条派生節追加 + `references/observed-peers.md` 新設 (CoDD 初回登録) + `ARCH-DECISIONS.md` AD-032 候補追加
+
+問い 2 (献上フロー第 5 条への DAG verify 統合) は本 PR スコープ外、将来別 PR で扱う。
 
 ---
 
@@ -165,4 +181,4 @@ CoDD の DAG (依存関係の構造保持 + 変更伝播追跡) 概念を DH に
 - 起点ブレスト: `BRAINSTORMCoDDDAGvsDH.md` (ローカル、Issue #98 本文に embed)
 - 先例 council: `council-2026-05-13T03:55:00Z-clrdbl` (conception category 重み precedent、人間可読並存規約の確立)
 - philosophy 整合: 第 1 条 フラクタル原則 (派生先) / 第 2 条 Shift Left (検出 gap の先延ばし禁止) / 第 3 条 情報純度 (献上前処理候補) / 第 5 条 献上哲学 (DAG verify の位置づけ)
-- ARCH-DECISIONS 候補: AD-022 (Hard Gate 守備 ⇄ 整合性検証 攻撃 の対称化検討、本 council スコープ外)
+- ARCH-DECISIONS 候補: **AD-032** (Hard Gate 守備 ⇄ 整合性検証 攻撃 の対称化検討、本 council スコープ外、AD-022 は既存ゆえ番号訂正)

@@ -1986,7 +1986,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "哲学者 第 4 の道 (CoDD を業界 Layer 3 観測リストに追加、philosophy 本体を変えずに観測経路を増やす方策) は B と併合可能な minority として recommended に転載済 — 経営者 concerns (業界収束時の遅延感) を mitigate する。哲学者は scores 側 (案 B supporter, weight 5) に一意に出現し third_way_excluded には入れない (output-format.md §weight_calculation の 1 persona 1 位置の不変条件を保つ)。経営者 concerns (B 採用後の references 文書化コスト未定) は次の F1-F3 振り返り儀式で運用観察責任として保持。開発者 concerns (DAG 機構の具体実装 / Hard Gate との非対称化) は本 council スコープ外 — ARCH-DECISIONS 案件として独立扱い (AD-022 候補)"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  agreed_at: null
-  cascade_to: "本 PR (claude/council-judgment-generation-My87x) で history/council-readable/council-2026-05-16T06:00:00Z-coddag.md 作成 + 本 council YAML entry append を 1 commit で実施。Issue #98 に判定サマリを comment で投稿。実装者合意プロセスは Issue #98 上で進行 (philosophy.md 第 1 条派生節追加 + 観測リスト新設の具体 PR は本 council 採決後に独立 PR で扱う)"
+  agreed_at: "2026-05-16T07:00:00Z"
+  cascade_to: "本 PR (#99 / claude/council-judgment-generation-My87x) で 3-commit cycle として咀嚼吸収完遂: (commit A) 本 closure、(commit B) sub-Council p1embed 発動・採決 (philosophy 第 1 条派生節の埋込み形式判定)、(commit C) philosophy.md 第 1 条派生節追加 + .claude/skills/layer0-spec-architect/references/observed-peers.md 新設 (CoDD を最初の項目として記録、業界 Layer 3 観測リスト) + history/ARCH-DECISIONS.md AD-032 候補追加 (Hard Gate ⇄ DAG verify 対称化検討、温存項目)。なお recommended テキスト内の「AD-022 候補」は実装時に最新 AD 番号確認の結果 AD-022 が既存 (v5.5.3 autonomous-drive 出口側 label opt-in) と判明したため、実番号は AD-032 に訂正 (最新 AD-031 の次)。問い 2 (献上フロー第 5 条への DAG verify 統合) は本 PR スコープ外、将来別 PR で扱う"
