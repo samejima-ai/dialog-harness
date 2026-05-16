@@ -95,48 +95,90 @@ Humans touch only four points — **Ideation (P1) / Brainstorming (P2) / Retrosp
 
 ## Council — offloading judgment to reduce cognitive load
 
-During development, "Should we pick A or B?" and "Is this change safe to merge?" decisions pile up constantly. Every time a human has to stop and think, development slows down.
+During development, "A or B?" and "is this change safe?" decisions pile up. Every time a human has to stop and think, development slows down.
 
-**Council is a consensus mechanism where three AI personas (Businessperson, Engineer, Philosopher) deliberate independently and produce a weighted recommendation.** Humans read the recommendation and say "OK" or "hold on" — that's it. Only when the personas truly split does the decision come back to a human.
+**Council is a consensus mechanism that offloads judgment to AI.** Humans read the recommendation and say "OK" or "hold on" — that's it. Only when personas truly split does the decision come back to a human.
+
+### 3-persona independent design — "no deliberation"
+
+Council does **not deliberate**. The three personas (Businessperson, Engineer, Philosopher) produce opinions **independently, without seeing each other's output**, and the system aggregates them with weights.
+
+This is a deliberate response to AI characteristics:
+
+| AI weakness | Council's countermeasure |
+|---|---|
+| Context contamination causes opinions to drift toward each other (echo / herd) | Each persona runs in an isolated context; aggregate only the outputs |
+| Deliberation accumulates noise over rounds | No deliberation — only first-pass opinions are used |
+| Majority-forming bias | Weights guarantee opinion quality; minority views preserved in `minority_opinion` |
+
+→ **"Consensus, but not debate."** Pure opinions from each AI, then a weighted decision.
 
 ### What Council takes off your plate
 
 - Implementation trade-offs: A vs B vs C
-- Release versioning judgment (minor bump or major?)
+- Release versioning (minor bump or major?)
 - Whether to change an existing approval model
 - Whether an irreversible operation is safe to proceed
 
-### Real Council log example
+### Pattern ①: Unanimous → human only confirms
 
-This is an actual Council judgment on whether to flip the auto-merge approval model from "explicit GO label required (opt-in)" to "silence = approval (opt-out)".
+Real Council judgment on flipping the auto-merge approval model from "explicit GO (opt-in)" to "silence = approval (opt-out)":
 
 ```yaml
 invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
 question_to_answer: >
-  Should the auto-merge approval model flip from opt-in
-  (explicit GO label) to opt-out (silent auto + stop label)?
+  Should auto-merge flip from opt-in to opt-out?
 
 persona_summary:
   Businessperson: { stance: "C: Hybrid", confidence: 0.70 }  # ROI / throughput
   Engineer:       { stance: "C: Hybrid", confidence: 0.82 }  # maintainability / reversibility
   Philosopher:    { stance: "C: Hybrid", confidence: 0.55 }  # ethics / long-term risk
 
+conflict_type: "unanimous"      # all three agree
 judgment_confidence: 0.80
 recommended: >
   C: Hybrid. Keep opt-in for philosophy / harness-critical areas,
   opt-out only for routine work. Freeze the boundary in SPEC.
 
-consensus_mode: "auto_agree"    # unanimous → no human escalation needed
+consensus_mode: "auto_agree"    # unanimous → no human escalation
 human_escalated: false
-implementer_consent: "agreed_with_modification"
 ```
 
-All three personas converge on C → `auto_agree` → **human only reads the result**.
-If they split and `human_escalated: true`, only then does the human make the final call.
+All three converge on C → `auto_agree` → **human only reads the result**.
 
-> Let Council handle the everyday calls; save human judgment for the ones that truly split. Narrowing cognitive load sharpens the decisions that matter.
+### Pattern ②: Split opinion → human makes the final call
 
-Every judgment is appended to [`history/COUNCIL-LOG.md`](history/COUNCIL-LOG.md), keeping a transparent and reviewable audit trail.
+Real Council judgment on how deep to re-verify DH itself before v5.5.0 (V-1 narrow / V-2 medium / V-3 broad):
+
+```yaml
+invocation_id: "council-2026-05-02T12:30:00Z-vrfy01"
+question_to_answer: >
+  Verification depth before v5.5.0 (V-1 / V-2 / V-3)
+
+persona_summary:
+  Businessperson: { stance: "V-1: narrow (blockers only)", confidence: 0.70 }
+  Engineer:       { stance: "V-1: narrow (blockers only)", confidence: 0.85 }
+  Philosopher:    { stance: "Third way: V-1 + drift check folded into SPEC phase",
+                    confidence: 0.65 }
+
+conflict_type: "simple_conflict"   # philosopher offered an out-of-options stance
+judgment_confidence: 0.45          # low!
+recommended: "V-1 narrow (weight 6/11; philosopher's third way is out of options)"
+
+consensus_mode: "escalate_to_human"  # ← decision returns to human
+human_escalated: true
+implementer_consent: "agreed_with_modification"
+modification_note: >
+  β-synthesis adopted — run V-1 this session AND fold the
+  philosopher's third way (drift check inside the SPEC phase)
+```
+
+2 of 3 voted V-1, but the philosopher proposed an out-of-options third way, dragging `judgment_confidence` to 0.45 → `escalate_to_human` → **human synthesizes both into a β-merge**.
+
+> Let Council handle the everyday calls; humans show up only when it truly splits.
+> AI handles the opinions; humans concentrate on the final call.
+
+Every judgment is appended to [`history/COUNCIL-LOG.md`](history/COUNCIL-LOG.md) — a transparent, reviewable audit trail.
 
 ---
 

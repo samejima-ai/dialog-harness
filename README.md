@@ -97,7 +97,21 @@ flowchart LR
 
 開発中に「A と B どっちにする？」「この変更、本当に入れていい？」という判断が連続する。人間が都度考えると認知負荷が高くなり、開発が止まる。
 
-**Council は 3 つの AI ペルソナ（経営者・開発者・哲学者）が独立して議論し、加重判定で推薦を出す合議機構**です。人間は推薦を見て「OK」か「待って」を言うだけ。拮抗した時だけ最終判断を人間に返す。
+**Council は判断を AI に肩代わりさせる合議機構**です。人間は推薦を見て「OK」か「待って」を言うだけ。拮抗した時だけ最終判断を人間に返す。
+
+### 3 ペルソナ独立型 — 「議論しない」設計
+
+Council は **議論（dialogue）しません**。3 つのペルソナ（経営者・開発者・哲学者）が **互いの発言を見ずに独立して意見を出し**、システムが加重で集計します。
+
+これは AI 特性への対応です：
+
+| AI の弱点 | Council の対処 |
+|---|---|
+| context が混ざると意見が引きずられる（雷同・追従） | 各ペルソナを独立 context で実行、出力後に集計 |
+| 議論プロセスでノイズが累積する | 議論せず、初動の意見だけを採用 |
+| 多数派形成のバイアス | 重み（weight）で意見の質を担保、少数意見は `minority_opinion` で保存 |
+
+→ **「合議だが議論ではない」**。各 AI の純度の高い意見だけを集めて加重判定する。
 
 ### Council が引き受ける判断の例
 
@@ -106,21 +120,21 @@ flowchart LR
 - 既存の承認モデルを変更してよいか
 - 不可逆な操作に踏み込んでよいか
 
-### Council ログの実例
+### パターン①：全員一致 → 人間は確認するだけ
 
-これは auto-merge の承認モデルを「明示 GO ラベル必須（opt-in）」から「沈黙 = 承認（opt-out）」に変えるかどうかを Council に諮った判定です。
+auto-merge の承認モデルを「明示 GO（opt-in）」から「沈黙 = 承認（opt-out）」に変えるかの判定：
 
 ```yaml
 invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
 question_to_answer: >
-  auto-merge の人間承認モデルを opt-in（明示 GO ラベル）から
-  opt-out（暗黙オート + stop ラベル）に反転すべきか
+  auto-merge を opt-in から opt-out に反転すべきか
 
 persona_summary:
   経営者: { stance: "C: ハイブリッド", confidence: 0.70 }  # ROI・流速改善
   開発者: { stance: "C: ハイブリッド", confidence: 0.82 }  # 保守性・可逆性
   哲学者: { stance: "C: ハイブリッド", confidence: 0.55 }  # 倫理・長期影響
 
+conflict_type: "unanimous"      # 3 者一致
 judgment_confidence: 0.80
 recommended: >
   C: ハイブリッド採用。philosophy / harness 領域は opt-in 維持、
@@ -128,13 +142,40 @@ recommended: >
 
 consensus_mode: "auto_agree"    # 全員一致 → 人間エスカレーション不要
 human_escalated: false
-implementer_consent: "agreed_with_modification"
 ```
 
 3 ペルソナが全員 C に収束 → `auto_agree` → **人間は結果を確認するだけ**。
-もし 3 者が割れて `human_escalated: true` になれば、その時だけ人間が最終判断する。
 
-> 普段は Council に任せ、本当に割れた時だけ人間が出る。認知負荷を絞って、最終判断の精度を上げる。
+### パターン②：意見が割れた → 人間が最終判断
+
+DH 本体の実装妥当性をどの深度で再検証するか（V-1 狭義 / V-2 中庸 / V-3 広義）の判定：
+
+```yaml
+invocation_id: "council-2026-05-02T12:30:00Z-vrfy01"
+question_to_answer: >
+  v5.5.0 着手前の再検証深度（V-1 / V-2 / V-3）
+
+persona_summary:
+  経営者: { stance: "V-1: 狭義（blocker のみ）", confidence: 0.70 }
+  開発者: { stance: "V-1: 狭義（blocker のみ）", confidence: 0.85 }
+  哲学者: { stance: "第3の道：V-1 + ドリフト検査を SPEC 化過程に内包", confidence: 0.65 }
+
+conflict_type: "simple_conflict"   # 哲学者が options 外を提示
+judgment_confidence: 0.45          # 低い！
+recommended: "V-1: 狭義（weight 6/11、ただし哲学者の第3の道が options 外で除外）"
+
+consensus_mode: "escalate_to_human"  # ← 人間に判断が戻る
+human_escalated: true
+implementer_consent: "agreed_with_modification"
+modification_note: >
+  β 止揚採用 — V-1 を本セッションで実施しつつ、
+  哲学者の第3の道（検証を SPEC 化過程に内包）を併用
+```
+
+3 者中 2 者は V-1、哲学者は options に無い第3の道を提示し `judgment_confidence` が 0.45 に低下 → `escalate_to_human` → **人間が両案を止揚（β 統合）して最終判断**。
+
+> 普段は Council に任せ、本当に割れた時だけ人間が出る。
+> AI に意見を肩代わりさせ、人間は最終判断に集中する。
 
 全判定は [`history/COUNCIL-LOG.md`](history/COUNCIL-LOG.md) に append-only で蓄積され、透明性と振り返りを保証します。
 
