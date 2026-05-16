@@ -10,7 +10,7 @@
 >
 > 対話だけで仕様を生み、AI が自律で実装し、人間は承認する — そのための憲法と機構の集合体。
 
-`dialog-harness`（DH）は、Claude Code 上で動く **AI 自律駆動開発のためのメタフレームワーク** です。Skill / Hook / Workflow を組み合わせ、人間の関与を「発案・確認・介入」の 4 点に絞り込みます。
+`dialog-harness`（DH）は、Claude Code 上で動く **AI 自律駆動開発のためのメタフレームワーク** です。Skill / Hook / Workflow を組み合わせ、人間の関与を「発案・ブレスト・事後確認・介入」の 4 点（P1〜P4）に絞り込みます。
 
 ---
 
@@ -106,7 +106,7 @@ flowchart LR
 | L2 | `layer2-integration-verifier` | 跨ぎ整合性検証 |
 | **Council** | `crosscut-council` | 拮抗時の合議判定（3 ペルソナ加重） |
 | support | `crosscut-autonomous-drive` | auto-merge / Workflow テンプレ展開 |
-| support | `crosscut-issue-dispatcher` / `issue-implementer` / `issue-quality-gate` | Issue 自動生成・自動実装・品質ゲート |
+| support | `crosscut-issue-dispatcher` / `crosscut-issue-implementer` / `crosscut-issue-quality-gate` | Issue 自動生成・自動実装・品質ゲート |
 | support | `crosscut-verifier-drift` | SPEC ↔ 実装の drift 検出 |
 | support | `crosscut-feedback-loop` | 検証結果の還流ルーティング |
 
@@ -135,7 +135,7 @@ DH は **「人間が手を動かさずに済む開発」を本気で追求す�
 2. `templates/rituals/wave-end-retrospective.template.md` で振り返りを書いて PR を出す
 3. Council 諮問（`history/COUNCIL-LOG.md`）の判定に異論があれば、minority opinion を立てる
 
-> 「無関心 = 委譲」は構造で守るが、「無関心 = 思考停止」は人間が引き受ける。— philosophy 第 6/8 条
+> 「無関心 = 委譲」は構造で守るが、「無関心 = 思考停止」は人間が引き受ける。— [`history/INTENT.md` v5.9.0 §(b)](history/INTENT.md)（哲学者ペルソナ懸念）
 
 ---
 

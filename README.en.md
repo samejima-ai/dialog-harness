@@ -10,7 +10,7 @@
 >
 > Specs born from dialogue, implementation done autonomously, humans only approve — a constitution and machinery for exactly that.
 
-`dialog-harness` (DH) is a **meta-framework for AI-autonomous development** that runs on top of Claude Code. By composing Skills / Hooks / Workflows, it narrows human involvement to four touchpoints: **ideation, confirmation, intervention**.
+`dialog-harness` (DH) is a **meta-framework for AI-autonomous development** that runs on top of Claude Code. By composing Skills / Hooks / Workflows, it narrows human involvement to four touchpoints (P1–P4): **ideation, brainstorming, retrospective, emergency intervention**.
 
 ---
 
@@ -106,7 +106,7 @@ Humans touch only four points — **Ideation (P1) / Brainstorming (P2) / Retrosp
 | L2 | `layer2-integration-verifier` | Cross-domain integration check |
 | **Council** | `crosscut-council` | Weighted 3-persona consensus on conflicts |
 | support | `crosscut-autonomous-drive` | auto-merge / Workflow template deploy |
-| support | `crosscut-issue-dispatcher` / `issue-implementer` / `issue-quality-gate` | Auto Issue generation / auto-impl / quality gate |
+| support | `crosscut-issue-dispatcher` / `crosscut-issue-implementer` / `crosscut-issue-quality-gate` | Auto Issue generation / auto-impl / quality gate |
 | support | `crosscut-verifier-drift` | Detect SPEC ↔ implementation drift |
 | support | `crosscut-feedback-loop` | Route verification results back to the right layer |
 
@@ -135,7 +135,7 @@ DH is an experimental project that **seriously chases the goal of "development w
 2. Write a retrospective using `templates/rituals/wave-end-retrospective.template.md` and send a PR
 3. If you disagree with a Council judgment in `history/COUNCIL-LOG.md`, raise a minority opinion
 
-> "Indifference = delegation" is protected by structure, but "indifference = abdication of thought" is something humans must carry. — Philosophy Articles 6 / 8
+> "Indifference = delegation" is protected by structure, but "indifference = abdication of thought" is something humans must carry. — [`history/INTENT.md` v5.9.0 §(b)](history/INTENT.md) (philosopher persona's concern)
 
 ---
 
