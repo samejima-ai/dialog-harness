@@ -1978,13 +1978,12 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
           - { persona: "経営者", weight: 3, confidence: 0.65 }
           - { persona: "開発者", weight: 3, confidence: 0.78 }
           - { persona: "哲学者", weight: 5, confidence: 0.75 }
-    third_way_excluded:
-      - { persona: "哲学者", stance: "第 4 の道 (CoDD を業界 Layer 3 観測リストに追加)", weight: 5, confidence: 0.75, reason: "B と併合可能な minority opinion として recommended 内に保持。philosophy 本体を変えずに観測経路を増やす方策、経営者 concerns (業界収束時の遅延感) を mitigate" }
+    third_way_excluded: []
     max_score_stance: "案 B: P1 フラクタル原則の派生概念として吸収"
     tie_break_applied: false
   weight_calculation_retry_count: 0
   recommended: "案 B (P1 フラクタル原則の派生概念として「追跡可能性 (traceability)」を明文化) + 哲学者 第 4 の道 minority 併合 (CoDD を業界 Layer 3 観測リストに追加)。具体的アクション (実装者の合意プロセスで方針化): (1) philosophy.md 第 1 条フラクタル原則に派生節を追加し「依存トポロジーの追跡可能性」を明文化、新規 P6 化はせず 5 本柱の直交性を保つ; (2) DAG 実装機構自体は autonomous-dev / independent-reviewer / harness-verifier の references 層に配置候補 (別 ADR 案件); (3) 問い 3 の「攻撃設計 (DAG verify)」不在は AD-022 候補として独立扱い; (4) 問い 2 の献上フロー統合は第 5 条 献上哲学のサブ条件として位置づけ可能; (5) DOMAINS.md または philosophy.md 末尾に業界 Layer 3 観測リスト節を新設し CoDD を最初の項目として記録"
-  minority_opinion: "哲学者 第 4 の道 (観測リスト追加) は recommended に併合済。経営者 concerns (B 採用後の references 文書化コスト未定 / CoDD 業界収束時の遅延感) は次の F1-F3 振り返り儀式で運用観察責任として保持。開発者 concerns (DAG 機構の具体実装 / Hard Gate との非対称化) は本 council スコープ外 — ARCH-DECISIONS 案件として独立扱い (AD-022 候補)"
+  minority_opinion: "哲学者 第 4 の道 (CoDD を業界 Layer 3 観測リストに追加、philosophy 本体を変えずに観測経路を増やす方策) は B と併合可能な minority として recommended に転載済 — 経営者 concerns (業界収束時の遅延感) を mitigate する。哲学者は scores 側 (案 B supporter, weight 5) に一意に出現し third_way_excluded には入れない (output-format.md §weight_calculation の 1 persona 1 位置の不変条件を保つ)。経営者 concerns (B 採用後の references 文書化コスト未定) は次の F1-F3 振り返り儀式で運用観察責任として保持。開発者 concerns (DAG 機構の具体実装 / Hard Gate との非対称化) は本 council スコープ外 — ARCH-DECISIONS 案件として独立扱い (AD-022 候補)"
   human_escalated: false
   consensus_mode: "auto_agree"
   implementer_consent: null

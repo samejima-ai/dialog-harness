@@ -108,6 +108,7 @@ CoDD の DAG (依存関係の構造保持 + 変更伝播追跡) 概念を DH に
 - **多様性 (プルラリティ) 評価**: 3 つの異なる評価軸 (ROI / 保守性 / 哲学) が同じ結論に到達 → 判断の **robustness** を示す
 - **max_score_stance**: 案 B (8.04)
 - **judgment_confidence**: **0.74** (中-高、unanimous で安定、ただし哲学者 minority 第 4 の道が併合候補)
+- **third_way_excluded**: `[]` (第 4 の道は併合可能な minority opinion として `recommended` / `minority_opinion` に転載済。哲学者は scores 側に一意に出現させ、`output-format.md` §weight_calculation の 1 persona 1 位置の不変条件を保つ)
 
 ### Recommended
 
