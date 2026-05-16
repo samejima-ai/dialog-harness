@@ -2,6 +2,18 @@
 
 DH 本体の設計判断の記録（ADR 軽量版）。
 
+## v5.x 温存項目
+
+### AD-032: Hard Gate（PreToolUse 守備）⇄ 整合性検証（DAG verify 攻撃）の対称化検討 [候補]
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | Council `council-2026-05-16T06:00:00Z-coddag` で CoDD（Coherence-Driven Development）の DAG 概念を DH に吸収する判定（案 B + 第 4 の道 minority 併合）が unanimous で出た過程で、DH の現在の検証体系が**非対称設計**であることが指摘された。PreToolUse Hard Gate（守備、philosophy 第 6 条 人間最終承認 + 第 2 条 Shift Left 基盤）は「やってはいけないことを止める」役割を担うが、CoDD の DAG verify に相当する「整合性が取れているかを積極的に検証する」**攻撃**設計が DH には未配置。Council 内では本件を「本 council スコープ外、独立 AD 案件」として扱った。なお Council recommended 内で「AD-022 候補」と記述したのは番号衝突（AD-022 は v5.5.3 で既存）であり、実装時に最新 AD 番号確認の結果 AD-032（最新 AD-031 の次）に訂正 |
+| 判断 | **候補ステータス**: 本件は philosophy 第 2 条 Shift Left 基盤（30%）+ 5 層エラー検出スタック（70%）の対称化検討案件として温存。次の振り返り儀式 F1-F3 または別 Council 諮問で取り扱う。具体実装（DAG verify 機構の autonomous-dev / independent-reviewer / harness-verifier への配置設計、5 層エラー検出スタックへの組込み、対称化の境界線確定）は本 AD の本実装 PR で扱う。本 AD 候補登録時点では実装変更ゼロ |
+| 根拠 | (a) Council `coddag` の判定過程で開発者 persona が指摘（concerns 内「Hard Gate（守備）と DAG verify（攻撃）の対称化は ARCH-DECISIONS 案件」）、(b) philosophy.md 第 1 条 派生節「依存トポロジーの追跡可能性」（本 PR で同時追加）との論理的接続点を持つ、(c) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しないため候補温存で十分、(d) 業界先行事例 CoDD の DAG verify が参照事例として観測リスト（`.claude/skills/layer0-spec-architect/references/observed-peers.md`、本 PR で同時新設）に登録済 |
+| 影響 | **本 AD 候補登録時点では実装変更ゼロ**。philosophy.md / 既存 6+1 条 / 4 役割組織論への影響なし。harness-verifier 全 PASS 維持。**温存項目**: 本 AD の本実装（DAG verify 機構設計、5 層スタックへの組込み、対称化の境界線確定）、philosophy 第 2 条 Shift Left 基盤の章立て再構成（もし対称化が major 案件と判定された場合）、献上フロー（philosophy 第 5 条）への DAG verify 統合（Council `coddag` 問い 2 と同根、別案件） |
+| 連動 | Council `council-2026-05-16T06:00:00Z-coddag`（本 AD の起点）/ Council `council-2026-05-16T07:15:00Z-p1embd`（philosophy 第 1 条 派生節埋込み形式の sub-Council）/ philosophy.md 第 1 条 §依存トポロジーの追跡可能性（本 PR で追加、本 AD と論理的接続点を持つ）/ Council `clrdbl`（人間可読並存規約、本 AD 候補は本実装時に Council 諮問予定） |
+
 ## v5.7.2
 
 ### AD-030: `claude-code-action@v0` の OIDC token 取得に必要な `id-token: write` permission 追加
