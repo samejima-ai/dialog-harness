@@ -116,8 +116,10 @@ Humans touch only four points — **Ideation (P1) / Brainstorming (P2) / Retrosp
 
 ```bash
 # from your project root
+mkdir -p .claude
 cp -r dialog-harness/.claude/skills .claude/
 cp dialog-harness/.claude/hooks.json .claude/
+cp -r dialog-harness/templates ./       # needed by autonomous-drive (autonomous mode)
 ```
 
 ### 2. Generate the harness via dialogue (L0, first time)
@@ -182,7 +184,8 @@ Real judgment on the autonomous-drive WF base design (Plan H: Hybrid / Plan N: s
 | **Plan H** | Businessperson + Engineer | **4.65** ← winner |
 | Plan N | Philosopher (solo) | 3.25 |
 
-The Philosopher has the highest weight (5), but Businessperson + Engineer combined (4.65) wins, so **Plan H is adopted**.
+The Philosopher has the highest weight (5), but Businessperson + Engineer combined (4.65) wins, so **Plan H is adopted as the core**.
+But the **Philosopher's minority view ("keep WF shape singular") is incorporated as an operating principle** — function-type overrides are allowed only when observation demands it. The minority view is preserved in `minority_opinion` and always reflected in the final outcome (a core behavior of Council).
 `judgment_confidence: 0.75` → `auto_agree` → **human only reads the result**.
 
 When opinions truly split and `judgment_confidence` falls below threshold, `escalate_to_human` returns the call to a human.
@@ -204,11 +207,12 @@ Setup that AI cannot do for you, for security reasons. **If you get stuck, ask C
 | Set Repository Secrets | Settings editing needs admin rights |
 | Create Labels | (for autonomous-drive) |
 
-### Secrets for `autonomous` mode
+### Secrets for `autonomous` mode (all required)
 
-- `CLAUDE_CODE_OAUTH_TOKEN` — Run Claude Code from GitHub Actions
-- `GH_REVIEW_PAT` — Used by auto-merge / gemini-review workflows
-- `GEMINI_API_KEY` — gemini-review (optional / fallback)
+- `CLAUDE_CODE_OAUTH_TOKEN` — Run Claude Code from GitHub Actions (issue via `claude setup-token`)
+- `GH_REVIEW_PAT` — Used by auto-merge / gemini-review / **issue-pickup commit & push**.
+  **Required permissions: Contents = Read+Write / Pull requests = Read+Write / Issues = Read+Write / Metadata = Read**
+- `GEMINI_API_KEY` — gemini-review + **issue-pickup AI triage** (autonomous startup is skipped if missing)
 
 ### Labels for autonomous-drive
 

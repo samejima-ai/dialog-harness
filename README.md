@@ -116,8 +116,10 @@ flowchart LR
 
 ```bash
 # 自プロジェクトのルートで
+mkdir -p .claude
 cp -r dialog-harness/.claude/skills .claude/
 cp dialog-harness/.claude/hooks.json .claude/
+cp -r dialog-harness/templates ./       # autonomous モード用（autonomous-drive が参照）
 ```
 
 ### 2. 対話でハーネスを生む（L0、初回）
@@ -181,7 +183,8 @@ weighted_score(stance) = Σ (各ペルソナの weight × confidence)
 | **案 H** | 経営者 + 開発者 | **4.65** ← 勝ち |
 | 案 N | 哲学者 | 3.25 |
 
-哲学者の weight が最大（5）でも、経営者 + 開発者の合計（4.65）が上回り **案 H 採用**。
+哲学者の weight が最大（5）でも、経営者 + 開発者の合計（4.65）が上回り **案 H を中核採用**。
+ただし **哲学者の少数意見「WF 形状単一性」を運用原則として組み込む**（機能タイプ別 override は観測駆動で最小限に限定）。少数意見は `minority_opinion` に保存され、Council の核心動作として常に反映される。
 `judgment_confidence: 0.75` → `auto_agree` → **人間は結果を確認するだけ**。
 
 判定が拮抗して `judgment_confidence` が閾値を下回ると `escalate_to_human` で人間に戻ります。
@@ -203,11 +206,12 @@ weighted_score(stance) = Σ (各ペルソナの weight × confidence)
 | Repository Secrets 設定 | Settings 編集に admin 権限が必須 |
 | ラベル作成 | (autonomous-drive 用) |
 
-### `autonomous` モードで必要な Secrets
+### `autonomous` モードで必要な Secrets（すべて必須）
 
-- `CLAUDE_CODE_OAUTH_TOKEN` — GitHub Actions 上で Claude Code 起動
-- `GH_REVIEW_PAT` — auto-merge / gemini-review workflow 用
-- `GEMINI_API_KEY` — gemini-review（任意 / fallback）
+- `CLAUDE_CODE_OAUTH_TOKEN` — GitHub Actions 上で Claude Code を起動（`claude setup-token` で発行）
+- `GH_REVIEW_PAT` — auto-merge / gemini-review / **issue-pickup の commit/push** で使用。
+  **必要権限：Contents = Read+Write / Pull requests = Read+Write / Issues = Read+Write / Metadata = Read**
+- `GEMINI_API_KEY` — gemini-review + **issue-pickup の AI triage**（未設定だと autonomous 起動が skip される）
 
 ### autonomous-drive 用ラベル
 
@@ -226,7 +230,7 @@ DH は **「人間が手を動かさずに済む開発」を本気で追求す�
 ### 入り方
 
 1. Issue / Discussion に「触ってみた」「ここが詰まった」「こう変えたい」を投げる
-2. `templates/rituals/wave-end-retrospective.template.md` で振り返りを書いて PR
+2. `templates/rituals/wave-end-retrospective.template.md` で振り返りを書いて PR を出す
 3. Council 諮問（`history/COUNCIL-LOG.md`）の判定に異論があれば、minority opinion を立てる
 
 > AI ができないことを人間がする。人間がしなくていいことを AI がする。
