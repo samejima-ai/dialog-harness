@@ -120,56 +120,62 @@ Council は **議論（dialogue）しません**。3 つのペルソナ（経営
 - 既存の承認モデルを変更してよいか
 - 不可逆な操作に踏み込んでよいか
 
-### パターン①：全員一致 → 人間は確認するだけ
+### 加重判定の式
 
-auto-merge の承認モデルを「明示 GO（opt-in）」から「沈黙 = 承認（opt-out）」に変えるかの判定：
+```
+weighted_score(stance) = Σ (各ペルソナの weight × confidence)
+                            ← その stance を支持したペルソナのみ集計
+
+最大 weighted_score を持つ stance が recommended。
+judgment_confidence が閾値（≈ 0.5）以上なら auto_agree、未満なら escalate_to_human。
+```
+
+### パターン①：全員一致 → 圧倒的多数
+
+auto-merge を opt-in（明示 GO）から opt-out（沈黙 = 承認）に変えるかの判定（`amrev1`）：
+
+| ペルソナ | weight | × | confidence | = | score | 投票 |
+|---|---:|---|---:|---|---:|---|
+| 経営者 | 3 | × | 0.70 | = | **2.10** | C |
+| 開発者 | 3 | × | 0.82 | = | **2.46** | C |
+| 哲学者 | 5 | × | 0.55 | = | **2.75** | C |
+| **合計** | **11** | | | | **7.31** | **C 一色** |
+
+3 者全員が C に集約 → C の weighted_score が全 weight の 100% を占有 → `auto_agree` → **人間は結果を確認するだけ**。
 
 ```yaml
-invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
-question_to_answer: >
-  auto-merge を opt-in から opt-out に反転すべきか
-
-persona_summary:
-  経営者: { stance: "C: ハイブリッド", confidence: 0.70 }  # ROI・流速改善
-  開発者: { stance: "C: ハイブリッド", confidence: 0.82 }  # 保守性・可逆性
-  哲学者: { stance: "C: ハイブリッド", confidence: 0.55 }  # 倫理・長期影響
-
-conflict_type: "unanimous"      # 3 者一致
+conflict_type: "unanimous"
 judgment_confidence: 0.80
 recommended: >
   C: ハイブリッド採用。philosophy / harness 領域は opt-in 維持、
   定型領域のみ opt-out。境界を SPEC で不変化する。
-
-consensus_mode: "auto_agree"    # 全員一致 → 人間エスカレーション不要
+consensus_mode: "auto_agree"
 human_escalated: false
 ```
-
-3 ペルソナが全員 C に収束 → `auto_agree` → **人間は結果を確認するだけ**。
 
 ### パターン②：意見が割れた → 加重で機械的に解決
 
-D4 機構実装のバージョン昇格区分（minor / major）の判定。3 ペルソナが **全員違う選択肢** を選んだケース：
+自律駆動 WF の基底構造を「案H: Hybrid（薄く始めて観測で厚化）」「案N: WF 多様化しない（形状単一化）」のどちらにするか（`wfbase1`）：
 
-```yaml
-invocation_id: "council-2026-04-29T21:00:00Z-d4mtr3"
-question_to_answer: >
-  D4 機構実装のバージョン昇格区分
-  (a) v5.2.0 minor / (b) v6.0.0 major / (c) v5.2.0 minor + verifier 後送
+| ペルソナ | weight | × | confidence | = | score | 投票 |
+|---|---:|---|---:|---|---:|---|
+| 経営者 | 3 | × | 0.70 | = | 2.10 | **案 H** |
+| 開発者 | 3 | × | 0.85 | = | 2.55 | **案 H** |
+| 哲学者 | **5** | × | 0.65 | = | 3.25 | **案 N** |
 
-persona_summary:
-  経営者: { stance: "(c) v5.2.0 minor + philosophy verifier 後送", confidence: 0.75 }
-  開発者: { stance: "(a) v5.2.0 minor", confidence: 0.90 }
-  哲学者: { stance: "(b) v6.0.0 major", confidence: 0.55 }
+**stance ごとの集計：**
 
-conflict_type: "simple_conflict"   # 3 者が異なる選択肢を選んだ
-judgment_confidence: 0.70
-recommended: "(c) v5.2.0 minor で実装、philosophy verifier は v5.3.0 へ後送"
+| stance | 支持者 | weighted_score |
+|---|---|---:|
+| **案 H** | 経営者 + 開発者 | **4.65** ← 勝ち |
+| 案 N | 哲学者（単独） | 3.25 |
 
-consensus_mode: "auto_agree"       # confidence 閾値超 → 自動合意
-human_escalated: false
-```
+哲学者は単独で weight 最大（5）だが、経営者 + 開発者の合計（4.65）が上回り **案 H 採用**。
+`judgment_confidence: 0.75`（閾値超）→ `auto_agree` → **人間は結果を確認するだけ**。
 
-意見は割れたが、weight × confidence の機械的計算で (c) が支配解として確定 → `auto_agree` → **人間は結果を確認するだけ**。
+ただし哲学者の少数意見は `minority_opinion` に保存され、運用原則として組み込まれます（「WF 形状単一性を最優先、override は観測駆動で最小限」）。
+
+> **多数決ではなく加重評価** — 哲学者の weight が最大なのは「conception カテゴリでは長期影響が最重要」という事前ルール（`council-weights.md`）から決まる。重みは判定ごとに固定で、AI が動かせない。
 
 ### パターン③：confidence が低下 → 人間にエスカレーション
 

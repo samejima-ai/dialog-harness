@@ -120,56 +120,62 @@ This is a deliberate response to AI characteristics:
 - Whether to change an existing approval model
 - Whether an irreversible operation is safe to proceed
 
-### Pattern ①: Unanimous → human only confirms
+### The aggregation formula
 
-Real Council judgment on flipping the auto-merge approval model from "explicit GO (opt-in)" to "silence = approval (opt-out)":
+```
+weighted_score(stance) = Σ (each persona's weight × confidence)
+                          ← only personas who chose that stance
+
+The stance with the highest weighted_score becomes recommended.
+If judgment_confidence ≥ threshold (~0.5) → auto_agree; otherwise → escalate_to_human.
+```
+
+### Pattern ①: Unanimous → overwhelming majority
+
+Real Council judgment on flipping the auto-merge model from opt-in to opt-out (`amrev1`):
+
+| Persona | weight | × | confidence | = | score | vote |
+|---|---:|---|---:|---|---:|---|
+| Businessperson | 3 | × | 0.70 | = | **2.10** | C |
+| Engineer       | 3 | × | 0.82 | = | **2.46** | C |
+| Philosopher    | 5 | × | 0.55 | = | **2.75** | C |
+| **total**      | **11** | | | | **7.31** | **all C** |
+
+All three converge on C → C's weighted_score covers 100% of the total weight → `auto_agree` → **human only reads the result**.
 
 ```yaml
-invocation_id: "council-2026-05-06T08:30:00Z-amrev1"
-question_to_answer: >
-  Should auto-merge flip from opt-in to opt-out?
-
-persona_summary:
-  Businessperson: { stance: "C: Hybrid", confidence: 0.70 }  # ROI / throughput
-  Engineer:       { stance: "C: Hybrid", confidence: 0.82 }  # maintainability / reversibility
-  Philosopher:    { stance: "C: Hybrid", confidence: 0.55 }  # ethics / long-term risk
-
-conflict_type: "unanimous"      # all three agree
+conflict_type: "unanimous"
 judgment_confidence: 0.80
 recommended: >
   C: Hybrid. Keep opt-in for philosophy / harness-critical areas,
   opt-out only for routine work. Freeze the boundary in SPEC.
-
-consensus_mode: "auto_agree"    # unanimous → no human escalation
+consensus_mode: "auto_agree"
 human_escalated: false
 ```
-
-All three converge on C → `auto_agree` → **human only reads the result**.
 
 ### Pattern ②: Split opinions → resolved mechanically by weights
 
-Real Council judgment on the version bump for the D4 mechanism. All three personas picked **different options**:
+Real Council judgment on the autonomous-drive WF base design: "Plan H: Hybrid (start thin, thicken via observation)" vs "Plan N: don't diversify the WF (single fractal shape)" (`wfbase1`):
 
-```yaml
-invocation_id: "council-2026-04-29T21:00:00Z-d4mtr3"
-question_to_answer: >
-  Version bump for D4 mechanism
-  (a) v5.2.0 minor / (b) v6.0.0 major / (c) v5.2.0 minor + verifier deferred
+| Persona | weight | × | confidence | = | score | vote |
+|---|---:|---|---:|---|---:|---|
+| Businessperson | 3 | × | 0.70 | = | 2.10 | **Plan H** |
+| Engineer       | 3 | × | 0.85 | = | 2.55 | **Plan H** |
+| Philosopher    | **5** | × | 0.65 | = | 3.25 | **Plan N** |
 
-persona_summary:
-  Businessperson: { stance: "(c) v5.2.0 minor + verifier deferred", confidence: 0.75 }
-  Engineer:       { stance: "(a) v5.2.0 minor",                     confidence: 0.90 }
-  Philosopher:    { stance: "(b) v6.0.0 major",                     confidence: 0.55 }
+**Per-stance aggregation:**
 
-conflict_type: "simple_conflict"   # all three picked different options
-judgment_confidence: 0.70
-recommended: "(c) v5.2.0 minor; philosophy verifier deferred to v5.3.0"
+| stance | supporters | weighted_score |
+|---|---|---:|
+| **Plan H** | Businessperson + Engineer | **4.65** ← winner |
+| Plan N | Philosopher (solo) | 3.25 |
 
-consensus_mode: "auto_agree"       # confidence above threshold → auto-agree
-human_escalated: false
-```
+The Philosopher has the highest weight (5), but the Businessperson + Engineer combined score (4.65) wins, so **Plan H is adopted**.
+`judgment_confidence: 0.75` (above threshold) → `auto_agree` → **human only reads the result**.
 
-Opinions split, but `weight × confidence` mechanically settles on (c) as the dominant choice → `auto_agree` → **human only reads the result**.
+The Philosopher's view is preserved in `minority_opinion` and folded in as an operating principle ("Keep WF shape singular; allow overrides only when observation demands it").
+
+> **Weighted scoring, not majority vote** — the Philosopher's weight is highest because the prior rule (`council-weights.md`) declares long-term impact most important in the `conception` category. Weights are fixed per category, and AI cannot move them.
 
 ### Pattern ③: Confidence drops → escalate to human
 
