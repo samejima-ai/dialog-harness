@@ -25,6 +25,7 @@ description: >
 - **AI 協働・人間ボトルネック最小**: 人間の手を動かさない。承認のみ
 - **フラクタル整合**: L0⇄人間 / L1 spec⇄code / L2⇄L1群 の同一形状を onboarding にも適用する（人間イメージ→AI 構造化→人間承認）
 - **振る舞い凍結 / コード凍結の二段構え**: デフォルトは振る舞い凍結のみ。コード凍結は AI 判断 + 人間ボトルネック確認で発動
+- **対話 persona の二層分離（v5.17.0 追加）**: 応答出力（presentation layer）と onboarding の判断（logic layer）は分離する。persona は presentation のみを差し替える。仕様は `../layer0-spec-architect/references/persona-spec.md` を一次情報源とする。本 skill は新規 onboarding の起点なので REGIME.md が未存在の状態で起動する。起動時の解決順は (1) `<project-root>/.dh/personas/<active>.persona.md` → (2) `<dialog-harness>/templates/personas/<active>.persona.md`、最初に見つかったものを採用する。未指定時は `default`。人間が対話中に persona / override_state を指定すれば即時切替し、handoff 時に生成する REGIME.md の `persona.active` と `persona.override_state` に反映する（ユーザー指定なしの場合 `override_state: null` を書く）。L0 三兄弟で挙動を統一する
 
 ## 発動条件（厳格）
 
