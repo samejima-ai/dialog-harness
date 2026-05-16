@@ -146,33 +146,40 @@ human_escalated: false
 
 3 ペルソナが全員 C に収束 → `auto_agree` → **人間は結果を確認するだけ**。
 
-### パターン②：意見が割れた → 人間が最終判断
+### パターン②：意見が割れた → 加重で機械的に解決
 
-DH 本体の実装妥当性をどの深度で再検証するか（V-1 狭義 / V-2 中庸 / V-3 広義）の判定：
+D4 機構実装のバージョン昇格区分（minor / major）の判定。3 ペルソナが **全員違う選択肢** を選んだケース：
 
 ```yaml
-invocation_id: "council-2026-05-02T12:30:00Z-vrfy01"
+invocation_id: "council-2026-04-29T21:00:00Z-d4mtr3"
 question_to_answer: >
-  v5.5.0 着手前の再検証深度（V-1 / V-2 / V-3）
+  D4 機構実装のバージョン昇格区分
+  (a) v5.2.0 minor / (b) v6.0.0 major / (c) v5.2.0 minor + verifier 後送
 
 persona_summary:
-  経営者: { stance: "V-1: 狭義（blocker のみ）", confidence: 0.70 }
-  開発者: { stance: "V-1: 狭義（blocker のみ）", confidence: 0.85 }
-  哲学者: { stance: "第3の道：V-1 + ドリフト検査を SPEC 化過程に内包", confidence: 0.65 }
+  経営者: { stance: "(c) v5.2.0 minor + philosophy verifier 後送", confidence: 0.75 }
+  開発者: { stance: "(a) v5.2.0 minor", confidence: 0.90 }
+  哲学者: { stance: "(b) v6.0.0 major", confidence: 0.55 }
 
-conflict_type: "simple_conflict"   # 哲学者が options 外を提示
-judgment_confidence: 0.45          # 低い！
-recommended: "V-1: 狭義（weight 6/11、ただし哲学者の第3の道が options 外で除外）"
+conflict_type: "simple_conflict"   # 3 者が異なる選択肢を選んだ
+judgment_confidence: 0.70
+recommended: "(c) v5.2.0 minor で実装、philosophy verifier は v5.3.0 へ後送"
 
-consensus_mode: "escalate_to_human"  # ← 人間に判断が戻る
-human_escalated: true
-implementer_consent: "agreed_with_modification"
-modification_note: >
-  β 止揚採用 — V-1 を本セッションで実施しつつ、
-  哲学者の第3の道（検証を SPEC 化過程に内包）を併用
+consensus_mode: "auto_agree"       # confidence 閾値超 → 自動合意
+human_escalated: false
 ```
 
-3 者中 2 者は V-1、哲学者は options に無い第3の道を提示し `judgment_confidence` が 0.45 に低下 → `escalate_to_human` → **人間が両案を止揚（β 統合）して最終判断**。
+意見は割れたが、weight × confidence の機械的計算で (c) が支配解として確定 → `auto_agree` → **人間は結果を確認するだけ**。
+
+### パターン③：confidence が低下 → 人間にエスカレーション
+
+もし `judgment_confidence` が閾値（通常 0.5）を下回ると、`consensus_mode: escalate_to_human` となり判断が人間に戻ります。これは主に以下で発生：
+
+- いずれかのペルソナが options 外の「第3の道」を提示した（例：`vrfy01` で哲学者が V-1 を拡張する提案）
+- H カテゴリ（哲学変更・ルート設計変更等）に該当する判定
+- いずれかペルソナの confidence が著しく低い
+
+`minority_opinion` フィールドに少数意見が保存され、人間は両論を見て止揚（β 統合）するか、片方を採用するかを決めます。
 
 > 普段は Council に任せ、本当に割れた時だけ人間が出る。
 > AI に意見を肩代わりさせ、人間は最終判断に集中する。

@@ -146,34 +146,40 @@ human_escalated: false
 
 All three converge on C → `auto_agree` → **human only reads the result**.
 
-### Pattern ②: Split opinion → human makes the final call
+### Pattern ②: Split opinions → resolved mechanically by weights
 
-Real Council judgment on how deep to re-verify DH itself before v5.5.0 (V-1 narrow / V-2 medium / V-3 broad):
+Real Council judgment on the version bump for the D4 mechanism. All three personas picked **different options**:
 
 ```yaml
-invocation_id: "council-2026-05-02T12:30:00Z-vrfy01"
+invocation_id: "council-2026-04-29T21:00:00Z-d4mtr3"
 question_to_answer: >
-  Verification depth before v5.5.0 (V-1 / V-2 / V-3)
+  Version bump for D4 mechanism
+  (a) v5.2.0 minor / (b) v6.0.0 major / (c) v5.2.0 minor + verifier deferred
 
 persona_summary:
-  Businessperson: { stance: "V-1: narrow (blockers only)", confidence: 0.70 }
-  Engineer:       { stance: "V-1: narrow (blockers only)", confidence: 0.85 }
-  Philosopher:    { stance: "Third way: V-1 + drift check folded into SPEC phase",
-                    confidence: 0.65 }
+  Businessperson: { stance: "(c) v5.2.0 minor + verifier deferred", confidence: 0.75 }
+  Engineer:       { stance: "(a) v5.2.0 minor",                     confidence: 0.90 }
+  Philosopher:    { stance: "(b) v6.0.0 major",                     confidence: 0.55 }
 
-conflict_type: "simple_conflict"   # philosopher offered an out-of-options stance
-judgment_confidence: 0.45          # low!
-recommended: "V-1 narrow (weight 6/11; philosopher's third way is out of options)"
+conflict_type: "simple_conflict"   # all three picked different options
+judgment_confidence: 0.70
+recommended: "(c) v5.2.0 minor; philosophy verifier deferred to v5.3.0"
 
-consensus_mode: "escalate_to_human"  # ← decision returns to human
-human_escalated: true
-implementer_consent: "agreed_with_modification"
-modification_note: >
-  β-synthesis adopted — run V-1 this session AND fold the
-  philosopher's third way (drift check inside the SPEC phase)
+consensus_mode: "auto_agree"       # confidence above threshold → auto-agree
+human_escalated: false
 ```
 
-2 of 3 voted V-1, but the philosopher proposed an out-of-options third way, dragging `judgment_confidence` to 0.45 → `escalate_to_human` → **human synthesizes both into a β-merge**.
+Opinions split, but `weight × confidence` mechanically settles on (c) as the dominant choice → `auto_agree` → **human only reads the result**.
+
+### Pattern ③: Confidence drops → escalate to human
+
+If `judgment_confidence` falls below the threshold (typically 0.5), `consensus_mode: escalate_to_human` returns the decision to a human. This mainly happens when:
+
+- A persona proposes an out-of-options "third way" (e.g., in `vrfy01` the philosopher extended V-1 beyond the menu)
+- The decision falls in the H category (philosophy / root-design changes)
+- A persona's confidence is unusually low
+
+The minority view is preserved in `minority_opinion`, and the human reads both sides — then either synthesizes (β-merge) or picks one.
 
 > Let Council handle the everyday calls; humans show up only when it truly splits.
 > AI handles the opinions; humans concentrate on the final call.
