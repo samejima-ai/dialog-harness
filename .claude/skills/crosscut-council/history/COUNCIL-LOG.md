@@ -1110,3 +1110,47 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 ### 合意プロセス記録
 
 L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml.template の project-specific 化ギャップ解消）を諮問。事前に L0 対話で「前倒し v5.11.0」「philosophy 不改変」「opt-in 領域該当」「prior なし」の 4 軸を確定済み。3 ペルソナは独立に案 1 を v5.11.0 採用する点で全会一致 (unanimous core)、ただし開発者・哲学者は付帯条件として段階分割 / 既知ギャップ表記録 / 案 2 ADR 予約 を提示。PR1 暫定運用 (third_way_excluded) により weight 加算上は経営者単独支持で max_score 2.88、第 3 の道合計重み 5.35 は recommended の reasoning に統合提案として明示。judgment_confidence 0.62 で auto_agree 区分。L0 合意プロセスにて L0 が付帯 3 要素の採否を整理し、実装者（ひでさん）から `agreed_recommended` を確定 (2026-05-09T15:30:00Z)。v5.11.0 実装範囲は案 1 (placeholder 拡張) + (b) 既知ギャップ表記録 + (c) 案 2 ADR 予約 + (d) forward-compat placeholder 命名 の 4 要素を含む。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録（output-format.md §`follow_up_questions_count` 定義「本 invocation で実施された follow-up の総数」に基づく schema 厳密解釈）。実装者→ユーザー間で multiSelect 選択肢の整合確認が 1 回行われたが、これは Council protocol の `follow_up_question`（Judgment Agent 起点）に該当しないため count 対象外。
+
+---
+
+- invocation_id: "council-2026-05-17T00:00:00Z-q5v8w2"
+  timestamp: "2026-05-17T00:00:00Z"
+  source_skill: "human-direct"
+  question_to_answer: "エンジニアは品質・テスト・著作権精査を犠牲にしてリリースを優先すべきか、それとも維持すべきか（非エンジニアがClaude Codeで快速成果を出し経営陣がスピード重視になる状況下）"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "Option B: 品質・テスト・著作権精査を維持したうえでリリースする", confidence: 0.72 }
+    開発者: { stance: "Option B: 品質・テスト・著作権精査を維持したうえでリリースする", confidence: 0.88 }
+    哲学者: { stance: "第3の道：問いの構造を解体し責任主体を明確化する（third_way_excluded）", confidence: 0.65 }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "Option B: 品質・テスト・著作権精査を維持したうえでリリースする"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 8
+        weighted_score: 6.40
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.72 }
+          - { persona: "開発者", weight: 4, confidence: 0.88 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第3の道：問いの構造を解体し責任主体を明確化する", weight: 3, confidence: 0.65, reason: "options外stanceのためweight加算対象外（PR1暫定運用）" }
+    max_score_stance: "Option B: 品質・テスト・著作権精査を維持したうえでリリースする"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "Option B: 品質・テスト・著作権精査を維持したうえでリリースする（経営者・開発者が独立した根拠から一致支持）"
+  minority_opinion: "哲学者（weight計算外）：『エンジニアが負けている』という競争メタファー自体が誤設定。真の問いは『AIによる生成コードの責任主体は誰か』であり、品質・著作権・テストは責任の具体的実装。経営陣への提示軸を速度比較から責任論に転換することを推奨。また品質プロセス自体へのAI活用が速度トレードオフを縮小する第3の切り口として有効。"
+  weight_note: "category=judgment（判断一般）適用。全会一致のため重み配分は判定に影響しなかった。哲学者はoptions外stanceのためweight加算対象外（有効重み8/11）。"
+  reasoning: "経営者はリスク/機会損失観点（著作権訴訟コストの非対称性・幻の速度）、開発者は保守性/セキュリティ観点（技術的負債の指数関数的蓄積・生成コードの追加検証必要性）から独立してOption Bに収束。全会一致で推奨の質は高い。"
+  human_escalated: false
+  implementer_consent: null
+  follow_up_questions_count: null
+  agreed_at: null
