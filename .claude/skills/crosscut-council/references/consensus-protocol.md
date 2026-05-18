@@ -363,10 +363,24 @@ Council 判定の最終出力（`history/COUNCIL-LOG.md`）は schema 準拠の 
 ### 配置
 
 ```
-history/council-readable/<invocation_id>.md
+history/council-readable/<filename_id>.md
 ```
 
-`<invocation_id>` は YAML エントリの `invocation_id` と同一。1 council = 1 markdown ファイル。
+1 council = 1 markdown ファイル。`<filename_id>` は `<invocation_id>` から **ISO 8601 extended → basic format 変換** で導出する（時間部分の `:` を削除）:
+
+| | ISO 8601 format | 例 |
+|---|---|---|
+| `<invocation_id>` (YAML 識別子) | extended (`THH:MM:SSZ`) | `council-2026-05-13T03:35:00Z-rtkSHA` |
+| `<filename_id>` (ファイル名) | basic (`THHMMSSZ`) | `council-2026-05-13T033500Z-rtkSHA` |
+
+**論理 ID とファイル名の表現を分離する** 理由:
+
+- **cross-platform 互換性**: Windows NTFS は `: \ / * ? " < > |` をファイル名に許可せず、`:` は Alternate Data Stream 区切りとして予約されている。ISO 8601 extended の `:` を含むファイル名は Windows クライアントで `git checkout` 不能となる（DH PR #105 で実害発生、council-readable 4 ファイルを basic format に rename）。
+- **YAML 識別子は不変**: `invocation_id` は COUNCIL-LOG.md の YAML 正本上で履歴 ID として参照され続けるため、表現を ISO 8601 extended のまま固定する。本文中で council を引用する際も `invocation_id` を使う。ファイル名としての参照（`history/council-readable/<filename_id>.md` の path 表記）のみ basic format を用いる。
+
+cross-platform 規約は council-readable に限定せず、**本リポジトリで commit するすべての path** に適用する（`: \ / * ? " < > |` を含むファイル名を作成しない）。
+
+**適用範囲**: DH PR #105 merge 時点の全 council-readable ファイル（4 件）を retroactive に rename 済み。本規約発動以降の council は最初から basic format で作成する。
 
 ### 内容形式（4 section）
 

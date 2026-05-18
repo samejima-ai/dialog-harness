@@ -99,8 +99,8 @@ PR #96 進行中、人間が「Council の最終出力は人間可読に整備�
 
 本 PR (`claude/fix-rtk-install-sha-TDmT8`) で:
 1. `consensus-protocol.md` に「人間可読並存規約」セクション追加 (§人間可読並存規約)
-2. `history/council-readable/council-2026-05-13T03:35:00Z-rtkSHA.md` 作成 (retroactive 例外 2、rtkSHA の人間可読版)
-3. `history/council-readable/council-2026-05-13T03:55:00Z-clrdbl.md` 作成 (retroactive 例外 1、本 council のメタ自己記録)
+2. `history/council-readable/council-2026-05-13T033500Z-rtkSHA.md` 作成 (retroactive 例外 2、rtkSHA の人間可読版。DH PR #105 で ISO 8601 basic format に rename)
+3. `history/council-readable/council-2026-05-13T035500Z-clrdbl.md` 作成 (retroactive 例外 1、本 council のメタ自己記録。DH PR #105 で ISO 8601 basic format に rename)
 4. `history/COUNCIL-LOG.md` に本 council YAML entry を append
 
 kakuman 側は本 PR merge 後の D3 sync で `consensus-protocol.md` 規約を自動追従する。
