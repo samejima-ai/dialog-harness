@@ -267,8 +267,101 @@ L1 autonomous-dev は `spec/authz.fga` を以下のように利用する:
 
 ---
 
+## マルチテナンシー隔離戦略（v5.17.0 追加）
+
+複数組織・複数顧客が同一システムを利用する形態（B2B SaaS / 社内マルチ部門システム等）で、データの論理的・物理的隔離をどの粒度で行うかを決定する判断軸。L0-5 の認可モデルと表裏一体で設計する。
+
+### Cat-6: マルチテナンシー（新規追加）
+
+L0-5 起動時に以下を確認する：
+
+- 複数組織（テナント）が同じシステムを使うか？
+- テナント間でデータが**絶対に**混ざってはいけない要件はあるか？（規制 / 契約上の要請）
+- テナントごとに DB スキーマや設定が異なる可能性はあるか？
+
+### 3 つの隔離戦略
+
+| 戦略 | データ配置 | 認可表現（OpenFGA） | 適用場面 |
+|---|---|---|---|
+| **共有スキーマ + tenant_id 列** | 全テナントが同一テーブル、行レベルで `tenant_id` 区別 | `type organization` を中間 type 化、`define member: [user]` + `define can_read: member from organization` | テナント数多、コスト最優先、規制緩 |
+| **スキーマ分離（schema-per-tenant）** | PostgreSQL schema 単位で分離、アプリ層で search_path 切替 | 認可は共有スキーマと同型だが、DB connection 層で物理境界を併設 | 中規模、規制やや厳、テナント別カスタマイズ可能性 |
+| **DB 分離（database-per-tenant）** | テナントごとに独立 DB（コンテナ・インスタンス分離も可） | OpenFGA store も別建てが推奨 | 厳格な規制（医療 HIPAA / 金融 PCI DSS）、テナント別 SLA、テナント数少 |
+
+### 判定フロー
+
+```
+1. テナント数 N の見込みは？
+   N ≥ 100  → 共有スキーマ + tenant_id（コスト効率優先）
+   N < 100  → 2 へ
+2. 規制要件（HIPAA / PCI DSS / 業界規制）でテナント間データ物理分離が必須か？
+   YES → DB 分離
+   NO  → 3 へ
+3. テナント別カスタムスキーマ / 別バージョン稼働の要件は？
+   YES → スキーマ分離（または DB 分離）
+   NO  → 共有スキーマ + tenant_id
+```
+
+### 各戦略の TodoApp 拡張例
+
+#### 共有スキーマ + tenant_id
+
+```typescript
+// domain.ts: 全エンティティに tenant_id 必須化
+export const Todo = z.object({
+  id: TodoId,
+  tenantId: OrganizationId,  // 全行に tenant_id（NULL 不可）
+  ownerId: UserId,
+  // ...
+});
+```
+
+```
+# authz.fga
+type organization
+  relations
+    define member: [user]
+    define admin: [user]
+
+type todo
+  relations
+    define tenant: [organization]
+    define owner: [user]
+    define can_read: owner or admin from tenant
+```
+
+#### DB 分離
+
+各テナントに独立 DB を割り当て、`spec/authz.fga` のテナント概念は省略（DB 接続自体がテナント境界）。代わりに L1 実装で connection routing 層を必須化する。`SPEC.md` の「マルチテナンシー」セクションで明示：
+
+```markdown
+## マルチテナンシー
+- 戦略: DB 分離（database-per-tenant）
+- 理由: HIPAA 準拠の物理分離要求
+- ルーティング: subdomain → tenant_id → DB connection string mapping
+- スキーマ進化: 全テナント DB に対する zero-downtime migration が要件
+```
+
+### NFR / 規制との連動
+
+- NFR S (Security) ≥ 2 + 複数テナント → スキーマ分離以上を推奨
+- NFR C (Compliance) ≥ 2 + 規制業界 → DB 分離を強く推奨
+- DOMAIN-CONTEXT.md の業界文脈と必ず突き合わせる（医療 / 金融 / 公共は規制要件が厳格）
+
+### 検証フェーズ追補
+
+Phase γ クロスチェック表に以下を追加：
+
+| 観点 | チェック方法 |
+|---|---|
+| テナント分離戦略の明示 | SPEC.md または authz.fga 内で 3 戦略のいずれかが選択済み |
+| 認可と隔離戦略の整合 | DB 分離選択時に authz.fga に冗長な tenant 概念が残っていない、共有スキーマ時に全エンティティに `tenant_id` が定義済み |
+| 規制業界での整合 | DOMAIN-CONTEXT.md に規制記述があれば、戦略選択が NFR C スコアと矛盾しない |
+
+---
+
 ## プロトコル自己評価
 
 - OpenFGA はランタイム依存が重い（サーバー必須）。小規模プロジェクトでは簡易モードで十分
 - 「所有者のみ」ルールは頻出なので、テンプレ化して対話を短縮可能
 - 管理者特権（admin type）は権限拡散のリスクがある。追加時は Cat-4 で必ず確認する
+- マルチテナンシー戦略の誤選択は事後修正が極めて困難（DB 分離 ↔ 共有スキーマ間の移行は実質的な再構築）。Cat-6 を軽視しない
