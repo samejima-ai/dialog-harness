@@ -259,9 +259,85 @@ L1 autonomous-dev は `spec/invariants.feature` を以下のように利用す�
 
 ---
 
+## 不変条件の配置プロトコル: アプリ層 vs DB 層 vs 状態機械（v5.17.0 追加）
+
+不変条件（ビジネスルール）は単一層で表現するだけでは不十分。同じルールを **多層で冗長に表現** することで、どれか一層が破られても他層が防波堤となる「多層防御」を構築する。`invariants.feature` で記述する Scenario は、この多層配置の整合性検査に位置付ける。
+
+### 3 つの配置層と責務
+
+| 層 | 担当 | 検出タイミング | 不可逆性 |
+|---|---|---|---|
+| **アプリ層**（Zod / TypeScript） | L0-2 `domain.ts` で型・バリデーション・enum | リクエスト受領時 | 修正容易（コード変更で済む） |
+| **DB 層**（CHECK / FK / UNIQUE / NOT NULL） | L1 migration で物理制約付与 | INSERT / UPDATE 時に物理的に弾く | **最後の砦**、スキーマ変更要 |
+| **状態機械**（L0-4 `state-machine.ts`） | XState で許可遷移を列挙 | 状態遷移発火時 | コード変更で対応可 |
+
+各層は独立に同じ不変条件を表現する。例: `Todo.status` が `["pending","completed","expired"]` のみという不変条件は、L0-2 で Zod enum / L0-4 で XState の states / DB 層で `CHECK (status IN ('pending','completed','expired'))` の 3 箇所で表現する。
+
+### DB レベル制約のチェックリスト
+
+L0-2 で定義された制約を DB 層に必ず反映させる対応表（Phase γ クロスチェックで使用）：
+
+| L0-2 表現 | DB 層対応 |
+|---|---|
+| `z.string().min(1)` | `NOT NULL` + `CHECK (length(col) >= 1)` |
+| `z.string().email()` | `CHECK (col ~* '^.+@.+\..+$')` または独立 email_format 関数 |
+| `z.enum(["a","b","c"])` | `CHECK (col IN ('a','b','c'))` または ENUM 型 |
+| `UserId` (brand 型) | 対応する `users` テーブルへの FK + `NOT NULL` |
+| `USER_TODO_LIMIT = 100` の集約上限 | アプリ層のみで強制（DB トリガーは保守困難、推奨しない） |
+| `UNIQUE` 性（email 重複禁止等） | `UNIQUE INDEX` |
+
+集約上限（COUNT 系制約）は DB トリガーで強制可能だが、保守困難 + 性能影響大のためアプリ層強制が推奨。Evil Path Scenario で「上限を超える操作」が L0-3 の API 層で 403 を返すことを確認する。
+
+### 状態遷移の統治パターン
+
+L0-4 で定義された状態遷移を「不正な状態への遷移」から守るパターン：
+
+1. **テーブル駆動**: `allowed_transitions` テーブルで（from_state, to_state）の許可ペアを列挙。アプリ層は遷移要求時にこのテーブルを参照
+2. **enum + 関数強制**: `transition(current_state, event) -> new_state | error` の関数で網羅、enum 外への遷移は型エラー
+3. **イベントソーシング**（ARC = event-sourcing 時）: 状態は派生（イベント列の畳み込み）、遷移は append-only のイベント追記で表現。不正遷移は **aggregate が command 段階で reject** し、不正な event をイベントストリームに append させない（事前防止）。CompensatingEvent は既に記録済みの**正当だが事後的に誤りと判明した事実**の訂正に用いる別概念で、不正遷移防止には使わない
+
+非エンジニア対話では (2) の enum + 関数強制が直感的。Evil Path Scenario「pending から expired への手動遷移は不可」は (2) で表現される。
+
+### 監査ログ・履歴管理の選択基準
+
+NFR C (Compliance) ≥ 2 または S (Security) ≥ 2 の場合、変更履歴の保存が要件化される。選択肢：
+
+| パターン | 仕組み | 適用場面 |
+|---|---|---|
+| **シャドウテーブル** | `users` と並行に `users_history` を持ち、UPDATE 時に旧行を append | 特定エンティティのみ詳細履歴が必要、クエリ高速 |
+| **Row Versioning** | 全行に `version` / `valid_from` / `valid_to` を持つ Temporal Table | 全エンティティで一律監査、時系列クエリ多用 |
+| **Generic Audit Log** | 単一 `audit_log` テーブルに（table, row_id, operation, before, after, who, when）を JSON で記録 | 監査対象が多種多様、頻度低 |
+| **Event Sourcing 統合** | ARC = event-sourcing 時、イベント自体が完全な監査ログ | event-sourcing 採用時の自然選択 |
+
+判定軸: 履歴クエリ頻度 / 監査対象エンティティ数 / 規制要件の厳しさ / ARC 選択。
+
+### Cat-6: 不変条件配置（新規追加）
+
+L0-6 起動時に以下を確認する（既存 Cat-1〜5 に追加）：
+
+- 同じ制約を **アプリ層と DB 層の両方** で表現すべきものは？
+- 「絶対に破られてはいけない」最後の砦の不変条件は？（→ DB 層で物理制約必須）
+- 監査履歴の保存要件は？（規制 / 内部ガバナンス / トラブルシューティング）
+
+### Phase γ クロスチェック追補
+
+| 観点 | チェック方法 |
+|---|---|
+| 多層配置の整合（DB 強制可能なもの） | L0-2 の enum / nullable / FK / UNIQUE 性が DB 制約（CHECK / NOT NULL / FOREIGN KEY / UNIQUE INDEX）として L1 migration に反映予定であることを `invariants.feature` の Scenario で表現 |
+| 集約上限の整合（アプリ層強制） | L0-2 の `USER_TODO_LIMIT` 等の集約上限は L0-3 API 層で強制される旨（403 + エラーコード）を `invariants.feature` Scenario で表現。DB 層強制（トリガー）は要求しない |
+| 監査要件の明示 | NFR C ≥ 2 or S ≥ 2 の場合、SPEC.md に監査ログパターンが選択済み |
+| 状態遷移の網羅 | L0-4 の状態遷移表が `invariants.feature` の Sad/Evil Path で網羅されている |
+
+### AD-032 候補（DAG verify 対称化）との接続
+
+ARCH-DECISIONS.md AD-032 候補で温存中の「Hard Gate（守備） ⇄ DAG verify（攻撃）対称化」検討は、本セクションの「多層防御」と同型概念。Hard Gate がツール呼び出し時の守りなら、DAG verify は不変条件の能動的検証側に位置する。AD-032 本実装時に本セクションは検査基盤データの出所となる（現時点では候補温存、本セクションは独立して機能）。
+
+---
+
 ## プロトコル自己評価
 
 - Happy Path を書きすぎる傾向がある。機能数 × 1〜2 本が上限目安。多すぎたら各サブフェーズのテストに振り分け
 - Evil Path は L0-5 とセットで意味を持つ。L0-5 スキップ時に無理に書かない
 - 「トランザクション境界」の Scenario は技術的詳細に寄るため、非エンジニア対話では引き出しにくい。AI が提案型で挿入し、人間は承認のみで可
 - Gherkin は日本語混在でも動作するが、キーワード（Given / When / Then 等）は英語維持が推奨（parser 互換性のため）
+- 多層防御は「同じことを 3 箇所で書く」冗長性に見えるが、これは意図的な防波堤設計。「DRY 原則違反」と誤解される可能性があり、SPEC.md コメントで意図を明示する
