@@ -366,21 +366,23 @@ Council 判定の最終出力（`history/COUNCIL-LOG.md`）は schema 準拠の 
 history/council-readable/<filename_id>.md
 ```
 
-1 council = 1 markdown ファイル。`<filename_id>` は `<invocation_id>` から **ISO 8601 extended → basic format 変換** で導出する（時間部分の `:` を削除）:
+1 council = 1 markdown ファイル。`<filename_id>` は `<invocation_id>` から **time component の `:` を削除する変換** で導出する（**date 部分の `-` 区切りは温存** — full ISO 8601 basic format ではなく、time-only basic variant）:
 
-| | ISO 8601 format | 例 |
-|---|---|---|
-| `<invocation_id>` (YAML 識別子) | extended (`THH:MM:SSZ`) | `council-2026-05-13T03:35:00Z-rtkSHA` |
-| `<filename_id>` (ファイル名) | basic (`THHMMSSZ`) | `council-2026-05-13T033500Z-rtkSHA` |
+| | date 部分 | time 部分 | 例 |
+|---|---|---|---|
+| `<invocation_id>` (YAML 識別子) | extended (`YYYY-MM-DD`) | extended (`THH:MM:SSZ`) | `council-2026-05-13T03:35:00Z-rtkSHA` |
+| `<filename_id>` (ファイル名) | extended (`YYYY-MM-DD`) | basic (`THHMMSSZ`) | `council-2026-05-13T033500Z-rtkSHA` |
+
+変換規則: `T(\d{2}):(\d{2}):(\d{2})Z` → `T\1\2\3Z` （`-` 区切りの date 部分には触れない）。`council-20260513T033500Z-...` のような full basic format は **採用しない**（PR #105 で rename 済みの実ファイル名と不一致）。
 
 **論理 ID とファイル名の表現を分離する** 理由:
 
 - **cross-platform 互換性**: Windows NTFS は `: \ / * ? " < > |` をファイル名に許可せず、`:` は Alternate Data Stream 区切りとして予約されている。ISO 8601 extended の `:` を含むファイル名は Windows クライアントで `git checkout` 不能となる（DH PR #105 で実害発生、council-readable 4 ファイルを basic format に rename）。
-- **YAML 識別子は不変**: `invocation_id` は COUNCIL-LOG.md の YAML 正本上で履歴 ID として参照され続けるため、表現を ISO 8601 extended のまま固定する。本文中で council を引用する際も `invocation_id` を使う。ファイル名としての参照（`history/council-readable/<filename_id>.md` の path 表記）のみ basic format を用いる。
+- **YAML 識別子は不変**: `invocation_id` は COUNCIL-LOG.md の YAML 正本上で履歴 ID として参照され続けるため、表現を ISO 8601 extended のまま固定する。本文中で council を引用する際も `invocation_id` を使う。ファイル名としての参照（`history/council-readable/<filename_id>.md` の path 表記）のみ上記変換規則を適用する。
 
 cross-platform 規約は council-readable に限定せず、**本リポジトリで commit するすべての path** に適用する（`: \ / * ? " < > |` を含むファイル名を作成しない）。
 
-**適用範囲**: DH PR #105 merge 時点の全 council-readable ファイル（4 件）を retroactive に rename 済み。本規約発動以降の council は最初から basic format で作成する。
+**適用範囲**: DH PR #105 merge 時点の全 council-readable ファイル（4 件）を retroactive に rename 済み。本規約発動以降の council は最初から本変換規則に従って `<filename_id>` で作成する（downstream プロジェクトも同様 — §適用範囲 #downstream 参照）。
 
 ### 内容形式（4 section）
 
@@ -395,7 +397,7 @@ cross-platform 規約は council-readable に限定せず、**本リポジトリ
 
 - **draft**: Council Phase 3（Judgment Agent 出力確定）と並行して作成、人間判断点（`implementer_consent` 入力前）に提示する
 - **確定**: `implementer_consent` 確定後、選択結果 / `modification_note`（該当時）/ `agreed_at` を追記して commit
-- **同 commit 配置**: YAML エントリ（`history/COUNCIL-LOG.md`）と markdown（`history/council-readable/<id>.md`）は **同一 commit** で配置し、内容 drift を防ぐ
+- **同 commit 配置**: YAML エントリ（`history/COUNCIL-LOG.md`）と markdown（`history/council-readable/<filename_id>.md`）は **同一 commit** で配置し、内容 drift を防ぐ
 
 ### 適用範囲
 
@@ -414,7 +416,7 @@ cross-platform 規約は council-readable に限定せず、**本リポジトリ
 
 - downstream は規約を「確立」ではなく「受領」する立場であり、`clrdbl` / `rtkSHA` の人間可読版は upstream DH project-scope に閉じている
 - downstream 側の既存 council 群 (PR1 walking-skeleton 起源 + 利用者プロジェクト固有 council 等) も遡及作成しない
-- downstream は **規約受領 PR の merge 後** に新規発動する council から本規約を適用する (本ドキュメント §配置 と同じく、リポジトリ root 直下の `history/council-readable/<invocation_id>.md` を 4 section format で作成。`.claude/skills/crosscut-council/history/` 等の skill 内 prefix は誤り)
+- downstream は **規約受領 PR の merge 後** に新規発動する council から本規約を適用する (本ドキュメント §配置 と同じく、リポジトリ root 直下の `history/council-readable/<filename_id>.md` を 4 section format で作成 — `<filename_id>` は §配置 の変換規則で `<invocation_id>` から導出する。`.claude/skills/crosscut-council/history/` 等の skill 内 prefix は誤り)
 
 D3 = D4 byte-identical 不変性の維持を優先するため、downstream 側で本規約本文を modify することも禁止する。文言の改善は upstream DH 側で行い、D3 sync で全 downstream に伝播させる経路を保つ。
 
