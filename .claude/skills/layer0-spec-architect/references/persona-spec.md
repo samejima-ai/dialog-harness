@@ -248,6 +248,7 @@ philosophy の規定で決まり、persona を変えても変わらない。
 
 - `../../../../templates/personas/README.md` — persona テンプレートの規約・配置
 - `../../../../templates/personas/default.persona.md` — 既定 persona
-- `../../../../templates/personas/sheep-navigator.persona.md` — サンプル persona
+- `../../../../templates/personas/sheep-navigator.persona.md` — サンプル persona（羊系ナビゲーター）
+- `../../../../templates/personas/ignis.persona.md` — サンプル persona（Ignis / 統合知の少年）
 - `./philosophy.md` 第 1 条 / 第 6 条 / 第 7 条
 - `./dialog-questions.md` — L0 対話質問例（persona が変わっても質問の本筋は変わらない）
