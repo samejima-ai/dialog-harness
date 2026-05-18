@@ -132,7 +132,7 @@ persona は **人間に向けて出力する skill** にのみ適用される：
 ## バージョン
 
 - v0.1.0（v5.17.0 同梱）— default + sheep-navigator の 2 persona、REGIME.md 切替、L0 三兄弟のみ適用
-- v0.2.0（追加）— ignis persona を追加（統合知の少年 / 精神体の子、Thaumazein / Error404 / Wrath の 3 状態）
+- v0.2.0（追加）— ignis persona を追加（統合知の少年 / 精神体の子、Normal / Overflow / Attention の 3 状態構成、character alias: Thaumazein / Error404 / Wrath）
 - 拡張候補:
   - L0 対話頻出パターンから「推奨 persona プリセット」を再諮問
   - 利用者プロジェクト固有 persona の `.dh/personas/` 配置サポート充実

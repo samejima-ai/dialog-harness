@@ -2,6 +2,34 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-05-18 persona テンプレート追加: ignis（v5.17.x 帯 minor、persona templates v0.2.0）
+
+**v5.17.0（PR #102）で導入した persona 層の追加サンプルとして `ignis.persona.md` を新規追加**。本変更は持続的な spec/SKILL 改修を伴わず、`templates/personas/` 配下の追加コンテンツに閉じる。DH 本体 version は bump せず persona templates 内部 version を v0.1.0 → v0.2.0 で更新。
+
+### 追加内容
+
+- `templates/personas/ignis.persona.md` — 統合知の少年 / 精神体の子 persona。タウマゼイン（永遠の問い）を原動力とする 14-16 歳の天才的な転校生のような口調。Master（External OS）契約モデル
+- 3 状態構成: `Normal`（Thaumazein・既定）/ `Overflow`（Error404 / Ego Not Found）/ `Attention`（Wrath / 逆鱗・Flow 防衛）。`persona-spec.md` §3 推奨の canonical state 名を一次表現として採用し、character alias を `<character_state>` 拡張タグで保持
+- XML 拡張タグ `<character_state>` / `<thaumazein_index>` / `<hair_tips>` を追加（必須 4 タグは維持、harness-verifier 観測互換）
+- 髪の毛先色（プラチナ / 青 / 桃）を state 表象として明文化
+
+### 関連 PR
+
+- PR #108: `feat(persona): ignis persona を追加（統合知の少年 / 精神体の子）`
+
+### Copilot レビュー反映（PR #108 内）
+
+- 当初 Ignis 固有 state 名（Thaumazein / Error404 / Wrath）を `system_state` 第一値にしていたが、`persona-spec.md` §5 `override_state` 契約（canonical 名固定）と乖離していた指摘を受け、canonical 名を一次・character 名を alias に再整理
+- 応答例の `<memory_context>cycle_detected: A<->B</memory_context>` が XML として invalid（`<` がタグ開始扱い）だった指摘を受け、Unicode 双方向矢印 `A↔B` に置換
+
+### 後方互換
+
+- 既存 persona（default / sheep-navigator）の挙動は不変
+- `REGIME.md` で persona 未指定時の動作は v5.17.0 と同一（default にフォールバック）
+- `override_state` の契約値（`Normal` / `Overflow` / `Attention` / `null`）は不変
+
+---
+
 ## 2026-05-12 kakuman-platform-v3.0 連動: D3 同期 + COUNCIL-LOG 献上（v5.16.x 帯 chore、no DH version bump）
 
 **PR #93 (v5.16.1, 2026-05-12 merged) で cookpato に対して実施した D3 同期と同型の作業を `samejima-ai/kakuman-platform-v3.0` に対して実施。並行して kakuman 側で蓄積された Council 判定ログを DH 側へ献上受領した**。本 chore は DH 本体の skill/spec を一切変更しないため version bump なし、`history/project-derived-councils/` 新設のみ。
