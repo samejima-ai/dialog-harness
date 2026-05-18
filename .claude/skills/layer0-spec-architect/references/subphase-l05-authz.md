@@ -331,13 +331,22 @@ type todo
 
 #### DB 分離
 
-各テナントに独立 DB を割り当て、`spec/authz.fga` のテナント概念は省略（DB 接続自体がテナント境界）。代わりに L1 実装で connection routing 層を必須化する。`SPEC.md` の「マルチテナンシー」セクションで明示：
+各テナントに独立 DB を割り当て、テナント内のリソース認可は `spec/authz.fga` で従来通り表現する（owner / role / 共有関係等）。**ただし** 「どのユーザーがどのテナント DB に接続できるか」（user → tenant のメンバーシップ認可）は DB 分離だけでは保証されない点に注意：
+
+- DB 分離は **テナント選択後** のクロステナント読みを物理的に防ぐ（cross-tenant read-after-select）
+- **テナント選択自体の認可**（routing authorization）は別途必要。以下のいずれかで明示する：
+  - `spec/authz.fga` 内に `type tenant` + `define member: [user]` / `define admin: [user]` を保持し、connection routing 層が check に基づいて DB 接続を切替
+  - 認可マトリクス `spec/authz-matrix.md` の routing セクションに user→tenant の許可表を記述
+  - いずれを採用するかは `SPEC.md` マルチテナンシーセクションで明示
+
+`SPEC.md` の「マルチテナンシー」セクション記述例：
 
 ```markdown
 ## マルチテナンシー
 - 戦略: DB 分離（database-per-tenant）
 - 理由: HIPAA 準拠の物理分離要求
 - ルーティング: subdomain → tenant_id → DB connection string mapping
+- ルーティング認可: spec/authz.fga の `type tenant` + `define member` を check してから DB 接続切替
 - スキーマ進化: 全テナント DB に対する zero-downtime migration が要件
 ```
 
@@ -354,7 +363,7 @@ Phase γ クロスチェック表に以下を追加：
 | 観点 | チェック方法 |
 |---|---|
 | テナント分離戦略の明示 | SPEC.md または authz.fga 内で 3 戦略のいずれかが選択済み |
-| 認可と隔離戦略の整合 | DB 分離選択時に authz.fga に冗長な tenant 概念が残っていない、共有スキーマ時に全エンティティに `tenant_id` が定義済み |
+| 認可と隔離戦略の整合 | DB 分離選択時に user→tenant の routing 認可（`type tenant` + `define member` または routing 認可マトリクス）が明示されている、共有スキーマ時に全エンティティに `tenant_id` が定義済み |
 | 規制業界での整合 | DOMAIN-CONTEXT.md に規制記述があれば、戦略選択が NFR C スコアと矛盾しない |
 
 ---

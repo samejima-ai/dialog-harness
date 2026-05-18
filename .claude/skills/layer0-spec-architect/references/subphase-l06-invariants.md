@@ -294,7 +294,7 @@ L0-4 で定義された状態遷移を「不正な状態への遷移」から守
 
 1. **テーブル駆動**: `allowed_transitions` テーブルで（from_state, to_state）の許可ペアを列挙。アプリ層は遷移要求時にこのテーブルを参照
 2. **enum + 関数強制**: `transition(current_state, event) -> new_state | error` の関数で網羅、enum 外への遷移は型エラー
-3. **イベントソーシング**（ARC = event-sourcing 時）: 状態は派生、遷移は append-only のイベント追記で表現。不正遷移は CompensatingEvent で訂正
+3. **イベントソーシング**（ARC = event-sourcing 時）: 状態は派生（イベント列の畳み込み）、遷移は append-only のイベント追記で表現。不正遷移は **aggregate が command 段階で reject** し、不正な event をイベントストリームに append させない（事前防止）。CompensatingEvent は既に記録済みの**正当だが事後的に誤りと判明した事実**の訂正に用いる別概念で、不正遷移防止には使わない
 
 非エンジニア対話では (2) の enum + 関数強制が直感的。Evil Path Scenario「pending から expired への手動遷移は不可」は (2) で表現される。
 
@@ -323,7 +323,8 @@ L0-6 起動時に以下を確認する（既存 Cat-1〜5 に追加）：
 
 | 観点 | チェック方法 |
 |---|---|
-| 多層配置の整合 | L0-2 の enum / 集約上限 / nullable が DB 制約として L1 migration に反映予定であることを `invariants.feature` の Scenario で表現 |
+| 多層配置の整合（DB 強制可能なもの） | L0-2 の enum / nullable / FK / UNIQUE 性が DB 制約（CHECK / NOT NULL / FOREIGN KEY / UNIQUE INDEX）として L1 migration に反映予定であることを `invariants.feature` の Scenario で表現 |
+| 集約上限の整合（アプリ層強制） | L0-2 の `USER_TODO_LIMIT` 等の集約上限は L0-3 API 層で強制される旨（403 + エラーコード）を `invariants.feature` Scenario で表現。DB 層強制（トリガー）は要求しない |
 | 監査要件の明示 | NFR C ≥ 2 or S ≥ 2 の場合、SPEC.md に監査ログパターンが選択済み |
 | 状態遷移の網羅 | L0-4 の状態遷移表が `invariants.feature` の Sad/Evil Path で網羅されている |
 
