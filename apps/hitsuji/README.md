@@ -38,9 +38,22 @@ ADHD 傾向のある人向け「コトの忘れもの」防止アテンション
 
 ## 開発状況
 
-- **Phase**: L0 仕様策定完了、L1 実装着手前
+- **Phase**: L0 第 1・第 2 段階完了、L1 実装着手前
 - **AI モード**: M2 標準モード（自律実装 + 独立検証）
 - **GitHub 運用**: github_assisted（手動 merge）
+
+## L1 への引き継ぎ
+
+L1 autonomous-dev が起動する際の最初のタスク：
+
+1. Gradle wrapper 初期化（`cd android && gradle wrapper --gradle-version 8.7`）
+2. `theme/` パッケージで `DESIGN.md` トークンの Kotlin 実装
+3. F1 タスク登録 + F5 手動登録（FAB → 入力 → 確定）の MVP 実装
+4. F3 段階エスカレーション通知の Lv.1〜Lv.4 実装
+5. F7 Room データベース + Repository 層
+6. `spec/invariants.feature` の Evil 系 8 シナリオを Repository 層 unit test に変換
+
+詳細は [`CLAUDE.md`](./CLAUDE.md) と [`delivery/SELF-VERIFICATION-INITIAL.md`](./delivery/SELF-VERIFICATION-INITIAL.md) 参照。
 
 ---
 

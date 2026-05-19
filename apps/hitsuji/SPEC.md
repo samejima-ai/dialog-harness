@@ -240,13 +240,11 @@ Streak {
 - スコープ外定義: `DONT.md`
 - モード判定: `REGIME.md`
 - 全体目次: `INDEX.md`
-
-### 第 2 段階で生成予定（現時点では未生成）
-
-- 状態遷移図: `spec/state-diagrams.md` *(未生成 / 第 2 段階予定)*
-- 不変条件: `spec/invariants.feature` *(未生成 / 第 2 段階予定)*
-- サブフェーズ判定: `spec/subphase-manifest.md` *(未生成 / 第 2 段階予定)*
-- 縮退判断: `delivery/ADR-001-subphase-scope.md` *(未生成 / 第 2 段階予定)*
-- エージェント RL: `CLAUDE.md` *(未生成 / 第 2 段階予定)*
-- センサー類: `sensors/computational.md` / `sensors/inferential.md` / `sensors/review-checklist.md` *(未生成 / 第 2 段階予定)*
-- 自己検証結果: `delivery/SELF-VERIFICATION-INITIAL.md` *(未生成 / 第 2 段階予定)*
+- 状態遷移図: `spec/state-diagrams.md`
+- 不変条件: `spec/invariants.feature`
+- サブフェーズ判定: `spec/subphase-manifest.md`
+- 縮退判断: `delivery/ADR-001-subphase-scope.md`
+- エージェント RL: `CLAUDE.md`
+- センサー類: `sensors/computational.md` / `sensors/inferential.md` / `sensors/review-checklist.md`
+- 自己検証結果: `delivery/SELF-VERIFICATION-INITIAL.md`
+- Android scaffold: `android/`
