@@ -170,15 +170,34 @@ Streak {
 
 ## 外部 API 連携（L0-3 縮退記述）
 
-| 連携先 | 用途 | 認証 | MVP |
+| 連携先 | 用途 | 必要パーミッション / 認証 | MVP |
 |---|---|---|---|
-| Android `SpeechRecognizer` | 音声入力 | OS 標準 | ○ |
-| Android `CalendarContract` | カレンダー読み取り | OS パーミッション | ○ |
-| Android `NotificationManager` | プッシュ通知発行 | なし | ○ |
-| Android `AlarmManager` | エスカレーション再発火 | なし | ○ |
-| Android `WorkManager` | バックグラウンドジョブ（取り込みポーリング等） | なし | ○ |
-| Google Calendar API（REST） | クラウド予定取得 | OAuth 2.0 | △（高度同期時） |
-| `NotificationListenerService` | LINE 等の受信通知抽出 | OS 特殊権限 | ✗（拡張） |
+| Android `SpeechRecognizer` | 音声入力 | `RECORD_AUDIO` (runtime, dangerous) | ○ |
+| Android `CalendarContract` | カレンダー読み取り | `READ_CALENDAR` (runtime, dangerous) | ○ |
+| Android `NotificationManager` | プッシュ通知発行 | `POST_NOTIFICATIONS` (Android 13+ runtime, dangerous) | ○ |
+| Android `AlarmManager`（exact） | エスカレーション再発火（厳密時刻） | Android 12+: `SCHEDULE_EXACT_ALARM` (special access) / Android 13+ では `USE_EXACT_ALARM`（install-time、ヘルスケア・アラーム系のユースケースのみ許容） | ○ |
+| Android Full-screen intent | Lv.4 アラーム時の画面占拠 | `USE_FULL_SCREEN_INTENT`（Android 14+ で user toggle 可、初回確認 UX が必要） | ○ |
+| Android `WorkManager` | バックグラウンドジョブ（取り込みポーリング等） | 標準。長時間処理は `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_DATA_SYNC` 等を併用 | ○ |
+| Android `Vibrator` / `VibratorManager` | 段階別バイブ | （標準、`VIBRATE`） | ○ |
+| Google Calendar API（REST） | クラウド予定取得（端末カレンダーで足りない場合のみ）| OAuth 2.0 (`GoogleSignIn` + Calendar scope) | △（高度同期時） |
+| `NotificationListenerService` | LINE 等の受信通知抽出 | `BIND_NOTIFICATION_LISTENER_SERVICE`（システム grant、設定アプリで個別許可必須） | ✗（拡張） |
+| Gmail API | メール本文からのタスク抽出 | OAuth 2.0 (Gmail.readonly scope) | ✗（拡張） |
+
+### パーミッション請求 UX
+
+初回起動時に **段階的かつ目的説明付き**で請求する（ADHD 当事者向け UX として、不意打ち権限ダイアログは避ける）：
+
+1. アプリ起動 → オンボーディング画面で「Hitsuji は通知でやることを思い出させます」と説明
+2. `POST_NOTIFICATIONS`（通知許可）を最初に請求 — これがないと機能が成立しない
+3. `RECORD_AUDIO` は **音声入力ボタンを初めて押した時**に請求（事前請求しない）
+4. `READ_CALENDAR` は **カレンダー連携をオンにした時**に請求
+5. `SCHEDULE_EXACT_ALARM` / `USE_FULL_SCREEN_INTENT` は **エスカレーション設定画面**で意義を説明してから請求
+
+権限拒否時の挙動：
+- `POST_NOTIFICATIONS` 拒否 → アプリ本来機能不全のため、設定遷移を促す画面表示
+- `RECORD_AUDIO` 拒否 → 音声入力 UI を disable、テキスト入力にフォールバック
+- `READ_CALENDAR` 拒否 → カレンダー連携を disable、手動登録のみ
+- exact alarm / full-screen intent 拒否 → エスカレーション最大段階を Lv.3 に制限
 
 ---
 
@@ -215,9 +234,19 @@ Streak {
 
 ## 参照
 
+### 本 PR で生成済み
+
 - 視覚仕様: `DESIGN.md`
 - スコープ外定義: `DONT.md`
-- 状態遷移図: `spec/state-diagrams.md`
-- 不変条件: `spec/invariants.feature`
-- サブフェーズ判定: `spec/subphase-manifest.md`
-- 縮退判断: `delivery/ADR-001-subphase-scope.md`
+- モード判定: `REGIME.md`
+- 全体目次: `INDEX.md`
+
+### 第 2 段階で生成予定（現時点では未生成）
+
+- 状態遷移図: `spec/state-diagrams.md` *(未生成 / 第 2 段階予定)*
+- 不変条件: `spec/invariants.feature` *(未生成 / 第 2 段階予定)*
+- サブフェーズ判定: `spec/subphase-manifest.md` *(未生成 / 第 2 段階予定)*
+- 縮退判断: `delivery/ADR-001-subphase-scope.md` *(未生成 / 第 2 段階予定)*
+- エージェント RL: `CLAUDE.md` *(未生成 / 第 2 段階予定)*
+- センサー類: `sensors/computational.md` / `sensors/inferential.md` / `sensors/review-checklist.md` *(未生成 / 第 2 段階予定)*
+- 自己検証結果: `delivery/SELF-VERIFICATION-INITIAL.md` *(未生成 / 第 2 段階予定)*
