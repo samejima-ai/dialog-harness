@@ -2036,3 +2036,47 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-05-16T07:15:00Z"
   cascade_to: "本 PR (#99) commit C で philosophy.md 第 1 条 行 36-38 の間に新小節『依存トポロジーの追跡可能性』を挿入 (案 α + 哲学者 minority の止揚)。新小節内に『分岐の決定責務』との接続点を明示する 1 段落を含め、DAG 機構の implementation detail は references 層に委譲することを明記、CoDD 業界先行事例への参照リンクを Step 3 で作成する observed-peers.md へ配置する"
 
+
+---
+
+- invocation_id: "council-2026-05-20T12:00:00Z-mtbl01"
+  timestamp: "2026-05-20T12:00:00Z"
+  source_skill: "human_direct_invocation"
+  question_to_answer: "DH の排出機構として frontmatter ベースのマーキングプロトコル（ユビキチン類比）を採用するか / スキーマ tier+anchors+state は十分か / drift 対策 α/β/γ の優先順 / 第 11 章結晶化前の隠れ論点"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "採用 yes / 3 項目 / β 第一", confidence: 0.78, dimension: "ROI / リスク" }
+    開発者: { stance: "採用 yes / 3 項目 + optional 予約 / β / コード粒度は別機構", confidence: 0.88, dimension: "技術的実現性 / 保守性" }
+    哲学者: { stance: "採用 yes ただし Tier 3 は排出機構の対称項ではなく進化の余白として独立設計", confidence: 0.65, dimension: "意味 / 長期影響 / 前提への問い" }
+  judgment_confidence: 0.75
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "frontmatter ベース採用 + 3 項目スキーマ + β 第一 + 隠れ論点 3 点"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.23
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.78 }
+          - { persona: "開発者", weight: 3, confidence: 0.88 }
+          - { persona: "哲学者", weight: 5, confidence: 0.65 }
+    third_way_excluded: []
+    max_score_stance: "frontmatter ベース採用 + 3 項目スキーマ + β 第一 + 隠れ論点 3 点"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "frontmatter ベースのマーキングプロトコル採用 (P1=yes)。最小スキーマ tier/anchors/state の 3 項目で MVP 出発、optional フィールド領域を schema レベルで予約 (P2)。drift 対策は β (crosscut-verifier-drift 拡張) を第一段階、α/γ は β 運用観察を経て採否判断 (P3)。第 11 章結晶化前に詰めるべき隠れ論点 3 点 (P4): (a) Tier 3『種子』を排出機構の対称項ではなく進化の余白として独立保護プロトコルを別建てで設計、(b) コード symbol レベルの粒度別機構 (docstring or 専用コメント記法)、(c) タグ書き手の発案責任と INSIGHTS 第 4 章『権限と能力の分離』原則との接続"
+  minority_opinion: "哲学者の二点を minority として保持: (i) Tier 3 を排出機構の従属として設計すると進化能力を失う危険、(ii) lying tag の完全排除は西洋的線形思考の偏り、生命系は揺らぎを許容しながら頑健性を保つ。第 11 章結晶化時の文言で『タグ整合性 100% は目標ではなく、許容揺らぎの設計が必要』を併記推奨。実装後 F1-F3 振り返り儀式で再評価対象"
+  human_escalated: false
+  consensus_mode: "pending_master_review"
+  implementer_consent: "pending"
+  follow_up_questions_count: 0
+  agreed_at: null
+  cascade_to: "Master が合意プロセスで方針確定後、(1) INSIGHTS 第 11 章ドラフトに反映 / (2) 隠れ論点 (a)(b)(c) のいずれを次に深掘りするか Master 判断 / (3) 採用方針確定時は P1 (フラクタル原則) / P3 (情報純度) の再解釈が major 昇格相当の重大変更を含むため、第 6 条準拠で Master の明示承認を経ること"
