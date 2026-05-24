@@ -1,0 +1,175 @@
+# Required mode: any
+# Required CTL: any
+#
+# claude-review (汎用版) — 任意のリポジトリで使える Claude コードレビュアー
+#
+# GitHub Copilot review の代替として Claude を全 PR の汎用コードレビュアーとして起動する。
+# dialog-harness 本体の .github/workflows/claude-review.yml を project 非依存に一般化した
+# drop-in テンプレート。repo 名は ${{ github.repository }} で自動解決するため置換不要。
+#
+# ## このリポジトリで動かす手順
+#
+# 1. 本ファイルを利用者リポジトリの `.github/workflows/claude-review.yml` にコピーする。
+# 2. Repo Settings → Secrets and variables → Actions に 2 つの secret を登録:
+#    - `CLAUDE_CODE_OAUTH_TOKEN`: Anthropic Pro/Max サブスクリプション OAuth token
+#      （ローカルで `claude setup-token` を実行して取得。API 追加課金なし）
+#    - `GH_REVIEW_PAT`: Fine-grained PAT（権限 Pull requests: Read+Write, Contents: Read）
+#      review 投稿に使用。
+# 3. 以上で全 PR に対し Claude が COMMENT review を自動投稿する。
+#
+# secret 未設定（fork PR 等）の場合はクリーンに skip するため、noisy red CI にはならない。
+#
+# ## 設計上の要点
+#
+# - 認証はサブスクリプション（CLAUDE_CODE_OAUTH_TOKEN）。Anthropic API 課金なし。
+#   レート制限は対話用 Claude Code の Pro/Max 枠と共有される点に注意。
+# - `allowed_tools` で gh CLI を明示許可している。これが無いと claude-code-action は
+#   gh コマンドを拒否し、自前コメントにフォールバックして「正式 review」が投稿されない。
+# - review event は常に COMMENT（助言的位置づけ、merge を block しない）。
+#   COMMENT は self-PR でも投稿可能（APPROVE/REQUEST_CHANGES のみ self-PR 不可）。
+# - action は `@v0` タグ参照。supply-chain hardening のため deployment 時に
+#   `pinact` 等で commit SHA に pin することを推奨。
+
+name: claude-review
+
+on:
+  pull_request:
+    # paths フィルタなし = リポジトリ全体の全 PR を対象（Copilot review と同等のカバレッジ）
+    types: [opened, ready_for_review, synchronize, reopened]
+
+concurrency:
+  group: "claude-review-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write  # anthropics/claude-code-action@v0 の OIDC token 取得に必須
+
+jobs:
+  review:
+    # draft PR / bot 作者の PR はスキップ
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      github.event.pull_request.user.login != 'copilot-pull-request-reviewer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # CLAUDE_CODE_OAUTH_TOKEN が設定されているか早期チェック
+      # secrets は if 式で直接参照できないため env 経由で空文字判定する
+      # fork PR では secrets が渡されないので skip により noisy red CI を防ぐ
+      - name: Check CLAUDE_CODE_OAUTH_TOKEN availability
+        id: check_token
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::notice::CLAUDE_CODE_OAUTH_TOKEN secret 未設定または空。claude-review をスキップします（fork PR では正常な挙動）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # GH_REVIEW_PAT が設定されているか早期チェック（review 投稿に Pull requests: Write が必要）
+      - name: Check GH_REVIEW_PAT availability
+        id: check_pat
+        env:
+          GH_REVIEW_PAT: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          if [ -z "$GH_REVIEW_PAT" ]; then
+            echo "::notice::GH_REVIEW_PAT secret 未設定または空。claude-review をスキップします（review 投稿には Pull requests: Write 権限の PAT が必要）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # anthropics/claude-code-action@v0 公式 action
+      # 公式: https://github.com/anthropics/claude-code-action
+      - name: Run Claude PR review
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        uses: anthropics/claude-code-action@v0
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # gh CLI による diff 取得 / review 投稿に PAT を使用（default GITHUB_TOKEN の write 制約を回避）
+          github_token: ${{ secrets.GH_REVIEW_PAT }}
+          # gh CLI を allowed_tools で明示許可。許可がないと claude-code-action は
+          # gh コマンド実行を拒否し、自前コメントにフォールバックして正式 review が投稿されない。
+          allowed_tools: "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*)"
+          timeout_minutes: "12"
+          direct_prompt: |
+            あなたはこのリポジトリの **汎用コードレビュアー**（GitHub Copilot review の代替）です。
+            汎用的なコード品質の観点で PR をレビューします。
+
+            ## レビュー対象
+
+            - **対象 repository**: `${{ github.repository }}`
+            - **対象 PR 番号**: **#${{ github.event.pull_request.number }}**
+            - **head SHA**: `${{ github.event.pull_request.head.sha }}`
+            - **base branch**: `${{ github.event.pull_request.base.ref }}`
+
+            PR 番号は確定済（人間に質問しない）。`gh` CLI は github_token で認証済み。
+            最初に diff と変更ファイルを取得してください:
+
+            ```bash
+            gh pr view ${{ github.event.pull_request.number }} --json title,body
+            gh pr diff ${{ github.event.pull_request.number }}
+            ```
+
+            ## レビュー観点
+
+            - **正当性 / バグ**: ロジック誤り、off-by-one、null/未定義、競合状態、リソースリーク
+            - **エラー処理 / edge case**: 例外未処理、境界値、失敗パスの欠落
+            - **コードスタイル / 命名**: 命名 convention、可読性、重複、不要な複雑性
+            - **汎用 code smell**: dead code、マジックナンバー、密結合
+            - **セキュリティ標準パターン**: injection、機密の混入、安全でない既定値
+            - **言語/FW イディオム**: 言語/フレームワーク固有の慣用と落とし穴
+            - **テスト網羅**: 変更に対するテストの有無・妥当性
+
+            ## 出力形式（厳密、余分な出力禁止）
+
+            最終 verdict は **必ず** 以下のコマンドで投稿してください（event は常に COMMENT）:
+
+            ```bash
+            gh pr review ${{ github.event.pull_request.number }} --comment --body "<本文>"
+            ```
+
+            本文は以下の構造のみ。前置き / 心構え / 自己紹介 / 推論過程は書かない。
+
+            ### 問題なしの場合
+
+            ```
+            問題: なし
+            ```
+
+            ### 問題ありの場合
+
+            ```
+            問題: あり (N 件)
+
+            ### 1. <問題点を 1〜2 行で>
+            参照: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/<path>#L<line>
+
+            ### 2. <問題点を 1〜2 行で>
+            参照: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/<path>#L<line>
+            ```
+
+            - permalink は head SHA 固定（行番号が後の commit でずれない）
+            - 行番号は `#L<n>` または `#L<start>-L<end>`
+            - 各問題は 1 件 1 ブロック、問題点は簡潔に
+            - 重大度の高い順に並べる
+
+            ## 必須実行プロトコル
+
+            - 最後に必ず `gh pr review ... --comment` で verdict を確定する
+            - review 投稿なしで完了することは禁止
+            - event は常に COMMENT（APPROVE / REQUEST_CHANGES は使わない。本レビュアーは助言的位置づけ）
