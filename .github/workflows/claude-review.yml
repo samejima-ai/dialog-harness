@@ -128,9 +128,10 @@ jobs:
                 既出記録の扱い（責務を 2 つの機械的根拠に分離）:
                 - `is_bot:true`（login の機械判定）= 汎用 bot フィルタ。意図/評価の根拠にしない。
                 - **あなた自身の過去出力**は安定マーカーで識別する（author でも is_bot でも人間可読テンプレ文面でもなく、
-                  これが一次根拠＝将来 reformat に強い）。**正規規則（唯一の真実）**: コメント本文が前方一致で文字列
-                  `<!-- claude-review:` を含めば claude-review 自身の出力（`channel-b`/`channel-c` 等の接尾辞は問わない＝
-                  将来 channel 追加でも識別ロジック不変）。自己出力は新 signal ではなく「既出記録」＝再評価せず繰り返さない根拠。
+                  これが一次根拠＝将来 reformat に強い）。**正規規則（本箇所が一次情報源。review-intent-gate.md は参照コピー）**:
+                  コメント本文に部分文字列 `<!-- claude-review:` が出現すれば claude-review 自身の出力（contains 判定。
+                  `<!-- claude-review:` はマーカーの安定 prefix で `channel-b`/`channel-c` 等の接尾辞は可変＝channel 追加でも規則不変）。
+                  自己出力は新 signal ではなく「既出記録」＝再評価せず繰り返さない根拠。
                   fail-safe: 自他不明（マーカー不一致）なら外部コメント扱い＝既出抑制しない（入力を失うより再掲回避を諦める方が安全。前提入力↑優先）。
             1-b Task → `review-difficulty`（haiku）: 依存深度中心に difficulty tier(1/2/3) を保守的に判定。
                 これで 2 つを決める:
