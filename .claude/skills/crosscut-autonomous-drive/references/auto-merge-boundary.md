@@ -48,6 +48,24 @@ Council 諮問 `council-2026-05-06T08:30:00Z-amrev1`（unanimous C ハイブリ�
 | `pickup-failed` | issue-pickup.yml 実装失敗 | issue-pickup.yml | 人間 P4 判断、`ready-for-ai` 再付与で再 trigger |
 | `circuit-broken` | Circuit Breaker 上限到達 | issue-pickup.yml | 翌日／翌月の自然解除 or 人間判断 |
 
+## review 応答ループの終端境界（loop termination）
+
+自動レビュアー（`claude-review.yml` / `gemini-review.yml`）の指摘に応答する AI は、指摘の **重大度** で応答を分岐し、自己彫琢ループ（churn）に陥らない。本境界は §stop ラベル定義と連結し、ループの出口を既存ラベルに着地させる。
+
+| 重大度 | 定義 | 応答 | 出口 |
+|--------|------|------|------|
+| **重大** | merge をブロックする指摘、または §opt-in 領域該当（不可逆操作 / DONT.md 抵触 / Council `judgment_confidence < 0.5` / RL 外項目 / H 区分該当）のいずれか | 修正 → 再レビューを **解決までループ** | 解決＝ループ終了。スコープ外 / 解決不能なら `human-review-needed` を付与して **人間献上** |
+| **軽微** | merge をブロックしない非ブロッキング指摘（観点メモ・整流余地・将来余地） | **最大 1 回**の微修正で終了 | 修正が生む新たな軽微 nit は追わない（記録のみ）。opt-out 領域ならそのまま auto-merge 走行 |
+
+### 終端規則（churn 防止）
+
+- **判定主体と信号**: 重大度は応答エージェント（babysit / autonomous-drive 経路）が判定する。信号はレビュアー出力の既存フィールド——merge ブロックの有無 / `human_escalation_required` / §opt-in 領域該当——を用い、新たな機械カウンタは要しない。「最大 1 回」は応答エージェントの **行動規範** であって runtime カウンタではない（LLM エージェントにとって本 spec 自体が実装面＝spec/code 乖離による死文化は生じない）。
+- 軽微指摘は「1 回修正 → 終了」が既定。修正が次 round で新たな軽微 nit を生んでも、それは **自己彫琢の自己目的化**（第 7 条 P4 が抑止する暴走の一種）であり追従しない。
+- 重大指摘のみがループ継続を正当化する。「解決まで or 人間献上」の二択で、無限ループには陥らせない。
+- 重大度判定が曖昧なときは重大側に倒す（fail-safe＝見落としより過剰停止が安全。第 6 条 人間最終承認）。
+
+**根拠**: 第 2/3 条（決定論・情報純度 ＞ 確率的多 round 彫琢＝純度/コストの逆転防止）、第 7 条 P4（自己目的化したループの暴走抑止）。経験的観察として、自己改修ループでは軽微指摘が単調にメタ化し Council confidence が逓減する。本境界はその凍結基準を成文化する。
+
 ## 旧 `auto-merge` ラベルの廃止
 
 v5.9.0 で `auto-merge` ラベルは **廃止**（二重ラベル方式の腐敗回避、Council minority_opinion (3)）。
@@ -97,6 +115,8 @@ Council minority_opinion (2) 由来。**v5.9.0 merge 後 6 ヶ月時点（2026-1
 | ファイル | 参照内容 |
 |---------|---------|
 | `.github/workflows/auto-merge.yml` | 条件 1: 本ファイル §stop ラベル定義 |
+| `.github/workflows/claude-review.yml` / `gemini-review.yml` | 指摘の重大度提示（本ファイル §review 応答ループの終端境界） |
+| PR 応答エージェント（babysit / autonomous-drive 経路） | 重大度分岐とループ終端（本ファイル §review 応答ループの終端境界） |
 | `.github/workflows/issue-pickup.yml` | `--label auto-merge` 削除（本ファイル §旧 auto-merge ラベルの廃止） |
 | `.claude/skills/layer1-autonomous-dev/SKILL.md` | 対話中タグ付け判定基準（本ファイル §opt-in 領域） |
 | `.claude/skills/crosscut-issue-implementer/SKILL.md` | opt-in→opt-out philosophy 反転（本ファイル §設計原則） |

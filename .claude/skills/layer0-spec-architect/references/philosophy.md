@@ -413,6 +413,8 @@ v5.5.3〜v5.7.2 では auto-merge 走行に **明示 `auto-merge` ラベル付�
 
 第 4 条「人間が判断する場面」の P4 暴走時介入は **事後発動から事前付与（opt-in 領域での `human-review-needed` 自動付与）と事後発動（merge 後の振り返り）の二層構造** に拡張された。
 
+また P4 は **レビュー応答ループの終端** も担う: レビュアー指摘への応答を重大度で分岐し（重大＝解決までループ or `human-review-needed` 献上 / 軽微＝最大 1 回修正で終了）、自己目的化したループ（churn）を暴走抑止の対象として打ち切る。詳細は `auto-merge-boundary.md §review 応答ループの終端境界`。
+
 **根拠**: Council 諮問 `council-2026-05-06T08:30:00Z-amrev1`（unanimous C ハイブリッド、judgment_confidence 0.80、implementer_consent: agreed_with_modification）。**roll-back 評価ゲート** は 6 ヶ月後（2026-11-06）に必須で、暗黙 merge 事故 1 件以上 / AI 判定漏れ率 5% 超 / 境界曖昧化月 2 件以上 / 二重ラベル腐敗のいずれかで opt-in モデルに戻す手順を `auto-merge-boundary.md §roll-back プロトコル` に定義。
 
 ---
