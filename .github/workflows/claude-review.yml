@@ -10,8 +10,11 @@
 # OC(Opus) が leaf subagent を直接起動（subagent は subagent を生成できない＝委譲は 1 階層）:
 #   Phase1 Planning : review-fetch(haiku) / review-difficulty(haiku) / Skill:crosscut-council でチェックリスト生成+RL内外分類
 #   Phase2 Gate     : review-intent-gate(haiku) → 意図欠落 diff は修正提案を停止し開発者へ質問
-#   Phase3 Exec     : review-evidence(haiku) / Council 3 ペルソナ並列(sonnet標準/opus昇格) / review-judgment(weighted)
-#   Phase4 Synth    : OC 統合 → ChA 3層 artifact(.github/reviews) / ChB inline 結論(高純度) / ChC 人間 merge 判断サマリー
+#   Phase3 Exec     : review-evidence(haiku) / [難度ゲート] tier1=軽量単一パス・Council スキップ / tier2,3=Council 3 ペルソナ並列(sonnet標準/opus昇格)+review-judgment(weighted)
+#   Phase4 Synth    : OC 統合 → ChA artifact(.github/reviews) / ChB inline 結論(高純度) / ChC 人間 merge 判断サマリー
+#
+# 難度ゲート: Council は拮抗・高 stakes のためのもの（Council 発動基準・第2/3条）。routine な tier1 PR は
+# 軽量単一パスに分岐し、ルーチンへの過剰合議を避ける。tier2/3（sensitive/複雑）のみフル Council。
 #
 # ## レビュアー視点直交（多層防御）
 # - claude-review (本 workflow): 汎用コードレビュー軸（Copilot 代替）
@@ -115,13 +118,18 @@ jobs:
 
             ## モデルティア方針（improvement 1）
             ワーカー（fetch/difficulty/intent/evidence）= haiku（各 subagent frontmatter 既定）。
-            Council 3 ペルソナ + judgment = difficulty tier 1/2 なら sonnet、tier 3 なら opus。
+            Council（council mode = tier2/3 のみ）の 3 ペルソナ + judgment = tier2 なら sonnet、tier3 なら opus。
             **3 ペルソナは常に同一ティア**（横対称）。難度で縦昇格。Task 起動時の model パラメータで 3 者に同値を渡す。
+            tier1（lightweight mode）は Council を回さず OC が単一パスで処理する（過剰防止の難度ゲート、後述 Phase 3）。
 
             ## Phase 1 — Review Planning
             1-a Task → `review-fetch`（haiku）: PR の title/body/diff/変更ファイル/linked Issue/参照 doc を取得。
             1-b Task → `review-difficulty`（haiku）: 依存深度中心に difficulty tier(1/2/3) を保守的に判定。
-                これで persona_tier を決める（tier1/2→sonnet, tier3→opus）。
+                これで 2 つを決める:
+                - **review_mode**（過剰防止の難度ゲート）: tier1=`lightweight`（routine、Council を回さない）/
+                  tier2,3=`council`（フル合議）。Council 自身の発動基準（拮抗・高 stakes のみ発動）と
+                  第2条（決定論優先）・第3条（情報純度）に整合させ、ルーチン PR への過剰合議を避ける。
+                - **persona_tier**（review_mode=council のときのみ）: tier2→sonnet, tier3→opus。
             1-c Skill `crosscut-council` を読み、references/review-checklist.md に従って検証チェックリストを
                 動的生成し、各項目を RL 内（既存ルールに根拠→自走 = C 区分）/ RL 外（新評価軸＝発明→人間献上 =
                 H1/H3）に分類。RL 外項目を escalation リストに収集。review_category も決める。
@@ -134,7 +142,13 @@ jobs:
 
             ## Phase 3 — Review Execution
             3-a Task → `review-evidence`（haiku）: 変更ファイルの linter/formatter/型/test を実行または収集し
-                file:line + verdict の Evidence に正規化（決定論のみ）。
+                file:line + verdict の Evidence に正規化（決定論のみ）。**全 mode で実行**（決定論層が価値の中心、第2条）。
+
+            **review_mode=lightweight（tier1, routine）の場合**: Council fan-out（3-b/3-c）を **スキップ** する。
+            あなた（OC）が Evidence(3-a) + チェックリスト(1-c) を基に単一パスで汎用コードレビューし、verdict を直接決める。
+            judgment_confidence/persona 層は生成しない。そのまま Phase 4 へ。これがルーチン PR の既定経路。
+
+            **review_mode=council（tier2/3, sensitive/複雑）の場合のみ**: 以下 3-b/3-c を実行する。
             3-b Council 3 ペルソナ独立評価。context にレビュー対象（diff 要約 + 変更ファイル + Evidence）、
                 options にレビュー verdict（例: ["問題なし","軽微な問題あり","重大な問題あり/要修正"]）、
                 question_to_answer を与え、**3 件の Task を並列・同一 persona_tier で起動**:
@@ -151,14 +165,16 @@ jobs:
                 prefix 一致、weighted_score=weight×confidence、1 ペルソナ 1 weight）を再検証する。
 
             ## Phase 4 — Synthesis & Output（あなた＝Opus）
-            4-a 統合: Evidence(3-a) + 判定(3-c) + RL 外 escalation(1-c) + 意図 gap(2-b) を 1 つの最終結論に。
-                judgment_confidence < 0.5 OR RL 外項目あり OR H 区分該当 ⇒ human_escalation_required = true。
-            4-b Channel A — 構造化 artifact（3 層）を `.github/reviews/pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}.md`
-                に Write（先に `mkdir -p .github/reviews`）。frontmatter（pr/head_sha/tier/category/invocation_id/
-                judgment_confidence/consensus_mode/human_escalation_required/generated_at）+ 本文 3 層:
-                  HIGH（ゼロノイズ）: verdict + 確定検証 + 各 findings(1-2 行 + head SHA permalink)
-                  MEDIUM（圧縮）: 各ペルソナ stance/dimension/トレードオフ + weight 要約
-                  LOW（種・将来 AI 専用）: minority_opinion 全文 / third_way_excluded / 不採用懸念 / COUNCIL-LOG §8 エントリ
+            4-a 統合: Evidence(3-a) + 判定(3-c、council mode のみ) + RL 外 escalation(1-c) + 意図 gap(2-b) を
+                1 つの最終結論に。human_escalation_required = true の条件: RL 外項目あり OR H 区分該当 OR
+                （council mode かつ judgment_confidence < 0.5）。
+            4-b Channel A — 構造化 artifact を `.github/reviews/pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}.md`
+                に Write（先に `mkdir -p .github/reviews`）。frontmatter（pr/head_sha/tier/review_mode/category/
+                invocation_id/judgment_confidence(council 時のみ)/consensus_mode/human_escalation_required/generated_at）+ 本文:
+                  HIGH（ゼロノイズ・全 mode）: verdict + 確定検証 + 各 findings(1-2 行 + head SHA permalink)
+                  MEDIUM（圧縮・council mode のみ）: 各ペルソナ stance/dimension/トレードオフ + weight 要約
+                  LOW（種・将来 AI 専用・council mode のみ）: minority_opinion 全文 / third_way_excluded / 不採用懸念 / COUNCIL-LOG §8 エントリ
+                lightweight mode では HIGH 層のみ（+ review_mode=lightweight を明記）。
                 注: COUNCIL-LOG は canonical 台帳へ自動 append しない（CI churn 回避、第 6 条）。§8 形は LOW 層に記録のみ。
             4-c Channel B — inline PR レビュー（HIGH のみ、高純度）。**必ず**:
                   gh pr review ${{ github.event.pull_request.number }} --comment --body "<本文>"
