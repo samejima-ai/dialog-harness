@@ -14,7 +14,9 @@ PR 本文 **および人間が書いたコメント** に、実質的な変更�
 - PR 本文 + 人間コメント（OC から渡される、または `gh pr view <PR番号> --json body,comments` で取得）に、
   各実質 diff の「なぜこう変えたか」「検討したトレードオフ」が読み取れるか。
   **意図が body になくても人間コメントで説明されていれば `has_intent: true`**（既に答えた質問を再度投げない）。
-- bot/自動アカウント（login が `[bot]` 終わり等）のコメントは意図の根拠にしない（開発者の説明のみ採用）。
+- 意図の根拠は**人間の開発者コメントのみ**。次の機械規則に該当するものは根拠にしない（review-fetch と同一規則で一貫）:
+  - author login が `[bot]` で終わる、または `github-actions` 等の自動アカウントに該当する（= bot）。
+  - 末尾に安定マーカー `<!-- claude-review: -->` を持つ（= claude-review 自身の過去出力）。
 - 述べられている → `has_intent: true`
 - diff はあるが本文に意図の言及がない → `has_intent: false`（後段で当該 diff の修正提案を停止し、開発者へ質問する根拠）
 - trivial（typo/format/コメントのみ）な diff は意図ゲート対象外（`trivial: true`）
