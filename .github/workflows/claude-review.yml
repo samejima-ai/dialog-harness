@@ -113,6 +113,11 @@ jobs:
           # gemini-review.yml が default GITHUB_TOKEN の write 不可を観測した経緯（line 187-192）を
           # 踏まえ、最初から PAT を渡す。
           github_token: ${{ secrets.GH_REVIEW_PAT }}
+          # gh CLI を allowed_tools で明示許可する。許可がないと claude-code-action は
+          # gh コマンド実行を拒否し（"I don't have approval for gh commands"）、
+          # 自前のスティッキーコメントにフォールバックして正式 review が投稿されない。
+          # COMMENT event の review は self-PR でも投稿可能（APPROVE/REQUEST_CHANGES のみ self-PR 不可）。
+          allowed_tools: "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*)"
           timeout_minutes: "12"
           direct_prompt: |
             あなたは dialog-harness 本体への **汎用コードレビュアー**（GitHub Copilot review の代替）です。
