@@ -455,6 +455,8 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 - **sensors/** — センサー定義（計算的＋推論的）
 - **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）
 
+**推奨開発オプション（v5.18.0 追加）**: S1 で DB 使用ありと判定され、本番に hosted Postgres / BaaS（特に Supabase）を使い消失 NG の私的データを持つ構成では、本番を汚さないローカル優先開発（Docker 上のローカルスタック + migration 経由の本番反映）を推奨提示する。推奨発動条件・前提確認・ワークフロー・セキュリティ規律は `references/supabase-local-dev.md` を参照。強制ではなく推奨（philosophy 第 6 条）。
+
 ### 7. 出力
 
 **Pre-flight (v5.1.0)**: 起動前に `assets/credit-template.md`（README.md クレジット規格）を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
@@ -564,6 +566,7 @@ project-root/
 - `references/arc-patterns/realtime-pubsub.md` — リアルタイム pub/sub パターン（社内版LINE型、大量同時接続）
 - `references/arc-patterns/event-sourcing.md` — イベントソーシング（監査必須、時系列復元、スキーマ進化完全準拠）
 - `references/schema-evolution.md` — データモデル進化プロトコル（互換性ポリシー / デプロイ戦略 / upcasting）
+- `references/supabase-local-dev.md` — Supabase ローカル開発環境（v5.18.0 追加、推奨開発オプション。本番保護のローカル優先フロー / migration 経由の本番反映 / セキュリティ規律。S1 = DB 使用あり + hosted Postgres/Supabase 構成でのみロード）
 - `references/permission-delegation.md` — 段階的権限委譲（L0-2/L0-3、介入チャネル C1/C2/C3、判断献上 5 カテゴリ）
 - `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
 - `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）
@@ -586,6 +589,20 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v5.18.0 追加（Supabase ローカル開発の推奨オプション化、minor 昇格）
+
+後方互換維持の追加のみ。新規 skill / agent は作らず、専用 reference 1 件の新設 + SKILL.md 本体および既存 reference 4 件への軽い配線（pointer）で構成する（#107 データモデリング吸収と同型の「既存構造への栄養追加」方針、ただし本件はツール固有プレイブックのため専用 reference 形式を採る）。本番 Supabase（hosted Postgres）に消失 NG の私的データを持つ構成で、本番を汚さない**ローカル優先開発**（Docker 上のローカルスタック + migration 経由の本番反映）を推奨オプションとして提示できるようにする。
+
+- `references/supabase-local-dev.md` 新設。推奨発動条件（S1 = DB 使用あり + hosted Postgres/Supabase + 消失 NG データ）/ 前提確認（OS / Docker / WSL2）/ 7 ステップワークフロー（CLI install〜`.env.local`）/ 生成物配置（`dev-env-spec.md` 整合）/ smoke test（`scaffold-checklist.md` 整合）/ 本番反映の安全規律（`schema-evolution.md` 整合）/ セキュリティ規律 / モード別の扱い / プロトコル自己評価 を規定。ツール固有プレイブックのため必要時のみロード（progressive disclosure）
+- §6「開発環境の設計・構築」M2 標準生成構成に「推奨開発オプション」1 ブロックを追加（hosted Postgres/Supabase 構成時に `supabase-local-dev.md` を参照、強制ではなく推奨）
+- §参照ドキュメント 拡張 list に `references/supabase-local-dev.md` を追加
+- `references/dialog-questions.md` S1 に「フォローアップ: 本番保護とローカル開発の推奨」を追加（非技術語彙の推奨提示、過剰提示回避の解釈付き）
+- `references/scaffold-checklist.md` に「Supabase ローカル開発（推奨バックエンド開発オプション）」セクションを追加（追加生成物 `supabase/` + `.env.local` / smoke test 追加。標準 stack 12 種は置換せず追加層）
+- `references/schema-evolution.md` に「Supabase CLI マイグレーション運用との整合」セクションを追加（コマンド ↔ デプロイ戦略の対応、expand-contract への分解、append-only 規律、`db push` 前の人間承認）
+- `references/subphase-l02-domain.md` の 3 階層モデル節に物理層 = hosted Postgres/Supabase 時のローカル優先推奨を 1 行追加
+
+LC ≥ 1 既存プロジェクトは新規開始する DB 機能から段階適用（既存の本番直結フローの遡及置換は不要、事後追加プロトコルで任意導入可）。非該当プロジェクト（SQLite / メモリのみ / 使い捨て）では `supabase-local-dev.md` をロードせず提示もしない（時間コストゼロ）。
 
 ### v5.17.0 追加（対話 persona 層・presentation 差替インフラ、minor 昇格）
 

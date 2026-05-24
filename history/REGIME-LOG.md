@@ -2,6 +2,16 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v5.18.0（minor 昇格、Supabase ローカル開発の推奨オプション化）
+
+- 判定日: 2026-05-24
+- AI 能力バージョン: claude-opus-4-7（1M context）
+- 改修主体: layer0-spec-architect 対話セッション（L0 メタスキル開発案件、本番 Supabase 保護フローの推奨オプション化）
+- 起源: フロント Next.js（Vercel）+ 本番 Supabase 無料枠（消失 NG 私的データ）構成での「本番を汚さずローカルで開発したい」要請。開発時の推奨選択肢として Supabase ローカル展開を L0 に取り込む
+- L0 対話確定: 組込方式 = 「専用 reference + 軽い配線」（#107 データモデリング吸収と同方針だがツール固有プレイブックのため専用 reference 形式）、推奨発動条件 = 「保護すべき本番 Supabase/hosted Postgres 使用時」（S1 = DB 使用あり + hosted Postgres/Supabase + 消失 NG データ）
+- 範囲: 新規 skill / agent なし。`references/supabase-local-dev.md` 新設 + 既存 5 ファイル（SKILL.md 本体 + reference 4 件: dialog-questions / scaffold-checklist / schema-evolution / subphase-l02-domain）への配線。後方互換 100%
+- 自己検証: `harness-verifier/verify.py` 6 項目すべて PASS（frontmatter / 参照 path / SK 間参照 / 5 層構造 / 用語辞書 / hook 観測）
+
 ## v5.10.0（minor 昇格、in progress、issue-pickup.yml body_check の type-aware 化）
 
 - 判定日: 2026-05-07
