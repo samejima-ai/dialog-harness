@@ -1,0 +1,204 @@
+# claude-review — DH 本体への汎用コードレビュアー（Copilot review 代替）
+#
+# GitHub 標準 Copilot review の代替として Claude を配置する。
+# 認証は Anthropic Pro/Max サブスクリプション（CLAUDE_CODE_OAUTH_TOKEN、API 追加課金なし）。
+# issue-pickup.yml が anthropics/claude-code-action@v0 + OAuth token を実装エージェントとして
+# 既に運用している実績を踏襲する（同 workflow line 229-231）。
+#
+# ## レビュアー三層構成（視点直交の原則）
+#
+# - **Copilot review (GitHub 標準)**: 廃止予定（本 workflow が代替）
+# - **claude-review (本 workflow)**: 汎用コードレビュー軸
+#   = バグ/正当性、コードスタイル、命名、汎用 code smell、セキュリティ標準パターン、
+#     言語/FW イディオム、エラー処理、edge case、テスト網羅。
+# - **gemini-review.yml**: DH プロジェクト固有仕様軸
+#   = philosophy.md 6 条憲法、SPEC/DONT 契約、Council 品質、cross-file 契約整合。
+#
+# 三者の視点を直交させることで、同一観点の重複 noise を避け多層防御を実現する。
+# Claude が拾うべきは「Copilot が拾っていた汎用問題」であり、Gemini 担当の
+# 仕様軸（philosophy/SPEC）には踏み込まない。
+#
+# ## 同一ベンダーバイアスについて
+#
+# DH 本体 PR の多くは Claude で書かれるため、Claude レビュアーは構造的に
+# Generator≒Evaluator の自己相似バイアスを内包する（gemini-review.yml line 28-31 参照）。
+# 本 workflow は「汎用コードレビュー」という Copilot 代替の限定スコープに閉じることで
+# このバイアスの影響を抑制し、仕様軸の独立観測は異質ベンダーの gemini-review に委ねる。
+#
+# ## 必要な setup（Repo Settings → Secrets and variables → Actions）
+#
+# - CLAUDE_CODE_OAUTH_TOKEN: Anthropic Pro/Max サブスクリプション OAuth token
+#   （ローカルで `claude setup-token` を実行して取得）
+# - GH_REVIEW_PAT: Fine-grained PAT（Pull requests: Read+Write, Contents: Read）
+#   review 投稿に使用。gemini-review.yml と同一 secret を共用する。
+# - fork PR では secrets が渡らないため、未設定時はクリーンに skip する。
+
+name: claude-review
+
+on:
+  pull_request:
+    # paths フィルタなし = リポジトリ全体の全 PR を対象（Copilot review と同等のカバレッジ）
+    types: [opened, ready_for_review, synchronize, reopened]
+
+# 同一 PR の再起動時は前回ジョブをキャンセル（コスト効率 + 最新 commit 反映）
+concurrency:
+  group: "claude-review-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write  # anthropics/claude-code-action@v0 の OIDC token 取得に必須（issue-pickup.yml line 33 と同一）
+
+jobs:
+  review:
+    # draft PR / bot 作者の PR はスキップ（gemini-review.yml line 67-71 と同形式）
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      github.event.pull_request.user.login != 'copilot-pull-request-reviewer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # CLAUDE_CODE_OAUTH_TOKEN が設定されているか早期チェック
+      # secrets は if 式で直接参照できないため env 経由で空文字判定する
+      # fork PR では secrets が渡されないので skip により noisy red CI を防ぐ
+      - name: Check CLAUDE_CODE_OAUTH_TOKEN availability
+        id: check_token
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::notice::CLAUDE_CODE_OAUTH_TOKEN secret 未設定または空。claude-review をスキップします（fork PR では正常な挙動）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # GH_REVIEW_PAT が設定されているか早期チェック（gemini-review.yml line 109-119 と同形式）
+      # review 投稿には Pull requests: Write 権限の PAT が必要
+      - name: Check GH_REVIEW_PAT availability
+        id: check_pat
+        env:
+          GH_REVIEW_PAT: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          if [ -z "$GH_REVIEW_PAT" ]; then
+            echo "::notice::GH_REVIEW_PAT secret 未設定または空。claude-review をスキップします（review 投稿には Pull requests: Write 権限の PAT が必要）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          # full clone。Claude が base...head の diff を git で計算する場合の
+          # shallow clone (default depth=1) 起因の silent fail を排除する
+          fetch-depth: 0
+
+      # anthropics/claude-code-action@v0 公式 action
+      # 公式: https://github.com/anthropics/claude-code-action
+      # SHA pin 推奨（supply-chain hardening）だが、本 commit では @v0 タグのまま。
+      # deployment 時に maintainer が `pinact` 等で SHA pin することを推奨。
+      - name: Run Claude PR review
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        uses: anthropics/claude-code-action@v0
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # GitHub 操作（gh CLI による diff 取得 / review 投稿）に PAT を使用。
+          # gemini-review.yml が default GITHUB_TOKEN の write 不可を観測した経緯（line 187-192）を
+          # 踏まえ、最初から PAT を渡す。
+          github_token: ${{ secrets.GH_REVIEW_PAT }}
+          # gh CLI を allowed_tools で明示許可する。許可がないと claude-code-action は
+          # gh コマンド実行を拒否し（"I don't have approval for gh commands"）、
+          # 自前のスティッキーコメントにフォールバックして正式 review が投稿されない。
+          # COMMENT event の review は self-PR でも投稿可能（APPROVE/REQUEST_CHANGES のみ self-PR 不可）。
+          allowed_tools: "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*)"
+          timeout_minutes: "12"
+          direct_prompt: |
+            あなたは dialog-harness 本体への **汎用コードレビュアー**（GitHub Copilot review の代替）です。
+            GitHub 標準 Copilot review を置き換える役割であり、汎用的なコード品質の観点に集中します。
+
+            ## レビュー対象
+
+            - **対象 repository**: `samejima-ai/dialog-harness`
+            - **対象 PR 番号**: **#${{ github.event.pull_request.number }}**
+            - **head SHA**: `${{ github.event.pull_request.head.sha }}`
+            - **base branch**: `${{ github.event.pull_request.base.ref }}`
+
+            PR 番号は確定済（人間に質問しない）。`gh` CLI は github_token で認証済み。
+            最初に diff と変更ファイルを取得してください:
+
+            ```bash
+            gh pr view ${{ github.event.pull_request.number }} --json title,body
+            gh pr diff ${{ github.event.pull_request.number }}
+            ```
+
+            ## 視点直交の原則（最重要）
+
+            DH では 2 つのレビュアーが視点を直交させて多層防御を構成します。
+            あなた（claude-review）は **汎用コードレビュー軸のみ** を担当します。
+
+            本レビュアーが **対象とする** 領域（Copilot 代替）:
+
+            - **正当性 / バグ**: ロジック誤り、off-by-one、null/未定義、競合状態、リソースリーク
+            - **エラー処理 / edge case**: 例外未処理、境界値、失敗パスの欠落
+            - **コードスタイル / 命名**: 命名 convention、可読性、重複、不要な複雑性
+            - **汎用 code smell**: dead code、マジックナンバー、密結合
+            - **セキュリティ標準パターン**: injection、機密の混入、安全でない既定値
+            - **言語/FW イディオム**: shell の quoting、YAML の落とし穴、Python の慣用
+            - **テスト網羅**: 変更に対するテストの有無・妥当性
+
+            本レビュアーが **対象としない** 領域（gemini-review.yml が担当する DH 固有仕様軸）:
+
+            - philosophy.md の 6 条憲法整合性
+            - SPEC.md / DONT.md / handoff 契約の整合
+            - Council 起動側品質、consensus-protocol の値域
+            - CHANGELOG provenance / file count の三者一致
+            - harness-verifier の検査前提
+
+            上記の仕様軸は gemini-review が独立観測するため **指摘しない**。
+            視点が直交していることが本レビューの存在意義です。
+
+            ## 出力形式（厳密、余分な出力禁止）
+
+            最終 verdict は **必ず** 以下のコマンドで投稿してください（event は常に COMMENT）:
+
+            ```bash
+            gh pr review ${{ github.event.pull_request.number }} --comment --body "<本文>"
+            ```
+
+            本文は以下の構造のみ。前置き / 心構え / 自己紹介 / 推論過程は書かない。
+
+            ### 問題なしの場合
+
+            ```
+            問題: なし
+            ```
+
+            ### 問題ありの場合
+
+            ```
+            問題: あり (N 件)
+
+            ### 1. <問題点を 1〜2 行で>
+            参照: https://github.com/samejima-ai/dialog-harness/blob/${{ github.event.pull_request.head.sha }}/<path>#L<line>
+
+            ### 2. <問題点を 1〜2 行で>
+            参照: https://github.com/samejima-ai/dialog-harness/blob/${{ github.event.pull_request.head.sha }}/<path>#L<line>
+            ```
+
+            - permalink は head SHA 固定（行番号が後の commit でずれない）
+            - 行番号は `#L<n>` または `#L<start>-L<end>`
+            - 各問題は 1 件 1 ブロック、問題点は簡潔に
+            - 重大度の高い順に並べる
+
+            ## 必須実行プロトコル
+
+            - 最後に必ず `gh pr review ... --comment` で verdict を確定する
+            - review 投稿なしで完了することは禁止
+            - event は常に COMMENT（APPROVE / REQUEST_CHANGES は使わない。本レビュアーは助言的位置づけ）
