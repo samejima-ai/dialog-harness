@@ -123,7 +123,10 @@ jobs:
             tier1（lightweight mode）は Council を回さず OC が単一パスで処理する（過剰防止の難度ゲート、後述 Phase 3）。
 
             ## Phase 1 — Review Planning
-            1-a Task → `review-fetch`（haiku）: PR の title/body/diff/変更ファイル/linked Issue/参照 doc を取得。
+            1-a Task → `review-fetch`（haiku）: PR の title/body/diff/変更ファイル/linked Issue/参照 doc に加え、
+                コメント履歴・過去レビュー（各エントリ author + is_bot タグ付き）を取得。前提入力は多いほど良い。
+                ただし `is_bot:true` および**あなた自身の過去出力**（ChB「問題: あり/なし」形式、ChC「レビュー要約（人間の
+                merge 判断用）」）は新たな signal ではなく「既出記録」として扱う（再評価せず、繰り返さない根拠にする）。
             1-b Task → `review-difficulty`（haiku）: 依存深度中心に difficulty tier(1/2/3) を保守的に判定。
                 これで 2 つを決める:
                 - **review_mode**（過剰防止の難度ゲート）: tier1=`lightweight`（routine、Council を回さない）/
@@ -136,9 +139,11 @@ jobs:
                 （この推論は sonnet 相当。Task で sonnet subagent に出すか、OC が直接行ってよい。）
 
             ## Phase 2 — Understanding Gate
-            2-a Task → `review-intent-gate`（haiku）: PR 本文が各実質 diff の意図/トレードオフを述べているか判定。
+            2-a Task → `review-intent-gate`（haiku）: PR 本文 **+ 人間コメント** が各実質 diff の意図/トレードオフを
+                述べているか判定（意図が body になくても人間コメントで説明済みなら has_intent:true＝既答の質問を再送しない）。
             2-b 意図が欠落した diff については **その diff の修正提案を出さない**（低純度の意図に基づき評価しない）。
                 代わりに gap ごとに 1 件の明確化質問を `gh pr comment` で開発者へ投げる（Phase 4 でまとめて投稿可）。
+                既にコメント履歴で同じ質問を投げ済み／回答済みのものは再送しない（出力は必要最低限）。
 
             ## Phase 3 — Review Execution
             3-a Task → `review-evidence`（haiku）: 変更ファイルの linter/formatter/型/test を実行または収集し
@@ -190,6 +195,9 @@ jobs:
             ## ハードルール
             - APPROVE / REQUEST_CHANGES は使わない（助言的、COMMENT のみ）。
             - merge 判断に踏み込まない。Gemini の仕様軸に触れない。
+            - **入力は多く・出力は最小**: コメント履歴/過去レビューを文脈に持つ意義は「既出・解決済み・既答の指摘を
+              繰り返さないため」。synchronize 再レビュー時は前ラウンドで指摘済み／開発者が応答済みの点を再掲しない。
+              新規 diff と未解決点に出力を絞る（変化がなければ ChB は簡潔に「前回から新規の問題なし」で可）。
             - 最後に必ず Channel B を投稿して終了する。tool 失敗時は最終応答にその旨を明示。
 
       # 3 層 artifact を Actions Artifacts として回収（PR ブランチには commit しない）。
