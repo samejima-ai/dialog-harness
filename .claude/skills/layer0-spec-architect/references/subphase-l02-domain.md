@@ -260,7 +260,7 @@ L1 autonomous-dev は `spec/domain.ts` を以下のように利用する:
 | 論理モデル | `spec/domain.ts`（Zod スキーマ + brand 型 + 集約制約） | L0-2 |
 | 物理モデル | DB マイグレーション / インデックス / パーティション定義 | L1 + `schema-evolution.md` |
 
-3 階層が一直線で繋がる状態を維持する。論理層の `domain.ts` が物理層に渡る際、`schema-evolution.md` 「適用対象」判定でスキーマ進化プロトコル準拠が必要か判定する。
+3 階層が一直線で繋がる状態を維持する。論理層の `domain.ts` が物理層に渡る際、`schema-evolution.md` 「適用対象」判定でスキーマ進化プロトコル準拠が必要か判定する。物理層が hosted Postgres / Supabase の場合、本番を汚さないローカル優先の開発・migration 運用を推奨する（`supabase-local-dev.md` 参照、v5.18.0 追加）。
 
 ### DDD と境界づけられたコンテキスト
 

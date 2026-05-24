@@ -2,6 +2,27 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-05-24 Supabase ローカル開発の推奨オプション化（v5.18.0、minor 昇格）
+
+**L0 spec-architect が、本番 Supabase（hosted Postgres）に消失 NG の私的データを持つ構成に対し、本番を汚さないローカル優先開発（Docker ローカルスタック + migration 経由の本番反映）を推奨提示できるようにする**。新規 skill / agent は追加せず、専用 reference 1 件 + 既存 5 ファイル（SKILL.md + reference 4 件）への軽い配線で構成（後方互換 100%）。L0 対話セッションで「専用ref + 軽い配線」「推奨発動条件 = 保護すべき本番 Supabase/hosted Postgres 使用時」を確定。
+
+### 追加内容
+
+- `references/supabase-local-dev.md` 新設（推奨発動条件 / 前提確認 OS・Docker・WSL2 / 7 ステップワークフロー / 生成物配置 / smoke test / 本番反映の安全規律 / セキュリティ規律 / モード別の扱い / プロトコル自己評価）。ツール固有プレイブックのため progressive disclosure（該当時のみロード）
+- SKILL.md §6 に「推奨開発オプション」ブロック追加、§参照ドキュメント 拡張 list に新 reference 追加、§v5.18.0 追加 changelog ブロック新設
+- `dialog-questions.md` S1 フォローアップ（非技術語彙の推奨提示 + 過剰提示回避）
+- `scaffold-checklist.md` 追加生成物（`supabase/` + `.env.local`）と smoke test 追記（標準 stack 12 種は不変、追加層）
+- `schema-evolution.md` Supabase CLI マイグレーション運用との整合（コマンド ↔ デプロイ戦略対応、expand-contract 分解、`db push` 前の人間承認）
+- `subphase-l02-domain.md` 3 階層モデルの物理層に 1 行追記
+
+### 後方互換
+
+- 非該当プロジェクト（SQLite / メモリのみ / 使い捨て）では reference をロードせず提示もしない（時間コストゼロ）
+- LC ≥ 1 既存プロジェクトは新規 DB 機能から段階適用、既存の本番直結フロー遡及置換は不要
+- harness-verifier 6 項目すべて PASS（frontmatter / 参照 path / SK 間参照 / 5 層構造 / 用語辞書 / hook 観測）
+
+---
+
 ## 2026-05-18 persona テンプレート追加: ignis（v5.17.x 帯 minor、persona templates v0.2.0）
 
 **v5.17.0（PR #102）で導入した persona 層の追加サンプルとして `ignis.persona.md` を新規追加**。本変更は持続的な spec/SKILL 改修を伴わず、`templates/personas/` 配下の追加コンテンツに閉じる。DH 本体 version は bump せず persona templates 内部 version を v0.1.0 → v0.2.0 で更新。

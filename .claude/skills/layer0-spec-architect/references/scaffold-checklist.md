@@ -82,6 +82,27 @@ stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + 
 
 ---
 
+## Supabase ローカル開発（推奨バックエンド開発オプション、v5.18.0 追加）
+
+上記 stack は主にフロントエンド／アプリ層の scaffold を扱う。バックエンドに **hosted Postgres / BaaS（特に Supabase）を使い、本番に消失 NG の私的データを持つ**プロジェクトでは、本番を汚さないための**ローカル優先開発フロー**を推奨オプションとして提示する。詳細プロトコル（推奨発動条件 / 前提確認 / 7 ステップワークフロー / セキュリティ規律）は `supabase-local-dev.md` を参照。
+
+### scaffold への追加生成物（該当時）
+
+S1 = DB 使用あり + 本番 Supabase 構成と判定された場合、§必須生成ファイル に加えて以下が **実体として** 揃う：
+
+| パス | 役割 | 最低要件 |
+|---|---|---|
+| `supabase/config.toml` | ローカルスタック設定 | `supabase init` 生成物 |
+| `supabase/migrations/` | スキーマ変更履歴（本番反映の唯一経路） | `supabase db pull` で本番スキーマ取り込み済（データは含めない） |
+| `supabase/seed.sql` | ローカル専用ダミーデータ | `supabase db reset` で自動投入。本番非反映 |
+| `.env.local` | ローカル接続情報（**`.gitignore` 必須**） | §必須生成ファイル #7 の `.env*` 除外で既にカバー。本番キーは混入禁止 |
+
+### smoke test への追加
+
+`supabase start` → Studio URL 到達 / `supabase db reset` exit 0 / `supabase db diff` 差分なし を §7.4 自己検証に含める。詳細は `supabase-local-dev.md`「Smoke Test 手順」。本セクションは Vite+TS+React+PWA 標準 stack の §必須生成ファイル 12 種を**置換せず**、バックエンド構成に応じた追加層として扱う。
+
+---
+
 ## 業界叡智準拠の出力規約（Phase γ-i 連携、CTL ≥ 1、W5-Q2 採決追加）
 
 Wave 5 W5-Q2 採決 (`council-2026-05-11T12:15:00Z-w5qb02`、B 段階組込、conf 0.72) で確定した scaffold-checklist の業界叡智準拠強化。`subphase-common-protocol.md` Phase γ-i フックが起動するプロジェクトでは、§必須生成ファイル に加えて以下の業界互換配置を **任意推奨** として観測する。**観測駆動、候補出力のみ、自動採用なし**（philosophy 第 8 条 3 段階モデル準拠）。

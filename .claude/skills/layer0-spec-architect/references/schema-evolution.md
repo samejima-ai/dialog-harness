@@ -234,6 +234,40 @@ JSONB / EAV を採用する場合、ファイル冒頭の「適用対象」基�
 
 ---
 
+## Supabase CLI マイグレーション運用との整合（v5.18.0 追加）
+
+本番に Supabase（hosted Postgres）を使うプロジェクトでは、本プロトコルのデプロイ戦略を **Supabase CLI のマイグレーション経路**にマッピングする。ローカル優先開発の全体フロー（CLI install / init / start / link / seed / `.env.local`）は `supabase-local-dev.md` を参照し、本セクションは**本番反映（スキーマ進化）の安全規律**に責務を絞る。
+
+### コマンドとデプロイ戦略の対応
+
+| 本プロトコル概念 | Supabase CLI 操作 | 注意 |
+|---|---|---|
+| ローカルでのスキーマ変更 | `supabase migration new <name>` → SQL 記述 → `supabase db reset` | ローカル DB を初期化し migration を最初から流す |
+| 本番スキーマの取り込み | `supabase db pull` | **スキーマのみ**取得。本番データはコピーしない |
+| 差分レビュー | `supabase db diff` | `db push` 前に本番へ加わる変更を必ず確認 |
+| 本番反映 | `supabase db push` | ⚠️ 不可逆寄り。人間承認必須（philosophy 第 6 条） |
+
+### expand-contract への分解
+
+破壊的変更（列削除・型変更・必須化）は単一 migration に集中させず、`§デプロイ戦略 1. expand-contract` に従って複数 migration に分解する：
+
+1. **expand**: 新カラム追加 migration（旧スキーマ温存、dual-write）
+2. **backfill**: データ移行 migration / バッチ
+3. **switch-read**: 読み取り切替（アプリ側デプロイ）
+4. **contract**: 旧カラム削除 migration（待機期間後）
+
+各段階を独立 migration とし、`supabase db push` を段階的に適用する。これにより無停止デプロイと本番保護を両立する。
+
+### append-only に近い扱い
+
+適用済 migration ファイルの事後改変は本番との乖離を生むため避ける。訂正は新規 migration として追記する（event-sourcing の CompensatingEvent と同型の発想）。
+
+### 検証センサーへの組込
+
+`sensors/computational.md` に `supabase db diff --schema public` の差分ゼロ検査（migration とスキーマの一致）を追加することを推奨。詳細は `supabase-local-dev.md`「検証センサーへの連携」。
+
+---
+
 ## プロトコル自己評価
 
 体制事後評価で以下を蓄積:
