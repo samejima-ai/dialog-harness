@@ -1110,3 +1110,77 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 ### 合意プロセス記録
 
 L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml.template の project-specific 化ギャップ解消）を諮問。事前に L0 対話で「前倒し v5.11.0」「philosophy 不改変」「opt-in 領域該当」「prior なし」の 4 軸を確定済み。3 ペルソナは独立に案 1 を v5.11.0 採用する点で全会一致 (unanimous core)、ただし開発者・哲学者は付帯条件として段階分割 / 既知ギャップ表記録 / 案 2 ADR 予約 を提示。PR1 暫定運用 (third_way_excluded) により weight 加算上は経営者単独支持で max_score 2.88、第 3 の道合計重み 5.35 は recommended の reasoning に統合提案として明示。judgment_confidence 0.62 で auto_agree 区分。L0 合意プロセスにて L0 が付帯 3 要素の採否を整理し、実装者（ひでさん）から `agreed_recommended` を確定 (2026-05-09T15:30:00Z)。v5.11.0 実装範囲は案 1 (placeholder 拡張) + (b) 既知ギャップ表記録 + (c) 案 2 ADR 予約 + (d) forward-compat placeholder 命名 の 4 要素を含む。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録（output-format.md §`follow_up_questions_count` 定義「本 invocation で実施された follow-up の総数」に基づく schema 厳密解釈）。実装者→ユーザー間で multiSelect 選択肢の整合確認が 1 回行われたが、これは Council protocol の `follow_up_question`（Judgment Agent 起点）に該当しないため count 対象外。
+
+## council-2026-05-29T08:15:00Z-ux4mcp
+
+```json
+{
+  "invocation_id": "council-2026-05-29T08:15:00Z-ux4mcp",
+  "timestamp": "2026-05-29T08:15:00Z",
+  "source_skill": "human_direct_invocation",
+  "council_type": "business",
+  "category": "operation",
+  "category_fallback": false,
+  "question_to_answer": "@elsahafy/ux-mcp-server（28 UX 知識リソース + 23 解析ツール + creative UX 生成ツール群を含む MCP server）を dialog-harness に導入する価値はあるか。判断軸: (1) 責務整合（meta-harness と UX 領域）、(2) ROI、(3) philosophy.md §4『UX は計算可能代理指標まで』『創造的 UX 設計は射程外』との整合、(4) 不可逆性・依存追加リスク、(5) 代替手段の有無",
+  "phase_reached": "phase_3",
+  "conflict_type": "simple_conflict",
+  "final_weights": {
+    "経営者": 4,
+    "開発者": 4,
+    "哲学者": 2
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案C: downstream プロジェクト側で opt-in 採用", "confidence": 0.70, "dimension": "ROI" },
+    "開発者": { "stance": "案B: 導入しない", "confidence": 0.88, "dimension": "保守性 / セキュリティ" },
+    "哲学者": { "stance": "問い自体への保留（案B 寄り）", "confidence": 0.55, "dimension": "前提への問い" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案B: 導入しない",
+        "supporters": ["開発者", "哲学者"],
+        "weight_sum": 6,
+        "weighted_score": 4.62,
+        "components": [
+          {"persona": "開発者", "weight": 4, "confidence": 0.88},
+          {"persona": "哲学者", "weight": 2, "confidence": 0.55}
+        ]
+      },
+      {
+        "stance": "案C: downstream opt-in",
+        "supporters": ["経営者"],
+        "weight_sum": 4,
+        "weighted_score": 2.80,
+        "components": [
+          {"persona": "経営者", "weight": 4, "confidence": 0.70}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案B: 導入しない",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.72,
+  "recommended": "案B: dialog-harness 本体には @elsahafy/ux-mcp-server を導入しない。UI を扱う downstream プロジェクトでの opt-in は当該プロジェクトの REGIME.md / SPEC.md 判断に委ね、harness レベルでは中立とする",
+  "minority_opinion": "経営者は『downstream opt-in は個別プロジェクト側で選択可能にすべき』を保持。哲学者は『harness の責務境界を UX まで拡張したいなら DONT.md 改訂と第 7 条級議論が先』というメタ問いを保持。両意見は本判断（harness 本体での非採用）と独立に L0 振り返り儀式で扱うべき",
+  "weight_note": "category: operation → 経営者 4 / 開発者 4 / 哲学者 2（合計 10）。philosophy 違反検出（開発者高 confidence 0.88）が最大寄与因子",
+  "reasoning": "weighted_score では 案B(4.62) > 案C(2.80) で 案B が明確優位（案A『無条件導入』は支持ゼロのため scores 配列から除外）。philosophy.md §4『創造的 UX 設計は射程外』と DONT.md は現行不変の前提であり、creative UX 生成ツール（generate_wireframe / suggest_microcopy / generate_color_palette）を含む本 MCP の harness 常駐は思想違反。経営者の『downstream opt-in』提案（案C）は ROI 観点で合理だが、harness 本体の判断としては『導入しない』が論理的帰結であり、案C は『個別プロジェクトでの採否』として独立した別判断に分解する方が情報純度が高い。WCAG / Nielsen の rule-based 部分は axe-core / Lighthouse / Playwright の決定論的代替で §2 Shift Left に適合する",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": "agreed_recommended",
+  "follow_up_questions_count": 0,
+  "agreed_at": "2026-05-29T08:22:00Z",
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+ユーザー（ひでさん）から `claude mcp add ux -- npx -y @elsahafy/ux-mcp-server` の導入価値を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebSearch で本 MCP の機能（28 UX 知識リソース + 23 解析ツール + 4 ワークフロープロンプト、WCAG / Nielsen heuristics / generate_color_palette / generate_wireframe / suggest_microcopy / complete_ux_audit 等の creative UX 生成ツールを含む、個人 maintainer @elsahafy による v4.x 継続更新中の npm パッケージ）を確認。dialog-harness 側の決定的 context として philosophy.md §4「UX は計算可能代理指標まで」「創造的 UX 設計は dialog-harness の射程外（DONT.md）」、harness 本体が UI を持たない meta-harness 構造であること、§5 サブエージェント追加 4 基準を判断材料に確定。
+
+3 ペルソナ独立評価結果: 経営者は案C（downstream opt-in、confidence 0.70）、開発者は案B（philosophy §4 違反と context window 圧迫を理由に非採用、confidence 0.88）、哲学者は案B 寄りの保留（『harness の責務境界を UX まで拡張する意図なら DONT.md 改訂議論が先』というメタ問い、confidence 0.55）。weighted_score では 案B 4.62 vs 案C 2.80 で 案B が明確優位。第 3 の道（哲学者の stance）は options 内 案B の解釈拡張として包摂し third_way_excluded は空に保持（grtmpl 事例と異なり付帯条件が options 内に収まるため）。judgment_confidence 0.72 で auto_agree 区分。
+
+合意プロセス: ユーザーから「Harness には不要で構築するプロジェクトにオプトインが正解だね」の応答により `agreed_recommended` を確定 (2026-05-29T08:22:00Z)。recommended の核（harness 本体での非採用）と経営者の少数意見（downstream プロジェクトでの opt-in 採用は別判断として残す）の両方を統合する方針で合意。哲学者の少数意見（DONT.md 改訂 + 第 7 条級議論）は本 invocation の判断スコープ外として L0 振り返り儀式の棚卸し対象に保持。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録。
