@@ -28,23 +28,30 @@ guard を通過した後にのみ §3 の処理フローへ進む。曖昧なま
 
 ### マーカー形式
 
-利用者プロジェクトの `history/.metabolism-cursor.yml`（COLD/HOT と同じく project ローカル、パスは REGIME.md で上書き可）に置く:
+利用者プロジェクトの `history/.metabolism-cursor.yml`（COLD/HOT と同じく project ローカル、パスは REGIME.md で上書き可）に置く。
+dot-file にするのは「機械専用カーソルで人間は直接編集しない」ことの明示であり、可監査性（metabolism-regime §3）は人間可読の SUMMARY.md「要再確認リスト」側で担保する（hidden で内容を隠す意図ではない）:
 
 ```yaml
 # 情報代謝 処理済みマーカー（reindex が前進させる。手動編集は非推奨）
 last_reindex_at: "2026-05-31T00:00:00Z"   # 最終 reindex の cycle 境界時刻
 cursor:
-  INTENT.md:    { line: 312, checksum: "sha256:ab12…" }   # 消化済み末尾 + 内容指紋
+  # line = 消化済み末尾行。checksum = 「先頭〜line までの消化済みプレフィックスのみ」の sha256
+  #（全ファイル指紋ではない。append-only な history では末尾追記で全ファイル指紋が毎回変わり誤検知するため、
+  #  範囲は必ず消化済みプレフィックスに限定する＝M2）
+  INTENT.md:    { line: 312, checksum: "sha256:ab12…" }
   CHANGELOG.md: { line: 188, checksum: "sha256:cd34…" }
   COUNCIL-LOG.md: { line: 2088, checksum: "sha256:ef56…" }
 reduction_target: "DH"   # この cursor が DH 還元 / project 還元 どちらの消化進捗か（軸A）
 dry_run_remaining: 3      # 残り Dry-run サイクル数（0 で本番昇格、REGIME.md 初期値から減算）
+                          # ロード時に負値/破損を検出したら安全側へ倒し Dry-run を強制（!=0 ではなく「>0 または不正→Dry-run」＝L1）
 ```
 
 ### 規律
 
 - **読む範囲は cursor の続き〜現末尾（WARM delta）のみ**。cursor より前は消化済みとして読まない。**COLD は再 scan しない**
-- **checksum 不一致**（cursor 以前が改変された）を検出したら、その範囲だけ部分再読込し、原因を差分レポートに記録（履歴改竄/訂正の検出）。全 rescan はしない
+- **checksum の対象は「先頭〜`line` の消化済みプレフィックスのみ」**（M2）。末尾への正常な append では指紋は変わらない。プレフィックス指紋が不一致なら「cursor 以前が改変された（履歴改竄/訂正）」を意味するので、その範囲だけ部分再読込し原因を差分レポートに記録する。全 rescan はしない
+- **新規 history ファイルの出現時（cursor 未登録・M3）**: 全 rescan 禁止の例外ではなく「新規 WARM の初回摂取」として扱う。`{ line: 0, checksum: null }` で cursor に登録し、次回 reindex で先頭から取り込む（既存ファイルの再 scan ではないので不変条件と衝突しない）。登録時は差分レポートに「新規 history ファイル検出」を記録
+- **dry_run 判定の安全側（L1）**: §3 step 6 は `dry_run_remaining > 0` で Dry-run。ロード時に負値・非数・欠落を検出したら **Dry-run を強制**（破損で本番に倒れない）。正常な減算でのみ 0 に到達し本番昇格する
 - **冪等性**: 同じ history 状態に対し reindex を二度走らせても、安定した叡智を再蒸留して揺れない。マーカーが前進済みなら何もしない（no-op）。再結晶化が既存 HOT を上書き提案する場合は差分のみ提示
 - マーカーの前進は処理フロー §3 の最終ステップでのみ行う（途中失敗時は前進させない＝再実行で安全に再開）
 
@@ -100,6 +107,8 @@ reindex は候補を検出するだけ。HOT へ実際に昇格させるかは C
 - `#Lxx-yy` は該当行範囲、`sha256:` は移送時点の内容指紋（腐敗検出用）
 - `reduction=` は還元先（DH / project）。retrieve 時にどちらの層の文脈かを失わない
 - COLD 側ファイルは移送後 read-only（append-only アーカイブ）。指紋不一致は監査フラグ
+- **付与粒度（L3）**: ポインタは**結晶エントリ単位**で付す（罠 1 件 / RL 1 条 / INTENT 1 機能ごとに 1 本）。ファイル末尾一括ではなく当該エントリ直近に置く
+- **Markdown table への付与（L3）**: 表セル内の HTML コメントは一部レンダラで除去され得るため、表形式の罠には**表の直前/直後の行**にポインタを置くか、脚注参照（`[^src-001]`）方式で表外に逃がす。セル内 `<!-- -->` 直書きは避ける
 
 COLD アーカイブ構造は既存 `history/archive/YYYY-MM/` を踏襲する（`history-layer-spec.md` §archive＝COLD の素地）。
 

@@ -328,7 +328,7 @@ layer0-reindex-librarian の references/metabolism-regime.md（framework 叡智�
 決定3 三分割: 定義→SK references / パラメータ→本セクション / SPEC.md→ポインタ1行。
 
 - token_budget: 12000            # AI 購読量（既定ロード）の上限トークン。history 層が超過で reindex 発火（リズム）
-- recrystallize: token 閾値駆動（cycle 境界で実行。N-cycle 駆動は採らない）
+- recrystallize_trigger: token_budget   # cycle 境界で実行。N-cycle 駆動は採らない（enum: token_budget）
 - tier_paths:
   - HOT:  CLAUDE.md / SPEC.md / DOMAINS.md / history/SUMMARY.md（結晶層・常時ロード対象）
   - WARM: history/INTENT.md / history/CHANGELOG.md（圧縮層・関連時ロード）
