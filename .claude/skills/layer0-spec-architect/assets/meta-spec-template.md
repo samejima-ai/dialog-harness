@@ -90,6 +90,7 @@ Priority は**運用時の検出スタック（建物）**で何階まで使う�
 ## 制約
 - [守るべき規約、使ってはいけない技術、予算上限等]
 - ARC: [選択パターン名]（未指定時は monolith。選択肢は `arc-patterns/` 配下参照）
+- 情報代謝 regime（任意・LC ≥ 1）: 定義は layer0-reindex-librarian/references/metabolism-regime.md、パラメータは REGIME.md「情報代謝設定」。本 SPEC は実体を持たずポインタのみ（購読量保護）
 
 ## 機能間相互作用（永続化レイヤ・状態共有）
 
@@ -319,6 +320,27 @@ L2-subagents:
 - レベルA（自動承認）: スキップ
 - レベルB（確認推奨）: 通知のみ、デフォルト承認
 - レベルC（必須承認）: 必ず確認
+
+## 情報代謝設定（LC ≥ 1 の場合のみ記載・v5.19.0 追加）
+
+3 層保持 regime（HOT/WARM/COLD）の **project 固有パラメータ**のみを置く。定義の正本は
+layer0-reindex-librarian の references/metabolism-regime.md（framework 叡智）。
+決定3 三分割: 定義→SK references / パラメータ→本セクション / SPEC.md→ポインタ1行。
+
+- token_budget: 12000            # AI 購読量（既定ロード）の上限トークン。history 層が超過で reindex 発火（リズム）
+- recrystallize_trigger: token_budget   # cycle 境界で実行。N-cycle 駆動は採らない（enum: token_budget）
+- tier_paths:
+  - HOT:  CLAUDE.md / SPEC.md / DOMAINS.md / history/SUMMARY.md（結晶層・常時ロード対象）
+  - WARM: history/INTENT.md / history/CHANGELOG.md（圧縮層・関連時ロード）
+  - COLD: history/archive/YYYY-MM/（アーカイブ層・既定非ロード・retrievable）
+- cursor_path: history/.metabolism-cursor.yml   # 処理済みマーカー（増分・冪等の生命線）
+- dry_run_cycles: 3              # 初期サイクル数だけ Dry-run（差分レポートのみ）。0 で本番昇格
+- council_gate.repetition_threshold: 3   # 同一パターン N 回反復で結晶化候補
+- council_gate.cross_type_threshold: 3   # 同一 override が M 機能タイプ以上で反復したら Council 諮問
+- council_gate.min_age_days: 7           # 候補化から X 日経過まで HOT 昇格しない
+
+（プロトコルは layer0-reindex-librarian の SKILL.md と references 参照。初回 reindex は必ず Dry-run。
+HOT 昇格は Council ゲート経由・人間最終承認。COLD=archive≠delete。）
 
 ## 判定ログ
 [対話の中で得られた判定材料となる発言の要約]

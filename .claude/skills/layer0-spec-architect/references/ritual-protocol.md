@@ -78,10 +78,12 @@ L0（spec-architect）が対話開始時に実行する「過去文脈⇔現欲�
 1. SUMMARY.md の鮮度判定
    - `SUMMARY.md` 最終更新日 < `history/` 内他ファイル最新更新日 なら再生成
    - 一致なら使い回し（詳細は `history-layer-spec.md` のSUMMARY自動生成トリガー）
-2. レベルに応じた履歴ロード
-   - レベル 1: SUMMARY.md のみ
-   - レベル 2: SUMMARY + 対話話題に関連する INTENT 項目（AI が関連性フィルタで選別）
-   - レベル 3: SUMMARY + 全 INTENT + CHANGELOG 直近10件 + REGIME-LOG 直近5件
+2. レベルに応じた履歴ロード（**情報代謝 tier に従い購読量を抑える**・v5.19.0）
+   - レベル 1: SUMMARY.md のみ（HOT 結晶層）
+   - レベル 2: SUMMARY（HOT）+ 対話話題に関連する INTENT 項目（関連 WARM・AI が関連性フィルタで選別）
+   - レベル 3: SUMMARY（HOT）+ 関連 INTENT + CHANGELOG 直近10件 + REGIME-LOG 直近5件（関連 WARM）
+   - **COLD（`history/archive/`）は既定でロードしない**（retrievable・必要時のみ明示 retrieve）。レベル 3 でも全 INTENT の生ロードは避け、結晶化済み HOT + 関連 WARM に絞る
+   - 趣旨: F1 の入力を全 history から HOT + 関連 WARM に絞ることで読み込みコスト（AI 購読量）を激減させる（情報代謝サイクルの「最小の第一歩」。tier 定義は layer0-reindex-librarian/references/metabolism-regime.md）
 3. 人間に**1問だけ**提示: 「前回ここまで進みました。今回はこれの続きで合ってますか？」
 
 ### F2: 認識ズレ検出（AI主導・検出時のみ質問）
