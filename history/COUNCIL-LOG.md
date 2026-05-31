@@ -2138,3 +2138,48 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-31T01:30:00Z"
   cascade_to: "recommended の修正4点を織り込み実装完遂。context-circulation-theory.md を『仮結晶(暫定公理)』として新設 + §11 二段階昇格プロセス + §10 未決分離 + embedding天井記載 + 不変条件#8 caveat。metabolism-regime 不変条件 5→8 + 上位 pointer。philosophy.md は仮結晶を co-equal 化しないため意図的に未編集。CHANGELOG v5.20.0。#120 に同梱（同ブランチ）。"
+
+---
+
+- invocation_id: "council-2026-05-31T02:00:00Z-pc1f01"
+  timestamp: "2026-05-31T02:00:00Z"
+  source_skill: "layer0-design-session (§10未決#1 パターン結晶の形式確定)"
+  question_to_answer: "パターン結晶の形式 {発火条件,反-発火条件,力学,定石,信頼度} を今確定すべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "暫定スキーマでpilotしてから本確定", confidence: 0.72, dimension: "ROI/リスク/リソース配分" }
+    開発者: { stance: "暫定スキーマでpilotしてから本確定", confidence: 0.88, dimension: "技術的実現性/保守性" }
+    哲学者: { stance: "暫定スキーマでpilotしてから本確定", confidence: 0.62, dimension: "意味/前提への問い/長期影響" }
+  judgment_confidence: 0.82
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "暫定スキーマでpilotしてから本確定（2候補で試す）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.90
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 3, confidence: 0.88 }
+          - { persona: "哲学者", weight: 5, confidence: 0.62 }
+    third_way_excluded: []
+    max_score_stance: "暫定スキーマでpilotしてから本確定（2候補で試す）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "暫定スキーマでpilotしてから本確定（2候補で試す）。全会一致だが3者が付帯条件を課す（全員一致を多様性=質として評価）: (a)経営者=pilot期限(例6週)と終了条件を明示しないと『寝かせ』に退行する、(b)開発者=フル確定前に3機構の方針を先に決める[発火条件のembedding表現/信頼度算出方式(ルールvs統計)/反-発火条件の検証可能性]。未設計のまま固めると索引実装時に破壊的変更必須、(c)哲学者=Dry-run2候補(squash後rebase/verifier所有物D5ゲート)はif-then=規則結晶寄りで真のfuzzy類推サンプルではない。真のパターン結晶サンプルを投入しないと形式がSystem1転写を阻害するテンプレに堕す。pilotの目的は『形式の検証』でなく『形式が暗黙知の言語化を促進するか圧殺するかの観察』に置く。仮結晶+二段階昇格(thry01先例)を形式自体にも適用=暫定スキーマ→発火pilot→本確定。"
+  minority_opinion: "全員一致だが dimension が異なる（ROI/技術/意味が独立に同一結論へ収束=堅牢）。各付帯条件: 経営者=pilot期限6週明示、開発者=信頼度算出方式の先行方針、哲学者=真のfuzzy類推サンプル投入+pilot目的を『言語化促進/圧殺の観察』に。哲学者の最重懸念: 2候補が規則結晶寄りで偽陽性リスク、仮ラベル形骸化→事実上本確定の制度的慣性、pilot終了条件の曖昧化による永続暫定(決定回避)。"
+  weight_note: "全会一致のため重み配分は判定に影響せず（category=conception 経営3/開発3/哲学5）。決定論検算: weighted_score 7.90・max_score_stance・接頭辞 全整合。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  cascade_to: "Master へ判定献上。暫定スキーマ草案 + pilot 計画(期限・終了条件・3機構方針・真fuzzyサンプル投入・観察目的)を設計する。#8発効は本確定後。実装は Master go 後。"
