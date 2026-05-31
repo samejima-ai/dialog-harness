@@ -103,9 +103,9 @@ guard が曖昧判定のまま Reindex を起動してはならない（暗黙�
 - **タイミング哲学**: 開発中に回さない。cycle 境界（献上後・次 L0 前）で回す。**結晶化＝組織の睡眠フェーズ**（記憶の固定化）。検証後評価原則と完全整合
 - 具体閾値は project 固有パラメータ（REGIME.md `## 情報代謝設定`）
 
-## ガバナンス（5 不変条件 + Council ゲート）
+## ガバナンス（8 不変条件 + Council ゲート）
 
-雑に回すと毒になる。以下を不変条件として守る（詳細・定量基準は `references/metabolism-regime.md` §不変条件）。
+雑に回すと毒になる。以下を不変条件として守る（詳細・定量基準は `references/metabolism-regime.md` §5）。コア 5 を常時ロード側に置き、理論層由来 #6–#8 は展開せず参照に留める（progressive disclosure ＝購読量保護）。
 
 1. **早すぎる結晶化を防ぐ**。HOT 昇格は Council 判定をゲートにする（自動カウンタで上げない）。定量基準は REGIME.md
 2. **COLD ＝ archive ≠ delete**。retrievable に保つ
@@ -113,9 +113,12 @@ guard が曖昧判定のまま Reindex を起動してはならない（暗黙�
 4. **代謝自体のコストを抑える**（毎 cycle 全行にかけない・sparse・冪等）
 5. **独自補完しない**（TBD を捏造で埋めない）
 
+※ 理論層追加 #6（COLD lossless 原本から読む）/ #7（情報欠損なしは HOT の誤目標）/ #8（パターン結晶は反-発火条件必須・形式確定後発効）は `references/context-circulation-theory.md §8` および `references/metabolism-regime.md §5` を参照（常時ロードしない）。
+
 ## 参照ドキュメント
 
-- `references/metabolism-regime.md` — regime 定義の正本（二軸 / HOT・WARM・COLD tier / 還元先 routing / 昇降格条件 / 結晶化・排出プロトコル / 摂取選択基準 / 購読量 KPI / 5 不変条件 / Council ゲート定量基準）。決定3 の正本化先（定義＝SK references）
+- `references/context-circulation-theory.md` — **理論層（仮結晶 / 暫定公理）**。なぜこの代謝なのかの全体理論（5 相循環 / 3 ループ / **圧縮 ≠ 結晶化** / **二種の結晶＝規則結晶・パターン結晶** / 8 不変条件 / 認知科学接地）。philosophy.md の系（昇格待ち）。on-demand。「圧縮率が低い」への答え＝速度は圧縮でなく結晶化（判断の先取り）から来る、はここ §5
+- `references/metabolism-regime.md` — regime 定義の正本（二軸 / HOT・WARM・COLD tier / 還元先 routing / 昇降格条件 / 結晶化・排出プロトコル / 摂取選択基準 / 購読量 KPI / 8 不変条件 / Council ゲート定量基準）。決定3 の正本化先（定義＝SK references）。上記理論の実装拘束部分
 - `references/reindex-protocol.md` — 運用プロトコル（モード guard / 処理済みマーカー形式 / 増分・全 rescan 禁止・冪等契約 / Dry-run / COLD 逆引きポインタ形式 / 初回 reindex 手順）
 - 参照原典: `../layer0-spec-architect/references/philosophy.md`（第1条フラクタル / 第3条情報純度 / forgetting is a feature）、`../layer0-spec-architect/references/history-layer-spec.md`（history 層スキーマ・archive ＝ COLD の素地）、`../crosscut-council/SKILL.md`（HOT 昇格ゲート）
 
