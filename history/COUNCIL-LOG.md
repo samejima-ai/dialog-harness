@@ -2087,3 +2087,54 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-31T00:30:00Z"
   cascade_to: "Master へ判定献上（合意プロセス進行中）。recommended の修正5点 + 哲学者minorityの摂取選択基準を設計に織り込み（regime定義＝SK references / 閾値・cursor形式・Dry-run＝REGIME.md）た上で実装着手予定。決定3三分割（P4承認済）は不変、本判定はその内側の実装前設計精緻化。【実装完遂 2026-05-31】layer0-reindex-librarian 新設 + metabolism-regime.md/reindex-protocol.md + meta-spec-template REGIME/SPEC + ritual F1 + spec-architect 兄弟登録。"
+
+---
+
+- invocation_id: "council-2026-05-31T01:00:00Z-thry01"
+  timestamp: "2026-05-31T01:00:00Z"
+  source_skill: "layer0-design-session (context-circulation-theory 結晶化批准)"
+  question_to_answer: "THEORY『context情報の生きる循環cycle』を philosophy 並びの理論層として今 framework に結晶化してよいか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "結晶化に進む（理論のまま）", confidence: 0.72, dimension: "ROI/機会損失/リスク" }
+    開発者: { stance: "修正してから結晶化", confidence: 0.82, dimension: "保守性/可逆性" }
+    哲学者: { stance: "修正してから結晶化", confidence: 0.62, dimension: "意味/前提への問い/長期影響" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "修正してから結晶化"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 5.56
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+          - { persona: "哲学者", weight: 5, confidence: 0.62 }
+      - stance: "結晶化に進む（理論のまま）"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.16
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+    third_way_excluded: []
+    max_score_stance: "修正してから結晶化"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "修正してから結晶化。三者とも結晶化自体は妥当(ドキュメント追加のみ・可逆・整合確認済)とするが、開発者+哲学者(weight8)が次の修正を条件化: (1)§10未決(パターン結晶形式/HOT常駐⇄索引境界/RAPTOR/token実測)を『未解決・次セッション分離』として理論文書に明示セクション化し『理論=実装仕様』誤読を防ぐ、(2)embedding索引近似の天井(OAuth/fine-tune不可)を記載、(3)パターン結晶の発火形式が未確定なので不変条件#8『反-発火条件必須』は形式確定後に効く旨を caveat、(4)哲学者の自己言及的緊張(本理論を今結晶化する行為自体が『判断の先取り』の反例になる)への対処として、理論を『仮結晶(暫定公理)・試用期間』として置き、System1的発火がphilosophy昇格を要求した時にSystem2審査で本結晶化する二段階昇格プロセスを明記(理論の相互チェック構造を理論自身の定着に自己適用)。philosophy.md 完全並列(co-equal)ではなく『仮結晶→昇格待ち』に位置づけ二重権威源の競合を回避。"
+  minority_opinion: "経営者(0.72)は実装フィードバックの早期回収と事業継続性を理由に理論のまま即結晶化を推奨。可逆性が高く改訂コストも限定的との立場。→ 仮結晶化により『今 canonize する価値(設計軸明確化)』と『拙速固化の回避』を両立させ minority を吸収。"
+  weight_note: "category=conception（経営者3・開発者3・哲学者5、理論層ゆえ哲学者を重く）。各不可分整数・第3の道なし。決定論検算: max_score_stance・接頭辞・weighted_score・components 全整合。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  modification_note: "Master が判定を Council に委任（『先に実 Council』）→ Council 裁定『修正してから結晶化』→ 実装者が修正4点に合意し実装。単方向 fill（output-format §8）。"
+  follow_up_questions_count: 0
+  agreed_at: "2026-05-31T01:30:00Z"
+  cascade_to: "recommended の修正4点を織り込み実装完遂。context-circulation-theory.md を『仮結晶(暫定公理)』として新設 + §11 二段階昇格プロセス + §10 未決分離 + embedding天井記載 + 不変条件#8 caveat。metabolism-regime 不変条件 5→8 + 上位 pointer。philosophy.md は仮結晶を co-equal 化しないため意図的に未編集。CHANGELOG v5.20.0。#120 に同梱（同ブランチ）。"
