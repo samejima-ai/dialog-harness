@@ -2036,3 +2036,53 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-05-16T07:15:00Z"
   cascade_to: "本 PR (#99) commit C で philosophy.md 第 1 条 行 36-38 の間に新小節『依存トポロジーの追跡可能性』を挿入 (案 α + 哲学者 minority の止揚)。新小節内に『分岐の決定責務』との接続点を明示する 1 段落を含め、DAG 機構の implementation detail は references 層に委譲することを明記、CoDD 業界先行事例への参照リンクを Step 3 で作成する observed-peers.md へ配置する"
 
+
+---
+
+- invocation_id: "council-2026-05-31T00:00:00Z-mtbl01"
+  timestamp: "2026-05-31T00:00:00Z"
+  source_skill: "layer0-design-session (reindex-librarian / 情報代謝サイクル)"
+  question_to_answer: "情報代謝サイクル（履歴結晶化）設計のまま layer0-reindex-librarian 新設＋regime定義＋REGIME/SPECテンプレ追記＋F1振り返り儀式の入力をHOT+関連WARMに絞る変更の実装に進んでよいか"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "設計を修正してから実装", confidence: 0.68, dimension: "リスク統制と実装コストのトレードオフ" }
+    開発者: { stance: "設計を修正してから実装", confidence: 0.82, dimension: "技術的実現性/保守性/可逆性" }
+    哲学者: { stance: "実装に進む（設計のまま）", confidence: 0.72, dimension: "意味・長期影響・前提への問い" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "設計を修正してから実装"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 8
+        weighted_score: 6.00
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.68 }
+          - { persona: "開発者", weight: 4, confidence: 0.82 }
+      - stance: "実装に進む（設計のまま）"
+        supporters: ["哲学者"]
+        weight_sum: 3
+        weighted_score: 2.16
+        components:
+          - { persona: "哲学者", weight: 3, confidence: 0.72 }
+    third_way_excluded: []
+    max_score_stance: "設計を修正してから実装"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "設計を修正してから実装。実装方向自体は3者とも合理性を認める（否定ではない）。経営者・開発者が収斂した修正5点を設計に織り込んでから着手: (1) Councilゲートの定量的発動基準（参照頻度<N回/期間・経過日数閾値）をREGIME.mdに先行定義、(2) 増分トリガ境界＝処理済みマーカー（cursor/checksum/timestamp）を明記し冪等性・全再スキャン禁止を担保、(3) Scaffold/Reindexモード切替のguard節を形式化（独自補完禁止と整合）、(4) COLD逆引きポインタの形式を定義（retrieve時の腐敗防止）、(5) reindex-librarianのDry-runモードを初期デフォルト化（初期数サイクルは差分レポートのみ・実結晶化しない）。"
+  minority_opinion: "哲学者は設計のまま実装可（選択的忘却の哲学的一貫性・COLD逆引きの『忘れても思い出せる』構造を評価）。ただし結晶化主体がAIである現在バイアスの正本汚染リスクと『摂取選択＝何を食べるかの基準』が最も未解決である点を併記。→ 設計の『要再確認リスト』として保持し、摂取選択基準を regime 定義に明文化する。"
+  weight_note: "category=judgment（経営者4・開発者4・哲学者3）、各不可分整数。第3の道なし。決定論検算: max_score_stance・接頭辞・weighted_score・components 全整合。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  cascade_to: "Master へ判定献上（合意プロセス進行中）。recommended の修正5点 + 哲学者minorityの摂取選択基準を設計に織り込み（regime定義＝SK references / 閾値・cursor形式・Dry-run＝REGIME.md）た上で実装着手予定。決定3三分割（P4承認済）は不変、本判定はその内側の実装前設計精緻化。"
