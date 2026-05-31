@@ -2179,7 +2179,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   weight_note: "全会一致のため重み配分は判定に影響せず（category=conception 経営3/開発3/哲学5）。決定論検算: weighted_score 7.90・max_score_stance・接頭辞 全整合。"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
+  modification_note: "Master が『Ignis の推奨で進めて』で go。Ignis 推奨=#2(先に真 fuzzy サンプルを採る)を実行。付帯条件3つ(期限・終了条件/3機構方針/真サンプル+観察目的)を pilot 計画に織り込み。単方向 fill(output-format §8)。"
   follow_up_questions_count: 0
-  agreed_at: null
-  cascade_to: "Master へ判定献上。暫定スキーマ草案 + pilot 計画(期限・終了条件・3機構方針・真fuzzyサンプル投入・観察目的)を設計する。#8発効は本確定後。実装は Master go 後。"
+  agreed_at: "2026-05-31T02:30:00Z"
+  cascade_to: "delivery/PATTERN-CRYSTAL-PILOT-2026-05-31.md を pilot 材料として作成。真 fuzzy サンプル PC-001(自己言及的早すぎる固化→仮結晶+二段階昇格)/PC-002(高権威決定→独立ゲート献上)を本セッションから蒸留、PC-003(squash後rebase)は規則結晶寄りの境界例。暫定スキーマ(発火条件/反-発火条件/力学/定石/信頼度)に開発者3機構(embedding発火/ルールベース信頼度/反-発火検証可能性)を内蔵。pilot 期限6週・終了条件明示。#8発効は本確定後。本確定は Council 再諮問。"
