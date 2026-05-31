@@ -48,7 +48,7 @@ description: >
 
 ## L0 スキル間の責務分担
 
-L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成される（いずれも L0 兄弟、L3 運用層ではない）。トリガーは排他的。
+L0 は spec-architect / onboarding / archeo-architect / reindex-librarian の 4 スキルで構成される（いずれも L0 兄弟、L3 運用層ではない）。トリガーは排他的。
 
 | ケース | 起動スキル | 判定条件 |
 |---|---|---|
@@ -56,6 +56,7 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 | 既存プロジェクトの継続開発・仕様追加・振り返り | **spec-architect** | REGIME.md 存在、LC ≥ 1 |
 | 既存プロジェクトへの harness 後付け導入 | **layer0-onboarding** | REGIME.md 未存在、かつ既存コード・既存ドキュメントが存在 |
 | 既存コードのリファクタ前 意図復元（v5.4.0 追加） | **layer0-archeo-architect** | REGIME.md 存在、LC ≥ 1、人間が「リファクタしたい / 意図がわからない / 整理したい」等を明示 |
+| 蓄積 history の再蒸留・結晶化・抜け殻排出（v5.19.0 追加） | **layer0-reindex-librarian** | REGIME.md 存在、LC ≥ 1、history 層が token 閾値超過（リズム）または人間が「reindex / 結晶化 / 代謝 / 抜け殻を archive」を明示 |
 
 **排他ルール**:
 - REGIME.md に `onboarded_at` がある → onboarding 再起動禁止（spec-architect / archeo-architect のみ）
@@ -63,6 +64,7 @@ L0 は spec-architect / onboarding / archeo-architect の 3 スキルで構成�
 - archeo-architect は **再利用可能**（onboarding と異なり使い捨てではない）。リファクタ着手の度に再起動可能。複数回の起動履歴は `delivery/refactor-intent-map-*.md` のタイムスタンプで識別する
 - archeo-architect は **自動起動しない**。人間明示トリガーのみで起動する。ritual-protocol レベル 3 でリファクタ示唆を検出した場合も、起動推奨提示にとどめる
 - spec-architect と archeo-architect は **同時起動禁止**（対話方向の混線を避けるため）。spec-architect が起動中に意図復元の必要性を検出した場合は、当該対話を完了させてから archeo-architect の起動を提案する
+- reindex-librarian と spec-architect も **同時起動禁止**（Reindex は履歴起点、Scaffold は対話起点で方向が逆）。spec-architect 対話中に history 肥大・購読量膨張を検出した場合は、当該対話を完了させてから reindex-librarian の起動を提案する（自動起動せず提案にとどめる）。なお Scaffold（対話起点の spec 新規設計）の実体は spec-architect であり、reindex-librarian は概念上の双対として参照する
 - 疑わしい場合は spec-architect が引き受けて LC 判定で切り分ける
 
 ## 処理フロー

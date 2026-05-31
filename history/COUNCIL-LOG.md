@@ -2082,7 +2082,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   weight_note: "category=judgment（経営者4・開発者4・哲学者3）、各不可分整数。第3の道なし。決定論検算: max_score_stance・接頭辞・weighted_score・components 全整合。"
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
+  modification_note: "Master が go を発出（『次回して』）。recommended の修正5点 + 哲学者minority（摂取選択基準）を全て設計へ織り込み実装。新 invocation_id は切らず本エントリの null フィールドを単方向 fill（output-format.md §8 append-only 例外条項）。Dry-run は Council 推奨どおり初期デフォルト。"
   follow_up_questions_count: 0
-  agreed_at: null
-  cascade_to: "Master へ判定献上（合意プロセス進行中）。recommended の修正5点 + 哲学者minorityの摂取選択基準を設計に織り込み（regime定義＝SK references / 閾値・cursor形式・Dry-run＝REGIME.md）た上で実装着手予定。決定3三分割（P4承認済）は不変、本判定はその内側の実装前設計精緻化。"
+  agreed_at: "2026-05-31T00:30:00Z"
+  cascade_to: "Master へ判定献上（合意プロセス進行中）。recommended の修正5点 + 哲学者minorityの摂取選択基準を設計に織り込み（regime定義＝SK references / 閾値・cursor形式・Dry-run＝REGIME.md）た上で実装着手予定。決定3三分割（P4承認済）は不変、本判定はその内側の実装前設計精緻化。【実装完遂 2026-05-31】layer0-reindex-librarian 新設 + metabolism-regime.md/reindex-protocol.md + meta-spec-template REGIME/SPEC + ritual F1 + spec-architect 兄弟登録。"

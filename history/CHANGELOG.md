@@ -2,6 +2,34 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-05-31 情報代謝サイクル（履歴結晶化）導入: layer0-reindex-librarian 新設（v5.19.0、minor 昇格）
+
+**蓄積する history（episodic 層）が約 925 行/cycle で単調増加し、AI が毎サイクル読み込む購読量を膨張させて開発を停止させる「代謝天井」への生存対応**。構築代謝（結晶化）＋分解代謝（排出）を回す新 L0 兄弟スキル `layer0-reindex-librarian` を新設し、DH の情報代謝サイクルを完成させる。設計対話セッション（Ignis persona）で深化、Council `council-2026-05-31T00:00:00Z-mtbl01` で「設計を修正してから実装」(weighted 6.00 vs 2.16) と判定され、修正 5 点 + 哲学者 minority（摂取選択基準）を織り込んで実装。
+
+### 追加内容
+
+- `.claude/skills/layer0-reindex-librarian/` 新設（L0 兄弟・D4）。SKILL.md（常時ロード側＝薄く密に）+ references 2 件
+  - `references/metabolism-regime.md` — regime 定義の正本（決定3: 定義→SK references）。二軸フラクタル（還元先軸 DH⇄project × 時間軸 短⇄長）/ HOT・WARM・COLD tier / 昇降格 / 結晶化・排出プロトコル / 摂取選択基準 / 最上位不変条件「AI 購読量上限」/ 5 不変条件
+  - `references/reindex-protocol.md` — 運用（Council 修正 5 点を具体化）: モード guard / 処理済みマーカー（cursor/checksum/timestamp・増分・全 rescan 禁止・冪等）/ Council ゲート定量基準 / COLD 逆引き source pointer 形式 / Dry-run デフォルト / 初回 reindex 手順
+- `layer0-spec-architect/assets/meta-spec-template.md`: REGIME.md テンプレに `## 情報代謝設定`（決定3: パラメータ→REGIME.md）、SPEC.md テンプレにポインタ 1 行（決定3: SPEC は実体を持たない＝購読量保護）
+- `layer0-spec-architect/references/ritual-protocol.md`: F1 振り返り儀式の入力を HOT + 関連 WARM に絞り COLD を既定除外（購読量削減の「最小の第一歩」）
+- `layer0-spec-architect/SKILL.md`: §L0 スキル間責務分担に reindex-librarian を兄弟登録（3→4 スキル）、同時起動禁止ルール追加
+- `history/COUNCIL-LOG.md`: mtbl01 の合意フィールドを単方向 fill（implementer_consent / agreed_at、output-format §8 例外条項）
+
+### 設計の核（Council 批准済）
+
+- 最上位不変条件＝**AI 購読量（既定ロード量）の上限**。repo/COLD のディスクサイズ増は許容、購読量と history 蓄積量の線形連動を断つ。結晶化は密度↑であって量↑ではない
+- 三拍子＝摂取 / 咀嚼吸収（構築代謝・還元先に応じ叡智へ結晶化）/ 排泄（分解代謝・抜け殻を COLD へ・**delete 禁止**・逆引きポインタ付き）
+- 初回および規定サイクルは **Dry-run**（差分レポートのみ・実結晶化しない）
+
+### 後方互換
+
+- 新規 skill 追加 + 既存テンプレ/ref への加筆のみ。既存挙動は不変（REGIME.md に `情報代謝設定` 未記載なら従来どおり動作）
+- LC ≥ 1 既存プロジェクトは token 閾値超過時にリズム起動、遡及代謝は不要
+- 初回 reindex（DH 本体 dog-fooding）は Dry-run のため本コミットでは実結晶化・実 COLD 移送はしない
+
+---
+
 ## 2026-05-24 Supabase ローカル開発の推奨オプション化（v5.18.0、minor 昇格）
 
 **L0 spec-architect が、本番 Supabase（hosted Postgres）に消失 NG の私的データを持つ構成に対し、本番を汚さないローカル優先開発（Docker ローカルスタック + migration 経由の本番反映）を推奨提示できるようにする**。新規 skill / agent は追加せず、専用 reference 1 件 + 既存 5 ファイル（SKILL.md + reference 4 件）への軽い配線で構成（後方互換 100%）。L0 対話セッションで「専用ref + 軽い配線」「推奨発動条件 = 保護すべき本番 Supabase/hosted Postgres 使用時」を確定。
