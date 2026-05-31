@@ -103,15 +103,17 @@ guard が曖昧判定のまま Reindex を起動してはならない（暗黙�
 - **タイミング哲学**: 開発中に回さない。cycle 境界（献上後・次 L0 前）で回す。**結晶化＝組織の睡眠フェーズ**（記憶の固定化）。検証後評価原則と完全整合
 - 具体閾値は project 固有パラメータ（REGIME.md `## 情報代謝設定`）
 
-## ガバナンス（5 不変条件 + Council ゲート）
+## ガバナンス（8 不変条件 + Council ゲート）
 
-雑に回すと毒になる。以下を不変条件として守る（詳細・定量基準は `references/metabolism-regime.md` §不変条件）。
+雑に回すと毒になる。以下を不変条件として守る（詳細・定量基準は `references/metabolism-regime.md` §5）。コア 5 を常時ロード側に置き、理論層由来 #6–#8 は展開せず参照に留める（progressive disclosure ＝購読量保護）。
 
 1. **早すぎる結晶化を防ぐ**。HOT 昇格は Council 判定をゲートにする（自動カウンタで上げない）。定量基準は REGIME.md
 2. **COLD ＝ archive ≠ delete**。retrievable に保つ
 3. **叡智に source pointer**（逆引き）。疑義が出たら生ログまで遡れる。形式は `references/reindex-protocol.md`
 4. **代謝自体のコストを抑える**（毎 cycle 全行にかけない・sparse・冪等）
 5. **独自補完しない**（TBD を捏造で埋めない）
+
+※ 理論層追加 #6（COLD lossless 原本から読む）/ #7（情報欠損なしは HOT の誤目標）/ #8（パターン結晶は反-発火条件必須・形式確定後発効）は `references/context-circulation-theory.md §8` および `references/metabolism-regime.md §5` を参照（常時ロードしない）。
 
 ## 参照ドキュメント
 
