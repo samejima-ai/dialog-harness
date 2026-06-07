@@ -9,8 +9,11 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 **(1) auto-merge.yml: 全 CI 完了待ち化（ユーザー要請）**
 - 条件 3.5 のポーリングを「verify/review のみ待機」から「**自分（evaluate）以外の全 check が COMPLETED になるまで待機**」へ一般化。`copilot-pull-request-reviewer` / `gemini-review` 等も完了を待ってから merge する（早すぎる merge 防止）。
 - copilot review 等が走らない PR でも正常動作（不在 check は pending 集合に入らず待機対象が減るだけ）。自己（evaluate）は IN_PROGRESS で rollup に居るため必ず除外（self-deadlock 回避）。
-- `StatusContext`（legacy commit status）の `state==PENDING` も待機対象に含める。timeout を 10→15 分、POLL_MAX_WAIT 300→600s。
-- PENDING カウント jq を 5 ケースで単体検証（全完了/copilot pending/copilot 無し/自己のみ/StatusContext 混在）。
+- `StatusContext`（legacy commit status）の `state==PENDING` も待機対象に含める。
+- **timeout を claude-review の最大実行時間に整合**（Copilot review #131）: `timeout-minutes` 15→30、`POLL_MAX_WAIT` 600→1500s（claude-review は最大 ~25min。短い timeout だと長い review 中に exit→再 trigger 来ず永続未 merge になるため）。
+- PENDING カウント jq の回帰テスト `scripts/test-auto-merge-pending.sh` を追加（6 ケース）。`UPDATE.md` の一時 clone に `trap` 後始末を追加。
+
+> 既知の follow-up（Issue 化）: claude-review.yml / gemini-review.yml が両方 job 名 `review` で、auto-merge 条件 5/4.5 の `select(.name == "review")` が混同しうる（既存・gemini-review 未発火の本 repo では現状ドーマント）。job 名一意化は別 PR。
 
 **(2) self-update protocol 強化（PR #130 レビュー LOW 反映）**
 - `UPDATE.md`: 一時 clone を `mktemp -d` 化 / pre-update snapshot を「変更なしはスキップ・commit 失敗は中断」の安全形に（`|| true` の握りつぶし解消・破壊的 rm -rf の復旧点を保証）/ `diff` の両分岐明示 / REGIME.md 記録例の見出しレベルを `###` + 任意注記。

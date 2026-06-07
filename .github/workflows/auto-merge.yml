@@ -93,7 +93,9 @@ jobs:
       github.event.pull_request.user.login != 'dependabot[bot]' &&
       github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # 条件 3.5 の全 CI 完了ポーリング（最大 ~10min）を吸収
+    timeout-minutes: 30  # 条件 3.5 の全 CI 完了ポーリングを吸収。claude-review の最大実行時間
+                         #（claude-review.yml timeout-minutes: 25 / action timeout_minutes: 22）を待ち切れる値に揃える
+                         #（Copilot review #131: 短い timeout だと長い review 中に exit→再 trigger 来ず永続未 merge）
     # job レベル env: gh CLI に必要な認証 + repo 指定（v5.5.3 PR #42 初回 run で
     # checkout なし環境で gh pr view が "not a git repository" fatal を起こした
     # ため、GH_REPO で git context 不要にする）
@@ -211,7 +213,8 @@ jobs:
           # event 依存にしない理由（Copilot review #129 / PR #124 実例）: harness-verify / claude-review は
           # GITHUB_TOKEN ベースの Actions で、その check_suite:completed は loop 防止で本 workflow を再 trigger
           # しない。ゆえに pending 検知→exit→event 待ちだと永続待機になる。よって step 内ポーリングで確定させる。
-          POLL_MAX_WAIT=600   # 最大待機秒（copilot review 等も吸収）。job timeout-minutes 内に収める
+          POLL_MAX_WAIT=1500  # 最大待機秒（25min）。最長の check = claude-review（action 22min / job 25min）を
+                              # 同一 run 内で待ち切る。timeout-minutes(30) 内に merge まで収まる（Copilot review #131）
           POLL_INTERVAL=15
           poll_elapsed=0
           while :; do

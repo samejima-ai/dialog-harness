@@ -27,10 +27,14 @@ DH には現状リリースタグが無く、`master` HEAD は **開発途中状
 ```bash
 # DH リモートを参照（一意な一時ディレクトリへ clone）。<PIN> は更新時に決めた DH の commit SHA
 DH=$(mktemp -d)
+trap 'rm -rf "$DH"' EXIT   # 手順終了時に一時 clone を後始末（/tmp を汚さない・繰り返し実行可）
 git clone https://github.com/samejima-ai/dialog-harness "$DH" && git -C "$DH" checkout <PIN>
 cat "$DH/VERSION"          # 更新先バージョンを確認
 cat "$DH/dh-manifest.yml"  # boundary を確認
 ```
+
+> 注: `trap ... EXIT` で `$DH` を消すため、§2 以降を**同一シェルセッション**で続けて実行すること
+> （別セッションに分ける場合は trap を外し、§5 完了後に手動で `rm -rf "$DH"`）。
 
 > DH 側がリリースタグ運用を始めたら `<PIN>` をタグ（例 `v5.21.0`）にできる（推奨・将来）。
 

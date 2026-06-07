@@ -55,6 +55,7 @@ PR #130 の OC / Copilot レビュー LOW（advisory）を反映:
 | リリースタグ運用 / `migrations.yml` | ピン留め容易化・メジャー跨ぎ移行索引 |
 | harness-verifier の `never_touch` ガード / VERSION↔manifest 整合 CI | 構造検査の追加 |
 | copilot review の conclusion を merge gate に含めるか | 現状は「完了待ち」のみ（advisory）。FAILURE を block 対象にするかは別途判断 |
+| **job 名衝突の解消（Copilot review #131）** | `claude-review.yml` / `gemini-review.yml` が両方 job 名 `review`。auto-merge 条件 5/4.5 の `select(.name == "review")` が gemini ではなく claude を拾いうる（本 repo は gemini-review 未発火でドーマント）。job 名一意化（gemini→`gemini-review` 等）+ selector 更新を別 PR で。Issue 化済み |
 
 ---
 
