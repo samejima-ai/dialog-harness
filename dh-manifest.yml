@@ -1,0 +1,51 @@
+# dh-manifest.yml — DH 配布・更新の正典 boundary（v5.21.0 新設）
+#
+# 「どのパスが DH 所有（更新で差し替えてよい）で、どれがプロジェクト所有（絶対に触らない）か」を
+# 機械可読に宣言する単一情報源。更新者（CC / crosscut-dh-self-update / 手動スクリプト）は
+# 本ファイルを読み、boundary を推測せずに安全更新する。
+#
+# 原則:
+# - DH 所有物 = 「agent 本体はプロジェクト不変」（差異は SPEC/sensors/checklist 等の入力データに閉じる）
+#   ゆえに丸ごと差し替えてよい。
+# - プロジェクト所有物 = そのプロジェクト固有の状態。DH 更新は決して上書きしない。
+# - 更新手順の正典は UPDATE.md。本ファイルは「対象パスの分類」だけを持つ（手順は持たない）。
+
+dh_version: "5.21.0"          # この配布物の DH バージョン（VERSION ファイルと一致）
+manifest_schema: 1            # 本 manifest のスキーマ版（破壊変更時に bump）
+
+# 後方互換の下限。更新先（本配布）がこの版より前のプロジェクトに被さる場合は
+# メジャー跨ぎ移行（dh-upgrades/ の該当 upgrade-spec の移行経路）が必要。
+min_same_major_from: "5.0.0"  # v5.0.0 以降からの更新は同一メジャー＝後方互換（再 sync で可）
+                              # v4.x 以前からは major 跨ぎ → 個別移行（UPDATE.md §メジャー跨ぎ参照）
+
+paths:
+  # overwrite: DH 所有。更新で「ディレクトリごと sync（置換）」してよい。
+  # ※ merge ではなく sync（置換）にする理由: skill の rename / 削除（例 v5.0.0 の council→crosscut-council）が
+  #   起きたとき、置換なら旧ファイルが orphan として残らない。rsync --delete 相当 or rm -rf && cp -r。
+  overwrite:
+    - ".claude/skills/"
+    - "templates/"
+
+  # merge: DH 提供だがプロジェクトがカスタムしうる。raw 上書き不可。差分を提示して人間がマージ。
+  merge:
+    - ".claude/hooks.json"
+
+  # redeploy: placeholder（${ALLOWED_AUTHORS} 等）を含むため raw コピー不可。
+  # crosscut-autonomous-drive 経由で placeholder 再展開（冪等でない・衝突は明示確認）。
+  redeploy:
+    - ".github/workflows/"
+
+  # never_touch: プロジェクト所有。DH 更新は絶対に書き換え・削除しない（独立性保護）。
+  never_touch:
+    - "SPEC.md"
+    - "DONT.md"
+    - "REGIME.md"
+    - "CLAUDE.md"          # プロジェクト側の CLAUDE.md（DH は配布しない）
+    - "history/"           # episodic + 叡智 + 情報代謝（COLD/HOT/cursor 含む）
+    - "delivery/"
+    - ".claude/disabled/"  # モード判定で退避された要素（プロジェクト状態）
+    # 上記以外のプロジェクト固有コード・資産はすべて never_touch（明示列挙しない＝既定で不可侵）
+
+# 検証: 更新後、harness-verifier と振り返り儀式で health check すること（UPDATE.md §5）。
+# never_touch を侵していないかのガードは harness-verifier 側で実装余地（v5.22.0 申し送り）。
+verify_after_update: true
