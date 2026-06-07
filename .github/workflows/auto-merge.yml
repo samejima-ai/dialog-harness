@@ -161,7 +161,9 @@ jobs:
           set -euo pipefail
 
           # PR 詳細を一括取得
-          PR_JSON=$(gh pr view "$PR_NUMBER" --json author,labels,isDraft,state,statusCheckRollup,reviewDecision,title)
+          # field set は初回と条件 3.5 のポーリング再取得で共用（マジック文字列の二重定義回避・OC review #129 LOW）
+          PR_FIELDS="author,labels,isDraft,state,statusCheckRollup,reviewDecision,title"
+          PR_JSON=$(gh pr view "$PR_NUMBER" --json "$PR_FIELDS")
 
           # 条件 7: PR state OPEN
           STATE=$(echo "$PR_JSON" | jq -r '.state')
@@ -222,8 +224,13 @@ jobs:
             echo "::notice::PR #$PR_NUMBER の verifier 未完了 (verify=${HV_STATUS:-不在}, review=${GR_STATUS:-不在})。${POLL_INTERVAL}s 待機して再確認...（経過 ${poll_elapsed}s）"
             sleep "$POLL_INTERVAL"
             poll_elapsed=$((poll_elapsed + POLL_INTERVAL))
-            # 最新の rollup を取り直す（後続の条件 4/5/6 もこの最新 PR_JSON を使う）
-            PR_JSON=$(gh pr view "$PR_NUMBER" --json author,labels,isDraft,state,statusCheckRollup,reviewDecision,title)
+            # 最新の rollup を取り直す（後続の条件 4/5/6 もこの最新 PR_JSON を使う）。
+            # gh の transient failure では前回 PR_JSON を保持して継続（red CI にしない設計・OC review #129 LOW）。
+            if NEW_JSON=$(gh pr view "$PR_NUMBER" --json "$PR_FIELDS" 2>/dev/null); then
+              PR_JSON="$NEW_JSON"
+            else
+              echo "::warning::gh pr view が一時失敗。前回 rollup で継続（次反復で再取得）。"
+            fi
           done
 
           # 条件 4: harness-verify が走った場合は SUCCESS 必須（Copilot review #42 line 145）
