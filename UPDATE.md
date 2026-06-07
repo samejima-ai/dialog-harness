@@ -25,9 +25,9 @@ DH には現状リリースタグが無く、`master` HEAD は **開発途中状
 更新先を**特定の commit SHA に固定**して、全プロジェクトを同じ版に揃える。
 
 ```bash
-# DH リモートを参照（例: 一時 clone）。<PIN> は更新時に決めた DH の commit SHA
-git clone https://github.com/samejima-ai/dialog-harness /tmp/dh && git -C /tmp/dh checkout <PIN>
-DH=/tmp/dh
+# DH リモートを参照（一意な一時ディレクトリへ clone）。<PIN> は更新時に決めた DH の commit SHA
+DH=$(mktemp -d)
+git clone https://github.com/samejima-ai/dialog-harness "$DH" && git -C "$DH" checkout <PIN>
 cat "$DH/VERSION"          # 更新先バージョンを確認
 cat "$DH/dh-manifest.yml"  # boundary を確認
 ```
@@ -38,11 +38,18 @@ cat "$DH/dh-manifest.yml"  # boundary を確認
 
 ## 2. プロジェクト側で更新を実行（同一メジャー内）
 
-`dh-manifest.yml` の分類どおりに処理する。**更新前に必ず `git commit`**（ロールバック用）。
+`dh-manifest.yml` の分類どおりに処理する。**後続の `rm -rf` は破壊的なので、復旧点の確保を必須化する**。
 
 ```bash
 cd <your-project>
-git add -A && git commit -m "pre-DH-update snapshot" || true
+# 破壊的更新の前に必ず復旧点を確保する。git 管理下必須 / 変更なしはスキップ / commit 失敗は中断。
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "git 管理下で実行すること（ロールバック点が作れない）"; exit 1; }
+git add -A
+if git diff --cached --quiet; then
+  echo "（変更なし＝直前の commit が復旧点）"
+else
+  git commit -m "pre-DH-update snapshot" || { echo "snapshot commit 失敗（git user.name/email 等を確認）。破壊的更新を中断。"; exit 1; }
+fi
 
 # (a) overwrite: DH 所有 → ディレクトリごと sync（置換）。
 #     merge ではなく置換にするのは rename/削除（例 council→crosscut-council）を orphan にしないため。
@@ -50,7 +57,8 @@ rm -rf .claude/skills && cp -r "$DH/.claude/skills" .claude/
 rm -rf templates && cp -r "$DH/templates" ./
 
 # (b) merge: プロジェクトがカスタムしうる → 差分を見て手動マージ（raw 上書き禁止）。
-diff .claude/hooks.json "$DH/.claude/hooks.json" || echo "↑ 差分があれば手動マージ"
+#     diff は「差分なし=exit0 / 差分あり=exit1」。両分岐を明示:
+diff -u .claude/hooks.json "$DH/.claude/hooks.json" && echo "（差分なし・マージ不要）" || echo "↑ 上記差分を手動マージ（raw 上書き禁止）"
 
 # (c) redeploy: placeholder を含む → raw コピー不可。crosscut-autonomous-drive で再展開。
 #     CC に「autonomous-drive で workflow を再 deploy（placeholder 再展開・衝突は確認）」と指示。
@@ -67,10 +75,11 @@ diff .claude/hooks.json "$DH/.claude/hooks.json" || echo "↑ 差分があれば
 ## 3. バージョン記録
 
 更新後、プロジェクトの `REGIME.md` に更新先バージョンと PIN を記録する（次回更新の起点になる）。
+見出しレベル（`##`/`###`）は REGIME.md の既存構成に合わせてよい（衝突回避）。
 
 ```
-## DH バージョン
-- updated_to: 5.21.0
+### DH バージョン
+- updated_to: 5.22.0
 - pinned_sha: <PIN>
 - updated_at: <date>
 ```

@@ -10,11 +10,13 @@
 # - プロジェクト所有物 = そのプロジェクト固有の状態。DH 更新は決して上書きしない。
 # - 更新手順の正典は UPDATE.md。本ファイルは「対象パスの分類」だけを持つ（手順は持たない）。
 
-dh_version: "5.21.0"          # この配布物の DH バージョン（VERSION ファイルと一致）
+# DH バージョンの正典は VERSION ファイル（重複定義による drift を避けるため manifest には持たない・OC review #130 LOW）
 manifest_schema: 1            # 本 manifest のスキーマ版（破壊変更時に bump）
 
 # 後方互換の下限。更新先（本配布）がこの版より前のプロジェクトに被さる場合は
 # メジャー跨ぎ移行（dh-upgrades/ の該当 upgrade-spec の移行経路）が必要。
+# 比較ルール: semver の **major 部のみ**で判定する（major(VERSION) == major(project の現 DH 版) なら同一メジャー）。
+# pre-release 等の素朴な文字列比較は使わない。
 min_same_major_from: "5.0.0"  # v5.0.0 以降からの更新は同一メジャー＝後方互換（再 sync で可）
                               # v4.x 以前からは major 跨ぎ → 個別移行（UPDATE.md §メジャー跨ぎ参照）
 

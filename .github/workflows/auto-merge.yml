@@ -23,9 +23,10 @@
 #      で対象外、その場合は条件クリア扱い）
 #   6. reviewDecision が CHANGES_REQUESTED でない
 #   7. PR state が OPEN
-#   3.5（race 防止・Issue #125）. verify / review が rollup に存在するが未完了（pending）の間は
-#       その場でポーリングして COMPLETED を待つ（timeout で exit）。verifier 反映前に evaluate が
-#       走り「未走行」と誤判定して skip する race を防ぐ。event 再評価に依存しない理由は本文コメント参照
+#   3.5（全 CI 完了待ち・Issue #125 + ユーザー要請）. 自分（evaluate）以外の全 check
+#       （verify / review / copilot-pull-request-reviewer / gemini-review 等）が COMPLETED に
+#       なるまでポーリングで待つ（timeout で exit）。copilot review 等が無い PR でも、その check が
+#       rollup に現れない＝待機対象が減るだけで正常動作する。race 防止と「全 CI 後に merge」を両立。
 #   4.5（zero-check 防止）. harness-verify / gemini-review の最低どちらか 1 つが
 #       SUCCESS で走っていること（両方未実行の paths filter 外 PR を防ぐ）
 #
@@ -92,7 +93,7 @@ jobs:
       github.event.pull_request.user.login != 'dependabot[bot]' &&
       github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # 条件 3.5 の verifier 完了ポーリング（最大 ~5min）を吸収
+    timeout-minutes: 15  # 条件 3.5 の全 CI 完了ポーリング（最大 ~10min）を吸収
     # job レベル env: gh CLI に必要な認証 + repo 指定（v5.5.3 PR #42 初回 run で
     # checkout なし環境で gh pr view が "not a git repository" fatal を起こした
     # ため、GH_REPO で git context 不要にする）
@@ -193,35 +194,44 @@ jobs:
             exit 0
           fi
 
-          # 条件 3.5（race 防止・Issue #125）: verify / review が statusCheckRollup に存在するが
-          # 未完了（pending: QUEUED / IN_PROGRESS）の間は、その場でポーリングして COMPLETED を待つ。
-          # timeout 到達時のみ exit 0（次の push / label / review event で再評価）。
+          # 条件 3.5（全 CI 完了待ち・Issue #125 + ユーザー要請）: 自分（evaluate）以外の
+          # **全 check** が COMPLETED になるまで、その場でポーリングして待つ。timeout 到達時のみ exit 0
+          # （次の push / label / review event で再評価）。
           #
-          # 背景: 条件 4/5 の `.conclusion` 抽出は「rollup に不在（paths filter 外）」と「存在するが
-          # pending（conclusion=null）」を区別できず、verifier が rollup に反映/完了する前に evaluate が
-          # 走ると HV/GR 両方が空になり、条件 4.5 が「未走行」と誤判定して skip していた（全 check 緑・
-          # clean なのに未 merge で滞留する race）。
+          # ねらい:
+          # - verify / review だけでなく copilot-pull-request-reviewer / gemini-review 等
+          #   **すべての CI 処理の完了を待ってから** merge する（早すぎる merge の防止）。
+          # - copilot review 等が走らない PR でも正常動作する: その check は rollup に現れない＝
+          #   pending 集合に入らないだけで、待機対象が減るだけ（「無い場合も反応する」）。
+          # - 自分自身（"evaluate"）は実行中 IN_PROGRESS で rollup に居るので必ず除外する（自己待ちの deadlock 回避）。
           #
-          # event 再評価に依存しない理由（Copilot review #129 指摘 / PR #124 実例）:
-          # harness-verify / claude-review は GITHUB_TOKEN ベースの Actions であり、その
-          # check_suite:completed は GitHub の loop 防止で本 workflow を再 trigger しない。よって
-          # 「pending を検知して exit、後続 event を待つ」だと再評価イベントが永久に来ず PR が永続待機に
-          # なりうる。そこで event 依存をやめ、この step 内でポーリングして verifier 完了を確定させる。
-          POLL_MAX_WAIT=300   # 最大待機秒。claude-review(~2min) / harness-verify(~10s) を吸収
+          # 背景（race）: 条件 4/5 の `.conclusion` 抽出は「rollup に不在」と「存在するが pending（conclusion=null）」を
+          # 区別できず、check 反映/完了前に evaluate が走ると条件 4.5 が「未走行」と誤判定して skip していた
+          # （全 check 緑・clean なのに未 merge で滞留）。
+          # event 依存にしない理由（Copilot review #129 / PR #124 実例）: harness-verify / claude-review は
+          # GITHUB_TOKEN ベースの Actions で、その check_suite:completed は loop 防止で本 workflow を再 trigger
+          # しない。ゆえに pending 検知→exit→event 待ちだと永続待機になる。よって step 内ポーリングで確定させる。
+          POLL_MAX_WAIT=600   # 最大待機秒（copilot review 等も吸収）。job timeout-minutes 内に収める
           POLL_INTERVAL=15
           poll_elapsed=0
           while :; do
-            HV_STATUS=$(echo "$PR_JSON" | jq -r '.statusCheckRollup[]? | select(.name == "verify") | .status' | tail -1)
-            GR_STATUS=$(echo "$PR_JSON" | jq -r '.statusCheckRollup[]? | select(.name == "review") | .status' | tail -1)
-            # pending（存在するが != COMPLETED）が無ければ確定 → 条件 4 以降へ
-            if ! { { [ -n "$HV_STATUS" ] && [ "$HV_STATUS" != "COMPLETED" ]; } || { [ -n "$GR_STATUS" ] && [ "$GR_STATUS" != "COMPLETED" ]; }; }; then
-              break
+            # 自分（evaluate）を除く全 check のうち未完了（CheckRun: status != COMPLETED / StatusContext: state == PENDING）の件数
+            PENDING=$(echo "$PR_JSON" | jq -r '
+              [ .statusCheckRollup[]?
+                | select((.name // .context) != "evaluate")
+                | select(
+                    (.__typename == "CheckRun"      and .status != "COMPLETED") or
+                    (.__typename == "StatusContext"  and .state  == "PENDING")
+                  )
+              ] | length')
+            if [ "$PENDING" -eq 0 ]; then
+              break   # 全 check 完了（or 自分以外不在）→ 条件 4 以降へ
             fi
             if [ "$poll_elapsed" -ge "$POLL_MAX_WAIT" ]; then
-              echo "::notice::PR #$PR_NUMBER の verifier が ${POLL_MAX_WAIT}s 経過しても未完了 (verify=${HV_STATUS:-不在}, review=${GR_STATUS:-不在})。skip（次の push/label/review event で再評価）。"
+              echo "::notice::PR #$PR_NUMBER の CI が ${POLL_MAX_WAIT}s 経過しても未完了（pending=$PENDING 件）。skip（次の push/label/review event で再評価）。"
               exit 0
             fi
-            echo "::notice::PR #$PR_NUMBER の verifier 未完了 (verify=${HV_STATUS:-不在}, review=${GR_STATUS:-不在})。${POLL_INTERVAL}s 待機して再確認...（経過 ${poll_elapsed}s）"
+            echo "::notice::PR #$PR_NUMBER の CI 未完了（pending=$PENDING 件）。${POLL_INTERVAL}s 待機して再確認...（経過 ${poll_elapsed}s）"
             sleep "$POLL_INTERVAL"
             poll_elapsed=$((poll_elapsed + POLL_INTERVAL))
             # 最新の rollup を取り直す（後続の条件 4/5/6 もこの最新 PR_JSON を使う）。
