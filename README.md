@@ -140,6 +140,8 @@ cp dialog-harness/.claude/hooks.json .claude/
 cp -r dialog-harness/templates ./       # autonomous モード用（autonomous-drive が参照）
 ```
 
+> **既存プロジェクトの DH を更新するには** → [`UPDATE.md`](UPDATE.md)（正典手順）と [`dh-manifest.yml`](dh-manifest.yml)（DH 所有／プロジェクト所有の boundary）に従う。現行版は [`VERSION`](VERSION)。同一メジャー内は再 sync で安全、メジャー跨ぎは `dh-upgrades/` の移行経路に従う。
+
 ### 2. 対話でハーネスを生む（L0、初回）
 
 Claude Code に話しかけるだけで `layer0-spec-architect` が起動。

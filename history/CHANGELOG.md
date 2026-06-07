@@ -2,6 +2,18 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-06-07 DH Self-Update Protocol 最小構成（v5.21.0、minor 昇格）
+
+既存プロジェクトの旧 DH 更新時、DH 側に正典の更新手順が無く各プロジェクトが手探りで再コピーしていた問題（boundary の推測ミス・in-progress master 混入・メジャー跨ぎ破壊が分散）への対応。**DH 側が更新の boundary と手順を正典として提供**する最小構成を導入。
+
+- `dh-manifest.yml` 新設: DH 所有／プロジェクト所有の boundary を機械可読化（overwrite=`.claude/skills/`,`templates/` / merge=`hooks.json` / redeploy=`.github/workflows/` / never_touch=SPEC,DONT,REGIME,history 等）。skill の rename/削除を orphan にしないため overwrite は「sync（置換）」既定。
+- `VERSION` 新設: 散在していた版表記の単一情報源（5.21.0）。
+- `UPDATE.md` 新設: 更新の正典手順（SHA ピン留め → sync → merge → workflow 再 deploy → 検証 → 版記録、メジャー跨ぎ分岐）。
+- `README.md`: 更新は UPDATE.md 参照のポインタ追記。
+- `dh-upgrades/upgrade-spec-v5.21.0.md`: ガバナンス記録。
+
+後方互換: 完全な追加のみ（既存挙動不変）。申し送り（v5.22.0+）: `crosscut-dh-self-update` skill / リリースタグ運用 / `migrations.yml` / harness-verifier の never_touch ガード。
+
 ## 2026-05-31 context 循環理論を仮結晶として結晶化（v5.20.0、minor 昇格）
 
 **情報代謝サイクル機構（v5.19.0）の上位に、本セッション全体を統合する理論層「context 情報の生きる循環 cycle」を結晶化**。理論は人間（P4/D5）著述・合意済。Council `council-2026-05-31T01:00:00Z-thry01`（category=conception, 経営3/開発3/哲学5）で「**修正してから結晶化**」(weighted 5.56 vs 2.16) と判定され、修正4点を織り込んで実装。
