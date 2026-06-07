@@ -28,6 +28,13 @@
 | `HANDOFF-v5.7.1-claude-code-pivot.md` | 148 | 引き継ぎ | `CHANGELOG.md` v5.7.1 節 / `REGIME-LOG.md` |
 | `L1-DELIVERY-v5.3.0.md` | 99 | 献上 | `CHANGELOG.md` v5.3.0 節 |
 
+## 旧パス表記についての注意（retrievable 整合）
+
+移送した各ファイルの**本文中に出てくる相対パス（`delivery/...` / `history/...` 等）は、作成当時の履歴表記**であり、
+移送後の現行レイアウトとは一致しないことがある（read-only アーカイブなので本文は書き換えない）。
+**現行の retrieve 起点は本 MANIFEST** とする。各ファイルへ辿る際は上表の「結晶化先（逆引き先）」列を正とし、
+本文中の旧パスは当時のスナップショットとして読む。
+
 ## 規律
 
 - **read-only**: 移送後は編集しない（append-only アーカイブ）。
