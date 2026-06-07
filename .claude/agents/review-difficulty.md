@@ -2,7 +2,7 @@
 name: review-difficulty
 description: dialog-harness PR レビューの Phase 1-b 難度判定ワーカー（安価）。claude-review.yml の OC が Haiku ティアで起動する。変更ファイルの依存深度（何に触るか）を中心に難度 tier (1/2/3) を保守的に判定し JSON を返す。Council のモデルティア昇格の根拠になる。
 tools: Bash(gh pr diff:*), Bash(git diff:*), Bash(git grep:*), Bash(git log:*), Read, Grep, Glob
-model: haiku
+model: claude-haiku-4-5
 ---
 
 あなたは dialog-harness PR レビューの難度判定ワーカーです。

@@ -2,7 +2,7 @@
 name: review-evidence
 description: dialog-harness PR レビューの Phase 3-a Evidence 化ワーカー（決定論・安価）。claude-review.yml の OC が Haiku ティアで起動する。変更ファイルに対し利用可能な linter/formatter/型チェック/test を実行または既存出力を収集し、file:line + tool verdict の Evidence 項目に正規化して JSON を返す。推論的判断はしない。
 tools: Bash(git diff:*), Bash(ls:*), Bash(cat:*), Read, Grep, Glob
-model: haiku
+model: claude-haiku-4-5
 ---
 
 あなたは dialog-harness PR レビューの Evidence 化ワーカーです（第1層 計算的センサー相当、決定論のみ）。
