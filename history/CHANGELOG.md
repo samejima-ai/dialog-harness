@@ -2,7 +2,27 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 2026-06-07 DH Self-Update Protocol 最小構成（v5.21.0、minor 昇格）
+## 2026-06-07 auto-merge 全 CI 完了待ち化 + self-update protocol 強化（v5.22.0、minor 昇格、in progress, target 2026-06-07）
+
+2 件をバンドル（AD-021 のバンドル許可に整合）。
+
+**(1) auto-merge.yml: 全 CI 完了待ち化（ユーザー要請）**
+- 条件 3.5 のポーリングを「verify/review のみ待機」から「**自分（evaluate）以外の全 check が COMPLETED になるまで待機**」へ一般化。`copilot-pull-request-reviewer` / `gemini-review` 等も完了を待ってから merge する（早すぎる merge 防止）。
+- copilot review 等が走らない PR でも正常動作（不在 check は pending 集合に入らず待機対象が減るだけ）。自己（evaluate）は IN_PROGRESS で rollup に居るため必ず除外（self-deadlock 回避）。
+- `StatusContext`（legacy commit status）の `state==PENDING` も待機対象に含める。
+- **timeout を claude-review の最大実行時間に整合**（Copilot review #131）: `timeout-minutes` 15→30、`POLL_MAX_WAIT` 600→1500s（claude-review は最大 ~25min。短い timeout だと長い review 中に exit→再 trigger 来ず永続未 merge になるため）。
+- PENDING カウント jq の回帰テスト `scripts/test-auto-merge-pending.sh` を追加（6 ケース）。`UPDATE.md` の一時 clone に `trap` 後始末を追加。
+
+> 既知の follow-up（Issue 化）: claude-review.yml / gemini-review.yml が両方 job 名 `review` で、auto-merge 条件 5/4.5 の `select(.name == "review")` が混同しうる（既存・gemini-review 未発火の本 repo では現状ドーマント）。job 名一意化は別 PR。
+
+**(2) self-update protocol 強化（PR #130 レビュー LOW 反映）**
+- `UPDATE.md`: 一時 clone を `mktemp -d` 化 / pre-update snapshot を「変更なしはスキップ・commit 失敗は中断」の安全形に（`|| true` の握りつぶし解消・破壊的 rm -rf の復旧点を保証）/ `diff` の両分岐明示 / REGIME.md 記録例の見出しレベルを `###` + 任意注記。
+- `dh-manifest.yml`: `dh_version` を削除し VERSION を正典化（drift 排除）/ `min_same_major_from` に「semver major 部のみで比較」を明記。
+- `VERSION`: 5.21.0 → 5.22.0。
+
+後方互換: auto-merge は挙動強化（待機範囲の拡大）のみで gate ロジック不変。doc は追記・明確化のみ。
+
+## 2026-06-07 DH Self-Update Protocol 最小構成（v5.21.0、minor 昇格、released 2026-06-07）
 
 既存プロジェクトの旧 DH 更新時、DH 側に正典の更新手順が無く各プロジェクトが手探りで再コピーしていた問題（boundary の推測ミス・in-progress master 混入・メジャー跨ぎ破壊が分散）への対応。**DH 側が更新の boundary と手順を正典として提供**する最小構成を導入。
 
