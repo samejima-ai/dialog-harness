@@ -9,7 +9,7 @@
 # 本 baseline 生成時は line=現末尾 のため「消化済みプレフィックス」=全文 = 現内容の sha256。
 # 末尾への正常な append では指紋は変わらない。プレフィックス指紋が不一致なら cursor 以前の改変を意味する。
 
-last_reindex_at: "2026-06-07T03:40:00Z"   # 足回り整備① による baseline 生成時刻
+last_reindex_at: "2026-06-07T05:00:00Z"   # 最終 reindex（本番第二弾 mtb2sc）の cycle 境界時刻。baseline は足回り整備①(03:40Z)で生成
 
 reduction_target: DH                       # この cursor が DH 還元の消化進捗であることを明示（軸A・config と無引用で統一）
 
