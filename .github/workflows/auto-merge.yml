@@ -23,6 +23,9 @@
 #      で対象外、その場合は条件クリア扱い）
 #   6. reviewDecision が CHANGES_REQUESTED でない
 #   7. PR state が OPEN
+#   3.5（race 防止・Issue #125）. verify / review が rollup に存在するが未完了（pending）
+#       の場合は merge せず待機（後続の check 完了 event が再評価）。verifier 反映前に
+#       evaluate が走り「未走行」と誤判定して skip する race を防ぐ
 #   4.5（zero-check 防止）. harness-verify / gemini-review の最低どちらか 1 つが
 #       SUCCESS で走っていること（両方未実行の paths filter 外 PR を防ぐ）
 #
@@ -188,6 +191,21 @@ jobs:
             exit 0
           fi
 
+          # 条件 3.5（race 防止・Issue #125）: verify / review が statusCheckRollup に存在するが
+          # 未完了（pending: QUEUED / IN_PROGRESS）の場合は merge せず exit する。後続の
+          # check_suite:completed event が再評価する。
+          # 背景: 条件 4/5 の `.conclusion` 抽出は「rollup に不在（paths filter 外）」と「存在するが
+          # pending（conclusion=null）」を区別できず、verifier が rollup に反映/完了する前に evaluate が
+          # 走ると HV/GR 両方が空になり、条件 4.5 が「未走行」と誤判定して skip していた（全 check 緑・
+          # clean なのに未 merge で滞留する race）。claude-review（"review"）は全 PR で発火するため、
+          # その完了を待てば race は解消する。
+          HV_STATUS=$(echo "$PR_JSON" | jq -r '.statusCheckRollup[]? | select(.name == "verify") | .status' | tail -1)
+          GR_STATUS=$(echo "$PR_JSON" | jq -r '.statusCheckRollup[]? | select(.name == "review") | .status' | tail -1)
+          if { [ -n "$HV_STATUS" ] && [ "$HV_STATUS" != "COMPLETED" ]; } || { [ -n "$GR_STATUS" ] && [ "$GR_STATUS" != "COMPLETED" ]; }; then
+            echo "::notice::PR #$PR_NUMBER の verifier が未完了 (verify=${HV_STATUS:-不在}, review=${GR_STATUS:-不在})。merge せず待機（check 完了 event が再評価する）。"
+            exit 0
+          fi
+
           # 条件 4: harness-verify が走った場合は SUCCESS 必須（Copilot review #42 line 145）
           # 旧版は「SUCCESS 必須」と書いていたが、harness-verify.yml の paths filter は
           # `.claude/skills/**` `harness-verifier/**` のみで、history/** や workflow 変更
@@ -210,6 +228,8 @@ jobs:
           # 条件 4.5: 最低 1 つの independent verifier が SUCCESS で走っていること
           # 両方 paths filter 外で zero-check 状態の PR を auto-merge してしまうのを防ぐ
           # （例: workflow 単独変更 PR で harness-verify も gemini-review も発火しない場合）
+          # 注（Issue #125）: pending（存在するが未完了）は上流の条件 3.5 で待機 exit 済みのため、
+          # ここに到達した時点で HV/GR が空なのは「rollup に不在＝真に未発火」のみ（race ではない）。
           if [ -z "$HV" ] && [ -z "$GR" ]; then
             echo "::notice::PR #$PR_NUMBER に harness-verify / gemini-review いずれも走っていない（paths filter 外）。skip（最低 1 verifier の SUCCESS 必須）。"
             exit 0
