@@ -24,11 +24,17 @@
 | `CHANGELOG.md` | 直近 10 件＋要約のみ |
 | `REGIME-LOG.md` | 直近 5 件＋要約のみ |
 
-## COLD（移送済み・既定ロード対象外・retrievable）
+## COLD（情報代謝の排泄層・既定ロード対象外・retrievable）
 
-- **(a) 高確度（−2,584 行・移送済み 2026-06-07）**: `SELF-VERIFICATION-v5.*`（8件）/ `VERIFICATION*.md`（2件）/ `HANDOFF-v5.*`（3件）/ `L1-DELIVERY-v5.3.0.md` → **`archive/2026-06/`**（マニフェスト・逆引きは `archive/2026-06/MANIFEST.md`）。default-load から除外済み。
+> **除外の実現は convention レベル**: COLD を default-load から外す効果は、ハードな glob 規則ではなく
+> 「本 SUMMARY を入口にし、COLD（`archive/`）を列挙しない」規律で実現される（代謝モデルは規律ベース）。
+> ロード主体（振り返り儀式 F1 等）が本 SUMMARY を入口として尊重することが前提。glob 強制ではない。
 
-## COLD 候補（**未移送**・据え置き・要人間確認）
+### 移送済み
+
+- **(a) 高確度（−2,584 行・移送済み 2026-06-07）**: `SELF-VERIFICATION-v5.*`（8件）/ `VERIFICATION*.md`（2件）/ `HANDOFF-v5.*`（3件）/ `L1-DELIVERY-v5.3.0.md` → **`archive/2026-06/`**（逆引きマニフェストは `archive/2026-06/MANIFEST.md`）。
+
+### 未移送・据え置き（要人間確認）
 
 過去サイクルの一回性 forensic。「沈黙した声の救済」(§3-5) に従い確認が取れるまで移送しない。
 
