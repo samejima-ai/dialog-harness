@@ -38,6 +38,8 @@ cursor:
   # line = 消化済み末尾行。checksum = 「先頭〜line までの消化済みプレフィックスのみ」の sha256
   #（全ファイル指紋ではない。append-only な history では末尾追記で全ファイル指紋が毎回変わり誤検知するため、
   #  範囲は必ず消化済みプレフィックスに限定する＝M2）
+  # checksum 値は **フル 64hex の sha256**（短縮しない）。比較は前方一致ではなく **全長一致** で行う
+  #（人手 baseline ↔ 機械生成の比較不一致を防ぐ。下例の `…` は紙面省略であって短縮保存ではない）
   INTENT.md:    { line: 312, checksum: "sha256:ab12…" }
   CHANGELOG.md: { line: 188, checksum: "sha256:cd34…" }
   COUNCIL-LOG.md: { line: 2088, checksum: "sha256:ef56…" }
