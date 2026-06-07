@@ -38,6 +38,8 @@ cursor:
   # line = 消化済み末尾行。checksum = 「先頭〜line までの消化済みプレフィックスのみ」の sha256
   #（全ファイル指紋ではない。append-only な history では末尾追記で全ファイル指紋が毎回変わり誤検知するため、
   #  範囲は必ず消化済みプレフィックスに限定する＝M2）
+  # checksum 値は **フル 64hex の sha256**（短縮しない）。比較は前方一致ではなく **全長一致** で行う
+  #（人手 baseline ↔ 機械生成の比較不一致を防ぐ。下例の `…` は紙面省略であって短縮保存ではない）
   INTENT.md:    { line: 312, checksum: "sha256:ab12…" }
   CHANGELOG.md: { line: 188, checksum: "sha256:cd34…" }
   COUNCIL-LOG.md: { line: 2088, checksum: "sha256:ef56…" }
@@ -54,6 +56,28 @@ dry_run_remaining: 3      # 残り Dry-run サイクル数（0 で本番昇格�
 - **dry_run 判定の安全側（L1）**: §3 step 6 は `dry_run_remaining > 0` で Dry-run。ロード時に負値・非数・欠落を検出したら **Dry-run を強制**（破損で本番に倒れない）。正常な減算でのみ 0 に到達し本番昇格する
 - **冪等性**: 同じ history 状態に対し reindex を二度走らせても、安定した叡智を再蒸留して揺れない。マーカーが前進済みなら何もしない（no-op）。再結晶化が既存 HOT を上書き提案する場合は差分のみ提示
 - マーカーの前進は処理フロー §3 の最終ステップでのみ行う（途中失敗時は前進させない＝再実行で安全に再開）
+
+---
+
+## 2.5. config 解決順（REGIME.md ⇄ DH-self 既定パス・単一ロジック・Council mcfg01）
+
+代謝パラメータ（`token_budget` / `dry_run_cycles` / `council_gate` 閾値）の読込みは、利用者プロジェクトと DH 本体で
+**経路を分岐させず**、次の単一解決ロジックで引く。これにより「REGIME.md 不在時の fallback 未定義」を塞ぎ、
+skill 側の条件分岐負債を作らない（開発者 0.78）。
+
+```
+config を解決する（reduction 先に依らず同一ロジック）:
+  1. REGIME.md `## 情報代謝設定` が存在すればそれを正本とする   ← 利用者プロジェクト（reduction=project / D1-D3）
+  2. 無ければ DH-self 既定パス `history/.metabolism-config.yml`   ← DH 本体（reduction=DH / D4）
+  （パスは REGIME.md / config 内 `metabolism.paths` で上書き可）
+```
+
+- **構造同形・還元先非同形**: 1 と 2 は **同一スキーマ**（同じ `## 情報代謝設定` キー構造）。違いは `reduction_target` のみ
+  （DH=D4 還元 / project=D1-D3 還元）。DH は利用者と「同じ道を歩む」が、学習の還元先だけが非同形（代謝汚染の防止）。
+- **root REGIME.md を DH 本体に新設しない**: DH は「root REGIME.md を持たない」慣習（`delivery/REGIME-CONFIRM-metaskill.md` §1）を
+  保つため、器は REGIME.md ではなく DH-self 既定ファイルとする。利用者が DH の REGIME.md を誤って雛形視するのを防ぐ。
+- **設定とカーソルの責務分離**: config（人間が決める設定値）と cursor（機械が自動前進させる処理済みマーカー §2）は
+  **別ファイル**に保つ。同居させない（reindex の自動書込みが人手設定を破壊する不可逆リスクを避ける）。
 
 ---
 

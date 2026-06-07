@@ -1,0 +1,25 @@
+# 情報代謝 処理済みマーカー（reindex が前進させる。手動編集は非推奨）
+#
+# これは「機械カーソル」であり、reindex 処理が §3 step7 でのみ前進させる。
+# 人間が決める設定値（token_budget 等）は history/.metabolism-config.yml に責務分離されている。
+# このファイルと config を混同しないこと（Council mcfg01 の責務分離要請）。
+#
+# checksum の対象は「先頭〜line までの消化済みプレフィックスのみ」（reindex-protocol.md §2 M2）。
+# 値は **フル 64hex の sha256**（短縮しない・前方一致でなく全長一致で比較する）。
+# 本 baseline 生成時は line=現末尾 のため「消化済みプレフィックス」=全文 = 現内容の sha256。
+# 末尾への正常な append では指紋は変わらない。プレフィックス指紋が不一致なら cursor 以前の改変を意味する。
+
+last_reindex_at: "2026-06-07T03:40:00Z"   # 足回り整備① による baseline 生成時刻
+
+reduction_target: DH                       # この cursor が DH 還元の消化進捗であることを明示（軸A・config と無引用で統一）
+
+dry_run_remaining: 3                        # 残り Dry-run サイクル数（config.metabolism.dry_run_cycles の初期値から減算）
+                                            # 0 で本番昇格。負値/破損検出時は安全側へ倒し Dry-run 強制（L1）
+
+cursor:
+  # baseline = 2 回の Dry-run（2026-05-31 / 2026-06-06）が既に読了した現末尾。
+  # 次回 reindex はここ以降の WARM delta のみを読む（増分・全 rescan 禁止）。
+  COUNCIL-LOG.md: { line: 2229, checksum: "sha256:8f76d2a0cf18ccea5a79092700e06fc6b19adc3589e4e2977fffc898b3087e39" }
+  CHANGELOG.md:   { line: 1403, checksum: "sha256:8adb132b4037194e5b207bcb4afd91e664868a3b171c108909e039c9c64db081" }
+  INTENT.md:      { line: 1023, checksum: "sha256:a2c2e8a76b31a33b356cee260385a5281ba0acbe59591a7066a396120b726852" }
+  REGIME-LOG.md:  { line: 674,  checksum: "sha256:55317d092c2f4dd89ce4402152358b577fc3f836cf31def295c6b4b9e41e66c1" }

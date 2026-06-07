@@ -1,0 +1,55 @@
+# DH-self 情報代謝設定（## 情報代謝設定）
+#
+# これは DH 本体（dialog-harness framework repo）自身の代謝パラメータ正本である。
+#
+# ■ なぜこのファイルが存在するか（二重身分の明文化 / Council mcfg01 哲学者）
+#   DH は《方法論の提供者》であると同時に《その方法論を最初に自分自身へ適用する被験者
+#   （dog-fooding の最初の種子）》という二重身分を持つ。情報代謝サイクルは、DH を使用した
+#   利用者プロジェクトが開始して以降は《プロジェクトのための代謝機構》となる。よって DH 本体は
+#   「利用者が実際に歩む正本構造」を自ら歩むべきである。
+#
+# ■ 利用者プロジェクトとの関係（構造同形・還元先非同形 / Council mcfg01 止揚）
+#   - 構造同形 : 本ファイルの `## 情報代謝設定` 配下キーは、利用者プロジェクトの
+#                REGIME.md `## 情報代謝設定` セクションと同一スキーマ（metabolism-regime.md 準拠）。
+#   - 還元先非同形 : DH の代謝は軸A上『DH 還元型(D4)』。利用者は『project 還元型(D1-D3)』。
+#                この差を `reduction_target: DH` で明示し、DH 開発中の学習が誤って
+#                project 叡智側へ仕分けられる代謝汚染を防ぐ。
+#
+# ■ なぜ root REGIME.md ではないのか（慣習維持 / Council mcfg01 全ペルソナ）
+#   DH 本体は「root REGIME.md を持たない」慣習を持つ（delivery/REGIME-CONFIRM-metaskill.md §1）。
+#   REGIME.md は利用者プロジェクト側の構造であり、DH root に置くと利用者が誤って雛形視する。
+#   そこで「同一セクション構造」は保ちつつ、器は REGIME.md ではなく本 DH-self 既定ファイルとする。
+#
+# ■ skill の読込み（単一解決順 / reindex-protocol.md §2.5）
+#   reindex-librarian は次の単一ロジックで config を解決する（利用者/DH で分岐しない）:
+#     1. REGIME.md `## 情報代謝設定` が存在すればそれ（= 利用者プロジェクト）
+#     2. 無ければ本 DH-self 既定パス history/.metabolism-config.yml（= DH 本体）
+#
+# ■ 編集権限
+#   本ファイルは「人間が決める設定値」であり、L0 経由で更新する（実装者の直接編集は最小限）。
+#   機械が自動前進させる処理済みマーカーは history/.metabolism-cursor.yml に責務分離されている
+#   （本ファイルとは別物。混同しないこと）。
+
+reduction_target: DH   # 軸A 還元先（DH=D4 叡智 / 利用者は project=D1-D3）。代謝汚染防止の要
+
+metabolism:
+  # 購読量 budget（北極星: AI が毎サイクル既定でロードする購読量の上限）
+  # token ではなく「default-load 行数」の近似上限として運用（metabolism-regime §0）。
+  token_budget: 12000
+
+  # Dry-run デフォルト（誤結晶化→COLD 誤移送の P4 復元工数を未然に抑える）
+  # 初回 + ここで指定した初期サイクル数は Dry-run（差分レポートのみ）。本番昇格は人間承認後。
+  dry_run_cycles: 3
+
+  # Council ゲート定量基準（早すぎる結晶化の防止 / reindex-protocol.md §4）
+  # HOT 昇格は自動カウンタで上げず、これらを Council 諮問のトリガーにする。
+  council_gate:
+    repetition_threshold: 3   # 同一パターンが N 回反復したら結晶化候補（単発は候補にしない）
+    cross_type_threshold: 3   # 同一 override が M 機能タイプ以上で反復したら Council 諮問
+    min_age_days: 7           # 候補化から X 日経過するまで HOT 昇格しない（偶然の固定化防止）
+
+  # tier 別パス（DH-self ローカル。COLD は archive≠delete）
+  paths:
+    cursor: "history/.metabolism-cursor.yml"   # 機械カーソル（reindex が自動前進・手動編集非推奨）
+    summary: "history/SUMMARY.md"              # HOT エントリポイント
+    archive: "history/archive/"                # COLD 排泄先（YYYY-MM/ 構造・read-only）
