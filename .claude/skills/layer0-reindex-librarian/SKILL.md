@@ -101,7 +101,7 @@ guard が曖昧判定のまま Reindex を起動してはならない（暗黙�
 
 - **発火条件**: history 層が指定 token 量（購読量 budget）を超過した時点。N-cycle トリガーは棄却
 - **タイミング哲学**: 開発中に回さない。cycle 境界（献上後・次 L0 前）で回す。**結晶化＝組織の睡眠フェーズ**（記憶の固定化）。検証後評価原則と完全整合
-- 具体閾値は project 固有パラメータ（REGIME.md `## 情報代謝設定`）
+- 具体閾値は project 固有パラメータ（`## 情報代謝設定`）。**単一解決順**: REGIME.md `## 情報代謝設定` があればそれ（利用者プロジェクト）、無ければ DH-self 既定パス `history/.metabolism-config.yml`（DH 本体・root REGIME.md を持たない慣習を維持）。詳細は `references/reindex-protocol.md` §2.5
 
 ## ガバナンス（8 不変条件 + Council ゲート）
 

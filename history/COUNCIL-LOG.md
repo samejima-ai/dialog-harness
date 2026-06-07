@@ -2184,3 +2184,46 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-05-31T02:30:00Z"
   cascade_to: "delivery/PATTERN-CRYSTAL-PILOT-2026-05-31.md を pilot 材料として作成。真 fuzzy サンプル PC-001(自己言及的早すぎる固化→仮結晶+二段階昇格)/PC-002(高権威決定→独立ゲート献上)を本セッションから蒸留、PC-003(squash後rebase)は規則結晶寄りの境界例。暫定スキーマ(発火条件/反-発火条件/力学/定石/信頼度)に開発者3機構(embedding発火/ルールベース信頼度/反-発火検証可能性)を内蔵。pilot 期限6週・終了条件明示。#8発効は本確定後。本確定は Council 再諮問。"
+
+---
+
+- invocation_id: "council-2026-06-07T03:40:00Z-mcfg01"
+  timestamp: "2026-06-07T03:40:00Z"
+  source_skill: "layer0-reindex-librarian (情報代謝 足回り整備①: 代謝パラメータ正本の置き場所)"
+  question_to_answer: "DH本体の情報代謝パラメータ（token_budget / dry_run_cycles / council_gate 閾値）の正本（canonical location）をどこに置くか"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_1_to_3 (2 rounds: 初回 + 追加質問1往復)"
+  conflict_type: "round1=unanimous(A) / round2=converged_aufhebung"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  weight_note: "category=judgment（base business 経3/開4/哲3 × ethos1.0 + judgment補正 経+1/開0/哲0 = 経4/開4/哲3、合計11）。決定論計算。"
+  round1:
+    persona_summary:
+      経営者: { stance: "A (history/.metabolism-config.yml 新設)", confidence: 0.75, dimension: "リスク/リソース配分" }
+      開発者: { stance: "A", confidence: 0.88, dimension: "保守性/可逆性" }
+      哲学者: { stance: "A + 二重身分メタ注記", confidence: 0.62, dimension: "前提への問い/意味/長期影響" }
+    conflict_type: "unanimous"
+    weighted_score_A: 8.38
+  round2_trigger: "Master 指摘『この代謝cycleはDH使用プロジェクト開始以降はプロジェクトの為の代謝機構となる』= 実質新情報。代謝機構の正本は実ユーザーでは REGIME.md ## 情報代謝設定 であり、A は dog-fooding 乖離 + skill 読込み経路分岐の保守コストを生む。判定を動かしうるため同一3ペルソナに context 追加して再諮問（合意プロセスの追加質問・独立性維持）。"
+  round2:
+    persona_summary:
+      経営者: { stance: "A→B(最小: ## 情報代謝設定 セクションのみ、full REGIME は過剰)", stance_changed: true, confidence: 0.72, dimension: "サポートコスト×dog-fooding整合" }
+      開発者: { stance: "A→第3技術案: skill 単一解決ロジック(REGIME.md ## 情報代謝設定 あればそれ/無ければ既定パス)、root REGIME.md 不要、cursor 責務分離維持", stance_changed: true, confidence: 0.78, dimension: "保守性/可逆性/フラクタル整合/テスト容易性" }
+      哲学者: { stance: "A→止揚: DH も同形 ## 情報代謝設定 構造を歩む。構造同形・還元先非同形(DH=D4/project=D1-D3)、専用別ファイル特別扱いは廃す", stance_changed: true, confidence: 0.74, dimension: "dog-fooding誠実さ×DH独立性の両立" }
+    conflict_type: "converged_aufhebung (全員 stance_changed=true、同方向収束)"
+    weighted_score_converged: 8.22
+  judgment_confidence: 0.74
+  recommended: "止揚案。(1) reindex-librarian skill の config 読込みを単一解決ロジックに昇格=『REGIME.md ## 情報代謝設定 があればそれ、無ければ DH-self 既定パス history/.metabolism-config.yml の同名キー』。利用者/DH で経路を分岐させない(開発者・分岐負債ゼロ)。REGIME.md 不在時 fallback 未定義ギャップも同時に閉じる。(2) DH-self は利用者と同一の ## 情報代謝設定 セクション構造で持つ(哲学者/Master の dog-fooding 論点・フラクタル整合)。(3) root REGIME.md は新設しない(明文化済み慣習維持・利用者誤認回避・経営者の scope-creep 警告)。(4) reduction_target: DH を明記し利用者(D1-D3)との還元先非同形を保つ(哲学者・DH独立性/代謝汚染防止)。(5) cursor は機械カーソルとして責務分離維持。"
+  minority_opinion: "開発者『別ファイル内セクションは構造相似が一段弱まる(セクション名レベルの相似)、テストは両経路網羅が必要』。哲学者『器を REGIME.md と呼ぶと DH=一project の誤った自己理解を固定するリスク、還元先非同形が曖昧化すると代謝汚染』。経営者『full REGIME 化は scope 膨張、代謝セクションのみに限定せよ』。→ いずれも recommended の (3)(4) と skill 一本化で吸収。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  final_decision: "止揚: skill解決一本化（推奨）。Master が AskUserQuestion で『内臓の配置』を本案に確定。"
+  modification_note: "final_decision は人間(Master)が埋めた(単方向 fill, output-format §8)。2 ラウンド目は新情報による正規の追加質問(最大2往復以内)。"
+  follow_up_questions_count: 1
+  agreed_at: "2026-06-07T03:40:00Z"
+  cascade_to: "情報代謝 足回り整備① PR で実装: history/.metabolism-config.yml(同形 ## 情報代謝設定 + reduction_target:DH) / history/SUMMARY.md(HOT エントリポイント) / history/.metabolism-cursor.yml(機械カーソル baseline・責務分離) / history/archive/(COLD 排泄先) / reindex-protocol.md・SKILL.md に config 単一解決順を明記。"
