@@ -2227,3 +2227,39 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 1
   agreed_at: "2026-06-07T03:40:00Z"
   cascade_to: "情報代謝 足回り整備① PR で実装: history/.metabolism-config.yml(同形 ## 情報代謝設定 + reduction_target:DH) / history/SUMMARY.md(HOT エントリポイント) / history/.metabolism-cursor.yml(機械カーソル baseline・責務分離) / history/archive/(COLD 排泄先) / reindex-protocol.md・SKILL.md に config 単一解決順を明記。"
+
+---
+
+- invocation_id: "council-2026-06-07T05:00:00Z-mtb2sc"
+  timestamp: "2026-06-07T05:00:00Z"
+  source_skill: "layer0-reindex-librarian (本番 reindex 第二弾: (b)(c) 移送スコープ)"
+  question_to_answer: "本番 reindex 第二弾で (b)中確度 / (c)サブ作業ログをどこまで COLD 移送するか"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  phase_reached: "phase_1_to_3"
+  conflict_type: "converged_with_gate"
+  trigger_context: "人間『自律駆動で進めて / council≒人間合意』(philosophy 第6条 人間≒Council原則)。Dry-run で『要人間確認』とした (b)(c) を Council 合議で確定し自律前進。"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  weight_note: "category=judgment（base 経3/開4/哲3 + judgment補正 経+1）。"
+  persona_summary:
+    経営者: { stance: "提案維持（refs-draft に完成/破棄閾値）", confidence: 0.72, dimension: "ROI/購読量削減 対 retrievalコスト" }
+    開発者: { stance: "ゲート必須: 内容grepで COUNCIL-LOG 結晶化を全件確認、未結晶ゼロのバッチのみ移送", confidence: 0.88, dimension: "可逆性/データ損失/検証可能性" }
+    哲学者: { stance: "refs-draft を発酵層(再訪予約つき)へ / project-derived-councils は管轄外で排泄対象外", confidence: 0.55, dimension: "声の可逆性と再訪構造" }
+  weighted_score: 8.05
+  judgment_confidence: 0.80
+  recommended: "(b)全6 + 結晶化を内容確認できた (c) のみ移送。開発者ゲートを必須適用。refs-draft は発酵層タグ+再訪予約、project-derived-councils は管轄外(還元先project)として恒久除外。"
+  gate_findings: "開発者ゲートを内容grepで実行した結果、wave2-phaseB に w2qb04、wave3-phaseB に w3qb04 が COUNCIL-LOG 未結晶であることを検出（沈黙した声）。→ wave2/wave3 を据え置き、w2qb04/w3qb04 を結晶化候補として SUMMARY 要再確認リストに登録。refs-draft/ecc は agents-catalog/agentshield-spec/hooks-trigger-points/skills-pattern が skills から参照(live)、instincts-design のみ未結晶→発酵層。rtkSHA は結晶化確認済み。"
+  decision_scope:
+    migrate: "(b)6件 + (c) wave1/wave4/wave5/deliveries/council-readable = 5,260行"
+    hold_uncrystallized: "wave2(w2qb04)/wave3(w3qb04) = 1,072行"
+    hold_germination: "refs-draft/ecc(instincts-design 発酵層 + live参照4) = 557行"
+    exclude_jurisdiction: "project-derived-councils(還元先project・他層食料) = 1,200行・恒久除外"
+  minority_opinion: "哲学者『据え置きは再訪構造が無ければ緩慢な抹消。refs-draft は発酵層として次サイクル再問を予約せよ』。経営者『refs-draft 一律据え置きは WARM 滞留→次サイクルで完成/破棄の閾値を』。→ 発酵層タグ+要再確認リスト登録で吸収。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  final_decision: "council≒人間合意(philosophy 第6条)により Council judgment を合意とみなし自律実行。ゲート確定スコープで移送。"
+  follow_up_questions_count: 0
+  agreed_at: "2026-06-07T05:00:00Z"
+  cascade_to: "本番第二弾 PR で実装。w2qb04/w3qb04 の結晶化は別タスク(吸収優先)として SUMMARY 要再確認リストに登録。"

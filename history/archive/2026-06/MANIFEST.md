@@ -44,3 +44,28 @@
 ## 据え置き（今回移送しない）
 
 - **(b) 中確度** / **(c) サブ作業ログ**: Dry-run レポートで「要人間確認」フラグ。「沈黙した声の救済」(§3-5) に従い、確認が取れるまで移送しない。
+
+---
+
+# 第二弾 追記（2026-06-07・Council mtb2sc・開発者ゲート適用）
+
+第二弾は (b) 中確度 + (c) 結晶化確認済みサブログを移送。**開発者ゲート（内容 grep で COUNCIL-LOG 結晶化を全件確認）**を通過した分のみ。
+
+## 移送（5,260 行）
+
+| 群 | 内容 | 結晶化先（逆引き） |
+|---|---|---|
+| (b) 中確度 6件 | `D4-AUDIT-2026-04-30` / `SKILL-CREATOR-AUDIT-v5.0.0` / `SKILL-CREATOR-AUDIT-v5.10.x` / `ECC-SURVEY-2026-05-11` / `self-gate-check-AD010` / `L0-WF-DESIGN-2026-04-30` | ADR / CHANGELOG / skills |
+| `wave1/` | w1qb01-03 結晶化済み確認。CHEW/RITUAL/AUDIT/HANDOFF 等 forensic | `COUNCIL-LOG.md`（w1qb01-03 / metaskill 2件） |
+| `wave4/` `wave5/` | w5qb02 結晶化済み確認。COMPLETION/RITUAL forensic | `COUNCIL-LOG.md`（w5qb02） |
+| `deliveries/` | brainstorm 1件 | `CHANGELOG.md` |
+| `council-readable/` | Council 可読レンダリング4件（rtkSHA 含め全件結晶化確認） | `COUNCIL-LOG.md` |
+
+## 据え置き（移送しない・理由つき）
+
+| 対象 | 行 | 理由 |
+|---|---|---|
+| `wave2/`（`w2qb04`）| 618 | **未結晶の Council 決定 `w2qb04` を含む**（沈黙した声）。吸収（COUNCIL-LOG への結晶化）が先。`w2qb04` を要再確認リストに登録。 |
+| `wave3/`（`w3qb04`）| 454 | 同上、未結晶 `w3qb04` を含む。 |
+| `refs-draft/ecc/` | 557 | 4件は skills から参照（live）、`instincts-design` のみ未結晶＝**発酵層**（次サイクル再問予約）。 |
+| `project-derived-councils/` | 1,200 | **管轄外・恒久除外**。利用者プロジェクト(D3)由来 Council ミラー＝還元先 project。DH-self(D4) 代謝の排泄対象ではない（他層の食料）。 |

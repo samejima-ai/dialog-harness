@@ -32,22 +32,24 @@
 
 ### 移送済み
 
-- **(a) 高確度（−2,584 行・移送済み 2026-06-07）**: `SELF-VERIFICATION-v5.*`（8件）/ `VERIFICATION*.md`（2件）/ `HANDOFF-v5.*`（3件）/ `L1-DELIVERY-v5.3.0.md` → **`archive/2026-06/`**（逆引きマニフェストは `archive/2026-06/MANIFEST.md`）。
+- **(a) 高確度（−2,584 行・移送済み 2026-06-07）**: `SELF-VERIFICATION-v5.*`（8件）/ `VERIFICATION*.md`（2件）/ `HANDOFF-v5.*`（3件）/ `L1-DELIVERY-v5.3.0.md` → **`archive/2026-06/`**。
+- **(b)+(c) 第二弾（−5,260 行・移送済み 2026-06-07・Council mtb2sc・開発者ゲート適用）**: (b)中確度6件（`D4-AUDIT` / `SKILL-CREATOR-AUDIT`×2 / `ECC-SURVEY` / `self-gate-check-AD010` / `L0-WF-DESIGN`）+ (c)結晶化確認済み（`wave1/` `wave4/` `wave5/` `deliveries/` `council-readable/`）→ **`archive/2026-06/`**。逆引きは `archive/2026-06/MANIFEST.md`。
 
-### 未移送・据え置き（要人間確認）
+### 未移送・据え置き（理由つき）
 
-過去サイクルの一回性 forensic。「沈黙した声の救済」(§3-5) に従い確認が取れるまで移送しない。
-
-- **中確度（要確認）**: `D4-AUDIT-*` / `SKILL-CREATOR-AUDIT-*`（2件）/ `ECC-SURVEY-*` / `self-gate-check-AD010` / `L0-WF-DESIGN-*`
-- **サブ作業ログ（要確認）**: `wave1`〜`wave5` / `deliveries` / `council-readable` / `project-derived-councils` / `refs-draft`
+- **`wave2/`（`w2qb04` 未結晶）/ `wave3/`（`w3qb04` 未結晶）**: 開発者ゲートが**未結晶の Council 決定**を検出（沈黙した声）。吸収（COUNCIL-LOG への結晶化）が先。下記要再確認リスト参照。
+- **`refs-draft/ecc/`（発酵層）**: 4件は skills から参照（live）、`instincts-design` のみ未結晶。COLD でも HOT 常駐でもない「発酵層」として次サイクル再問予約。
+- **`project-derived-councils/`（管轄外・恒久除外）**: 利用者プロジェクト(D3)由来 Council ミラー＝還元先 project。DH-self(D4) 代謝の排泄対象ではない（他層の食料）。
 
 ## 要再確認リスト（摂取選択の可監査性 / metabolism-regime §3-3）
 
 人間が「何を結晶化し何を COLD へ送るか」の摂取選択そのものを監査するためのリスト。**確度: AI 推定**。
 
 - [ ] 結晶化候補（Council ゲート未達で保留）: 「harness-verifier 所有物編集は D5 ゲート（独立性要請）」/「PR merge 後はブランチを rebase してから継続コミット」 — `repetition_threshold` 到達まで保留
-- [x] 本番 reindex 第一弾: (a) 高確度群を `archive/2026-06/` へ移送（2026-06-07・Master 承認・−15%）。詳細 `../delivery/REINDEX-PROD-2026-06-07.md`
-- [ ] COLD 中確度・サブ作業ログ（(b)(c)）の移送可否 — 「沈黙した声の救済」(§3-5) に従い、人間確認が取れるまで移送しない（本番第二弾の判断材料）
+- [x] 本番 reindex 第一弾: (a) 高確度群を `archive/2026-06/` へ移送（2026-06-07・−15%）。詳細 `../delivery/REINDEX-PROD-2026-06-07.md`
+- [x] 本番 reindex 第二弾: (b)+(c)結晶化確認済みを移送（2026-06-07・Council mtb2sc・−5,260行）。詳細 `../delivery/REINDEX-PROD-2026-06-07-wave2.md`
+- [ ] **吸収優先（未結晶の声）**: `w2qb04`（wave2-phaseB）/ `w3qb04`（wave3-phaseB）を COUNCIL-LOG へ結晶化 → 完了後に wave2/wave3 を移送可
+- [ ] **発酵層の再問**: `refs-draft/ecc/instincts-design` を次サイクルで「結晶化したか / 枯死か」再判定（緩慢な抹消を防ぐ再訪予約）
 
 ## 関連
 
