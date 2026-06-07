@@ -19,7 +19,7 @@ dry_run_remaining: 3                        # 残り Dry-run サイクル数（c
 cursor:
   # baseline = 2 回の Dry-run（2026-05-31 / 2026-06-06）が既に読了した現末尾。
   # 次回 reindex はここ以降の WARM delta のみを読む（増分・全 rescan 禁止）。
-  COUNCIL-LOG.md: { line: 2265, checksum: "sha256:c2819921242a114d7bb0a5c3ca70f221590b3836da682feb45ec8b81e04f9892" }
+  COUNCIL-LOG.md: { line: 2287, checksum: "sha256:85c312eef795b4c572bb8724044a9319faba4592419afa157aec57d527d42d56" }
   CHANGELOG.md:   { line: 1403, checksum: "sha256:8adb132b4037194e5b207bcb4afd91e664868a3b171c108909e039c9c64db081" }
   INTENT.md:      { line: 1023, checksum: "sha256:a2c2e8a76b31a33b356cee260385a5281ba0acbe59591a7066a396120b726852" }
   REGIME-LOG.md:  { line: 674,  checksum: "sha256:55317d092c2f4dd89ce4402152358b577fc3f836cf31def295c6b4b9e41e66c1" }

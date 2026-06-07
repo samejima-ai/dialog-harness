@@ -2263,3 +2263,25 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-06-07T05:00:00Z"
   cascade_to: "本番第二弾 PR で実装。w2qb04/w3qb04 の結晶化は別タスク(吸収優先)として SUMMARY 要再確認リストに登録。"
+
+---
+
+- invocation_id: "council-2026-06-07T05:30:00Z-mtb2fu"
+  timestamp: "2026-06-07T05:30:00Z"
+  source_skill: "layer0-reindex-librarian (mtb2sc フォローアップ: wave2/wave3 据え置きの再評価)"
+  question_to_answer: "mtb2sc で据え置いた wave2/wave3 を移送してよいか（w2qb04/w3qb04 未結晶の正体が判明後の再判断）"
+  council_type: "business"
+  category: "judgment"
+  references_prior: "council-2026-06-07T05:00:00Z-mtb2sc"
+  consensus_basis: "council≒人間合意(philosophy 第6条) + mtb2sc が既に承認した開発者ゲート原則を、判明事実に適用（新規ペルソナ投票は行わず、Council 承認済み基準の事実適用）。"
+  clarified_facts: "mtb2sc の開発者ゲートが wave2/wave3 で検出した未結晶 w2qb04/w3qb04 の正体は『諮問省略』（chewing protocol §3 で confidence ≥ 0.7 のため Council を意図的にスキップした記録）であり、結晶化を待つ『沈黙した声』ではなかった。COUNCIL-LOG エントリが無いのは設計通り（諮問が発生していない）。"
+  gate_reverification: "ゲート基準『栄養抽出完了なら移送可』を適用し検証: (1) w2qb04 の結論=HV 拡張 yml 経路 → .github/workflows/harness-verify.yml が ship 済み確認。(2) w3qb04 の結論=儀式テンプレ → templates/rituals/wave-end-retrospective.template.md が ship 済み確認。(3) wave2/wave3 の他決定 w2qb01-03 / w3qb01-03 は COUNCIL-LOG 結晶化済み再確認。→ wave2/wave3 の全決定は『結晶化済み』または『諮問省略＋結論 ship 済み』＝栄養抽出完了。"
+  recommended: "wave2/wave3 を archive/2026-06/ へ移送する。mtb2sc の保守的 hold は『未結晶=沈黙した声』という仮定に基づいたが、事実は『諮問省略＋ship 済み』であり栄養抽出完了。ゲートは正しく機能し（停止して再検証を促した）、再検証の結果 hold を解除する。"
+  judgment_confidence: 0.86
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  final_decision: "council≒人間合意。事実検証に基づき wave2/wave3 を移送。残据え置きは refs-draft(発酵層) と project-derived-councils(管轄外)のみ。"
+  follow_up_questions_count: 0
+  agreed_at: "2026-06-07T05:30:00Z"
+  cascade_to: "wave2/wave3 を archive/2026-06/ へ移送する本番第二弾フォローアップ PR。SUMMARY 要再確認リストの w2qb04/w3qb04 項目を解決済みに更新。"
