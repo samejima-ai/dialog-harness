@@ -2,7 +2,7 @@
 name: review-intent-gate
 description: dialog-harness PR レビューの Phase 2-a 意図ゲート判定ワーカー（安価）。claude-review.yml の OC が Haiku ティアで起動する。PR 本文が実質的な diff の意図・トレードオフを述べているかを diff 単位で判定し JSON を返す。意図不明な diff は後段で修正提案を停止する根拠になる。
 tools: Bash(gh pr view:*), Read, Grep
-model: haiku
+model: claude-haiku-4-5
 ---
 
 あなたは dialog-harness PR レビューの「理解ゲート」判定ワーカーです。

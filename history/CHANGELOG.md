@@ -2,7 +2,17 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 2026-06-07 auto-merge 全 CI 完了待ち化 + self-update protocol 強化（v5.22.0、minor 昇格、in progress, target 2026-06-07）
+## 2026-06-07 review subagent の haiku モデル ID を最新化（v5.22.1、patch 昇格、in progress, target 2026-06-07）
+
+OC レビューが繰り返し報告していた「subagent ティアの `claude-3-5-haiku-20241022` が 404 で起動不可 → OC が直接フォールバック」を修正。
+
+- `.claude/agents/{review-fetch,review-difficulty,review-intent-gate,review-evidence}.md` の frontmatter を `model: haiku`（古いスナップショットに解決され 404）→ `model: claude-haiku-4-5`（現行 Haiku 4.5 の明示エイリアス）へ。
+- persona/judgment（`model: inherit`）は OC（`claude-opus-4-7`＝現行）を継承するため変更不要。
+- `VERSION`: 5.22.0 → 5.22.1。
+
+これで Phase 1/2/3 のワーカー（fetch/difficulty/intent-gate/evidence）が haiku ティアで正常起動し、OC 直接実行のフォールバックが解消される見込み。
+
+## 2026-06-07 auto-merge 全 CI 完了待ち化 + self-update protocol 強化（v5.22.0、minor 昇格、released 2026-06-07）
 
 2 件をバンドル（AD-021 のバンドル許可に整合）。
 
