@@ -41,7 +41,7 @@
 - **`refs-draft/ecc/`（発酵層）**: 4件は skills から参照（live）、`instincts-design` のみ未結晶。COLD でも HOT 常駐でもない「発酵層」として次サイクル再問予約。
 - **`project-derived-councils/`（管轄外・恒久除外）**: 利用者プロジェクト(D3)由来 Council ミラー＝還元先 project。DH-self(D4) 代謝の排泄対象ではない（他層の食料）。
 
-> 注: `wave2/` `wave3/` は mtb2fu で移送済み（下記）。w2qb04/w3qb04 の正体は「諮問省略＋結論 ship 済み」＝栄養抽出完了と判明し hold 解除。
+> 注: `wave2/` `wave3/` は mtb2fu で移送済み（上記「移送済み」節）。w2qb04/w3qb04 の正体は「諮問省略＋結論 ship 済み」＝栄養抽出完了と判明し hold 解除。
 
 ## 要再確認リスト（摂取選択の可監査性 / metabolism-regime §3-3）
 
