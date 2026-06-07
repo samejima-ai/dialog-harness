@@ -24,11 +24,20 @@
 | `CHANGELOG.md` | 直近 10 件＋要約のみ |
 | `REGIME-LOG.md` | 直近 5 件＋要約のみ |
 
-## COLD 候補（**未移送**・Dry-run 段階・既定ロード対象外にしたい抜け殻）
+## COLD（情報代謝の排泄層・既定ロード対象外・retrievable）
 
-過去サイクルの一回性 forensic。学習は既に HOT へ結晶化済みの前提。本番 reindex（承認後）で `archive/` へ移送予定。
+> **除外の実現は convention レベル**: COLD を default-load から外す効果は、ハードな glob 規則ではなく
+> 「本 SUMMARY を入口にし、COLD（`archive/`）を列挙しない」規律で実現される（代謝モデルは規律ベース）。
+> ロード主体（振り返り儀式 F1 等）が本 SUMMARY を入口として尊重することが前提。glob 強制ではない。
 
-- **高確度（−2,584 行）**: `SELF-VERIFICATION-v5.*`（8件）/ `VERIFICATION*.md`（2件）/ `HANDOFF-v5.*`（3件）/ `L1-DELIVERY-v5.3.0.md`
+### 移送済み
+
+- **(a) 高確度（−2,584 行・移送済み 2026-06-07）**: `SELF-VERIFICATION-v5.*`（8件）/ `VERIFICATION*.md`（2件）/ `HANDOFF-v5.*`（3件）/ `L1-DELIVERY-v5.3.0.md` → **`archive/2026-06/`**（逆引きマニフェストは `archive/2026-06/MANIFEST.md`）。
+
+### 未移送・据え置き（要人間確認）
+
+過去サイクルの一回性 forensic。「沈黙した声の救済」(§3-5) に従い確認が取れるまで移送しない。
+
 - **中確度（要確認）**: `D4-AUDIT-*` / `SKILL-CREATOR-AUDIT-*`（2件）/ `ECC-SURVEY-*` / `self-gate-check-AD010` / `L0-WF-DESIGN-*`
 - **サブ作業ログ（要確認）**: `wave1`〜`wave5` / `deliveries` / `council-readable` / `project-derived-councils` / `refs-draft`
 
@@ -37,8 +46,8 @@
 人間が「何を結晶化し何を COLD へ送るか」の摂取選択そのものを監査するためのリスト。**確度: AI 推定**。
 
 - [ ] 結晶化候補（Council ゲート未達で保留）: 「harness-verifier 所有物編集は D5 ゲート（独立性要請）」/「PR merge 後はブランチを rebase してから継続コミット」 — `repetition_threshold` 到達まで保留
-- [ ] COLD 中確度・サブ作業ログ（(b)(c)）の移送可否 — 「沈黙した声の救済」(§3-5) に従い、人間確認が取れるまで移送しない
-- [ ] 本番昇格（dry_run_remaining: 3 → 0）の承認タイミング
+- [x] 本番 reindex 第一弾: (a) 高確度群を `archive/2026-06/` へ移送（2026-06-07・Master 承認・−15%）。詳細 `../delivery/REINDEX-PROD-2026-06-07.md`
+- [ ] COLD 中確度・サブ作業ログ（(b)(c)）の移送可否 — 「沈黙した声の救済」(§3-5) に従い、人間確認が取れるまで移送しない（本番第二弾の判断材料）
 
 ## 関連
 
