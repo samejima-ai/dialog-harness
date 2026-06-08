@@ -2,6 +2,46 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-06-08 E2E 情報代謝サイクルの正式機構化（v5.24.0、minor 昇格、in progress, target 2026-06-08）
+
+利用者の要望「履歴を含めた一連のサイクルを構築したい／代謝サイクルも考慮した設計」を起点に、v5.23.0 §9 で
+「温存」とした **テスト情報代謝を正式機構へ昇格**。設計の中心思想は **専用サイクルを作らず、E2E run 履歴を
+既存情報代謝サイクルの新しい episodic ソースとして流す**（構造同形維持・重複回避）。
+
+重要な前提（利用者明示・Council mtbl01 と一致）: **E2E とその履歴は利用者プロジェクトのもの（軸A: project
+還元 D1-D3）**。DH 本体は対面アプリを持たないため **E2E 代謝を稼働しない（定義のみ・dog-food 対象外）**。
+∴ DH に入るのは (a) 機構の正本（framework 叡智 D4・全 DH プロジェクトが継承）と (b) 利用者プロジェクトへ
+展開される scaffold/スキーマ の 2 種。実データ（E2E-LOG・artifact・flaky 罠）は各 project の history/ に住む。
+
+tier 対応（v5.23.0 二相分離が COLD/HOT に直結）:
+- COLD: 相 A artifact（Trace/動画/network/console）・生 run ログ → `history/archive/YYYY-MM/e2e/`（既定非ロード・retrievable）
+- WARM: run 要約列 → `history/E2E-LOG.md`（append-only・cursor 増分摂取）
+- HOT: flaky 罠（反-発火条件付）・安定 journey RL・provenance 観測・B-ID/C5 oracle 結晶（密度↑≠量↑）
+
+サイクル 5 フェーズ: ①記録 ②蓄積 ③代謝(reindex 増分) ④還流(feedback-loop teeth・opt-in/段階) ⑤結晶+排泄。
+①②⑤は既存代謝流用、③は reindex 増分対象に E2E-LOG 追加、④のみ新規 teeth。8 不変条件を E2E に具体化
+（特に #1 flaky の council_gate 反復ゲート / #6 COLD 原本から罠蒸留 / #8 反-発火条件必須）。北極星整合：
+artifact は COLD 直行で既定ロードしないため、履歴が無限に貯まっても購読量は膨らまない。
+
+変更ファイル:
+- `layer0-reindex-librarian/references/metabolism-regime.md`: §7「E2E episodic ソースの tier 対応」新設（framework 定義）
+- `layer0-reindex-librarian/references/reindex-protocol.md`: cursor に E2E-LOG・処理フローに E2E 摂取・source pointer に E2E 例
+- `layer0-reindex-librarian/SKILL.md`: 参照に §7 薄ポインタ（常時ロード側・購読量保護）
+- `crosscut-feedback-loop/references/feedback-protocol.md`: 還流種別 `flaky_rate_breach` / `e2e_quarantine` + E2E 代謝接続節
+- `layer0-spec-architect/references/history-layer-spec.md`: project history schema に E2E-LOG.md（配置図・責務表・スキーマ節・archive=COLD に e2e/）
+- `layer0-spec-architect/assets/meta-spec-template.md`: REGIME.md `## 情報代謝設定` に E2E 代謝 keys（scaffold）
+- `layer1-autonomous-dev/references/e2e-best-practices.md`: §9 を温存→正式機構「E2E 情報代謝サイクル」へ昇格、§6 接続地図を整合、§10 に温存(C4/teeth 強制化)
+- `layer2-orchestrator/references/e2e-integration.md`: config.ts に「①記録」（artifact→COLD 直行・E2E-LOG append）規律
+- `history/.metabolism-config.yml`: E2E 代謝は project-scope・DH 本体非適用を明記（キーは置かない）
+- `VERSION`: 5.23.0 → 5.24.0
+
+### 後方互換 / スコープ
+
+- 既存挙動不変（REGIME.md に `e2e_metabolism` 未記載なら従来どおり）。非 UI / E2E 無しプロジェクトは非適用
+- ④還流 teeth の **auto-merge 強制連動は opt-in / 段階**（auto-merge.yml は本 PR で変更しない）。実 E2E 運用
+  データで閾値を較正してから次 PR で強制化を再判定（metabolism 設計自身の Dry-run 精神）
+- 温存: mutation メタテスト(C4)・④teeth の強制化
+
 ## 2026-06-08 E2E 構築 BP の体系化・C5 テスト oracle 言語化・UI Baseline RL（v5.23.0、minor 昇格、in progress, target 2026-06-08）
 
 2 テーマを 1 PR にバンドル。**(1)** E2E 構築 BP + C5（下記）、**(2)** UI Baseline RL 取り込み（末尾）。

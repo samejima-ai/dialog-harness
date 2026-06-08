@@ -134,6 +134,14 @@ sensors/e2e/
 Generator / Healer Agent はこの config 規律と e2e-best-practices.md §3（相 A 構築規律）に従って
 テストを生成・修復する。
 
+### 代謝サイクルへの記録（v5.24.0）
+
+run 後、各 run は **相 A artifact を COLD（`history/archive/YYYY-MM/e2e/`）直行**で保存し、
+**run 要約（provenance + pass/fail/flaky/duration + artifact への cold:// ポインタ）を
+`history/E2E-LOG.md` に append** する。これが E2E 情報代謝サイクル（`../../layer1-autonomous-dev/references/e2e-best-practices.md` §9）の
+①記録フェーズ。E2E-LOG は WARM として reindex が増分摂取し、flaky 反復を罠に結晶化する。
+artifact 本体は既定ロードしない（購読量保護）。**project 還元（D1-D3）専用**で、DH 本体では稼働しない。
+
 ### scenarios.md テンプレート
 
 ```markdown

@@ -20,7 +20,8 @@ project-root/
     ├── REGIME-LOG.md           # 判定層の事後評価
     ├── ARCH-DECISIONS.md       # HOW層判断（任意、ADR形式）
     ├── PATTERNS.md             # 失敗/成功パターン（任意、自動蓄積）
-    └── archive/                # 古い廃止INTENTのアーカイブ
+    ├── E2E-LOG.md              # E2E run 要約（任意・UIプロジェクト、append-only WARM、v5.24.0）
+    └── archive/                # 古い廃止INTENT + COLD（archive/YYYY-MM/e2e/ に相A artifact・生runログ）
 ```
 
 ---
@@ -35,6 +36,7 @@ project-root/
 | REGIME-LOG.md | L1（事後評価から抽出） | L0（次回判定時） | 判定×実績の対応表 | LC ≥ 1 |
 | ARCH-DECISIONS.md | L1（実装時記録） | L1（次回拡張時） | ADR形式の軽量版 | 任意 |
 | PATTERNS.md | reviewer（検証時抽出） | L1（実装前参照） | 罠パターン集 | 任意 |
+| E2E-LOG.md | L1 / CI（run 後追記） | reindex / reviewer | append-only run 要約（WARM） | 任意（UIプロジェクト & E2E あり） |
 
 **原則**: 履歴の更新主体はAI単独。人間は承認するのみ（`ritual-protocol.md` F3 フェーズで承認粒度を定義）。
 
@@ -260,11 +262,56 @@ layer1-independent-reviewer が検証時に発見した罠パターンを蓄積�
 
 ---
 
+## E2E-LOG.md（任意・UIプロジェクト・v5.24.0 追加）
+
+### 目的
+
+E2E テストの **run 要約**を append-only で蓄積する WARM 層。情報代謝サイクルの新しい episodic ソースであり、
+reindex がここから flaky 反復・安定 journey を増分摂取して罠/RL に結晶化する（専用サイクルは作らない）。
+定義の正本は `../../layer0-reindex-librarian/references/metabolism-regime.md` §7、構築規律は
+`../../layer1-autonomous-dev/references/e2e-best-practices.md` §9。
+
+### 性質（購読量保護の要）
+
+- **WARM**: 既定では全文ロードしない。reindex が cursor 続きの delta のみ増分摂取する
+- **相 A artifact は本ファイルに書かない**: Trace/動画/network/console は COLD 直行
+  （`history/archive/YYYY-MM/e2e/`）。E2E-LOG には**ポインタ（cold:// パス）と要約のみ**を残す
+- **append-only**: run のたびに 1 エントリ追記。上書き・編集しない（証跡保存）
+
+### テンプレート（run 要約 1 エントリ）
+
+```markdown
+# E2E run ログ（append-only / reindex 増分摂取対象）
+
+## run 2026-06-08T06:13Z (CI #1421, commit a1b2c3d)
+- provenance: chromium 124.0 (playwright v1.44.0, container sha256:9f01…)  <!-- §7 借りない・固定する・記録する -->
+- 結果: 42 passed / 1 failed / 2 flaky / 18.3s
+- flaky: checkout-flow（3 回中 1 回 fail・viewport=375 のみ／他環境では安定）
+  - artifact: cold://2026-06/e2e/run-2026-06-08T0613Z-checkout.jsonl  <!-- 相 A 生ログは COLD 直行 -->
+- quarantine: なし
+```
+
+### 代謝での扱い（tier・昇降格）
+
+- reindex が **flaky の反復**（`council_gate.repetition_threshold` 回以上・`min_age_days` 経過）を検出 →
+  Council ゲート経由で **flaky 罠（HOT・反-発火条件付）**に結晶化。罠は生 run ログ（COLD 原本）から蒸留する（#6）
+- **安定 journey** は RL 候補（SPEC critical journey の実行可能投影＝相 B）
+- flaky 率超過・隔離台帳は `crosscut-feedback-loop`（`flaky_rate_breach` / `e2e_quarantine`）へ還流
+- 結晶化完了済みの古い run 要約は cycle 境界で COLD（`archive/YYYY-MM/e2e/`）へ排泄（source pointer 付）
+
+### 承認レベル
+
+run 要約の追記は **レベル A（自動承認・通知のみ）**。flaky 罠の HOT 昇格は Council ゲート + 人間最終承認（レベル C 相当）。
+
+---
+
 ## archive/
 
 ### 対象
 
 廃止機能 INTENT のうち、廃止日から **2年経過**したもの。
+加えて **E2E の COLD 排泄物**（相 A artifact・生 run ログ・結晶化完了済みの古い run 要約）を
+`archive/YYYY-MM/e2e/` に retrievable で保持する（archive≠delete・disk 無制限 OK・既定非ロード）。
 
 ### 対象外（本体に残す）
 

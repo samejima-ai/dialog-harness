@@ -43,6 +43,7 @@ cursor:
   INTENT.md:    { line: 312, checksum: "sha256:ab12…" }
   CHANGELOG.md: { line: 188, checksum: "sha256:cd34…" }
   COUNCIL-LOG.md: { line: 2088, checksum: "sha256:ef56…" }
+  E2E-LOG.md:   { line: 0, checksum: null }   # UI project のみ。append-only run 要約（WARM）。新規出現時は cursor 未登録として line:0 登録（§2 規律）→ 次回先頭から摂取
 reduction_target: "DH"   # この cursor が DH 還元 / project 還元 どちらの消化進捗か（軸A）
 dry_run_remaining: 3      # 残り Dry-run サイクル数（0 で本番昇格、REGIME.md 初期値から減算）
                           # ロード時に負値/破損を検出したら安全側へ倒し Dry-run を強制（!=0 ではなく「>0 または不正→Dry-run」＝L1）
@@ -100,6 +101,15 @@ config を解決する（reduction 先に依らず同一ロジック）:
 
 cycle 境界（献上後・次 L0 前）でのみ実行する。開発中は割り込まない（検証後評価原則）。
 
+### E2E episodic ソースの摂取（v5.24.0）
+
+UI project では `history/E2E-LOG.md`（run 要約・WARM）が cursor 追跡対象に加わる（上記マーカー例）。
+step 3 摂取選択では **flaky の反復**（`council_gate.repetition_threshold` 回以上）を罠候補、**安定 journey** を
+RL 候補として選別する。flaky 罠の結晶化は **#6 に従い生 run ログ（COLD lossless 原本）から**蒸留し、
+E2E-LOG の lossy 要約からは結晶化しない。相 A artifact は最初から COLD 直行（reindex の摂取対象外＝既定非ロード）。
+tier 対応の正本は `metabolism-regime.md` §7、構築側は
+`../../layer1-autonomous-dev/references/e2e-best-practices.md` §9。
+
 ---
 
 ## 4. Council ゲート定量基準（早すぎる結晶化の防止・mtbl01 #1）
@@ -125,6 +135,12 @@ reindex は候補を検出するだけ。HOT へ実際に昇格させるかは C
 
 ```
 <!-- source: cold://2026-05/DELIVERY-v5.3.0.md#L42-88 sha256:ab12… reduction=DH -->
+```
+
+E2E flaky 罠の例（生 run ログへ逆引き・reduction=project）:
+
+```
+<!-- source: cold://2026-06/e2e/run-2026-06-08T0613Z-checkout.jsonl#L12-31 sha256:9f01… reduction=project -->
 ```
 
 - `cold://<相対パス>` は COLD アーカイブ内の安定パス（移送時に確定、以後不変）

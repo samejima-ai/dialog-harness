@@ -136,3 +136,44 @@ reindex は episodic を還元先で**仕分け**し、正しい叡智層へ振�
 | 検証後評価原則 | 結晶化は cycle 境界で実行（開発中の割り込み禁止と整合） |
 
 **「保持したまま速く」の因果**: 速くなる＝密度↑＋意思決定の先取り＋純度↑。context が保持される＝再利用可能な project 特化 context は叡智層（罠/SPEC/INTENT）に住み、抜け殻は COLD に retrievable。捨てても判断に効く context は失われない。
+
+---
+
+## 7. E2E episodic ソースの tier 対応（v5.24.0 追加）
+
+E2E テストの実行結果・履歴は、**専用サイクルを新設せず本 regime の新しい episodic ソース**として流す
+（構造同形の維持・重複機構の回避）。構築側の正本は
+`../../layer1-autonomous-dev/references/e2e-best-practices.md` §9「E2E 情報代謝サイクル」、
+project history への置き場は `../../layer0-spec-architect/references/history-layer-spec.md` §E2E-LOG.md。
+
+### 還元先（軸A）: 既定 project（D1-D3）
+
+E2E が生む大半（run 履歴・flaky パターン・artifact）は「**このアプリのこの画面**」に閉じた事実＝
+**project 還元**。一部「AI 駆動 E2E 一般で flaky はこう出やすい」等は DH 還元（D4）になりうるが**既定は project**。
+∴ E2E 代謝の正本は利用者プロジェクトの REGIME.md `## 情報代謝設定`（Council mtbl01 で確立した
+「DH 使用プロジェクト開始以降は project のための代謝機構」原則と一致）。
+**DH 本体（dialog-harness repo）は対面アプリを持たないため E2E 代謝を稼働しない**（定義のみ・dog-food 対象外。
+一般代謝は dog-food するが E2E はしない）。
+
+### tier 対応（二相分離が COLD/HOT に直結）
+
+| Tier | E2E の中身 | 居場所（project ローカル） | 購読量 |
+|---|---|---|---|
+| **COLD** | 相 A artifact（Trace/動画/network/console）・生 run ログ詳細 | `history/archive/YYYY-MM/e2e/`（生成時はランタイム出力 dir = ephemeral、cycle 境界で COLD 保持） | 乗らない（retrievable・disk 無制限 OK） |
+| **WARM** | run 要約列（pass/fail・flaky・duration・provenance） | `history/E2E-LOG.md`（append-only・cursor 追跡） | 関連時のみ（reindex が増分読み） |
+| **HOT** | flaky 罠（反-発火条件付）・安定 journey RL・provenance 観測規律・B-ID/C5 oracle 結晶 | PATTERNS.md / DONT / SPEC / INTENT / SUMMARY | 常時（密度↑≠量↑） |
+
+> 北極星の急所: E2E は毎 CI 実行で大量データを生むが、**artifact は COLD 直行で絶対に既定ロードしない**。
+> 蒸留された flaky 罠だけが HOT に乗る。履歴が無限に貯まっても購読量は膨らまない（量↑でなく密度↑）。
+> v5.23.0 の二相分離（相 A in-loop 知覚器 / 相 B 耐久資産）が、そのまま COLD / HOT に対応する。
+
+### 8 不変条件の E2E 具体化
+
+- **#1 早すぎる結晶化防止**: 単発 flaky を罠にしない。`council_gate.repetition_threshold` 回反復＋
+  `min_age_days` 経過＋Council ゲートを通って初めて HOT 罠化（偶発的 flaky の固定化を防ぐ）
+- **#2 COLD=archive≠delete**: artifact・生 run ログは消さず retrievable（後から原因究明・再現に使う）
+- **#3 source pointer**: flaky 罠は元の生 run ログ（`cold://.../e2e/...`）へ逆引きポインタを持つ
+- **#6 COLD 原本から結晶化**: 罠は生 run ログ（COLD lossless）から蒸留する。E2E-LOG の lossy 要約からは結晶化しない
+- **#8 反-発火条件必須**: flaky 罠は「いつ**適用しない**か」を必須化（例: この不安定は特定 viewport/低速 CI 限定、
+  他環境では誤発火させない）。表層一致での誤発火が debug 困難な flaky では特に重要
+

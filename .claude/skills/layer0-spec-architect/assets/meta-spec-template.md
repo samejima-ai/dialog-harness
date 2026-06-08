@@ -331,16 +331,27 @@ layer0-reindex-librarian の references/metabolism-regime.md（framework 叡智�
 - recrystallize_trigger: token_budget   # cycle 境界で実行。N-cycle 駆動は採らない（enum: token_budget）
 - tier_paths:
   - HOT:  CLAUDE.md / SPEC.md / DOMAINS.md / history/SUMMARY.md（結晶層・常時ロード対象）
-  - WARM: history/INTENT.md / history/CHANGELOG.md（圧縮層・関連時ロード）
-  - COLD: history/archive/YYYY-MM/（アーカイブ層・既定非ロード・retrievable）
+  - WARM: history/INTENT.md / history/CHANGELOG.md / history/E2E-LOG.md（圧縮層・関連時ロード）
+  - COLD: history/archive/YYYY-MM/（アーカイブ層・既定非ロード・retrievable。E2E は archive/YYYY-MM/e2e/）
 - cursor_path: history/.metabolism-cursor.yml   # 処理済みマーカー（増分・冪等の生命線）
 - dry_run_cycles: 3              # 初期サイクル数だけ Dry-run（差分レポートのみ）。0 で本番昇格
-- council_gate.repetition_threshold: 3   # 同一パターン N 回反復で結晶化候補
+- council_gate.repetition_threshold: 3   # 同一パターン N 回反復で結晶化候補（flaky 罠化にも流用）
 - council_gate.cross_type_threshold: 3   # 同一 override が M 機能タイプ以上で反復したら Council 諮問
 - council_gate.min_age_days: 7           # 候補化から X 日経過まで HOT 昇格しない
 
+### E2E 代謝設定（UI プロジェクト & E2E あり時のみ・v5.24.0）
+
+E2E run 履歴を代謝の episodic ソースとして扱う際の project 固有パラメータ。定義の正本は
+layer0-reindex-librarian/references/metabolism-regime.md §7、構築は e2e-best-practices.md §9。
+
+- e2e_metabolism.enabled: true            # UI プロジェクトで E2E を持つ場合のみ。DH 本体は対面アプリ無しのため非適用
+- e2e_metabolism.warm_log: history/E2E-LOG.md       # run 要約（append-only・cursor 追跡）
+- e2e_metabolism.cold_artifacts: history/archive/YYYY-MM/e2e/   # 相 A artifact・生 run ログ（COLD 直行・既定非ロード）
+- e2e_metabolism.flaky_rate_threshold: 0.05         # ④還流 teeth の閾値（opt-in/段階。実運用データで較正）
+- e2e_metabolism.quarantine_max_age_days: 14        # 隔離テストの修正/削除期限（超過で設計層へ還流）
+
 （プロトコルは layer0-reindex-librarian の SKILL.md と references 参照。初回 reindex は必ず Dry-run。
-HOT 昇格は Council ゲート経由・人間最終承認。COLD=archive≠delete。）
+HOT 昇格は Council ゲート経由・人間最終承認。COLD=archive≠delete。④還流 teeth の auto-merge 強制連動は opt-in/段階。）
 
 ## 判定ログ
 [対話の中で得られた判定材料となる発言の要約]
