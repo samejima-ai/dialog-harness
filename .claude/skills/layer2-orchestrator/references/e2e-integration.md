@@ -111,8 +111,28 @@ sensors/e2e/
 ├── scenarios.md      # シナリオ定義（ID / 前提 / 操作 / 期待結果）
 ├── selectors.md      # DOM セレクタの命名規約（data-testid 等）
 ├── fixtures/         # テストデータ・モック定義
-└── config.ts         # Playwright 設定（baseURL / timeout / browsers）
+└── config.ts         # Playwright 設定（baseURL / timeout / projects）
 ```
+
+### config.ts 規格 — browser provenance pinning（v5.23.0）
+
+「どの browser が開くか」のばらつき（CC コンテナの同梱 chromium vs ローカル実 Chrome vs CI）は
+**AI の知覚器官そのもののばらつき**であり flaky 源・観測性統一の侵食になる。**「借りない・固定する・
+記録する」** を config.ts で担保する。構築規律の正本は
+`../../layer1-autonomous-dev/references/e2e-best-practices.md` §7（本節はその config 具体化）。
+
+- **借りない**: `channel:'chrome'`（system Chrome）を使わず Playwright 同梱の pinned chromium を使う
+- **固定する**: Playwright バージョンを lockfile で固定し、公式コンテナ
+  `mcr.microsoft.com/playwright:vX.Y.Z`（バージョン一致）で実行（フォント/レンダリングまで同一＝
+  Vision 第5層判定の地盤）。headless 既定、headed は人間デバッグのみ
+- **カノニカルエンジン = 同梱 chromium 単一**（既定）。webkit/firefox は SPEC が「クロスブラウザ critical」と
+  宣言した時のみ `projects` マトリクス拡張で opt-in（多エンジン既定は実行/保守/flaky コスト 3 倍化）
+- **複数デバイス = config 化**: `projects` に device descriptors（viewport/deviceScaleFactor/userAgent/mobile）の
+  マトリクスとして宣言。対象端末は DESIGN.md レスポンシブ断面 / SPEC から導出
+- **記録する**: 各 run で browser version + engine + container digest を trace/report に刻む（provenance）
+
+Generator / Healer Agent はこの config 規律と e2e-best-practices.md §3（相 A 構築規律）に従って
+テストを生成・修復する。
 
 ### scenarios.md テンプレート
 

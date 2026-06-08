@@ -90,6 +90,15 @@ L0 が生成した `spec/` 配下の成果物（domain.ts / api.tsp / state-mach
 
 **実行時の動作を機械が自動再現する**。
 
+### 構築規律（v5.23.0・正本参照）
+
+「どこに置き誰が回すか」は本層が原典だが、**「堅牢な E2E をどう構築するか」の正本は
+`./e2e-best-practices.md`**。AI 駆動では E2E は **AI の知覚器官**（AI は「見ると宣言したものしか
+見えない」）であり、**二相分離**（相 A in-loop 知覚器 / 相 B SPEC 由来の耐久資産）を一次概念とする。
+App Actions と実 UI の止揚・動的同期・冪等合成データ・device emulation・browser provenance pinning・
+artifact 密度・AI テスト精度対策（C1/C2/C3/C5）は同正本を参照。相 B の母集団は L0 §2.6 C5
+（`../../layer0-spec-architect/references/test-oracle-dialog.md`）で人間と確定する。
+
 ### 手段
 
 - Playwright（主流）/ Cypress / Puppeteer

@@ -872,11 +872,16 @@ Council 諮問 `council-2026-05-11T05:00:00Z-w1qb02` の判決により、既存
 ```
 templates/rules/
 ├── README.md             # 階層化規約 + override 規則 + 相対参照ルール
-└── common/               # 言語横断 rules（Wave 1 では空 scaffold、後続 PR で内容充填）
-    └── .gitkeep
+└── common/               # 言語横断 rules
+    ├── .gitkeep
+    ├── agentshield-reference.md           # AgentShield 参照導入規約（Wave 2）
+    ├── ui-baseline.rules.md               # UI Baseline RL（v5.23.0、UI 相互作用層・常時適用）
+    └── ui-specialization.context.md       # UI 目的特化 S-01〜S-06（v5.23.0、.dh/rules/ で override 可）
 ```
 
 L0 対話で「多言語プロジェクトか?」「言語別 coding-standards を設けるか?」を確認後、必要な言語の `templates/rules/<lang>/` を生成。詳細は `dialog-questions.md` の「多言語プロジェクト判定」セクション参照。
+
+UI を伴うプロジェクトでは、`common/ui-baseline.rules.md`（相互作用層 RL・常時適用）と `common/ui-specialization.context.md`（目的特化）を共通 RL として開発環境に含める。視覚トークン層（DESIGN.md）との二層関係・B-ID の 5 層検出スタック oracle 化・S-xx 選択の L0 接続は `design-system-spec.md`「UI 相互作用層」を参照。
 
 ### 命名衝突回避（ECC 由来規約）
 

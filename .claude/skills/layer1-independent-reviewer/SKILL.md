@@ -64,7 +64,14 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
      - 第 2 層（E2E スクショ）: L1 が `delivery/screenshots/` 配下に保存したスクショの存在確認。不在時は L1 に E2E 実行を要請して差戻し
      - 第 5 層（Vision モデル判定、UX Priority `standard` 以上で必須）: スクショと DESIGN.md `## Do's and Don'ts` を Vision モデルに入力し独立に再判定（フォントウェイト混在 / colors.primary 装飾流用 / コントラスト比違反 等）
      - 違反は VERIFICATION.md 「視覚仕様整合性」セクションに 3 層分記録、軽微なら自動修復候補として L1 に差戻し。コードファーストでは検出不能な不整合（フォントフォールバック / レスポンシブ崩れ / ダークモードコントラスト）は第 2/5 層でのみ検出される
-     - 詳細プロトコルは `../layer0-spec-architect/references/design-system-spec.md` §E2E 視覚検証 参照
+     - **UI Baseline RL（相互作用層）の照合**: token（見た目）に加え `ui-baseline.rules.md` のレビューチェックリスト（11 項目・B-01〜B-25）を画面単位で yes/no 判定。`MUST`（B-01/02/04/05/07/08/10/12/14/15/16/17/19/21/22/23/24）違反は**欠陥（FAIL）**、`SHOULD` 違反は要正当化。S-xx 特化で緩めた B-ID は PR/コードに残された理由を確認（安全境界 §7 = B-22〜B-25 は特化でも侵食不可）。B-ID は第 1/2/3/5 層に分散して検証（静的=alt/aria/label、E2E=状態/即時応答/キーボード、計測=タップ域/選択肢数、Vision=false affordance/視覚階層/コントラスト）
+     - 詳細プロトコルは `../layer0-spec-architect/references/design-system-spec.md` §E2E 視覚検証 / §UI 相互作用層、`../../../templates/rules/common/ui-baseline.rules.md` 参照
+5.5.2. E2E テスト妥当性検証（v5.23.0 追加、E2E テスト存在時のみ）
+     - **自己言及の罠（C2）の隔離**: 実装した L1 が自分で書いたテストを自分で「通った」と判定すると実装バイアスがテストにも乗る。独立視点で**テストが正しいものを見ているか**を再検証する（情報純度・第3条の独立コンテキスト性）
+     - 相 B 母集団: 耐久 E2E が SPEC critical journey / L0-6 invariants から導出され母集団が SPEC にトレース可能か（AI の過剰生成・精度不足の検出。C1/C3）
+     - 構築規律違反: 固定時間待機（`sleep` / `waitForTimeout` の grep）・実装詳細依存セレクタ（CSS クラス/XPath）・テスト間状態共有の有無
+     - browser provenance: `channel:'chrome'`（system Chrome 借用）の混入検出・pinned chromium 単一既定からの逸脱
+     - 詳細は `../layer1-autonomous-dev/references/e2e-best-practices.md`（§5 精度対策・§3 相 A 構築規律・§7 実行環境）参照
 5.6. クレジット検証（README.md のマーカーコメント + credit-template.md 準拠）
      - マーカー有無、クレジット要素（バージョン/モデル/構築日）の妥当性
      - 拒否権行使時は REGIME.md 記載との整合性確認
