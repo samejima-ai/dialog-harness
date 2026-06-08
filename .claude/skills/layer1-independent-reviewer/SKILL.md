@@ -65,6 +65,12 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
      - 第 5 層（Vision モデル判定、UX Priority `standard` 以上で必須）: スクショと DESIGN.md `## Do's and Don'ts` を Vision モデルに入力し独立に再判定（フォントウェイト混在 / colors.primary 装飾流用 / コントラスト比違反 等）
      - 違反は VERIFICATION.md 「視覚仕様整合性」セクションに 3 層分記録、軽微なら自動修復候補として L1 に差戻し。コードファーストでは検出不能な不整合（フォントフォールバック / レスポンシブ崩れ / ダークモードコントラスト）は第 2/5 層でのみ検出される
      - 詳細プロトコルは `../layer0-spec-architect/references/design-system-spec.md` §E2E 視覚検証 参照
+5.5.2. E2E テスト妥当性検証（v5.23.0 追加、E2E テスト存在時のみ）
+     - **自己言及の罠（C2）の隔離**: 実装した L1 が自分で書いたテストを自分で「通った」と判定すると実装バイアスがテストにも乗る。独立視点で**テストが正しいものを見ているか**を再検証する（情報純度・第3条の独立コンテキスト性）
+     - 相 B 母集団: 耐久 E2E が SPEC critical journey / L0-6 invariants から導出され母集団が SPEC にトレース可能か（AI の過剰生成・精度不足の検出。C1/C3）
+     - 構築規律違反: 固定時間待機（`sleep` / `waitForTimeout` の grep）・実装詳細依存セレクタ（CSS クラス/XPath）・テスト間状態共有の有無
+     - browser provenance: `channel:'chrome'`（system Chrome 借用）の混入検出・pinned chromium 単一既定からの逸脱
+     - 詳細は `../layer1-autonomous-dev/references/e2e-best-practices.md`（§5 精度対策・§3 相 A 構築規律・§7 実行環境）参照
 5.6. クレジット検証（README.md のマーカーコメント + credit-template.md 準拠）
      - マーカー有無、クレジット要素（バージョン/モデル/構築日）の妥当性
      - 拒否権行使時は REGIME.md 記載との整合性確認

@@ -79,6 +79,8 @@ L0 は spec-architect / onboarding / archeo-architect / reindex-librarian の 4 
    並行してモード判定情報も取得（規模・不確実性・リスク・NFR・ARC・ドメイン文脈・権限レベル）
    儀式で検出した矛盾・復活要求・再提案はここで解消する
 2.5. UX 3問プロトコル（Must閾値・禁止挙動・参考類似サービス、未回答は業界標準で自動補完）
+2.6. C5 テスト oracle 言語化（人間の暗黙の関心を 3 問で言語化し相 B E2E 母集団を SPEC へ確定）
+     critical journey or UI を持つプロジェクトでのみ起動。詳細は `references/test-oracle-dialog.md`
 3. ドキュメント化（メタ仕様に従い構造化）
 3.5. サブフェーズ選定と実行（基本5問で L0-2〜L0-6 を動的起動、`spec/` 配下に成果物生成）
      条件を満たさないプロジェクトは完全スキップ。詳細は `references/subphase-selection.md`
@@ -96,6 +98,7 @@ L0 は spec-architect / onboarding / archeo-architect / reindex-librarian の 4 
 ステップ1.5は LC ≥ 1 の場合のみ実行する。**Pre-flight (v5.1.0)**: 起動前に `references/ritual-protocol.md` を必読。未読のままステップ進行は原則違反（§0 受け入れ基準 4）。
 ステップ3.5は DB/API/状態遷移/認可のいずれかが関与する場合に起動する。判定と実行のプロトコル詳細は `references/subphase-selection.md` を参照。
 ステップ3.6は UI を伴うプロジェクトでのみ起動する。判定と対話プロトコルの詳細は `references/design-system-spec.md` を参照。
+ステップ2.6は critical journey または UI を持つプロジェクトでのみ起動する。詳細は `references/test-oracle-dialog.md` を参照。
 
 ## ステップ詳細
 
@@ -197,6 +200,36 @@ R3 完了時点で `SPEC.md` に `F1. カート: 最大30品、在庫超過時�
 #### プロトコルの位置づけ
 
 UX 3問は独立軸ではなく、NFR 軸の補足として扱う（詳細は `references/regime-assessment.md` §軸4）。3問の回答は SPEC.md の UX制約セクション（`assets/meta-spec-template.md`）に格納される。
+
+### 2.6. C5 テスト oracle 言語化（v5.23.0 追加）
+
+**Pre-flight (v5.23.0)**: 起動前に `references/test-oracle-dialog.md` を必読。
+
+E2E は AI 駆動開発において「AI の知覚器官」であり、**AI は「見ると宣言したものしか見えない」**。
+ゆえに人間の暗黙の関心（test oracle）を言語化することは、AI の知覚野を広げることに等しい。
+本ステップは UX 3問の直後に 3 問だけ投げ、相 B（SPEC 由来の耐久 E2E）のカバレッジ対象を
+**AI 裁量でなく人間と大枠合意**する。これが「AI テストスクリプトの精度」への L0 時点の中核対策（C5）。
+
+#### 起動条件
+
+critical-priority journey を持つ **or** UI を持つプロジェクト。非対面かつ cosmetic のみは完全スキップ。
+
+#### 3問
+
+| # | 質問 | 格納先 |
+|---|---|---|
+| TQ1 関心 | これが壊れてたら絶対に世に出したくない瞬間/画面は？ | SPEC critical journey（相 B 母集団・C1） |
+| TQ2 目的 | 誰のどんな"成功"のためにある？なぜ作る？ | SPEC WHY 層 → Vision/Interaction Cost 合格基準 |
+| TQ3 暗黙前提 | 言わなくても当然そうあるべき前提は？ | DONT.md + L0-6 invariants の Sad/Evil path 種 |
+
+未回答/曖昧応答は INTENT/SPEC から AI が推定し `確度: AI推定` を付与（UX 3問・儀式 E1 と同型）。
+詳細・自動補完・格納マッピングは `references/test-oracle-dialog.md`。E2E 構築側の正本は
+`../layer1-autonomous-dev/references/e2e-best-practices.md`。
+
+#### プロトコルの位置づけ
+
+C5 は presentation でなく logic 層の対話であり persona 非依存。L0-6 サブフェーズ起動時は TQ3 を
+Evil/Sad path の種として `references/subphase-l06-invariants.md` へ直接引き渡す。
 
 ### 3. ドキュメント化
 
@@ -573,6 +606,7 @@ project-root/
 - `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
 - `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）
 - `assets/design-md-template.md` — DESIGN.md 実践テンプレート（v5.15.0 追加、YAML トークン + Markdown 本体 + Components 拡張ガイド）
+- `references/test-oracle-dialog.md` — C5 テスト oracle 言語化プロトコル（v5.23.0 追加、§2.6 から起動。critical journey or UI プロジェクトのみ。TQ1-3 で人間の暗黙の関心を言語化し相 B E2E 母集団を SPEC へ確定）
 
 ### v3.1 追加（配置規則・クレジット）
 
@@ -591,6 +625,38 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v5.23.0 追加（E2E 構築 BP の体系化・C5 テスト oracle 言語化、minor 昇格）
+
+後方互換維持の追加のみ。AI 駆動開発における E2E テストの「構築」叡智を DH に結晶化する。
+DH には既に E2E の「位置づけ」（5層スタック第2層・L2 Test Agents・`sensors/e2e/` scaffold 枠）が
+あったが、「堅牢な E2E をどう構築するか」の BP が欠落していた。本リリースでその空白を埋める。
+
+確定した一次概念と対策（人間との対話で合意）：
+
+- **二相分離（一次概念）**: 相 A（in-loop 知覚器・使い捨て可）/ 相 B（SPEC 由来の耐久資産）を明示分離
+- **E2E = AI の知覚器官**: AI は「見ると宣言したものしか見えない」→ artifact 密度が人間以上に重要
+- **C5 テスト oracle 言語化（本丸）**: §2.6 新設。人間の暗黙の関心を TQ1-3 で言語化し相 B 母集団を SPEC へ確定
+- **AI テスト精度対策**: C1（SPEC 由来母集団）/ C2（生成と判定の隔離＝自己言及の罠回避）/ C3（本数天井）/ C5
+- **実行環境の統一**: browser provenance pinning（借りない・固定する・記録する）、chromium 単一既定・他 opt-in
+- **device emulation**: 実デバイスは射程外、device descriptors で本番見え方を寄せ Vision 判定に乗せる
+- **接続地図（強制は将来 PR）**: flaky→circuit-breaker/P4・Quarantine→feedback-loop・provenance→観測性統一
+- **温存**: テスト情報代謝・mutation メタテスト（C4）は試験的導入のため minority opinion として温存
+
+変更点：
+
+- §処理フロー に 2.6 を新設（UX 3問の直後、critical journey or UI プロジェクトのみ起動）
+- §2.6「C5 テスト oracle 言語化」を新設（TQ1-3・自動補完・格納マッピング・persona 非依存）
+- `references/test-oracle-dialog.md` 新設（C5 対話プロトコル原典・知覚野拡張原理）
+- `../layer1-autonomous-dev/references/e2e-best-practices.md` 新設（構築 BP 正本・二相分離・8 規律 + 接続地図）
+- `../layer1-autonomous-dev/references/inferential-sensor-v2.md` §第2層に正本参照 + 二相分離の 1 行言及
+- `../layer2-orchestrator/references/e2e-integration.md` の config.ts 規格に pinned chromium / projects マトリクス / 公式コンテナ runner / provenance 記録 + 正本参照
+- `../layer1-independent-reviewer/SKILL.md` のレビュー観点に「テスト妥当性（自己言及の罠隔離・C2）」追加
+- 参照ドキュメント 拡張 list に `references/test-oracle-dialog.md` を追加
+
+LC ≥ 1 既存プロジェクトは新規開始する E2E から段階適用（既存テストの遡及修正は不要）。
+非該当（CLI/ライブラリ/cosmetic のみ）では §2.6 を起動せず e2e-best-practices.md もロードしない（時間コストゼロ）。
+flaky 強制接続は本 PR では地図のみ。実 E2E 運用データが貯まった次 PR で teeth を入れる。
 
 ### v5.18.0 追加（Supabase ローカル開発の推奨オプション化、minor 昇格）
 

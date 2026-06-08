@@ -60,6 +60,6 @@ DH は Layer 3 の内部設計を哲学・原則レベルから定義してお�
 ## 関連
 
 - 親 Council: [history/COUNCIL-LOG.md](../../../../history/COUNCIL-LOG.md) 内 `council-2026-05-16T06:00:00Z-coddag` エントリ
-- 人間可読版: [history/council-readable/council-2026-05-16T060000Z-coddag.md](../../../../history/council-readable/council-2026-05-16T060000Z-coddag.md)
+- 人間可読版: [history/archive/2026-06/council-readable/council-2026-05-16T060000Z-coddag.md](../../../../history/archive/2026-06/council-readable/council-2026-05-16T060000Z-coddag.md)（情報代謝で COLD 移送済み）
 - philosophy 接続: [philosophy.md](./philosophy.md) 第 1 条 §依存トポロジーの追跡可能性 から本リストへ参照
 - ARCH-DECISIONS 連動: [history/ARCH-DECISIONS.md](../../../../history/ARCH-DECISIONS.md) AD-032 候補（Hard Gate ⇄ DAG verify 対称化検討）

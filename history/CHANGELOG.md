@@ -2,6 +2,36 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-06-08 E2E 構築 BP の体系化・C5 テスト oracle 言語化（v5.23.0、minor 昇格、in progress, target 2026-06-08）
+
+L0 起動（メタスキル開発）。ディープリサーチ知見（POM→App Actions / Fixture スコープ / 動的同期 /
+冪等合成データ / Flakiness→アーキ還流 / Trace Viewer / Quarantine / data-testid・Role セレクタ /
+テストピラミッド / Three-Strike）を AI 駆動開発の文脈で再構成し DH に結晶化。
+
+人間との対話（L0 §2 具体化 + §5 レビュー）で確定した一次概念：
+
+- **二相分離（一次概念）**: 相 A（in-loop 知覚器・使い捨て可）/ 相 B（SPEC 由来の耐久資産）
+- **E2E = AI の知覚器官**: AI は「見ると宣言したものしか見えない」→ artifact 密度が人間以上に重要
+- **C5 テスト oracle 言語化（哲学の本丸・人間が最重要と判断）**: 人間の暗黙の関心（何を気にするか/
+  なぜ作るか/暗黙前提）を言語化し AI の知覚野を広げる。SKILL.md §2.6 に昇格
+- **AI テスト精度対策**: C1（SPEC 由来母集団）/ C2（自己言及の罠隔離）/ C3（本数天井）/ C5
+- **browser provenance pinning**: 借りない・固定する・記録する、chromium 単一既定・他 opt-in
+- **device emulation**: 実デバイスは射程外、descriptors で本番見え方を寄せ Vision 判定に乗せる
+
+変更ファイル：
+
+- 新設 `.claude/skills/layer1-autonomous-dev/references/e2e-best-practices.md`（構築 BP 正本・8 規律 + 接続地図）
+- 新設 `.claude/skills/layer0-spec-architect/references/test-oracle-dialog.md`（C5 対話原典）
+- `layer0-spec-architect/SKILL.md`: §2.6 新設・処理フロー・参照 list・v5.23.0 履歴節
+- `layer1-autonomous-dev/references/inferential-sensor-v2.md` §第2層: 正本参照 + 二相分離言及
+- `layer2-orchestrator/references/e2e-integration.md`: config.ts に provenance pinning 規格 + 正本参照
+- `layer1-independent-reviewer/SKILL.md`: 処理フロー 5.5.2「E2E テスト妥当性検証（C2）」新設
+- `VERSION`: 5.22.1 → 5.23.0
+
+判断記録（温存・将来 PR）: flaky→circuit-breaker/P4 の強制接続は本 PR では「接続地図」のみ。
+**テスト情報代謝（相 A の cycle 後 COLD 化）と mutation メタテスト（C4）は試験的導入のため温存**（実
+E2E 運用データが貯まってから再判定。minority opinion として記録）。
+
 ## 2026-06-07 review subagent の haiku モデル ID を最新化（v5.22.1、patch 昇格、in progress, target 2026-06-07）
 
 OC レビューが繰り返し報告していた「subagent ティアの `claude-3-5-haiku-20241022` が 404 で起動不可 → OC が直接フォールバック」を修正。
