@@ -18,6 +18,62 @@ LLM コンテキスト付与に関する知見を統合し、AI コーディン�
 
 ---
 
+## UI 相互作用層（UI Baseline RL + Specialization Context、v5.23.0 追加）
+
+DESIGN.md は「**どう見えるか**（視覚トークン層）」を担うが、それだけでは「**どう知覚され・操作されるか**
+（相互作用層）」は保証できない（本ファイル §「E2E 視覚検証が最も重要」が指摘する token 静的検査の限界、
+および DONT.md の「創造的 UX デザインを AI に任せない」が示す空白）。この相互作用層を、枯れた UX 法則
+（Norman の signifier / Fitts / Hick / Miller / Jakob / Doherty / Gestalt / WCAG）に立脚した**機械可読な RL**
+として埋めるのが UI Baseline RL である。
+
+### 二層モデル
+
+| 層 | ファイル | 担当 | 性質 |
+|---|---|---|---|
+| 視覚トークン層 | `DESIGN.md`（プロジェクト生成） | 色 / font / 余白 / 影 / 角丸 | プロジェクト固有・対話で決める |
+| **相互作用層（基底）** | `templates/rules/common/ui-baseline.rules.md` | signifier / 認知負荷 / feedback / 操作機構 / a11y（B-01〜B-25） | **目的非依存・常時適用**。`MUST` 違反はマージ不可 |
+| **相互作用層（特化）** | `templates/rules/common/ui-specialization.context.md` | 目的別チューニング（S-01〜S-06）+ 衝突解決 | 画面/フロー単位で 1 目的を選択し Baseline に上乗せ |
+
+DESIGN.md が「個性」を、UI Baseline RL が「最低保証の知覚・操作品質」を担う。両者は直交し重複転記しない。
+
+### デプロイと override
+
+- UI を伴うプロジェクトでは、上記 2 ファイルを **共通 RL** として開発環境に含める（`templates/rules/common/`
+  が DH 配布の正本。`templates/rules/README.md` の override 規約準拠）。CLAUDE.md `## 参照` に
+  `UI 規約: ui-baseline.rules.md` を 1 行追記する（DESIGN.md と同じ扱い）。
+- 非 UI プロジェクト（CLI / API / ライブラリ）ではロードしない（DESIGN.md と同じ非起動条件）。
+- プロジェクトが S-xx を追加・上書きする場合は `.dh/rules/common/ui-specialization.context.md` に置いて
+  override する（DH 更新で上書きされない。persona の `.dh/personas/` と同型）。
+
+### 特化目的（S-xx）の選択を L0 対話に接続
+
+S-xx の選択は新しい質問を増やさず、既存の L0 入力から導出する：
+
+- §3.6 DG2（ブランド・トーン）/ DG3（参考サービス）と、§2.5 UX 3問（主要ユーザー・Must 閾値・禁止挙動）、
+  および `nfr-scoring.md` の NFR から、対象画面の主目的（速度 / 正確性 / 学習容易性 / 情報把握 / 継続 / 包摂）を
+  AI が推定し S-01〜S-06 に対応づける。確信が持てない場合のみ 1 問確認、未確定なら特化せず Baseline のみ適用。
+- 業務システム（社内版 LINE 型・高速反復入力）は S-01、金額/契約/削除を含む operation は S-02、
+  オンボーディング画面は S-03、ダッシュボードは S-04 が既定対応（`arc-patterns/` と整合）。
+
+### B-ID は 5 層検出スタックの ready-made oracle（C5 接続）
+
+UI Baseline RL の各 B-ID は、抽象的な「使える」を**検証可能な宣言**に落としたものであり、そのまま
+5 層検出スタック（本ファイル §「E2E 視覚検証が最も重要」）と C5 テスト oracle 言語化
+（`test-oracle-dialog.md`、`../../layer1-autonomous-dev/references/e2e-best-practices.md` §2 の「AI は見ると
+宣言したものしか見えない」）の oracle になる：
+
+| 検出層 | 対応する B-ID（例） |
+|---|---|
+| 第 1 層 計算的（静的 / lint） | B-23（alt/aria）・B-25（label）・B-24（reduced-motion）は DOM 静的検査可能 |
+| 第 2 層 E2E（Playwright） | B-04（状態 signifier）・B-15（即時応答）・B-16（100ms 進行表示・Doherty）・B-22（キーボード操作）は実操作で検証 |
+| 第 3 層 Interaction Cost | B-08（選択肢 1〜2）・B-12（タップ域 44px）・B-13（Fitts 配置）は定量計測 |
+| 第 5 層 Vision モデル判定 | B-01/B-02（false affordance）・B-19/B-20（視覚階層・Gestalt）・B-21（コントラスト）はスクショ + Vision で判定 |
+
+∴ C5 対話（§2.6）で TQ1-3 の暗黙の関心を言語化する際、UI プロジェクトでは **B-ID チェックリストを
+oracle の出発点**として使える（人間が「何を気にするか」を B-ID で具体化できる）。
+
+---
+
 ## 起動判定
 
 L0 §3.6 で実施。SPEC.md の機能定義が出揃った時点で 1 問だけ投げる。
@@ -167,7 +223,8 @@ LLM は意図付きトークンを参照することで、**未知の UI を作�
 ### L1 側との連携
 
 - L1 (autonomous-dev) は UI 実装時に **`@DESIGN.md` を強制参照** する
-- CLAUDE.md の「参照」セクションに `視覚仕様: DESIGN.md` を 1 行追記する
+- L1 は同時に **UI Baseline RL（`ui-baseline.rules.md`）の `MUST` 群を強制参照** する（視覚トークン層と相互作用層は両輪。§「UI 相互作用層」参照）
+- CLAUDE.md の「参照」セクションに `視覚仕様: DESIGN.md` / `UI 規約: ui-baseline.rules.md` を 1 行ずつ追記する
 - L1 自己検証で「DESIGN.md トークンを直接書き換える HEX リテラル」が src/ に混入していないか確認する（任意センサー、§4.4 inferential 候補）
 
 ### LC ≥ 1 での扱い
@@ -242,6 +299,8 @@ L0 自己検証チェックリストに以下 1 項目を追加（UI プロジ�
 | 第 3 層 Interaction Cost | クリック数 / 遷移深度 / 応答時間（UX 3問の Must 閾値） | 「使える」の定量代理指標 |
 | 第 4 層 推論的センサー | SPEC.md と画面の照合 | 「仕様に合う」「動く」の判定 |
 | **第 5 層 Vision モデル判定** | スクリーンショットを Vision モデルで読み、DESIGN.md `## Overview` のブランドトーン・`## Do's and Don'ts` 違反を判定 | **DESIGN.md の意図通りの見た目になっているか** の最終確認 |
+
+各層の検査対象には、DESIGN.md トークンだけでなく **UI Baseline RL の B-ID**（§「UI 相互作用層」の oracle 対応表）を含める。token は「見た目」、B-ID は「知覚・操作品質」を検証する。
 
 ### 必須経路
 

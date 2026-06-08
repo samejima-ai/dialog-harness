@@ -37,6 +37,44 @@ vs CI）は AI の知覚器官そのもののばらつき＝ flaky 源・観測�
 - **flaky→circuit-breaker/P4 の強制接続**: 本 PR では「接続地図」のみ明記、強制連動は次 PR。
 - **mutation メタテスト（C4）**: AI テスト精度を変異注入で測る。重いため温存。
 
+## v5.23.0：UI Baseline RL（相互作用層）の取り込み (in progress)
+
+利用者（ひでさん）提供の UIUX 研究 2 ファイルを DH に統合。同一 PR の E2E/C5 と「B-ID = oracle」で接続する。
+
+### 設計意図の核
+
+**(a) DESIGN.md の空白を埋める**: 既存の DESIGN.md は「視覚トークン層（色/font/余白＝どう見えるか）」のみを
+担い、「相互作用層（signifier/認知負荷/feedback/操作機構/a11y＝どう知覚・操作されるか）」が空白だった。
+design-system-spec.md 自身が「token 静的検査だけで UX は保証できない」と認め、DONT.md は「創造的 UX を
+AI に任せない」と禁止していた。UI Baseline RL は **枯れた UX 法則に立脚した機械可読 RL** でこの空白を埋め、
+「AI に任せない」を「AI に枯れたルールブックを持たせる」へ前進させる。
+
+**(b) 二層モデル + 目的特化**: 視覚トークン層（DESIGN.md・プロジェクト固有）× 相互作用層（基底 = B-01〜
+B-25 常時適用 / 特化 = S-01〜S-06 目的別）。基底は目的非依存の最低保証、特化は画面単位で 1 目的を選び
+上乗せ。安全境界（各 S の「緩めてはならない」＋ a11y floor B-22〜B-25）は目的に関わらず侵食不可。
+
+**(c) B-ID = ready-made oracle（E2E/C5 との接続）**: B-ID は抽象的な「使える」を検証可能な宣言に落とした
+もの。これは同 PR (1) の C5「AI は見ると宣言したものしか見えない」と同型で、B-ID がそのまま 5 層検出
+スタック（第1=静的/第2=E2E/第3=計測/第5=Vision）の oracle になる。UI プロジェクトの C5 対話は B-ID を
+出発点に暗黙の関心を言語化できる。これが 2 テーマを 1 PR にバンドルした理由。
+
+**(d) S-xx 選択は質問を増やさない**: DG2/3（ブランド・参考）・UX 3問（主要ユーザー・Must 閾値）・NFR から
+主目的を AI が推定し S-01〜S-06 に対応づける（フラクタル原則：対話で確定、新規質問は増やさない）。
+
+### 配置と provenance
+
+- 配置: `templates/rules/common/`（言語横断 RL、agentshield と同列）。利用者プロジェクトへ deploy される
+  ため、テンプレ自体は self-contained に保ち、DH 配線説明は skill reference 側（design-system-spec.md）に集約。
+- ORIGIN: external（利用者提供）。各ファイル冒頭の blockquote に明示。`.dh/rules/` で override 可能。
+
+### 温存（倫理境界）
+
+- **S-05 の dark pattern 禁止・ユーザー制御権**は Baseline を超える倫理境界として明記温存。anticipatory/
+  persuasive 設計は理論先行で失敗例も多く、先回り過剰はエージェンシーを損なう。philosophy 第 6 条
+  「人間最終承認・人間 ≒ Council」と整合させ、行動変容系 UI でも中断・解除・拒否の容易性を健全性指標に置く。
+- **言語別 UI rule（`<lang>/`）への展開**は現状不要（UI 相互作用は言語横断）。必要が生じたら README の
+  override 規約に従い追加。
+
 ## v5.9.0 候補：auto-merge 人間承認モデルの opt-in→opt-out 反転 (in progress)
 
 PR #33 が 4 日間放置されている事例を起点に、auto-merge の人間承認モデル（v5.5.3 で導入された label opt-in モデル）を opt-out モデルに反転する設計判断。Council 諮問 `council-2026-05-06T08:30:00Z-amrev1`（business / category=conception / phase_3 / unanimous / judgment_confidence=0.80）で **C ハイブリッド採用** が weighted_score 7.31（全 weight 11、100%）で全会一致。

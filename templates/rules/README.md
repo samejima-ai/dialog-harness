@@ -74,10 +74,12 @@ L0 spec-architect の `dialog-questions.md` に以下の質問が追加されて
 
 ---
 
-## Wave 1 での状態
+## common/ の現況
 
-- `common/`: 空 scaffold（`.gitkeep` のみ、内容は後続 PR で充填）
-- `<lang>/`: 存在しない（L0 対話確定後に生成）
+- `agentshield-reference.md`（Wave 2、PR #78）— セキュリティ静的解析の参照導入規約
+- `ui-baseline.rules.md`（v5.23.0）— UI Baseline RL（相互作用層・常時適用、B-01〜B-25）。UI を伴うプロジェクトで共通 RL として読み込む。適用経路は DH 側 `layer0-spec-architect/references/design-system-spec.md`「UI 相互作用層」
+- `ui-specialization.context.md`（v5.23.0）— UI 目的特化（S-01〜S-06 + 衝突解決）。利用者は `.dh/rules/common/ui-specialization.context.md` で override 可
+- `<lang>/`: 存在しない（L0 対話確定後に必要言語のみ生成）
 
 Wave 2 末振り返り儀式で「L0 対話で頻出した言語」を観測し、頻出する場合は **「推奨言語プリセット」を再諮問**（Council 諮問 w1qb03 の minority opinion 経営者 B: 3 言語先取り、`python / typescript / go`）。
 

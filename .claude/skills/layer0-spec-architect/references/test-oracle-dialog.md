@@ -72,6 +72,10 @@ TQ3 暗黙前提 → DONT.md + spec/invariants.feature（L0-6・Sad/Evil）
   種として直接引き渡す。
 - 耐久 E2E（相 B）の**カバレッジ対象は本 C5 で人間と大枠合意**する（AI 裁量に委ねない）。これが
   「AI テストスクリプトの精度」への L0 時点の対策の中核（C5）。
+- **UI プロジェクトでは B-ID チェックリストを oracle の出発点に使う**: UI Baseline RL
+  （`../../../../templates/rules/common/ui-baseline.rules.md`）の B-01〜B-25 は抽象的な「使える」を検証可能な
+  宣言に落としたもの。TQ1（関心）/ TQ3（暗黙前提）の言語化を B-ID で具体化できる（接続は
+  `design-system-spec.md`「UI 相互作用層」§B-ID は 5 層検出スタックの ready-made oracle）。
 
 ---
 

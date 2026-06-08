@@ -607,6 +607,8 @@ project-root/
 - `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）
 - `assets/design-md-template.md` — DESIGN.md 実践テンプレート（v5.15.0 追加、YAML トークン + Markdown 本体 + Components 拡張ガイド）
 - `references/test-oracle-dialog.md` — C5 テスト oracle 言語化プロトコル（v5.23.0 追加、§2.6 から起動。critical journey or UI プロジェクトのみ。TQ1-3 で人間の暗黙の関心を言語化し相 B E2E 母集団を SPEC へ確定）
+- `../../../templates/rules/common/ui-baseline.rules.md` — UI Baseline RL（v5.23.0 追加、UI プロジェクトの相互作用層・常時適用。B-01〜B-25 + レビューチェックリスト。適用経路は `references/design-system-spec.md`「UI 相互作用層」）
+- `../../../templates/rules/common/ui-specialization.context.md` — UI Specialization Context（v5.23.0 追加、目的特化 S-01〜S-06 + 衝突解決。S-xx 選択は §3.6 / UX 3問 / NFR と連動、`.dh/rules/` で override 可）
 
 ### v3.1 追加（配置規則・クレジット）
 
@@ -626,7 +628,11 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
-### v5.23.0 追加（E2E 構築 BP の体系化・C5 テスト oracle 言語化、minor 昇格）
+### v5.23.0 追加（E2E 構築 BP の体系化・C5 テスト oracle 言語化・UI Baseline RL 取り込み、minor 昇格）
+
+2 テーマをバンドル: **(1)** E2E 構築 BP + C5、**(2)** UI Baseline RL（相互作用層）。両者は「B-ID = oracle」で接続する。
+
+**(1) E2E 構築 BP の体系化・C5 テスト oracle 言語化**
 
 後方互換維持の追加のみ。AI 駆動開発における E2E テストの「構築」叡智を DH に結晶化する。
 DH には既に E2E の「位置づけ」（5層スタック第2層・L2 Test Agents・`sensors/e2e/` scaffold 枠）が
@@ -653,6 +659,24 @@ DH には既に E2E の「位置づけ」（5層スタック第2層・L2 Test Ag
 - `../layer2-orchestrator/references/e2e-integration.md` の config.ts 規格に pinned chromium / projects マトリクス / 公式コンテナ runner / provenance 記録 + 正本参照
 - `../layer1-independent-reviewer/SKILL.md` のレビュー観点に「テスト妥当性（自己言及の罠隔離・C2）」追加
 - 参照ドキュメント 拡張 list に `references/test-oracle-dialog.md` を追加
+
+**(2) UI Baseline RL の取り込み（利用者提供 UIUX 研究 → DH 統合）**
+
+DESIGN.md は「どう見えるか（視覚トークン層）」を担うが「どう知覚され・操作されるか（相互作用層）」が
+空白だった（token 静的検査の限界・DONT「創造的 UX を AI に任せない」）。枯れた UX 法則（Norman/Fitts/
+Hick/Miller/Jakob/Doherty/Gestalt/WCAG）に立脚した機械可読 RL でこの空白を埋める。
+
+- 新設 `../../../templates/rules/common/ui-baseline.rules.md`（B-01〜B-25・常時適用・MUST 違反はマージ不可）
+- 新設 `../../../templates/rules/common/ui-specialization.context.md`（目的特化 S-01〜S-06 + 衝突解決）
+- `references/design-system-spec.md` に「UI 相互作用層」節を新設（二層モデル / デプロイ・override /
+  S-xx 選択の L0 接続 / **B-ID を 5 層検出スタック・C5 の ready-made oracle 化**）
+- `references/dev-env-spec.md` の templates/rules 節に UI Baseline RL を共通 RL として明記
+- `../layer1-independent-reviewer/SKILL.md` 5.5.1 に B-ID レビューチェックリスト照合を追加
+- `templates/rules/README.md` の common/ 現況を更新
+
+設計の核: B-ID は抽象的な「使える」を検証可能な宣言に落としたもの＝ E2E/Vision の oracle であり、(1) の
+C5（AI は見ると宣言したものしか見えない）と直結する。S-xx 選択は新質問を増やさず DG2/3・UX 3問・NFR から
+導出する。利用者プロジェクトは `.dh/rules/` で S-xx を override 可能（DH 更新で消えない）。
 
 LC ≥ 1 既存プロジェクトは新規開始する E2E から段階適用（既存テストの遡及修正は不要）。
 非該当（CLI/ライブラリ/cosmetic のみ）では §2.6 を起動せず e2e-best-practices.md もロードしない（時間コストゼロ）。

@@ -49,6 +49,10 @@ DH では次のエージェントが SPEC + history から毎回**文脈を再�
 > 人間以上に重要。AI の「デバッグ勘」はライブセッションでなく **artifact から再構成**されるため。
 
 この原理が C5（テスト oracle の言語化）を哲学の本丸にする。詳細は test-oracle-dialog.md を参照。
+UI プロジェクトでは **UI Baseline RL の B-ID**（`../../../../templates/rules/common/ui-baseline.rules.md`）が
+そのまま「何を検証するか」宣言の出発点になる（B-04 状態 / B-15 即時応答 / B-16 Doherty / B-22 キーボード
+= E2E 第2層、B-01/02 false affordance / B-21 コントラスト = Vision 第5層）。oracle 対応表は L0
+`../../layer0-spec-architect/references/design-system-spec.md`「UI 相互作用層」を参照。
 
 ---
 
