@@ -5,7 +5,7 @@
 > SEVERITY: `MUST` 違反は欠陥（マージ不可）。`SHOULD` 違反は要正当化。
 > 特化目的による緩和は `ui-specialization.context.md` の安全境界に従う。それ以外で本ファイルを緩和しない。
 > 各ルールの末尾 `∵` は根拠（神経科学 / UX法則）。CCが理由を理解し判断ブレを減らすために付す。
-> ORIGIN: external（利用者提供の UIUX 研究、dialog-harness v5.23.0 で取り込み）。DH における適用経路（DESIGN.md 視覚トークン層との二層関係 / 5層検出スタックの第2・5層 oracle 化 / independent-reviewer のレビュー観点）は DH 側 `layer0-spec-architect/references/design-system-spec.md` の「UI 相互作用層」節を参照。
+> ORIGIN: external（利用者提供の UIUX 研究、dialog-harness v5.23.0 で取り込み）。DH における適用経路（DESIGN.md 視覚トークン層との二層関係 / 5層検出スタックの第2・5層 oracle 化 / independent-reviewer のレビュー観点）は DH 側 `.claude/skills/layer0-spec-architect/references/design-system-spec.md` の「UI 相互作用層」節を参照。
 
 ---
 
