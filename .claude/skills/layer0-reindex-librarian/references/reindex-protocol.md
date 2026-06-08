@@ -43,7 +43,7 @@ cursor:
   INTENT.md:    { line: 312, checksum: "sha256:ab12…" }
   CHANGELOG.md: { line: 188, checksum: "sha256:cd34…" }
   COUNCIL-LOG.md: { line: 2088, checksum: "sha256:ef56…" }
-  E2E-LOG.md:   { line: 0, checksum: null }   # UI project のみ。append-only run 要約（WARM）。新規出現は M3 で line:0 登録 → 次回先頭から摂取
+  E2E-LOG.md:   { line: 0, checksum: null }   # UI project のみ。append-only run 要約（WARM）。新規出現時は cursor 未登録として line:0 登録（§2 規律）→ 次回先頭から摂取
 reduction_target: "DH"   # この cursor が DH 還元 / project 還元 どちらの消化進捗か（軸A）
 dry_run_remaining: 3      # 残り Dry-run サイクル数（0 で本番昇格、REGIME.md 初期値から減算）
                           # ロード時に負値/破損を検出したら安全側へ倒し Dry-run を強制（!=0 ではなく「>0 または不正→Dry-run」＝L1）

@@ -159,7 +159,7 @@ E2E が生む大半（run 履歴・flaky パターン・artifact）は「**こ�
 
 | Tier | E2E の中身 | 居場所（project ローカル） | 購読量 |
 |---|---|---|---|
-| **COLD** | 相 A artifact（Trace/動画/network/console）・生 run ログ詳細 | `sensors/e2e/artifacts/` → cycle 境界で `history/archive/YYYY-MM/e2e/` | 乗らない（retrievable・disk 無制限 OK） |
+| **COLD** | 相 A artifact（Trace/動画/network/console）・生 run ログ詳細 | `history/archive/YYYY-MM/e2e/`（生成時はランタイム出力 dir = ephemeral、cycle 境界で COLD 保持） | 乗らない（retrievable・disk 無制限 OK） |
 | **WARM** | run 要約列（pass/fail・flaky・duration・provenance） | `history/E2E-LOG.md`（append-only・cursor 追跡） | 関連時のみ（reindex が増分読み） |
 | **HOT** | flaky 罠（反-発火条件付）・安定 journey RL・provenance 観測規律・B-ID/C5 oracle 結晶 | PATTERNS.md / DONT / SPEC / INTENT / SUMMARY | 常時（密度↑≠量↑） |
 
