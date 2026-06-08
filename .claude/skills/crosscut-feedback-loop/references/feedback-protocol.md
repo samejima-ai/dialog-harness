@@ -30,7 +30,17 @@
 | `philosophy_violation` | crosscut-council | 設計層 / L0 | Council 判定 → 結果に応じて SPEC 修正 or L0 対話復帰 |
 | `interaction_cost_breach` | 実装層 | L0 | UX 修正 PR 自動作成、改善されない場合は L0 対話で要件再確認 |
 | `dont_violation` | 実装層 | crosscut-council | 即時 revert 候補。Council で重大度判定 |
+| `flaky_rate_breach`（E2E flaky 率超過） | auto-merge ゲート / circuit-breaker | 設計層 / L0 | auto-merge 停止 + `human-review-needed` 自動付与（偽陽性 merge の構造阻止）。再試行が circuit-breaker 上限超過なら churn 打ち切り（P4）。**teeth は opt-in / 段階**（auto-merge-boundary 準拠） |
+| `e2e_quarantine`（flaky 隔離台帳） | 実装層 | 設計層 | 隔離＝実装/テスト/仕様のどこかの構造歪みシグナル。一定期間で修正 or 削除。台帳は cycle 境界で代謝の WARM delta として設計層へ還流 |
 | `judgment_failed`（weight_calculation 検算不一致） | crosscut-council | L0 (prompt 改訂) | F1 集計で頻発時に L0 へ自動還流（PR1 では手動）。本還流種別は本ファイル末尾 §F1 振り返り儀式での weight_calculation 監査 を参照 |
+
+## E2E 代謝サイクルとの接続（v5.24.0）
+
+`flaky_rate_breach` / `e2e_quarantine` は E2E 情報代謝サイクル（`../../layer0-reindex-librarian/references/metabolism-regime.md` §7、
+`../../layer1-autonomous-dev/references/e2e-best-practices.md` §9）の **④還流フェーズ**にあたる。run 要約（WARM）の
+集計から flaky 率・隔離台帳を検出し、本マトリクスで振り分ける。これは v5.23.0 で「接続地図のみ」とした teeth の本体化だが、
+**強制連動（auto-merge.yml の変更）は opt-in / 段階導入**とする（実 E2E 運用データが貯まるまで閾値を固定しない＝
+metabolism 設計自身が推奨する Dry-run 精神。境界は `../../crosscut-autonomous-drive/references/auto-merge-boundary.md`）。
 
 ## 還流処理フロー（共通）
 

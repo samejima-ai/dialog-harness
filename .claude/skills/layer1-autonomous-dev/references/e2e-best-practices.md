@@ -153,8 +153,9 @@ AI が書くテストには 2 つの失敗様式があり、根に自己言及�
 
 ## 6. 接続地図（強制は将来 PR ── 本 PR では地図のみ）
 
-以下は DH 既存機構との**接続点の宣言**。本 PR では強制連動は実装せず、実 E2E 運用データが
-貯まった段階で次 PR にて teeth（強制力）を入れる（e2e-integration.md の「実装は発動時」と同じ慎重さ）。
+以下は DH 既存機構との**接続点の宣言**。これらは §9「E2E 情報代謝サイクル」（v5.24.0）で正式機構として
+本体化された（記録→蓄積→代謝→還流→結晶+排泄）。**強制連動（auto-merge.yml 改変）は依然 opt-in / 段階**で、
+実 E2E 運用データが貯まってから閾値を較正する（e2e-integration.md の「実装は発動時」と同じ慎重さ）。
 
 | 接続 | 効果 | 接続先 |
 |---|---|---|
@@ -206,9 +207,44 @@ AI が書くテストには 2 つの失敗様式があり、根に自己言及�
 
 ---
 
-## 9. 温存（将来候補・本 PR では実装しない）
+## 9. E2E 情報代謝サイクル（v5.24.0 正式機構化）
 
-- **テスト情報代謝**: 相 A（in-loop スキャフォールド）を cycle 後に COLD 退避/削除し、相 B を結晶化する
-  「テスト版 HOT/WARM/COLD」。情報代謝（`../../layer0-reindex-librarian/SKILL.md`）の射程にテストを含める新しい一歩。
-  本導入自体が試験的なため、実 E2E 運用データが貯まってから再判定する（minority opinion 温存）。
+E2E の実行結果・履歴を、**既存の情報代謝サイクルの新しい episodic ソース**として流す（専用サイクルは作らない）。
+v5.23.0 で「温存」とした「テスト版 HOT/WARM/COLD」を、二相分離（§1）が COLD/HOT に直結することを根拠に
+正式機構へ昇格させたもの。定義の正本は `../../layer0-reindex-librarian/references/metabolism-regime.md` §7、
+project history への置き場は `../../layer0-spec-architect/references/history-layer-spec.md` §E2E-LOG.md、
+還流は `../../crosscut-feedback-loop/references/feedback-protocol.md`。
+
+### 還元先と稼働主体
+
+- **既定 project 還元（D1-D3）**: run 履歴・flaky パターン・artifact は「このアプリ」に閉じた事実。
+  正本は**利用者プロジェクトの REGIME.md `## 情報代謝設定`**。DH 本体は対面アプリを持たないため**稼働しない**（定義のみ）。
+
+### サイクル 5 フェーズ（既存代謝フェーズへ E2E を流す）
+
+| # | フェーズ | 内容 | 既存機構との関係 |
+|---|---|---|---|
+| ① | 記録 | run → 構造化レコード。相 A artifact = COLD 直行 / 要約 = `history/E2E-LOG.md` へ append | 新規（記録規律） |
+| ② | 蓄積 | append-only・cursor 管理（全部はロードしない＝購読量保護） | 既存 cursor 流用 |
+| ③ | 代謝 | cycle 境界で reindex が増分読み → flaky 反復＝罠候補 / 安定 journey＝RL 候補（council_gate） | reindex 増分対象に E2E-LOG 追加 |
+| ④ | 還流 | flaky 率超過・Quarantine → feedback-loop（auto-merge 停止 / circuit-breaker / 設計層） | **teeth・opt-in/段階** |
+| ⑤ | 結晶+排泄 | 罠/RL を HOT へ（Council ゲート）/ 抜け殻 run ログ → COLD（source pointer 付） | 既存 構築/分解代謝 |
+
+①②⑤は既存代謝の流用、③は reindex の増分対象に E2E-LOG を足すだけ、**④だけが新規の teeth**。
+④の強制連動（auto-merge.yml 改変）は **opt-in / 段階導入**（metabolism 設計自身が推奨する Dry-run 精神。
+§6 接続地図で予告した teeth の本体化だが、実 E2E 運用データが貯まるまで閾値は固定しない）。
+
+### tier 対応（再掲・正本は metabolism-regime §7）
+
+- COLD: 相 A artifact・生 run ログ（retrievable・既定非ロード・disk 無制限 OK）
+- WARM: `history/E2E-LOG.md` の run 要約列（reindex が増分摂取）
+- HOT: flaky 罠（反-発火条件付）・安定 journey RL・provenance 観測・B-ID/C5 oracle 結晶（密度↑≠量↑）
+
+> 北極星整合: E2E は毎 CI で大量データを生むが artifact は COLD 直行で既定ロードしない。
+> 蒸留された flaky 罠だけが HOT に乗るので、履歴が無限に貯まっても購読量は膨らまない。
+
+## 10. 温存（将来候補・本 PR では実装しない）
+
 - **mutation 的メタテスト（C4）**: AI が書いたテストが本当に bug を捕まえるかを変異注入で測る。重いため温存。
+- **④ teeth の強制化**: flaky 率閾値による auto-merge 自動停止の**強制**連動は opt-in 止まり。
+  実 E2E 運用データで閾値を較正してから次 PR で強制化を再判定（Dry-run → 本番昇格の代謝精神）。

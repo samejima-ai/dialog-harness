@@ -53,3 +53,9 @@ metabolism:
     cursor: "history/.metabolism-cursor.yml"   # 機械カーソル（reindex が自動前進・手動編集非推奨）
     summary: "history/SUMMARY.md"              # HOT エントリポイント
     archive: "history/archive/"                # COLD 排泄先（YYYY-MM/ 構造・read-only）
+
+  # E2E 代謝設定（v5.24.0）— 本 DH-self config では非適用（キーを置かない）。
+  #   理由: E2E 代謝は project 還元（D1-D3）の機構であり、正本は利用者プロジェクトの
+  #   REGIME.md `## 情報代謝設定` の e2e_metabolism.*（metabolism-regime.md §7）。
+  #   DH 本体（dialog-harness repo）は対面アプリを持たないため E2E を稼働しない＝定義のみ・dog-food 対象外。
+  #   一般代謝（history/ の DH 還元）は本ファイルで dog-food するが、E2E 代謝はしない。

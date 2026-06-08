@@ -118,7 +118,8 @@ guard が曖昧判定のまま Reindex を起動してはならない（暗黙�
 ## 参照ドキュメント
 
 - `references/context-circulation-theory.md` — **理論層（仮結晶 / 暫定公理）**。なぜこの代謝なのかの全体理論（5 相循環 / 3 ループ / **圧縮 ≠ 結晶化** / **二種の結晶＝規則結晶・パターン結晶** / 8 不変条件 / 認知科学接地）。philosophy.md の系（昇格待ち）。on-demand。「圧縮率が低い」への答え＝速度は圧縮でなく結晶化（判断の先取り）から来る、はここ §5
-- `references/metabolism-regime.md` — regime 定義の正本（二軸 / HOT・WARM・COLD tier / 還元先 routing / 昇降格条件 / 結晶化・排出プロトコル / 摂取選択基準 / 購読量 KPI / 8 不変条件 / Council ゲート定量基準）。決定3 の正本化先（定義＝SK references）。上記理論の実装拘束部分
+- `references/metabolism-regime.md` — regime 定義の正本（二軸 / HOT・WARM・COLD tier / 還元先 routing / 昇降格条件 / 結晶化・排出プロトコル / 摂取選択基準 / 購読量 KPI / 8 不変条件 / Council ゲート定量基準 / **§7 E2E episodic ソースの tier 対応**）。決定3 の正本化先（定義＝SK references）。上記理論の実装拘束部分
+  - E2E run 履歴は専用サイクルを作らず本 regime の新 episodic ソースとして流す（artifact→COLD 直行 / E2E-LOG→WARM / flaky 罠→HOT）。**project 還元（D1-D3）専用・DH 本体は非稼働**。構築側は `../layer1-autonomous-dev/references/e2e-best-practices.md` §9
 - `references/reindex-protocol.md` — 運用プロトコル（モード guard / 処理済みマーカー形式 / 増分・全 rescan 禁止・冪等契約 / Dry-run / COLD 逆引きポインタ形式 / 初回 reindex 手順）
 - 参照原典: `../layer0-spec-architect/references/philosophy.md`（第1条フラクタル / 第3条情報純度 / forgetting is a feature）、`../layer0-spec-architect/references/history-layer-spec.md`（history 層スキーマ・archive ＝ COLD の素地）、`../crosscut-council/SKILL.md`（HOT 昇格ゲート）
 
