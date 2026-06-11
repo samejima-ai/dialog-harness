@@ -2,6 +2,33 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-06-11 履歴ストレージ構造の tier 分割化（v5.25.0、minor 昇格、in progress, target 2026-06-11）
+
+利用者（自分）の問い「履歴の残し方を 1ファイル蓄積でなく 1ジャンル蓄積にして frontmatter で索引管理できるか／
+それとも 1ファイル1事象が良いか」を起点に、Council `council-2026-06-11T05:30:00Z-hstr01`（全会一致・人間合意
+`agreed_recommended`）で **tier 分割の止揚案（案D）** を採択。全層を一律 1ファイル蓄積にも 1事象1ファイルにもせず、
+**WARM = 1ジャンル append-only 単一台帳 / COLD = 1事象1ファイル + frontmatter / 索引 = frontmatter 収穫の薄いメタ map**
+と tier で割り当てる。北極星（既定購読量の最小化・蓄積との線形連動を断つ・disk 無制限OK）に従属。
+
+設計の核（v5.24.0 E2E 同型解の一般化）:
+- 既存 §7「E2E episodic ソースの tier 対応」を **§7「episodic ソースの tier 対応（一般形）」へ一般化**。§番号 7 を
+  保持し既存参照を全て生かす（broken-ref ゼロ）。現 E2E 本文は内容不変で **§7.4** へ移設。
+- **COLD 2 サブ形態の止揚**: (i) COLD-event（叙述的 episodic = markdown + frontmatter・COLD-INDEX 収穫）/
+  (ii) COLD-artifact（不透明 artifact = 生のまま・cold:// ポインタ参照）。E2E は (ii) の正準例として矛盾なく包摂。
+- **哲学者 minority_opinion（重み 5）を不変条件 #9-#11 として構造化**: #9 収穫漏れ救済（unharvested を delete せず
+  glob 全走査で再到達・要再確認リスト再掲・filesystem が一次の真実源）/ #10 選別バイアス監査（`selector_note` 必須化）/
+  #11 後世の問い直し可逆性（`reversible: true`・明示 retrieve 後の再昇格は許容）。
+
+変更ファイル（SPEC 設計確定。runtime 実装・既存履歴 migration は別タスク）:
+- `layer0-reindex-librarian/references/metabolism-regime.md`: §5 に不変条件 #9-#11 追加 / §7 を一般形へリネーム
+  （§7.0 一般原則 / §7.1 COLD-event スキーマ・索引収穫 / §7.2 COLD-artifact / §7.3 還元先 / §7.4 E2E 適用例）
+- `layer0-reindex-librarian/references/reindex-protocol.md`: §3 に COLD-event 書き出し + 索引収穫 + writer contract、§5 に COLD-event 命名の逆引き
+- `layer0-spec-architect/references/history-layer-spec.md`: 配置ツリーと §archive 構造を COLD 2 サブ形態へ一般化（正本へ薄ポインタ）
+- 設計案全文: `delivery/SPEC-DESIGN-history-storage-structure.md`
+
+D5 申し送り: 用語 `COLD-event` / `COLD-artifact` の `harness-verifier/glossary.yml` への追加は **D5（人間）判断**
+（glossary は harness-verifier 所有物・独立性要請）。本 PR では編集せず申し送る。
+
 ## 2026-06-08 E2E 情報代謝サイクルの正式機構化（v5.24.0、minor 昇格、in progress, target 2026-06-08）
 
 利用者の要望「履歴を含めた一連のサイクルを構築したい／代謝サイクルも考慮した設計」を起点に、v5.23.0 §9 で
