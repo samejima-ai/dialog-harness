@@ -1,7 +1,8 @@
 # SPEC 設計案 — 履歴ストレージ構造（tier 分割 / 案D）
 
-> 状態: **設計確定（v5.25.0・実ファイル改訂済み 2026-06-11）**。runtime 実装・既存履歴 migration は別タスク。
+> 状態: **設計確定（v5.25.0 merged #137 / v5.25.1 で Council seeds 10 件吸収）**。runtime 実装・既存履歴 migration は別タスク。
 > v2 残点 §8 は全て確定: §7-A=§7 温存・E2E を §7.4 移設 / 索引=単一始まり / 呼称=COLD-event・COLD-artifact / selector_note 必須。
+> v5.25.1 で Council PR レビュー（`approve_with_seeds`）の 10 seeds を反映: crystallized_into/bias_flag 型正準化 / 索引分割の race・閾値定量 / event_id 桁 / archive 例示年次 / writer contract fail-fast 場合分け / runtime schema 検査 TODO / 三段降格 件数閾値 / harvest 異視座 / reversible 昇格経路 / COLD 第三形態の余地。
 > 起点: Council `council-2026-06-11T05:30:00Z-hstr01`（全会一致・人間合意 `agreed_recommended`）。
 > 還元先: DH 本体（D4・`reduction_target: DH`）。昇格区分: **minor**（後方互換の追加・既存 E2E 同型解の一般化・既存リンク削除なし）。
 >
@@ -45,8 +46,8 @@ reduction_target: DH                 # 軸A 還元先（DH / project）（必須
 
 # --- 逆引き（不変条件 #3 の entry レベル具体化）---
 source_pointer: "history/COUNCIL-LOG.md @ council-2026-06-11T05:30:00Z-hstr01"   # WARM 原本への逆引き（必須）。locator は grep 可能な安定キー（invocation_id / 日付+連番 / AD-NNN）。GitHub 見出しアンカーではない（append-only 台帳では行番号より ID が訂正に強い）
-crystallized_into:                   # この event から結晶化された HOT 叡智。無ければ null
-  - "history/SUMMARY.md#..."
+crystallized_into:                   # この event から結晶化された HOT 叡智の list。無ければ空 list [] が正準（null 禁止＝型ブレ防止）
+  - "history/SUMMARY.md @ <anchor>"
 
 # --- 確度（既存 history-layer-spec §確度メタデータ と同形）---
 confidence: 確定                     # 確定 / AI推定 (YYYY-MM-DD)
@@ -134,7 +135,8 @@ project 向けの履歴層スキーマ。COLD 物理形態を反映。
 
 ## 5. やらないこと（スコープ外・別タスク）
 
-- **runtime 実装**: reindex-librarian の収穫ロジック実装は別タスク。
+- **runtime 実装**: reindex-librarian の収穫ロジック実装は別タスク。**TODO（runtime PR 必須）**: `selector_note` 必須化は
+  writer contract に依拠するため、runtime PR は `reindex-librarian` 側に **schema 検査テスト**（必須キー欠落で fail）を必ず伴うこと（enforcement の時間差を埋める）。
 - **既存履歴の migration**: 現 COLD（`archive/2026-06/*` のフラット配置）の `<genre>/` 再編 + frontmatter 後付けは別 PR。本案では「新規 COLD 移送分から段階適用・既存は遡及しない」（LC ≥ 1 の段階適用原則）。
 - **WARM 台帳の分割**: WARM は単一台帳のまま（案C を全層展開しない＝索引が新たな代謝天井になる罠の回避）。
 
@@ -179,15 +181,15 @@ project 向けの履歴層スキーマ。COLD 物理形態を反映。
 
 書き手（reindex-librarian）を一次強制点にする。静的検査は二次防御。
 
-1. **writer contract（一次）**: reindex が COLD-event file を書き出す時、`selector_note.by` / `.basis` は必須。`harvest_status` / `reversible` も必須。欠落したまま書き出してはならない（reindex-protocol.md §冪等契約に 1 条追加）。
-2. **欠落時のフォールバック**: 万一既存 file 等で欠落を検出したら、削除も放置もせず `selector_note.bias_flag: "schema-incomplete"` を立て、SUMMARY「要再確認リスト」へ再掲（沈黙させない＝要件1と連動）。
+1. **writer contract（一次）/ 自己生成 = fail-fast**: reindex が自ら COLD-event を書き出す時、`selector_note.by` / `.basis` / `harvest_status` / `reversible` は必須。満たせないなら**書き出さず停止**（差分レポートに記録）。
+2. **既存ファイル発見 = mark-and-continue**: 過去の不完全な既存 file で欠落を検出した場合のみ、削除も放置もせず `selector_note.bias_flag: "schema-incomplete"` を立て、SUMMARY「要再確認リスト」へ再掲（沈黙させない＝要件1と連動）。※ 自己生成 fail-fast と既存発見 mark-and-continue は両立する別経路。
 3. **静的検査（二次・任意）**: COLD-event md の frontmatter 必須キー検査。配置先は harness-verifier ではなく **reindex の self-check**（harness-verifier は D4 framework 整合が責務で、COLD entry schema は代謝処理の責務＝層を混ぜない）。
 
 ### 7-C. event_id の名前空間と衝突規則
 
 - **キー = (genre, event_id)**。path `archive/YYYY-MM/<genre>/<event-id>.md` が genre で分離するため、genre 跨ぎの id 文字列再利用は衝突しない。
 - **採番は流用**: council=`invocation_id` 末尾 / changelog=`YYYY-MM-DD`+連番 / regime=回次 / arch-decision=`AD-NNN`。新採番機構は作らない。
-- 同一 genre 内で時刻が同じ複数 event は既存 ID 規則（連番）で分離。
+- **桁・区切り**: 同一 genre・同日で複数発生する連番は **zero-padded 2 桁**・区切り `-`（例 `2026-06-11-01.md` / `-02.md`）。2 桁で足りなくなったら桁を増やす。path 衝突回避の正準規則。
 
 ### 7-D. harvest_status のライフサイクル（要件1 の精密化）
 
@@ -200,13 +202,15 @@ project 向けの履歴層スキーマ。COLD 物理形態を反映。
 
 - **不変条件 #6 整合**: 結晶化は COLD lossless 原本（本文）から読む。frontmatter は索引・監査用メタであって結晶化素材ではない（lossy-on-lossy 回避）。
 - `unharvested` は §3-2「判定不能は WARM 留置（捨てない）」とは別物（判定不能は WARM、明示的に非価値判定されたものだけ unharvested で COLD）。可逆性(#11)が安全網。
+- **同視座反復の緩和（哲学者 seed）**: `unharvested` を打刻するのも再訪するのも同じ AI だと「同じ盲点で二度沈黙させる」リスクがある。要再確認リストの周期再掲では **異視座（人間 / 別モデル / 別 persona）を 1 件以上含める**運用を推奨し、その旨を `selector_note.basis` 任意欄に残す（「後世が安心しすぎる罠」の緩和）。
 
 ### 7-E. 索引の肥大対策（代謝天井の再発防止・精密化）
 
 - 開始は単一 `archive/COLD-INDEX.md`。
-- budget 超過（`token_budget` の一定割合）で **genre 別分割** → `COLD-INDEX-<genre>.md`。この時 `COLD-INDEX.md` は「どの genre 索引が存在するか」の**ディレクトリ（≈7 行・genre 数で上限）**に縮退する。
+- **分割閾値（定量）**: `token_budget × 0.5`（行数近似）または 1 索引 500 行のいずれか先着で **genre 別分割** → `COLD-INDEX-<genre>.md`。この時 `COLD-INDEX.md` は「どの genre 索引が存在するか」の**ディレクトリ（≈7 行・genre 数で上限）**に縮退する。
+- **書き込み race 規約**: COLD-INDEX は reindex の cycle 境界 **single-writer**（並行 writer なし＝§4 リズム sparse）。分割は一時ファイルへ全書き後 **atomic rename**（部分書き込み混在を防止）。
 - **禁止: event 単位の「索引の索引」**（再帰的肥大＝代謝天井の再発）。genre ディレクトリは genre 数で有界なので可。
-- さらに古い索引行は `COLD-INDEX-archive-YYYY.md` へ降格（索引自身も代謝対象）。
+- 古い索引行は `COLD-INDEX-archive-YYYY.md` へ降格（索引自身も代謝対象）。**降格トリガーは時間軸 YYYY と件数（archive 索引が上記閾値超過）の双方**（ジャンル偏在時の判断負債を回避）。
 - retrieve（分割後）: SUMMARY → COLD-INDEX(genre ディレクトリ) → 該当 `COLD-INDEX-<genre>` → 単一 event file。各段が低購読量。
 
 ### 7-F. 既存 archive との共存（no-migration の精密化）

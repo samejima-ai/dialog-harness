@@ -117,11 +117,13 @@ step 5 排泄で叙述的 episodic（council / changelog / regime / arch-decisio
 
 1. `history/archive/YYYY-MM/<genre>/<event-id>.md` を生成（frontmatter = metabolism-regime §7.1 スキーマ + 本文 = 生ログ原本）。
 2. **writer contract（#10 enforcement 一次点）**: `selector_note.by` / `selector_note.basis` / `harvest_status`
-   / `reversible` は**必須**。欠落のまま書き出さない。万一欠落を検出したら削除も放置もせず
-   `selector_note.bias_flag: "schema-incomplete"` を立て、差分レポート + SUMMARY「要再確認リスト」へ回す（#9）。
+   / `reversible` は**必須**。場合分け —
+   - **自己生成（reindex 自身が今書く COLD-event）= fail-fast**: 必須キーを満たせないなら書き出さず停止（差分レポートに記録）。
+   - **既存ファイル発見（過去の不完全な COLD-event を検出）= mark-and-continue**: 削除も放置もせず
+     `selector_note.bias_flag: "schema-incomplete"` を立て、差分レポート + SUMMARY「要再確認リスト」へ回す（#9）。
 3. **索引収穫**: 各 COLD-event の **frontmatter だけを読んで**（本文は読まない＝購読量保護・増分冪等）
    `history/archive/COLD-INDEX.md` へ 1 行 append（`| genre | event_id | timestamp | title | harvest_status | source_pointer | path |`）。
-   開始は単一ファイル。`token_budget` の一定割合超過で genre 別 `COLD-INDEX-<genre>.md` へ分割（event 単位の索引の索引は禁止）。
+   開始は単一ファイル。分割閾値・single-writer / atomic rename 規約・三段降格の件数閾値は metabolism-regime §7.1「索引肥大対策」を参照。
 4. **artifact（不透明 binary/jsonl）は COLD-artifact（§7.2）**として生のまま置き、索引収穫しない（cold:// ポインタ参照のみ）。
 
 retrieve（履歴参照時）は SUMMARY → 必要時のみ COLD-INDEX（メタのみ）→ 単一 event file を名指し Read。
