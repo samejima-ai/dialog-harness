@@ -171,7 +171,7 @@ council 判定・changelog・regime 評価・arch-decision・廃止 intent の�
 - **配置**: `history/archive/YYYY-MM/<genre>/<event-id>.md`
   （`<genre>` ∈ `council` / `changelog` / `regime` / `arch-decision` / `intent` …＝ WARM 台帳と 1:1）
   `<event-id>` は WARM 既存 ID 流用。同一 genre・同日で複数発生する場合は **zero-padded 2 桁連番**で衝突回避
-  （区切りは `-`。例 `2026-06-11-01.md` / `2026-06-11-02.md`。3 桁目が必要になったら桁を増やす）
+  （区切りは `-`。例 `2026-06-11-01.md` / `2026-06-11-02.md`。**同日 100 件目（連番 100）から 3 桁**へ拡張＝2 桁が飽和（99 件）した時点で桁を増やす予約規則）
 - **frontmatter スキーマ**（メタのみ。本文 = 元の生ログ lossless 原本＝#6 の結晶化素材）:
 
 ```yaml
@@ -199,17 +199,18 @@ reversible: true                     # #11・後世の問い直し可逆性
   購読量保護・冪等の増分処理）`history/archive/COLD-INDEX.md` へ 1 行 append する。索引行スキーマ:
   `| genre | event_id | timestamp | title | harvest_status | source_pointer | path |`。
   retrieve は SUMMARY（HOT 入口）→ 必要時のみ COLD-INDEX（メタのみ・低購読量）→ **単一 event file を名指し Read**。
-- **索引肥大対策**: 開始は単一 `COLD-INDEX.md`。**分割閾値**は `token_budget × 0.5`（行数近似）または
-  1 索引あたり 500 行のいずれか先に達した時点で **genre 別** `COLD-INDEX-<genre>.md` へ分割し、
-  `COLD-INDEX.md` は「どの genre 索引が在るか」のディレクトリ（genre 数で有界）へ縮退する。
+- **索引肥大対策**: 開始は単一 `COLD-INDEX.md`。**分割閾値**は 1 索引あたり **500 行**を primary（運用判断はこちらを優先）、
+  補助的に `token_budget × 0.5`（行数近似。`token_budget` は §0 / `history/.metabolism-config.yml` の `metabolism.token_budget`）の
+  いずれか先着で **genre 別** `COLD-INDEX-<genre>.md` へ分割し、`COLD-INDEX.md` は「どの genre 索引が在るか」のディレクトリ（genre 数で有界）へ縮退する。
   **event 単位の「索引の索引」は禁止**（再帰的肥大＝代謝天井の再発）。古い索引行は `COLD-INDEX-archive-YYYY.md` へ降格可
   （降格トリガーは時間軸 YYYY と件数＝archive 索引が上記閾値超過 の**双方**。ジャンル偏在時の判断負債を回避）。
   **書き込み規約**: COLD-INDEX は reindex の cycle 境界 **single-writer**（並行 writer なし＝§4 リズム sparse）で append する。
-  分割時は一時ファイルへ全書き込み後 **atomic rename**（部分書き込み混在の防止）。
+  分割時は一時ファイルへ全書き込み後 **atomic rename**（部分書き込み混在の防止。POSIX rename 前提。非 POSIX FS / CI 上の挙動は runtime PR で合意）。
 - **writer contract**: COLD-event 書き出し時、`selector_note.by` / `.basis` / `harvest_status` / `reversible` は必須
   （`reindex-protocol.md` §3 step5・§5）。**自己生成は fail-fast**（欠落のまま書き出さない）。
   既存ファイル発見時に欠落を検出した場合のみ `bias_flag: "schema-incomplete"` を立てて要再確認リストへ回す fallback
-  （自己生成 fail-fast / 既存発見 mark-and-continue の場合分け）。#10 の enforcement 一次点。
+  （自己生成 fail-fast / 既存発見 mark-and-continue の場合分け）。**非対称の根拠**: 自己生成は今ここで完全な情報を持つので不備は即バグ＝止める。
+  既存ファイルは過去の遺物で原本を壊さず可監査に拾うのが正（#2 archive≠delete）。自己生成 vs 既存の検出手順（呼び出し経路分岐 / 存在チェック）は runtime PR で確定。#10 の enforcement 一次点。
 
 ### 7.2 COLD サブ形態 (ii) — COLD-artifact（不透明な生 artifact・ポインタ参照）
 
@@ -219,6 +220,8 @@ Trace/動画/network/console・jsonl・バイナリのような**不透明な生
 
 > 脚注（二形態は閉じていない）: 将来 **semi-structured artifact**（構造化 JSON ログ等、frontmatter 化も生 artifact 化も
 > 中途半端なもの）が必要になれば §7.x として第三サブ形態を追加できる。一般形は (i)/(ii) の二項に閉じない。
+> **triggering condition**（宙吊り回避）: 「(i)/(ii) どちらに入れても逆引き or 索引収穫が機能不全になる episodic が
+> `repetition_threshold` 回反復した」時に第三形態化を Council 諮問する。それ未満では二形態に押し込む（早すぎる抽象化の防止）。
 
 ### 7.3 還元先（軸A）
 
