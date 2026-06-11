@@ -44,7 +44,7 @@ archived_at: 2026-07-01              # COLD 移送日（必須）
 reduction_target: DH                 # 軸A 還元先（DH / project）（必須）
 
 # --- 逆引き（不変条件 #3 の entry レベル具体化）---
-source_pointer: "history/COUNCIL-LOG.md#hstr01"   # WARM 原本のどこから排泄されたか（必須）
+source_pointer: "history/COUNCIL-LOG.md @ council-2026-06-11T05:30:00Z-hstr01"   # WARM 原本への逆引き（必須）。locator は grep 可能な安定キー（invocation_id / 日付+連番 / AD-NNN）。GitHub 見出しアンカーではない（append-only 台帳では行番号より ID が訂正に強い）
 crystallized_into:                   # この event から結晶化された HOT 叡智。無ければ null
   - "history/SUMMARY.md#..."
 
@@ -123,7 +123,7 @@ project 向けの履歴層スキーマ。COLD 物理形態を反映。
 
 - **§配置**: `archive/` ツリーに `<genre>/<event-id>.md` 形態と `COLD-INDEX.md` を追記。
 - **§archive/「archive 配下の構造」**: 現状の `INTENT-F003.md`（機能ID単位）を `<genre>/<event-id>.md` + frontmatter に一般化（廃止 INTENT は `intent` genre の一例に）。
-- **新節「COLD frontmatter スキーマ / 索引収穫」**: 正本 `metabolism-regime.md §6.5` への pointer 1 行 + project 具体（既存 §7 E2E と同じ薄いポインタ方式＝SPEC 肥大回避）。
+- **新節「COLD frontmatter スキーマ / 索引収穫」**: 正本 `metabolism-regime.md §7.1` への pointer 1 行 + project 具体（既存 §7 E2E と同じ薄いポインタ方式＝SPEC 肥大回避）。
 
 ### (c) versioning / 検証
 - **minor 昇格**（後方互換追加・既存リンク削除なし・identity 保持）。spec-architect §参照ドキュメントの「リンク単位保持」制約に抵触しない。
@@ -143,7 +143,7 @@ project 向けの履歴層スキーマ。COLD 物理形態を反映。
 ## 6. 認識ズレ確認ポイント（人間レビュー §5・v1）— 確定済み
 
 1. ~~§6.5 新節挿入 vs §7 リネーム~~ → **§7 リネームに確定**（Q1・詳細 §7-A）
-2. 索引の開始形（単一 vs genre 別）→ **v2 §8-2 で再確認中**
+2. 索引の開始形（単一 vs genre 別）→ **単一 `COLD-INDEX.md` 始まりに確定**（§8-2・肥大時 genre 別分割）
 3. `selector_note` 必須 → **必須に確定**（Q2・enforcement §7-B）
 4. 既存 archive 遡及 migration → **しない（別 PR）に確定**（Q3・§5 / §7-F）
 

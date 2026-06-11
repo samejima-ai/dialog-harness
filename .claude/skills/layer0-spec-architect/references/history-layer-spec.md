@@ -24,7 +24,7 @@ project-root/
     └── archive/                # COLD 排泄層（既定非ロード・retrievable）。下記 2 サブ形態（v5.25.0）
         ├── COLD-INDEX.md       # COLD-event の frontmatter 収穫の薄いメタ map（既定非ロード・retrieve 入口）
         └── YYYY-MM/
-            ├── <genre>/<event-id>.md  # COLD-event: 1事象1ファイル + frontmatter（council/changelog/intel廃止 等）
+            ├── <genre>/<event-id>.md  # COLD-event: 1事象1ファイル + frontmatter（council/changelog/廃止 intent 等）
             └── e2e/                    # COLD-artifact: 相A artifact・生runログ（不透明・cold:// ポインタ参照）
 ```
 

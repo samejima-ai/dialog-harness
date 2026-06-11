@@ -180,7 +180,7 @@ title: "..."                         # 索引表示用の一行（必須）
 timestamp: 2026-06-11T05:30:00Z      # 元 event の発生時刻（必須）
 archived_at: 2026-07-01              # COLD 移送日（必須）
 reduction_target: DH                 # 軸A 還元先（DH / project）（必須）
-source_pointer: "history/COUNCIL-LOG.md#hstr01"  # WARM 原本のどこから排泄されたか（逆引き・必須・#3）
+source_pointer: "history/COUNCIL-LOG.md @ council-2026-06-11T05:30:00Z-hstr01"  # WARM 原本への逆引き（必須・#3）。locator は grep 可能な安定キー（invocation_id / 日付+連番 / AD-NNN）であって GitHub 見出しアンカーではない。append-only 台帳では行番号より ID が訂正に強い
 crystallized_into: ["history/SUMMARY.md#..."]    # 結晶化された HOT 叡智。無ければ null
 confidence: 確定                     # 確定 / AI推定 (YYYY-MM-DD)（既存§確度メタと同形）
 harvest_status: harvested            # harvested / unharvested（#9・収穫漏れ救済の監査対象）
