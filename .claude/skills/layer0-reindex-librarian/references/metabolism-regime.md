@@ -121,7 +121,7 @@ reindex は episodic を還元先で**仕分け**し、正しい叡智層へ振�
 8. **パターン結晶は反-発火条件を必須化**。形式に「いつ適用**しない**か」を含める。反例（falsification）が偽類推（表層一致での誤発火）の唯一の防壁。誤パターンは fuzzy に誤発火し debug 困難ゆえ、HOT 昇格証拠は規則結晶より高くする。**【caveat】本条はパターン結晶の形式が確定（context-circulation-theory §10 未決）してから発効する。形式未確定の現時点では「方針」であって運用必須条件ではない**
 9. **収穫漏れの「二度目の沈黙」を防ぐ（不変条件 C / 索引≠唯一の到達経路）**。COLD-event（§7.1）は frontmatter `harvest_status`（`harvested` / `unharvested`）を持つ。栄養抽出されずに COLD 入りした `unharvested`（§3-5「沈黙した声」候補）は、**delete せず glob 全走査で必ず再到達可能**に保ち、reindex が周期的に SUMMARY「要再確認リスト」へ再掲する（緩慢な抹消＝固定化された沈黙の防止）。索引（COLD-INDEX）は高速入口であって唯一の到達経路ではない——**filesystem（全 COLD file）が常に一次の真実源**である。#2「COLD=archive≠delete」の entry レベル具体化。
 10. **選別装置の設計者バイアスを監査可能にする（不変条件 D）**。COLD-event の frontmatter に `selector_note`（`by` / `basis` / `bias_flag`）を**必須化**する。「誰が・何を根拠に・この episodic を分類/収穫したか」を entry レベルで残し、結晶化主体（AI）の現在バイアスが未来の正本を汚染する経路（§3 冒頭の警告）を可監査にする。§3-3「摂取選択の可監査性」の entry レベル具体化。欠落検出時は削除も放置もせず `bias_flag: "schema-incomplete"` を立てて要再確認リストへ回す。
-11. **後世の問い直しを封じない可逆性（不変条件 E）**。COLD-event は `reversible: true` を保証する。#73 の「禁止: COLD→HOT/WARM の**常時**昇格」は *常時の自動昇格* の禁止であって、**明示 retrieve 後の人間/Council による再評価・再昇格は許容**される。代謝構造自身が「この分類は正しかったか」を後世が問い直す経路を閉じてはならない。
+11. **後世の問い直しを封じない可逆性（不変条件 E）**。COLD-event は `reversible: true` を保証する。#73 の「禁止: COLD→HOT/WARM の**常時**昇格」は *常時の自動昇格* の禁止であって、**明示 retrieve 後の人間/Council による再評価・再昇格は許容**される。代謝構造自身が「この分類は正しかったか」を後世が問い直す経路を閉じてはならない。**昇格経路**: 明示 retrieve → §5-1 ゲート（WARM→HOT は Council 判定）→ 合意プロセス → 人間最終承認（誰が・どのトリガで・何を根拠に問い直すかを COUNCIL-LOG に残す）。フラグ単独で可逆性を主張せず、実経路を踏むこと。
 
 > 不変条件 #6–#8 の理論的根拠と二種の結晶（規則結晶 / パターン結晶）・圧縮 ≠ 結晶化の詳細は、上位の仮結晶理論 `context-circulation-theory.md` を参照（§5・§6・§8）。
 > 不変条件 #9–#11（収穫漏れ救済 C / バイアス監査 D / 問い直し可逆性 E）は Council `council-2026-06-11T05:30:00Z-hstr01` の哲学者 minority_opinion（重み 5）を構造化したもの。§7.1 COLD-event の frontmatter スキーマで実体化する。
@@ -170,6 +170,8 @@ council 判定・changelog・regime 評価・arch-decision・廃止 intent の�
 
 - **配置**: `history/archive/YYYY-MM/<genre>/<event-id>.md`
   （`<genre>` ∈ `council` / `changelog` / `regime` / `arch-decision` / `intent` …＝ WARM 台帳と 1:1）
+  `<event-id>` は WARM 既存 ID 流用。同一 genre・同日で複数発生する場合は **zero-padded 2 桁連番**で衝突回避
+  （区切りは `-`。例 `2026-06-11-01.md` / `2026-06-11-02.md`。3 桁目が必要になったら桁を増やす）
 - **frontmatter スキーマ**（メタのみ。本文 = 元の生ログ lossless 原本＝#6 の結晶化素材）:
 
 ```yaml
@@ -181,13 +183,13 @@ timestamp: 2026-06-11T05:30:00Z      # 元 event の発生時刻（必須）
 archived_at: 2026-07-01              # COLD 移送日（必須）
 reduction_target: DH                 # 軸A 還元先（DH / project）（必須）
 source_pointer: "history/COUNCIL-LOG.md @ council-2026-06-11T05:30:00Z-hstr01"  # WARM 原本への逆引き（必須・#3）。locator は grep 可能な安定キー（invocation_id / 日付+連番 / AD-NNN）であって GitHub 見出しアンカーではない。append-only 台帳では行番号より ID が訂正に強い
-crystallized_into: ["history/SUMMARY.md#..."]    # 結晶化された HOT 叡智。無ければ null
+crystallized_into: ["history/SUMMARY.md @ <locator>"]  # HOT 叡智の list（inline literal）。無ければ空 list [] が正準（null 禁止＝型ブレ防止）。<locator> は grep 可能な安定キー
 confidence: 確定                     # 確定 / AI推定 (YYYY-MM-DD)（既存§確度メタと同形）
 harvest_status: harvested            # harvested / unharvested（#9・収穫漏れ救済の監査対象）
 selector_note:                       # #10・選別バイアス監査（必須）
   by: layer0-reindex-librarian
-  basis: "repetition_threshold 到達 + Council ..."
-  bias_flag: null                    # 偏りの疑い・schema 不備時に記す
+  basis: "repetition_threshold 到達 + Council ..."  # 周期再掲時は異視座（人間/別モデル/別 persona）を 1 件以上含めた旨をここに残せる（#9 の同視座反復緩和）
+  bias_flag: null                    # 無指摘時は null が正準。偏りの疑い・schema 不備時に文字列で記す
 reversible: true                     # #11・後世の問い直し可逆性
 ---
 （本文 = 元の生ログ entry をそのまま）
@@ -197,17 +199,26 @@ reversible: true                     # #11・後世の問い直し可逆性
   購読量保護・冪等の増分処理）`history/archive/COLD-INDEX.md` へ 1 行 append する。索引行スキーマ:
   `| genre | event_id | timestamp | title | harvest_status | source_pointer | path |`。
   retrieve は SUMMARY（HOT 入口）→ 必要時のみ COLD-INDEX（メタのみ・低購読量）→ **単一 event file を名指し Read**。
-- **索引肥大対策**: 開始は単一 `COLD-INDEX.md`。`token_budget` の一定割合を超過したら **genre 別**
-  `COLD-INDEX-<genre>.md` へ分割し、`COLD-INDEX.md` は「どの genre 索引が在るか」のディレクトリ（genre 数で有界）へ縮退する。
-  **event 単位の「索引の索引」は禁止**（再帰的肥大＝代謝天井の再発）。古い索引行は `COLD-INDEX-archive-YYYY.md` へ降格可。
+- **索引肥大対策**: 開始は単一 `COLD-INDEX.md`。**分割閾値**は `token_budget × 0.5`（行数近似）または
+  1 索引あたり 500 行のいずれか先に達した時点で **genre 別** `COLD-INDEX-<genre>.md` へ分割し、
+  `COLD-INDEX.md` は「どの genre 索引が在るか」のディレクトリ（genre 数で有界）へ縮退する。
+  **event 単位の「索引の索引」は禁止**（再帰的肥大＝代謝天井の再発）。古い索引行は `COLD-INDEX-archive-YYYY.md` へ降格可
+  （降格トリガーは時間軸 YYYY と件数＝archive 索引が上記閾値超過 の**双方**。ジャンル偏在時の判断負債を回避）。
+  **書き込み規約**: COLD-INDEX は reindex の cycle 境界 **single-writer**（並行 writer なし＝§4 リズム sparse）で append する。
+  分割時は一時ファイルへ全書き込み後 **atomic rename**（部分書き込み混在の防止）。
 - **writer contract**: COLD-event 書き出し時、`selector_note.by` / `.basis` / `harvest_status` / `reversible` は必須
-  （`reindex-protocol.md` §3 step5・§5）。欠落のまま書き出さない。#10 の enforcement 一次点。
+  （`reindex-protocol.md` §3 step5・§5）。**自己生成は fail-fast**（欠落のまま書き出さない）。
+  既存ファイル発見時に欠落を検出した場合のみ `bias_flag: "schema-incomplete"` を立てて要再確認リストへ回す fallback
+  （自己生成 fail-fast / 既存発見 mark-and-continue の場合分け）。#10 の enforcement 一次点。
 
 ### 7.2 COLD サブ形態 (ii) — COLD-artifact（不透明な生 artifact・ポインタ参照）
 
 Trace/動画/network/console・jsonl・バイナリのような**不透明な生 artifact**は markdown へ変換しない。
 **生ファイルのまま** COLD に置き、WARM 台帳側が `cold://` ポインタ（`reindex-protocol.md` §5）で参照する。
 索引収穫（COLD-INDEX）の対象外（frontmatter を持たないため）。E2E 相 A artifact が正準例（§7.4）。
+
+> 脚注（二形態は閉じていない）: 将来 **semi-structured artifact**（構造化 JSON ログ等、frontmatter 化も生 artifact 化も
+> 中途半端なもの）が必要になれば §7.x として第三サブ形態を追加できる。一般形は (i)/(ii) の二項に閉じない。
 
 ### 7.3 還元先（軸A）
 

@@ -2,7 +2,27 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 2026-06-11 履歴ストレージ構造の tier 分割化（v5.25.0、minor 昇格、in progress, target 2026-06-11）
+## 2026-06-11 履歴ストレージ tier 分割の Council seeds 吸収（v5.25.1、patch 昇格、released 2026-06-11、follow-up #137）
+
+PR #137（v5.25.0）merge 後の Council PR レビュー（`approve_with_seeds` / weighted_score 3.10 / HIGH 0）が出した
+10 件の seeds を SPEC へ 1 行ずつ吸収（blocking ではないが runtime 実装 PR の drift 防止のため確定 SPEC に反映）。
+
+- **MEDIUM 5**: (1) `crystallized_into` は空 list `[]` 正準・`null` 禁止／`bias_flag` は無指摘時 null 正準（型ブレ防止）
+  (2) 索引分割を定量化（`token_budget × 0.5` or 500 行先着）+ single-writer / atomic rename race 規約
+  (3) `event_id` は zero-padded 2 桁連番・区切り `-`（path 衝突回避）
+  (4) `history-layer-spec` archive 例示を 2024 → 2026-06 起点に修正 + 段階適用注記
+  (5) writer contract を場合分け（自己生成 = fail-fast / 既存発見 = `bias_flag: schema-incomplete` mark-and-continue）
+- **LOW 5**: (6) runtime PR に `selector_note` schema 検査テスト必須化を TODO 化
+  (7) 三段索引降格に件数閾値を併記（時間軸 YYYY と双方）
+  (8) `harvest_status` 周期再掲に異視座（人間/別モデル/別 persona）1 件以上の運用推奨
+  (9) 不変条件 #11 末尾に reversible の実昇格経路（明示 retrieve → §5-1 Council ゲート → 人間承認）を追記
+  (10) §7.2 に COLD 第三形態（semi-structured artifact）の余地を脚注で明示（二項に閉じない）
+
+変更ファイル: `metabolism-regime.md`（§5 #11 / §7.1 / §7.2）/ `reindex-protocol.md`（§3 writer contract 場合分け）/
+`history-layer-spec.md`（archive 例示年次）/ `delivery/SPEC-DESIGN-history-storage-structure.md`（seeds 反映・status 更新）。
+harness-verifier 全 6 検査 PASS 維持。
+
+## 2026-06-11 履歴ストレージ構造の tier 分割化（v5.25.0、minor 昇格、released 2026-06-11、PR #137 merged）
 
 利用者（自分）の問い「履歴の残し方を 1ファイル蓄積でなく 1ジャンル蓄積にして frontmatter で索引管理できるか／
 それとも 1ファイル1事象が良いか」を起点に、Council `council-2026-06-11T05:30:00Z-hstr01`（全会一致・人間合意

@@ -342,12 +342,15 @@ COLD は 2 サブ形態を持つ（正本 `../../layer0-reindex-librarian/refere
 ```
 history/archive/
 ├── COLD-INDEX.md            # COLD-event の frontmatter 収穫の薄いメタ map（肥大時は COLD-INDEX-<genre>.md へ分割）
-├── 2024-04/
+├── 2026-06/                 # ※ 新スキームは 2026-06（v5.25.0）以降の新規移送分から段階適用
 │   ├── intent/F003.md       # COLD-event(i): 1事象1ファイル + frontmatter。廃止 INTENT は genre=intent の一例
 │   └── council/d4mtr1.md     # COLD-event(i): council 判定 1 件 = 1 ファイル
-└── 2024-05/
+└── 2026-07/
     └── e2e/                  # COLD-artifact(ii): 相A artifact・生runログ（不透明・cold:// ポインタ参照・索引収穫外）
 ```
+
+> ※ 旧スキームのフラット配置（`archive/2026-06/*.md` 直下 + `MANIFEST.md`）は温存。上記 `<genre>/` 構造は
+> 新規移送分から段階適用し、遡及 migration は別タスク（#9 により旧 file も delete されず再到達可能）。
 
 - **COLD-event**（叙述的 episodic）: `<genre>/<event-id>.md`。frontmatter（`genre` / `event_id` / `source_pointer`
   / `harvest_status` / `selector_note` 必須 / `reversible` 等）は正本 metabolism-regime §7.1 を参照。reindex が
