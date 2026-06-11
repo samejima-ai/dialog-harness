@@ -134,8 +134,11 @@ project 向けの履歴層スキーマ。COLD 物理形態を反映。
 
 ## 5. やらないこと（スコープ外・別タスク）
 
-- **runtime 実装**: reindex-librarian の収穫ロジック実装は別タスク。**TODO（runtime PR 必須）**: `selector_note` 必須化は
-  writer contract に依拠するため、runtime PR は `reindex-librarian` 側に **schema 検査テスト**（必須キー欠落で fail）を必ず伴うこと（enforcement の時間差を埋める）。
+- **runtime 実装**: reindex-librarian の収穫ロジック実装は別タスク。**TODO（runtime PR 必須・PR #138 Council seeds 転記）**:
+  1. `selector_note` 必須化の **schema 検査テスト**（必須キー欠落で fail）を `reindex-librarian` 側に必ず伴う（enforcement の時間差を埋める）。
+  2. writer contract の「自己生成 vs 既存発見」**検出手順**を確定（呼び出し経路分岐 / 既存ファイル存在チェック）。
+  3. 分割 atomic rename の **FS 前提**（POSIX / 同一 FS 内 rename）を確定し Windows・CI 挙動を確認。
+  4. 索引分割閾値の `token_budget` 値確定（500 行を primary・token_budget は補助＝§7-E と整合）。
 - **既存履歴の migration**: 現 COLD（`archive/2026-06/*` のフラット配置）の `<genre>/` 再編 + frontmatter 後付けは別 PR。本案では「新規 COLD 移送分から段階適用・既存は遡及しない」（LC ≥ 1 の段階適用原則）。
 - **WARM 台帳の分割**: WARM は単一台帳のまま（案C を全層展開しない＝索引が新たな代謝天井になる罠の回避）。
 
