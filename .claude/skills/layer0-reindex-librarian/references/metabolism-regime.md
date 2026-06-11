@@ -171,7 +171,7 @@ council 判定・changelog・regime 評価・arch-decision・廃止 intent の�
 - **配置**: `history/archive/YYYY-MM/<genre>/<event-id>.md`
   （`<genre>` ∈ `council` / `changelog` / `regime` / `arch-decision` / `intent` …＝ WARM 台帳と 1:1）
   `<event-id>` は WARM 既存 ID 流用。同一 genre・同日で複数発生する場合は **zero-padded 2 桁連番**で衝突回避
-  （区切りは `-`。例 `2026-06-11-01.md` / `2026-06-11-02.md`。**同日 100 件超で 3 桁**へ拡張＝桁は飽和時に増やす予約規則）
+  （区切りは `-`。例 `2026-06-11-01.md` / `2026-06-11-02.md`。**同日 100 件目（連番 100）から 3 桁**へ拡張＝2 桁が飽和（99 件）した時点で桁を増やす予約規則）
 - **frontmatter スキーマ**（メタのみ。本文 = 元の生ログ lossless 原本＝#6 の結晶化素材）:
 
 ```yaml
