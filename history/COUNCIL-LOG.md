@@ -2285,3 +2285,50 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-06-07T05:30:00Z"
   cascade_to: "wave2/wave3 を archive/2026-06/ へ移送する本番第二弾フォローアップ PR。SUMMARY 要再確認リストの w2qb04/w3qb04 項目を解決済みに更新。"
+
+---
+
+- invocation_id: "council-2026-06-11T05:30:00Z-hstr01"
+  timestamp: "2026-06-11T05:30:00Z"
+  source_skill: "layer0-spec-architect (履歴ストレージ構造の設計判断・history-storage-structure)"
+  question_to_answer: "履歴ストレージの保持構造はどれを採るべきか（案A 1ファイル蓄積 / 案B 1ジャンル+frontmatter索引 / 案C 1事象1ファイル / 案D tier分割の止揚案）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案D（止揚案）", confidence: 0.75 }
+    開発者: { stance: "案D（止揚案）", confidence: 0.88 }
+    哲学者: { stance: "案D を基底にした第3の視点（索引＝忘却の作法）", confidence: 0.62 }
+  judgment_confidence: 0.82
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案D（止揚案）"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.89
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.75 }
+          - { persona: "開発者", weight: 3, confidence: 0.88 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "案D を基底にした第3の視点（索引＝忘却の作法）", weight: 5, confidence: 0.62, reason: "options 外の自由記述 stance のため weight 加算対象外（PR1 暫定運用）。意見は minority_opinion に転載" }
+    max_score_stance: "案D（止揚案）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案D（止揚案）: tier で構造を割り当てる。WARM（生きた台帳）= ジャンル単位 append-only 単一ファイルを維持（reindex cursor 増分摂取・監査連続性）/ COLD（reindex 排泄物）= 1事象1ファイル + frontmatter（archive/YYYY-MM/<genre>/<event-id>.md・glob 索引・逆引きポインタが1ファイル名指し）/ 索引 = frontmatter 収穫の薄いメタ map。既存 E2E 履歴（§7）の同型解の一般化。"
+  minority_opinion: "哲学者: 案Dは『忘却の作法』を構造に固定する。索引が収穫しなかった COLD entry が『二度目の沈黙』に陥らぬよう、(1) COLD は delete せず glob 全走査で必ず再到達可能に保つ、(2) frontmatter 選別装置の設計者バイアスを監査するメタ列を持つ、(3) SPEC が後世の問い直しを封じない可逆性を保つ——を付帯設計要件とすべき。"
+  weight_note: "conception カテゴリで哲学者を +2 加重（3/3/5）。ただし哲学者 stance は options 外の第3の道のため third_way_excluded（weight 5・加算対象外）。実効スコアは経営者+開発者の案D支持(4.89)で確定。最重み哲学者も案Dを基底支持のため、score 以上に収束は強い。"
+  reasoning: "3ペルソナとも案Dを基底に支持。開発者(0.88)が案B の『frontmatter は markdown で entry 単位 seek 不可＝収穫前は全ロードを誘発』という技術的矛盾と、案C の『生きた台帳の file 爆発が append-only 監査・reindex cursor 増分を破壊』を指摘し、案Dが WARM 冪等増分と COLD glob entry-retrieve を両立すると判定。経営者(0.75)は既存 E2E 同型解の実装リスク最小・購読量恒久削減の ROI を評価。哲学者(0.62)は支持しつつ忘却の倫理ガードを付帯。"
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_recommended"
+  final_decision: "council≒人間合意（philosophy 第6条）。案D（tier 分割）を採用。WARM=ジャンル単位 append-only 単一台帳維持 / COLD=1事象1ファイル+frontmatter（archive/YYYY-MM/<genre>/）/ 索引=frontmatter 収穫の薄いメタ map。哲学者3要件（収穫漏れ救済・選別バイアス監査メタ列・後世の問い直し可逆性）を付帯設計要件とする。"
+  follow_up_questions_count: 0
+  agreed_at: "2026-06-11T05:35:00Z"
+  cascade_to: "L0/spec-architect で history-layer-spec.md と metabolism-regime.md を改訂し、frontmatter スキーマ + 索引収穫プロトコル + 哲学者3要件を正式設計する SPEC 改訂タスク。実装（runtime/migration）はさらに別 PR。"

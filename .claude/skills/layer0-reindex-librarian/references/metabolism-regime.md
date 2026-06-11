@@ -119,8 +119,12 @@ reindex は episodic を還元先で**仕分け**し、正しい叡智層へ振�
 6. **結晶化は COLD lossless 原本から読む（不変条件 A）**。WARM の lossy 要約層からは結晶化しない——lossy-on-lossy 汚染（意味的に欠けた要約から正典を著述する）を防ぐ。要約は参照の入口、結晶化の素材は原本
 7. **「情報欠損なし」は HOT の誤った目標（不変条件 B）**。lossless は COLD 監査層に隔離する責務であって、HOT の目標ではない。HOT は forgetting is a feature で**意図的に lossy**（判断に効く結晶だけ残す）。捨てるから速い
 8. **パターン結晶は反-発火条件を必須化**。形式に「いつ適用**しない**か」を含める。反例（falsification）が偽類推（表層一致での誤発火）の唯一の防壁。誤パターンは fuzzy に誤発火し debug 困難ゆえ、HOT 昇格証拠は規則結晶より高くする。**【caveat】本条はパターン結晶の形式が確定（context-circulation-theory §10 未決）してから発効する。形式未確定の現時点では「方針」であって運用必須条件ではない**
+9. **収穫漏れの「二度目の沈黙」を防ぐ（不変条件 C / 索引≠唯一の到達経路）**。COLD-event（§7.1）は frontmatter `harvest_status`（`harvested` / `unharvested`）を持つ。栄養抽出されずに COLD 入りした `unharvested`（§3-5「沈黙した声」候補）は、**delete せず glob 全走査で必ず再到達可能**に保ち、reindex が周期的に SUMMARY「要再確認リスト」へ再掲する（緩慢な抹消＝固定化された沈黙の防止）。索引（COLD-INDEX）は高速入口であって唯一の到達経路ではない——**filesystem（全 COLD file）が常に一次の真実源**である。#2「COLD=archive≠delete」の entry レベル具体化。
+10. **選別装置の設計者バイアスを監査可能にする（不変条件 D）**。COLD-event の frontmatter に `selector_note`（`by` / `basis` / `bias_flag`）を**必須化**する。「誰が・何を根拠に・この episodic を分類/収穫したか」を entry レベルで残し、結晶化主体（AI）の現在バイアスが未来の正本を汚染する経路（§3 冒頭の警告）を可監査にする。§3-3「摂取選択の可監査性」の entry レベル具体化。欠落検出時は削除も放置もせず `bias_flag: "schema-incomplete"` を立てて要再確認リストへ回す。
+11. **後世の問い直しを封じない可逆性（不変条件 E）**。COLD-event は `reversible: true` を保証する。#73 の「禁止: COLD→HOT/WARM の**常時**昇格」は *常時の自動昇格* の禁止であって、**明示 retrieve 後の人間/Council による再評価・再昇格は許容**される。代謝構造自身が「この分類は正しかったか」を後世が問い直す経路を閉じてはならない。
 
 > 不変条件 #6–#8 の理論的根拠と二種の結晶（規則結晶 / パターン結晶）・圧縮 ≠ 結晶化の詳細は、上位の仮結晶理論 `context-circulation-theory.md` を参照（§5・§6・§8）。
+> 不変条件 #9–#11（収穫漏れ救済 C / バイアス監査 D / 問い直し可逆性 E）は Council `council-2026-06-11T05:30:00Z-hstr01` の哲学者 minority_opinion（重み 5）を構造化したもの。§7.1 COLD-event の frontmatter スキーマで実体化する。
 
 ---
 
@@ -139,14 +143,86 @@ reindex は episodic を還元先で**仕分け**し、正しい叡智層へ振�
 
 ---
 
-## 7. E2E episodic ソースの tier 対応（v5.24.0 追加）
+## 7. episodic ソースの tier 対応（一般形 / v5.24.0 E2E → v5.25.0 一般化）
 
-E2E テストの実行結果・履歴は、**専用サイクルを新設せず本 regime の新しい episodic ソース**として流す
-（構造同形の維持・重複機構の回避）。構築側の正本は
+全ての episodic ソース（council 判定 / changelog / regime 評価 / arch-decision / 廃止 intent / E2E 等）は、
+**専用サイクルを新設せず本 regime の同一 tier 規律**に流す（構造同形の維持・重複機構の回避）。
+本節は §2「3 層保持」の **物理形態**を確定する。起点は Council `council-2026-06-11T05:30:00Z-hstr01`
+（履歴ストレージ構造 = tier 分割の止揚案・全会一致・人間合意）。
+
+### 7.0 一般原則（WARM = 1ジャンル台帳 / COLD = 2サブ形態 / 索引 = 薄いメタ map）
+
+| tier | 物理形態 | 既定ロード |
+|---|---|---|
+| **WARM** | **1ジャンル append-only 単一台帳**（COUNCIL-LOG / CHANGELOG / REGIME-LOG / E2E-LOG …） | 関連時のみ（reindex が cursor 増分摂取） |
+| **COLD** | **2 サブ形態**（§7.1 COLD-event / §7.2 COLD-artifact） | しない（retrievable） |
+| **索引** | **COLD-INDEX**（COLD-event の frontmatter 収穫の薄いメタ map） | しない（必要時のみ retrieve の入口） |
+
+設計判断（北極星整合）: WARM を 1事象1ファイルに分割しない（append-only 監査の連続性・reindex 増分・
+書き込み安価を保つ）。retrieve の entry 単位細粒度は COLD 側（1事象1ファイル）で実現する。
+全層を 1事象1ファイルにすると索引自体が新たな代謝天井になるため tier で割り当てる。
+
+### 7.1 COLD サブ形態 (i) — COLD-event（叙述的 episodic・1事象1ファイル + frontmatter）
+
+council 判定・changelog・regime 評価・arch-decision・廃止 intent のような**離散した叙述的 episodic**は、
+排泄時に **1 event = 1 markdown file + frontmatter** へ展開する。filesystem/glob が索引そのものになり、
+逆引きが 1 ファイルを名指しでき、retrieve が entry 単位になる（ユーザー要求「参照時に必要な物だけ補足」の実装）。
+
+- **配置**: `history/archive/YYYY-MM/<genre>/<event-id>.md`
+  （`<genre>` ∈ `council` / `changelog` / `regime` / `arch-decision` / `intent` …＝ WARM 台帳と 1:1）
+- **frontmatter スキーマ**（メタのみ。本文 = 元の生ログ lossless 原本＝#6 の結晶化素材）:
+
+```yaml
+---
+genre: council                       # WARM 台帳ジャンル（必須）
+event_id: hstr01                     # ジャンル内一意 ID。WARM の invocation_id 等を流用（必須・新採番しない）
+title: "..."                         # 索引表示用の一行（必須）
+timestamp: 2026-06-11T05:30:00Z      # 元 event の発生時刻（必須）
+archived_at: 2026-07-01              # COLD 移送日（必須）
+reduction_target: DH                 # 軸A 還元先（DH / project）（必須）
+source_pointer: "history/COUNCIL-LOG.md#hstr01"  # WARM 原本のどこから排泄されたか（逆引き・必須・#3）
+crystallized_into: ["history/SUMMARY.md#..."]    # 結晶化された HOT 叡智。無ければ null
+confidence: 確定                     # 確定 / AI推定 (YYYY-MM-DD)（既存§確度メタと同形）
+harvest_status: harvested            # harvested / unharvested（#9・収穫漏れ救済の監査対象）
+selector_note:                       # #10・選別バイアス監査（必須）
+  by: layer0-reindex-librarian
+  basis: "repetition_threshold 到達 + Council ..."
+  bias_flag: null                    # 偏りの疑い・schema 不備時に記す
+reversible: true                     # #11・後世の問い直し可逆性
+---
+（本文 = 元の生ログ entry をそのまま）
+```
+
+- **索引収穫プロトコル**: reindex は排泄時、各 COLD-event の **frontmatter だけを読んで**（本文は読まない＝
+  購読量保護・冪等の増分処理）`history/archive/COLD-INDEX.md` へ 1 行 append する。索引行スキーマ:
+  `| genre | event_id | timestamp | title | harvest_status | source_pointer | path |`。
+  retrieve は SUMMARY（HOT 入口）→ 必要時のみ COLD-INDEX（メタのみ・低購読量）→ **単一 event file を名指し Read**。
+- **索引肥大対策**: 開始は単一 `COLD-INDEX.md`。`token_budget` の一定割合を超過したら **genre 別**
+  `COLD-INDEX-<genre>.md` へ分割し、`COLD-INDEX.md` は「どの genre 索引が在るか」のディレクトリ（genre 数で有界）へ縮退する。
+  **event 単位の「索引の索引」は禁止**（再帰的肥大＝代謝天井の再発）。古い索引行は `COLD-INDEX-archive-YYYY.md` へ降格可。
+- **writer contract**: COLD-event 書き出し時、`selector_note.by` / `.basis` / `harvest_status` / `reversible` は必須
+  （`reindex-protocol.md` §3 step5・§5）。欠落のまま書き出さない。#10 の enforcement 一次点。
+
+### 7.2 COLD サブ形態 (ii) — COLD-artifact（不透明な生 artifact・ポインタ参照）
+
+Trace/動画/network/console・jsonl・バイナリのような**不透明な生 artifact**は markdown へ変換しない。
+**生ファイルのまま** COLD に置き、WARM 台帳側が `cold://` ポインタ（`reindex-protocol.md` §5）で参照する。
+索引収穫（COLD-INDEX）の対象外（frontmatter を持たないため）。E2E 相 A artifact が正準例（§7.4）。
+
+### 7.3 還元先（軸A）
+
+COLD-event / COLD-artifact のいずれも軸A（DH 還元 D4 / project 還元 D1-D3）で仕分ける（§1）。
+`reduction_target` を frontmatter（COLD-event）または `cold://...reduction=` ポインタ（COLD-artifact）に明示し、
+retrieve 時に「どちらの層の文脈か」を失わない（代謝汚染の防止）。
+
+### 7.4 E2E 適用例（COLD-artifact の正準例 / v5.24.0）
+
+E2E テストの実行結果・履歴は、本節一般形の **(ii) COLD-artifact + WARM 単一台帳** の適用例である
+（専用サイクルを新設しない）。構築側の正本は
 `../../layer1-autonomous-dev/references/e2e-best-practices.md` §9「E2E 情報代謝サイクル」、
 project history への置き場は `../../layer0-spec-architect/references/history-layer-spec.md` §E2E-LOG.md。
 
-### 還元先（軸A）: 既定 project（D1-D3）
+#### 還元先（軸A）: 既定 project（D1-D3）
 
 E2E が生む大半（run 履歴・flaky パターン・artifact）は「**このアプリのこの画面**」に閉じた事実＝
 **project 還元**。一部「AI 駆動 E2E 一般で flaky はこう出やすい」等は DH 還元（D4）になりうるが**既定は project**。
@@ -155,19 +231,19 @@ E2E が生む大半（run 履歴・flaky パターン・artifact）は「**こ�
 **DH 本体（dialog-harness repo）は対面アプリを持たないため E2E 代謝を稼働しない**（定義のみ・dog-food 対象外。
 一般代謝は dog-food するが E2E はしない）。
 
-### tier 対応（二相分離が COLD/HOT に直結）
+#### tier 対応（二相分離が COLD/HOT に直結）
 
 | Tier | E2E の中身 | 居場所（project ローカル） | 購読量 |
 |---|---|---|---|
-| **COLD** | 相 A artifact（Trace/動画/network/console）・生 run ログ詳細 | `history/archive/YYYY-MM/e2e/`（生成時はランタイム出力 dir = ephemeral、cycle 境界で COLD 保持） | 乗らない（retrievable・disk 無制限 OK） |
-| **WARM** | run 要約列（pass/fail・flaky・duration・provenance） | `history/E2E-LOG.md`（append-only・cursor 追跡） | 関連時のみ（reindex が増分読み） |
+| **COLD** | 相 A artifact（Trace/動画/network/console）・生 run ログ詳細【= §7.2 COLD-artifact】 | `history/archive/YYYY-MM/e2e/`（生成時はランタイム出力 dir = ephemeral、cycle 境界で COLD 保持） | 乗らない（retrievable・disk 無制限 OK） |
+| **WARM** | run 要約列（pass/fail・flaky・duration・provenance）【= §7.0 一般形の 1ジャンル台帳】 | `history/E2E-LOG.md`（append-only・cursor 追跡） | 関連時のみ（reindex が増分読み） |
 | **HOT** | flaky 罠（反-発火条件付）・安定 journey RL・provenance 観測規律・B-ID/C5 oracle 結晶 | PATTERNS.md / DONT / SPEC / INTENT / SUMMARY | 常時（密度↑≠量↑） |
 
 > 北極星の急所: E2E は毎 CI 実行で大量データを生むが、**artifact は COLD 直行で絶対に既定ロードしない**。
 > 蒸留された flaky 罠だけが HOT に乗る。履歴が無限に貯まっても購読量は膨らまない（量↑でなく密度↑）。
 > v5.23.0 の二相分離（相 A in-loop 知覚器 / 相 B 耐久資産）が、そのまま COLD / HOT に対応する。
 
-### 8 不変条件の E2E 具体化
+#### 8 不変条件の E2E 具体化
 
 - **#1 早すぎる結晶化防止**: 単発 flaky を罠にしない。`council_gate.repetition_threshold` 回反復＋
   `min_age_days` 経過＋Council ゲートを通って初めて HOT 罠化（偶発的 flaky の固定化を防ぐ）
@@ -176,4 +252,8 @@ E2E が生む大半（run 履歴・flaky パターン・artifact）は「**こ�
 - **#6 COLD 原本から結晶化**: 罠は生 run ログ（COLD lossless）から蒸留する。E2E-LOG の lossy 要約からは結晶化しない
 - **#8 反-発火条件必須**: flaky 罠は「いつ**適用しない**か」を必須化（例: この不安定は特定 viewport/低速 CI 限定、
   他環境では誤発火させない）。表層一致での誤発火が debug 困難な flaky では特に重要
+
+> なお E2E artifact は §7.2 COLD-artifact（不透明 artifact・索引収穫対象外）であり、§7.1 COLD-event
+> （叙述的 episodic・frontmatter + COLD-INDEX 収穫）とは別サブ形態。E2E run 要約（E2E-LOG）は WARM の
+> 1ジャンル台帳に乗る。すなわち E2E は一般形の特化例として矛盾なく包摂される。
 

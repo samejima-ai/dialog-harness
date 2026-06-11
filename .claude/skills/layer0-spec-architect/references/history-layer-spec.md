@@ -21,8 +21,16 @@ project-root/
     ├── ARCH-DECISIONS.md       # HOW層判断（任意、ADR形式）
     ├── PATTERNS.md             # 失敗/成功パターン（任意、自動蓄積）
     ├── E2E-LOG.md              # E2E run 要約（任意・UIプロジェクト、append-only WARM、v5.24.0）
-    └── archive/                # 古い廃止INTENT + COLD（archive/YYYY-MM/e2e/ に相A artifact・生runログ）
+    └── archive/                # COLD 排泄層（既定非ロード・retrievable）。下記 2 サブ形態（v5.25.0）
+        ├── COLD-INDEX.md       # COLD-event の frontmatter 収穫の薄いメタ map（既定非ロード・retrieve 入口）
+        └── YYYY-MM/
+            ├── <genre>/<event-id>.md  # COLD-event: 1事象1ファイル + frontmatter（council/changelog/intel廃止 等）
+            └── e2e/                    # COLD-artifact: 相A artifact・生runログ（不透明・cold:// ポインタ参照）
 ```
+
+> WARM（生きた台帳）は 1ジャンル append-only 単一ファイルのまま（上記 *-LOG / CHANGELOG 等）。
+> COLD は 2 サブ形態（叙述的 episodic = COLD-event / 不透明 artifact = COLD-artifact）。正本は
+> `../../layer0-reindex-librarian/references/metabolism-regime.md` §7（tier 分割の一般形）。
 
 ---
 
@@ -327,16 +335,26 @@ run 要約の追記は **レベル A（自動承認・通知のみ）**。flaky 
 - N は REGIME.md の「履歴層設定」セクションで上書き可能
 - L1 献上時に自動チェックし、対象があれば `history/archive/YYYY-MM/` 配下へ移動
 
-### archive 配下の構造
+### archive 配下の構造（v5.25.0 一般化 — COLD 2 サブ形態）
+
+COLD は 2 サブ形態を持つ（正本 `../../layer0-reindex-librarian/references/metabolism-regime.md` §7.1 / §7.2）:
 
 ```
 history/archive/
+├── COLD-INDEX.md            # COLD-event の frontmatter 収穫の薄いメタ map（肥大時は COLD-INDEX-<genre>.md へ分割）
 ├── 2024-04/
-│   └── INTENT-F003.md   # 廃止済みINTENT、機能ID単位
-├── 2024-05/
-│   └── INTENT-F007.md
-└── ...
+│   ├── intent/F003.md       # COLD-event(i): 1事象1ファイル + frontmatter。廃止 INTENT は genre=intent の一例
+│   └── council/d4mtr1.md     # COLD-event(i): council 判定 1 件 = 1 ファイル
+└── 2024-05/
+    └── e2e/                  # COLD-artifact(ii): 相A artifact・生runログ（不透明・cold:// ポインタ参照・索引収穫外）
 ```
+
+- **COLD-event**（叙述的 episodic）: `<genre>/<event-id>.md`。frontmatter（`genre` / `event_id` / `source_pointer`
+  / `harvest_status` / `selector_note` 必須 / `reversible` 等）は正本 metabolism-regime §7.1 を参照。reindex が
+  排泄時に frontmatter を `COLD-INDEX.md` へ収穫し、entry 単位 retrieve を可能にする。
+- **COLD-artifact**（不透明 artifact）: E2E の Trace/動画/jsonl 等。markdown 変換せず生のまま、WARM 台帳の
+  `cold://` ポインタで参照（索引収穫の対象外）。
+- 旧スキームのフラット配置（`archive/YYYY-MM/INTENT-F00X.md` 等）は温存し、新規移送分から段階適用する（遡及 migration 不要）。
 
 ---
 

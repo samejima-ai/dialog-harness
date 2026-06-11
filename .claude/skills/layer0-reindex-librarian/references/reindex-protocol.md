@@ -107,8 +107,25 @@ UI project では `history/E2E-LOG.md`（run 要約・WARM）が cursor 追跡�
 step 3 摂取選択では **flaky の反復**（`council_gate.repetition_threshold` 回以上）を罠候補、**安定 journey** を
 RL 候補として選別する。flaky 罠の結晶化は **#6 に従い生 run ログ（COLD lossless 原本）から**蒸留し、
 E2E-LOG の lossy 要約からは結晶化しない。相 A artifact は最初から COLD 直行（reindex の摂取対象外＝既定非ロード）。
-tier 対応の正本は `metabolism-regime.md` §7、構築側は
+tier 対応の正本は `metabolism-regime.md` §7（E2E は §7.4 = §7.2 COLD-artifact の適用例）、構築側は
 `../../layer1-autonomous-dev/references/e2e-best-practices.md` §9。
+
+### COLD-event の書き出しと索引収穫（v5.25.0・metabolism-regime §7.1）
+
+step 5 排泄で叙述的 episodic（council / changelog / regime / arch-decision / 廃止 intent）を COLD へ移送する際、
+**COLD-event** サブ形態（1事象1ファイル + frontmatter）として書き出す:
+
+1. `history/archive/YYYY-MM/<genre>/<event-id>.md` を生成（frontmatter = metabolism-regime §7.1 スキーマ + 本文 = 生ログ原本）。
+2. **writer contract（#10 enforcement 一次点）**: `selector_note.by` / `selector_note.basis` / `harvest_status`
+   / `reversible` は**必須**。欠落のまま書き出さない。万一欠落を検出したら削除も放置もせず
+   `selector_note.bias_flag: "schema-incomplete"` を立て、差分レポート + SUMMARY「要再確認リスト」へ回す（#9）。
+3. **索引収穫**: 各 COLD-event の **frontmatter だけを読んで**（本文は読まない＝購読量保護・増分冪等）
+   `history/archive/COLD-INDEX.md` へ 1 行 append（`| genre | event_id | timestamp | title | harvest_status | source_pointer | path |`）。
+   開始は単一ファイル。`token_budget` の一定割合超過で genre 別 `COLD-INDEX-<genre>.md` へ分割（event 単位の索引の索引は禁止）。
+4. **artifact（不透明 binary/jsonl）は COLD-artifact（§7.2）**として生のまま置き、索引収穫しない（cold:// ポインタ参照のみ）。
+
+retrieve（履歴参照時）は SUMMARY → 必要時のみ COLD-INDEX（メタのみ）→ 単一 event file を名指し Read。
+COLD-INDEX は既定ロードしない（北極星: 索引は高速入口・filesystem が一次の真実源＝#9）。
 
 ---
 
@@ -150,7 +167,12 @@ E2E flaky 罠の例（生 run ログへ逆引き・reduction=project）:
 - **付与粒度（L3）**: ポインタは**結晶エントリ単位**で付す（罠 1 件 / RL 1 条 / INTENT 1 機能ごとに 1 本）。ファイル末尾一括ではなく当該エントリ直近に置く
 - **Markdown table への付与（L3）**: 表セル内の HTML コメントは一部レンダラで除去され得るため、表形式の罠には**表の直前/直後の行**にポインタを置くか、脚注参照（`[^src-001]`）方式で表外に逃がす。セル内 `<!-- -->` 直書きは避ける
 
-COLD アーカイブ構造は既存 `history/archive/YYYY-MM/` を踏襲する（`history-layer-spec.md` §archive＝COLD の素地）。
+COLD アーカイブ構造は `history/archive/YYYY-MM/` を踏襲する（`history-layer-spec.md` §archive＝COLD の素地）。
+COLD-event（§7.1）では `<genre>/<event-id>.md` 単位になるため、逆引きは行範囲（`#Lxx-yy`）を省いて
+**1 ファイルを名指し**できる（`cold://2026-06/council/hstr01.md sha256:… reduction=DH`）。
+COLD-artifact（§7.2・E2E 等）は従来どおり行範囲つきポインタを使う。
+新スキーム以前の既存フラット archive（`archive/2026-06/*.md` + `MANIFEST.md`）は温存し、新規移送分から段階適用する
+（遡及 migration は別タスク・#9 により旧 file も delete されず glob 全走査で再到達可能）。
 
 ---
 
