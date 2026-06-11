@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 2026-06-11 履歴ストレージ tier 分割の Council seeds 吸収（v5.25.1、patch 昇格、follow-up #137）
+## 2026-06-11 履歴ストレージ tier 分割の Council seeds 吸収（v5.25.1、patch 昇格、released 2026-06-11、follow-up #137）
 
 PR #137（v5.25.0）merge 後の Council PR レビュー（`approve_with_seeds` / weighted_score 3.10 / HIGH 0）が出した
 10 件の seeds を SPEC へ 1 行ずつ吸収（blocking ではないが runtime 実装 PR の drift 防止のため確定 SPEC に反映）。

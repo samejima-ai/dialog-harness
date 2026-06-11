@@ -46,8 +46,7 @@ reduction_target: DH                 # 軸A 還元先（DH / project）（必須
 
 # --- 逆引き（不変条件 #3 の entry レベル具体化）---
 source_pointer: "history/COUNCIL-LOG.md @ council-2026-06-11T05:30:00Z-hstr01"   # WARM 原本への逆引き（必須）。locator は grep 可能な安定キー（invocation_id / 日付+連番 / AD-NNN）。GitHub 見出しアンカーではない（append-only 台帳では行番号より ID が訂正に強い）
-crystallized_into:                   # この event から結晶化された HOT 叡智の list。無ければ空 list [] が正準（null 禁止＝型ブレ防止）
-  - "history/SUMMARY.md @ <anchor>"
+crystallized_into: ["history/SUMMARY.md @ <locator>"]  # HOT 叡智の list（inline literal）。無ければ空 list [] が正準（null 禁止＝型ブレ防止）。<locator> は grep 可能な安定キー（見出しアンカーではない）
 
 # --- 確度（既存 history-layer-spec §確度メタデータ と同形）---
 confidence: 確定                     # 確定 / AI推定 (YYYY-MM-DD)
