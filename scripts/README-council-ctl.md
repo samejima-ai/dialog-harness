@@ -18,9 +18,10 @@ CTL（Council Trust Level）は手で書き換える値ではなく、横断蓄�
 python3 scripts/council-ctl.py init
 
 # 1) Council を発動したら記録する（count の素）
+#    --topic / --judgment は抽象要約のみ（固有名・コード断片・人物名を入れない）
 python3 scripts/council-ctl.py record \
     --decision-category C2 \
-    --topic "ライブラリ選定のトレードオフ" \   # 抽象要約のみ（固有名/コード断片禁止）
+    --topic "ライブラリ選定のトレードオフ" \
     --judgment "選択肢 A を推奨" \
     --confidence 0.85
 

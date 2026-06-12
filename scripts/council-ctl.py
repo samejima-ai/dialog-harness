@@ -130,7 +130,14 @@ def _iter_invocations():
     if not INVOCATIONS_DIR.exists():
         return
     for path in sorted(INVOCATIONS_DIR.glob("*.json")):
-        yield path, json.loads(path.read_text(encoding="utf-8"))
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            # 壊れた 1 ファイルで全コマンドを落とさない。警告して skip。
+            print(f"warn: 破損または読込不能の invocation を skip: {path.name} ({e})",
+                  file=sys.stderr)
+            continue
+        yield path, rec
 
 
 # ---- サブコマンド ------------------------------------------------------------
@@ -177,6 +184,11 @@ def cmd_record(args) -> None:
             f"decision_category は {VALID_DECISION_CATEGORIES} のいずれか。\n"
             "H カテゴリは CTL に関係なく常時人間献上のため記録しない"
             "（ctl-calculation.md §2）。"
+        )
+    if not 0.0 <= args.confidence <= 1.0:
+        sys.exit(
+            f"--confidence は 0.0〜1.0 の範囲（judgment_confidence）。"
+            f" 入力: {args.confidence}"
         )
     ts = _now()
     suffix = secrets.token_hex(3)  # 6 文字

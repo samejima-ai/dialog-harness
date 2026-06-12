@@ -41,6 +41,21 @@ if $CLI record --decision-category H --topic t --judgment j --confidence 0.8 >/d
 fi
 echo "  ok: H は記録不可"
 
+echo "== confidence 範囲外は記録拒否 =="
+if $CLI record --decision-category C2 --topic t --judgment j --confidence 1.2 >/dev/null 2>&1; then
+  fail "confidence 1.2 が記録できてしまった"
+fi
+if $CLI record --decision-category C2 --topic t --judgment j --confidence -0.1 >/dev/null 2>&1; then
+  fail "confidence -0.1 が記録できてしまった"
+fi
+echo "  ok: confidence は 0.0〜1.0 のみ"
+
+echo "== 破損 JSON は skip して落ちない =="
+echo "{ broken json" > "$COUNCIL_DATA_DIR/invocations/9999-99-99T99-99-99Z-badbad.json"
+$CLI status >/dev/null 2>/dev/null || fail "破損ファイルで status が落ちた"
+rm -f "$COUNCIL_DATA_DIR/invocations/9999-99-99T99-99-99Z-badbad.json"
+echo "  ok: 破損ファイルを skip"
+
 echo "== 未評価は CTL に未反映（pending 律速）=="
 $CLI record --decision-category C2 --topic t --judgment j --confidence 0.8 >/dev/null
 assert_ctl "CTL-0"   # 記録しただけでは上がらない
