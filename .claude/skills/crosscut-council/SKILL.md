@@ -237,7 +237,7 @@ Council Trust Level（CTL）の蓄積データになる（スキーマ・命名�
        "decision_category": "<C1|C2|C3|C4>",
        "topic_summary": "<抽象要約・80字以内>",
        "judgment": "<recommended の抽象表現>",
-       "judgment_confidence": <0.0-1.0>,
+       "judgment_confidence": 0.85,
        "consensus_mode": "<auto_agree|escalate_to_human 等>",
        "ctl_at_invocation": "<記録時点の CTL>",
        "actual_outcome": {"status": null, "evaluated_at": null, "modifier_note": null}

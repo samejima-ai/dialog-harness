@@ -31,6 +31,7 @@ repo にはこのツールしか入らない。データファイルは追跡し
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as _dt
 import json
 import os
@@ -124,8 +125,9 @@ def _atomic_write(path: Path, text: str) -> None:
         tmp.write_text(text, encoding="utf-8")
         os.replace(tmp, path)
     finally:
-        if tmp.exists():
-            tmp.unlink()
+        # クリーンアップ失敗で元の write/replace 例外をマスクしない（握りつぶす）
+        with contextlib.suppress(OSError):
+            tmp.unlink(missing_ok=True)
 
 
 def _write_fresh_data() -> None:
@@ -171,10 +173,12 @@ def _load_stats() -> dict:
         try:
             return json.loads(STATS_PATH.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError) as e:
-            # stats.json 破損時は invocations/ と同様に警告してコールドスタート扱い。
-            # （recompute すれば invocations/ から再構築できる）
-            print(f"warn: stats.json が破損/読込不能。コールドスタート扱い: {e}",
+            # stats.json 破損時は invocations/ から再計算して自己修復する。
+            # 健全な invocations/ があれば CTL を CTL-0 と誤算出せず正しい値を返す
+            # （ctl_at_invocation / regime-block / status への波及を防ぐ）。
+            print(f"warn: stats.json が破損/読込不能。invocations/ から再計算: {e}",
                   file=sys.stderr)
+            return _compute_stats()
     return {"version": DATA_VERSION, "categories": {}, "total_invocations": 0}
 
 
@@ -313,13 +317,12 @@ def cmd_evaluate(args) -> None:
     _recompute(quiet=False)
 
 
-def _recompute(quiet: bool) -> dict:
-    """invocations/ から stats.json を再構築し、CTL を返す。
+def _compute_stats() -> dict:
+    """invocations/ から stats を計算して返す（書き込みはしない・純粋関数）。
 
     評価済み（actual_outcome.status != null）のみを統計に算入する。
     未評価は CTL に未反映（pending で可視化）— 事後評価が律速、という設計を反映。
     """
-    _ensure_initialized()
     cats: dict[str, dict] = {}
     total = 0
     total_agreed = 0
@@ -347,7 +350,7 @@ def _recompute(quiet: bool) -> dict:
         # （部分同意 ≠ 同意）。agreement_rate = agreed / count（ctl-calculation.md §3）。
         c["agreement_rate"] = round(c["agreed"] / c["count"], 4) if c["count"] else 0.0
 
-    stats = {
+    return {
         "version": DATA_VERSION,
         "last_updated": _now(),
         "categories": cats,
@@ -355,10 +358,16 @@ def _recompute(quiet: bool) -> dict:
         "total_agreed": total_agreed,
         "overall_agreement_rate": round(total_agreed / total, 4) if total else 0.0,
     }
+
+
+def _recompute(quiet: bool) -> dict:
+    """invocations/ から stats.json を再構築して書き戻し、CTL を返す。"""
+    _ensure_initialized()
+    stats = _compute_stats()
     _atomic_write(STATS_PATH, json.dumps(stats, ensure_ascii=False, indent=2) + "\n")
     if not quiet:
         ctl = calculate_ctl(stats)
-        print(f"再計算: 評価済み {total} 件 / 一致 {total_agreed} 件 "
+        print(f"再計算: 評価済み {stats['total_invocations']} 件 / 一致 {stats['total_agreed']} 件 "
               f"(rate {stats['overall_agreement_rate']}) → {ctl}")
     return stats
 
