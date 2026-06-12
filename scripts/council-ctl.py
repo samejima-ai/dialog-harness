@@ -250,7 +250,10 @@ def _find_invocation(token: str):
     if not matches:
         sys.exit(f"該当なし: {token}（pending で末尾 6 文字を確認）")
     if len(matches) > 1:
-        sys.exit(f"複数該当（{len(matches)} 件）: {token} を一意にしてください")
+        sys.exit(
+            f"複数該当（{len(matches)} 件）: {token} を一意にしてください。"
+            f" 完全 ID は {INVOCATIONS_DIR} の一覧で確認できます"
+        )
     return matches[0]
 
 
@@ -261,11 +264,15 @@ def cmd_evaluate(args) -> None:
     if status not in VALID_STATUSES:
         sys.exit(f"--status は {VALID_STATUSES} のいずれか")
     path, rec = _find_invocation(args.id)
-    prev = rec.get("actual_outcome", {}).get("status")
+    prev_outcome = rec.get("actual_outcome", {})
+    prev = prev_outcome.get("status")
+    # 再評価で --note 省略時は既存 note を保持（黙って消さない）。
+    # 明示的に消したい場合は --note "" を渡す。
+    note = prev_outcome.get("modifier_note") if args.note is None else args.note
     rec["actual_outcome"] = {
         "status": status,
         "evaluated_at": _now(),
-        "modifier_note": args.note,
+        "modifier_note": note,
     }
     path.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     verb = "再評価" if prev else "評価"
@@ -304,6 +311,8 @@ def _recompute(quiet: bool) -> dict:
             c["rejected"] += 1
 
     for c in cats.values():
+        # modified は count（分母）に算入するが agreement_rate の分子には入れない
+        # （部分同意 ≠ 同意）。agreement_rate = agreed / count（ctl-calculation.md §3）。
         c["agreement_rate"] = round(c["agreed"] / c["count"], 4) if c["count"] else 0.0
 
     stats = {
@@ -387,12 +396,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sp = sub.add_parser("init", help="council-data を初期化（CTL-0）")
-    sp.add_argument("--force", action="store_true", help="既存を上書き再初期化")
+    sp.add_argument("--force", action="store_true",
+                    help="stats.json を再初期化（invocations/ は残る → recompute で復元可）")
     sp.set_defaults(func=cmd_init)
 
     sp = sub.add_parser("record", help="Council 発動を 1 件記録")
     sp.add_argument("--decision-category", required=True, help="C1|C2|C3|C4（H は記録不可）")
-    sp.add_argument("--category", default="judgment", help="重み配分用（operation/judgment/conception 等）")
+    sp.add_argument("--category", default="judgment",
+                    help="重み配分用の自由文（operation/judgment/conception 等。CTL 算出は "
+                         "decision_category 側で行うため本値は検証しない）")
     sp.add_argument("--council-type", default="business")
     sp.add_argument("--topic", required=True, help="抽象化した要約（80 字以内・固有名/コード断片禁止）")
     sp.add_argument("--judgment", required=True, help="抽象化した結論")

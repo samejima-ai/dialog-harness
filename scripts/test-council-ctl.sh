@@ -27,7 +27,9 @@ record_agreed() {
   local dc="$1" status="${2:-agreed}"
   local out sid
   out="$($CLI record --decision-category "$dc" --topic "t" --judgment "j" --confidence 0.8)"
-  sid="$(echo "$out" | sed -n 's/^記録: council-.*-//p' | head -1)"
+  # 「記録: council-<ts>-<suffix>」の末尾フィールド（suffix）を取る。
+  # ts 自体が '-' を含むため最右マッチではなく最終フィールドで取り堅牢化。
+  sid="$(echo "$out" | awk -F- '/^記録: council-/{print $NF}' | head -1)"
   $CLI evaluate "$sid" --status "$status" >/dev/null
 }
 
@@ -62,9 +64,19 @@ assert_ctl "CTL-0"   # 記録しただけでは上がらない
 [ "$($CLI pending | grep -c '\[')" -eq 1 ] || fail "pending が 1 件でない"
 echo "  ok: 記録のみでは CTL-0、pending=1"
 
+echo "== 再評価で --note 省略時は既存 note を保持 =="
+PSID="$($CLI pending | sed -n 's/^  \[\([a-f0-9]*\)\].*/\1/p' | head -1)"
+$CLI evaluate "$PSID" --status modified --note "境界条件を調整" >/dev/null
+$CLI evaluate "$PSID" --status agreed >/dev/null   # --note 省略で再評価
+NOTE="$(grep -h modifier_note "$COUNCIL_DATA_DIR"/invocations/*"$PSID".json | head -1)"
+echo "$NOTE" | grep -q "境界条件を調整" || fail "再評価で modifier_note が消えた: $NOTE"
+$CLI evaluate "$PSID" --status agreed --note "" >/dev/null   # 明示的に空へ
+NOTE2="$(grep -h modifier_note "$COUNCIL_DATA_DIR"/invocations/*"$PSID".json | head -1)"
+echo "$NOTE2" | grep -q '""' || fail "--note \"\" で note を空にできない: $NOTE2"
+echo "  ok: note 省略=保持 / --note \"\"=明示クリア"
+
 echo "== C2 を 10 件 agreed（rate 1.0）→ CTL-1 =="
-# 上の未評価 1 件をまず評価して片付ける
-$CLI evaluate "$($CLI pending | sed -n 's/^  \[\([a-f0-9]*\)\].*/\1/p' | head -1)" --status agreed >/dev/null
+# 上の判定（既に agreed 済み）に加えて 9 件で C2=10 件
 for _ in $(seq 1 9); do record_agreed C2; done   # 合計 10 件 agreed
 assert_ctl "CTL-1"
 
