@@ -41,7 +41,7 @@ on:
     # （「Copilot 代替の全 PR カバレッジ」→「コード変更に限定」へ方針変更）。
     paths:
       - "scripts/**"
-      - ".claude/skills/**"
+      - ".claude/**"           # skills/ agents/（review-* 定義）/ hooks.json 等ハーネス論理一式
       - ".github/workflows/**"
       - "harness-verifier/**"
       - "templates/**"
@@ -111,9 +111,15 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          # PR が導入した変更ファイルと規模（three-dot 不可の環境向けに two-dot へ fallback）
-          FILES=$(git diff --name-only "$BASE_SHA...$HEAD_SHA" 2>/dev/null || git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          LINES=$(git diff --numstat "$BASE_SHA...$HEAD_SHA" 2>/dev/null | awk '{a+=$1; d+=$2} END{print (a+d)+0}')
+          # PR が導入した変更の差分範囲を一度だけ決める（three-dot 不可環境は two-dot に fallback）。
+          # FILES/LINES で共用し、LINES だけ fallback 漏れで step が落ちる事故を防ぐ。
+          if git diff --name-only "$BASE_SHA...$HEAD_SHA" >/dev/null 2>&1; then
+            RANGE=("$BASE_SHA...$HEAD_SHA")
+          else
+            RANGE=("$BASE_SHA" "$HEAD_SHA")
+          fi
+          FILES=$(git diff --name-only "${RANGE[@]}")
+          LINES=$(git diff --numstat "${RANGE[@]}" | awk '{a+=$1; d+=$2} END{print (a+d)+0}')
           LINES=${LINES:-0}
           # sensitive = ハーネス中核 / CI / 配信物 / 思想・仕様契約。1 つでも触れたら必ずフル OC。
           SENSITIVE='(^\.claude/)|(^\.github/workflows/)|(^harness-verifier/)|(^templates/)|(^dh-upgrades/)|(philosophy)|(SPEC)|(DONT)|(REGIME)'
