@@ -13,8 +13,12 @@
 #   Phase3 Exec     : review-evidence(haiku) / [難度ゲート] tier1=軽量単一パス・Council スキップ / tier2,3=Council 3 ペルソナ並列(sonnet標準/opus昇格)+review-judgment(weighted)
 #   Phase4 Synth    : OC 統合 → ChA artifact(.github/reviews) / ChB inline 結論(高純度) / ChC 人間 merge 判断サマリー
 #
-# 難度ゲート: Council は拮抗・高 stakes のためのもの（Council 発動基準・第2/3条）。routine な tier1 PR は
-# 軽量単一パスに分岐し、ルーチンへの過剰合議を避ける。tier2/3（sensitive/複雑）のみフル Council。
+# 難度ゲート（2 段）: 過剰動作を抑えるため発動条件を 2 段で制限する（ユーザー決定で導入）。
+#   段1 — paths フィルタ（on.pull_request.paths）: docs/履歴/配信物のみの PR では起動しない。
+#   段2 — routine pre-gate（決定論・無 LLM, steps.pregate）: sensitive パス未変更かつ小規模な
+#         routine PR では Opus OC ステップ自体をスキップ（OC ごと省略）。Copilot 等が継続観測。
+# OC が起動した PR の内部では従来どおり: Council は拮抗・高 stakes のためのもの（Council 発動基準・第2/3条）。
+# routine な tier1 PR は軽量単一パスに分岐し、tier2/3（sensitive/複雑）のみフル Council。
 #
 # ## レビュアー視点直交（多層防御）
 # - claude-review (本 workflow): 汎用コードレビュー軸（Copilot 代替）
@@ -30,8 +34,18 @@ name: claude-review
 
 on:
   pull_request:
-    # paths フィルタなし = 全 PR 対象（Copilot review と同等カバレッジ）
     types: [opened, ready_for_review, synchronize, reopened]
+    # paths フィルタ（過剰動作の発動条件制限・ユーザー決定で導入）。
+    # コード/ロジックを含むパスのみ対象。docs/履歴/配信物（root *.md / history/ / docs/ /
+    # delivery/ / VERSION 等）のみの PR では claude-review を起動しない
+    # （「Copilot 代替の全 PR カバレッジ」→「コード変更に限定」へ方針変更）。
+    paths:
+      - "scripts/**"
+      - ".claude/skills/**"
+      - ".github/workflows/**"
+      - "harness-verifier/**"
+      - "templates/**"
+      - "dh-upgrades/**"
 
 concurrency:
   group: "claude-review-${{ github.event.pull_request.number }}"
@@ -85,9 +99,39 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      # Routine pre-gate（決定論・無 LLM）: tier1 相当の routine PR は Opus OC ごとスキップ。
+      # OC 内部の難度ゲート（Phase 1-b lightweight mode）は OC を起動しないと tier が分からないため、
+      # その手前に決定論ゲートを置いて「ルーチンへの Opus 起動コスト自体」を回避する（ユーザー決定）。
+      # 保守的: sensitive パス（ハーネス中核・配信物・思想契約）変更 or 大規模変更は必ずフル OC。
+      - name: Routine pre-gate (tier1 → skip OC)
+        id: pregate
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # PR が導入した変更ファイルと規模（three-dot 不可の環境向けに two-dot へ fallback）
+          FILES=$(git diff --name-only "$BASE_SHA...$HEAD_SHA" 2>/dev/null || git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          LINES=$(git diff --numstat "$BASE_SHA...$HEAD_SHA" 2>/dev/null | awk '{a+=$1; d+=$2} END{print (a+d)+0}')
+          LINES=${LINES:-0}
+          # sensitive = ハーネス中核 / CI / 配信物 / 思想・仕様契約。1 つでも触れたら必ずフル OC。
+          SENSITIVE='(^\.claude/)|(^\.github/workflows/)|(^harness-verifier/)|(^templates/)|(^dh-upgrades/)|(philosophy)|(SPEC)|(DONT)|(REGIME)'
+          ROUTINE_MAX=400
+          if echo "$FILES" | grep -Eq "$SENSITIVE"; then
+            echo "::notice::sensitive path 変更あり → フル OC レビュー。"
+            echo "routine=false" >> "$GITHUB_OUTPUT"
+          elif [ "$LINES" -gt "$ROUTINE_MAX" ]; then
+            echo "::notice::変更規模 ${LINES} 行 > ${ROUTINE_MAX} → フル OC レビュー。"
+            echo "routine=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::routine PR（非 sensitive・${LINES} 行）→ Opus OC をスキップ（tier1 軽量ゲート）。Copilot 等が継続観測。"
+            echo "routine=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # anthropics/claude-code-action@v0 公式 action（SHA pin は deployment 時に maintainer が推奨）
       - name: Run Claude 4-phase Council review
-        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true' && steps.pregate.outputs.routine != 'true'
         uses: anthropics/claude-code-action@v0
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -211,7 +255,7 @@ jobs:
       # 3 層 artifact を Actions Artifacts として回収（PR ブランチには commit しない）。
       # LOW 層＝将来 AI 向けの「種」のため retention は gemini(7d) より長く取る。
       - name: Upload review artifact
-        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true' && always()
+        if: always() && steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true' && steps.pregate.outputs.routine != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: claude-review-pr-${{ github.event.pull_request.number }}-run-${{ github.run_id }}
