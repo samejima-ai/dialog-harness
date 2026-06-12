@@ -138,6 +138,7 @@ mkdir -p .claude
 cp -r dialog-harness/.claude/skills .claude/
 cp dialog-harness/.claude/hooks.json .claude/
 cp -r dialog-harness/templates ./       # autonomous モード用（autonomous-drive が参照）
+mkdir -p scripts && cp dialog-harness/scripts/council-ctl.py scripts/   # 任意: CTL ツール（無くても Council は直接 append で自動記録）
 ```
 
 > **既存プロジェクトの DH を更新するには** → [`UPDATE.md`](UPDATE.md)（正典手順）と [`dh-manifest.yml`](dh-manifest.yml)（DH 所有／プロジェクト所有の boundary）に従う。現行版は [`VERSION`](VERSION)。同一メジャー内は再 sync で安全、メジャー跨ぎは `dh-upgrades/` の移行経路に従う。

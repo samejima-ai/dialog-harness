@@ -129,7 +129,10 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
   ↓
 [出力] JSON（final_decision は常に null）
   ↓
-[ログ] history/COUNCIL-LOG.md に追記
+[ログ] history/COUNCIL-LOG.md に追記（project-scope）
+  ↓
+[CTL記録] ~/.claude/council-data/ に invocation を記録（user-scope, **自動・毎回必須**）
+  → 事後評価（actual_outcome）は後段の合意プロセス完了時／振り返り儀式で埋める
   ↓
 [合意プロセス] 実装者が理解→質問→方針決定（references/consensus-protocol.md）
 ```
@@ -184,6 +187,55 @@ Judgment Agent 出力（Council の判断）
 - human_escalated（bool）
 
 COUNCIL-LOG は append-only。編集不可。振り返り儀式（F1-F3、PR3 で連携）で監査する。
+
+### CTL 記録（user-scope, 自動・毎回必須）
+
+COUNCIL-LOG（project-scope）とは別に、**発動のたびに自動で** user-scope の
+`~/.claude/council-data/invocations/` に invocation を 1 件記録する。これが
+Council Trust Level（CTL）の蓄積データになる（スキーマ・命名は
+[references/ctl-calculation.md](references/ctl-calculation.md) §4 が一次情報源）。
+
+この記録は **CTL を「回す」ための必須ステップ**であり、省略してはならない。
+記録しなければ CTL は永遠に CTL-0 に留まる（`total_invocations` が増えない）。
+
+**記録の機構（フォールバック付き — 利用者プロジェクトでも壊れない）**:
+
+1. `scripts/council-ctl.py` が存在すれば、それを使う（推奨）:
+
+   ```bash
+   python3 scripts/council-ctl.py record \
+     --decision-category <C1|C2|C3|C4> \
+     --category <operation|judgment|conception 等> \
+     --topic "<question_to_answer の抽象要約・80字以内>" \
+     --judgment "<recommended の抽象表現>" \
+     --confidence <judgment_confidence> \
+     --consensus <consensus_mode>
+   ```
+
+2. `scripts/council-ctl.py` が無い（DH skill のみ取り込んだ利用者プロジェクト等）場合は、
+   `ctl-calculation.md` §4 のスキーマに従い invocation JSON を `~/.claude/council-data/invocations/`
+   に直接 append する（`actual_outcome.status` は `null` で作成）。
+
+**フィールド対応**:
+
+| council-data | 供給元 |
+|---|---|
+| `decision_category` | Phase 0 / consensus-protocol の decision_category 判定（C1〜C4） |
+| `category` | 重み配分用カテゴリ（operation/judgment/conception 等） |
+| `topic_summary` | question_to_answer の**抽象要約**（固有名・コード断片・人物名を入れない） |
+| `judgment` | recommended の抽象表現 |
+| `judgment_confidence` | Judgment Agent 出力 |
+| `consensus_mode` | auto_agree / escalate_to_human 等 |
+| `ctl_at_invocation` | 記録時点の CTL |
+
+**H カテゴリは記録しない**（CTL に関係なく常時人間献上のため。ctl-calculation.md §2）。
+
+**事後評価（actual_outcome）は record とは分離する**: 記録は発動と同時に自動で行うが、
+`actual_outcome`（agreed/modified/rejected）は合意プロセス完了時または振り返り儀式（F1-F3）で
+埋める。事後評価は「Council の判断が正しかったか」の**証拠フィードバック＝人間ゲート**であり、
+ここを自動で `agreed` 埋めにすると CTL の信頼性が崩れる（philosophy.md 第6条 人間最終承認 /
+crosscut-continuous-learning の「自動 promote は実装しない」決定と整合）。`scripts/council-ctl.py`
+があれば `evaluate <id> --status <...>` で埋め、stats.json と CTL が即再計算される。
 
 ## 他スキルからの呼び出し例
 
