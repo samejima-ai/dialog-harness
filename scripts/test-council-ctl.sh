@@ -33,6 +33,27 @@ record_agreed() {
   $CLI evaluate "$sid" --status "$status" >/dev/null
 }
 
+echo "== record は未初期化でも lazy-init して落ちない =="
+# init を呼ばず、まっさらな dir に直接 record（発動＝自動 record の前提）
+LAZY_DIR="$(mktemp -d)"
+COUNCIL_DATA_DIR="$LAZY_DIR" $CLI record --decision-category C2 --topic t --judgment j --confidence 0.8 >/dev/null 2>&1 \
+  || fail "未初期化 record が失敗した（lazy-init していない）"
+[ -f "$LAZY_DIR/stats.json" ] || fail "lazy-init で stats.json が作られていない"
+[ "$(COUNCIL_DATA_DIR="$LAZY_DIR" $CLI pending | grep -c '\[')" -eq 1 ] || fail "lazy-init 後 pending=1 でない"
+rm -rf "$LAZY_DIR"
+echo "  ok: 未初期化でも record が自動初期化して記録"
+
+echo "== 破損 stats.json はコールドスタート扱いで落ちない =="
+CORRUPT_DIR="$(mktemp -d)"
+COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI init >/dev/null
+echo "{ broken" > "$CORRUPT_DIR/stats.json"
+COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI status >/dev/null 2>/dev/null || fail "破損 stats.json で status が落ちた"
+# recompute で invocations/ から再構築できる（壊れた stats を自己修復）
+COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI recompute >/dev/null 2>/dev/null || fail "破損 stats.json で recompute が落ちた"
+python3 -c "import json,sys; json.load(open('$CORRUPT_DIR/stats.json'))" || fail "recompute 後も stats.json が不正"
+rm -rf "$CORRUPT_DIR"
+echo "  ok: 破損 stats.json をコールドスタート扱い＋recompute で自己修復"
+
 echo "== init → CTL-0 =="
 $CLI init >/dev/null
 assert_ctl "CTL-0"

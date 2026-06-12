@@ -112,17 +112,69 @@ def delegation_scope(stats: dict) -> list[str]:
 # ---- I/O ヘルパ --------------------------------------------------------------
 
 
-def _require_initialized() -> None:
-    if not DATA_DIR.exists():
-        sys.exit(
-            f"council-data が未初期化です（{DATA_DIR}）。\n"
-            f"  先に: python3 scripts/council-ctl.py init"
-        )
+def _atomic_write(path: Path, text: str) -> None:
+    """tmp に書いてから os.replace で原子的に差し替える。
+
+    直書き（write_text）は ctrl-C / 並行 record で途中状態を残し、次回 json.loads が
+    全体破綻する。同一ディレクトリ内 tmp → rename なら部分書込が読まれない。
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.{secrets.token_hex(2)}.tmp")
+    try:
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def _write_fresh_data() -> None:
+    """council-data を CTL-0 で新規生成する（stats.json / invocations/ / version.md）。"""
+    INVOCATIONS_DIR.mkdir(parents=True, exist_ok=True)
+    stats = {
+        "version": DATA_VERSION,
+        "last_updated": _now(),
+        "categories": {},
+        "total_invocations": 0,
+        "total_agreed": 0,
+        "overall_agreement_rate": 0.0,
+    }
+    _atomic_write(STATS_PATH, json.dumps(stats, ensure_ascii=False, indent=2) + "\n")
+    _atomic_write(
+        VERSION_PATH,
+        "# Council Data Version\n\n"
+        f"- version: {DATA_VERSION}\n"
+        f"- created_at: {_now()}\n"
+        f"- last_updated: {_now()}\n"
+        f"- harness_version_at_creation: {HARNESS_VERSION}\n"
+        "- total_projects: 0\n"
+        "- notes: |\n"
+        "  Council Trust Level の横断蓄積データ。\n"
+        "  プロジェクト名・コード断片は記録しない（プライバシー配慮）。\n",
+    )
+
+
+def _ensure_initialized() -> bool:
+    """未初期化なら CTL-0 でコールドスタート初期化する（ctl-calculation.md §1/§8）。
+
+    Council 発動時の自動 record が未初期化環境でも落ちないための lazy-init。
+    新規作成した場合のみ True を返す。
+    """
+    if STATS_PATH.exists():
+        return False
+    _write_fresh_data()
+    return True
 
 
 def _load_stats() -> dict:
     if STATS_PATH.exists():
-        return json.loads(STATS_PATH.read_text(encoding="utf-8"))
+        try:
+            return json.loads(STATS_PATH.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            # stats.json 破損時は invocations/ と同様に警告してコールドスタート扱い。
+            # （recompute すれば invocations/ から再構築できる）
+            print(f"warn: stats.json が破損/読込不能。コールドスタート扱い: {e}",
+                  file=sys.stderr)
     return {"version": DATA_VERSION, "categories": {}, "total_invocations": 0}
 
 
@@ -150,34 +202,15 @@ def cmd_init(args) -> None:
         cmd_status(args)
         return
 
-    INVOCATIONS_DIR.mkdir(parents=True, exist_ok=True)
-    stats = {
-        "version": DATA_VERSION,
-        "last_updated": _now(),
-        "categories": {},
-        "total_invocations": 0,
-        "total_agreed": 0,
-        "overall_agreement_rate": 0.0,
-    }
-    STATS_PATH.write_text(json.dumps(stats, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    VERSION_PATH.write_text(
-        "# Council Data Version\n\n"
-        f"- version: {DATA_VERSION}\n"
-        f"- created_at: {_now()}\n"
-        f"- last_updated: {_now()}\n"
-        f"- harness_version_at_creation: {HARNESS_VERSION}\n"
-        "- total_projects: 0\n"
-        "- notes: |\n"
-        "  Council Trust Level の横断蓄積データ。\n"
-        "  プロジェクト名・コード断片は記録しない（プライバシー配慮）。\n",
-        encoding="utf-8",
-    )
+    _write_fresh_data()
     print(f"初期化しました: {DATA_DIR}  → CTL-0（コールドスタート）")
 
 
 def cmd_record(args) -> None:
     """Council 発動を 1 件記録する（actual_outcome は未評価で作成）。"""
-    _require_initialized()
+    # 未初期化なら自動でコールドスタート初期化（発動＝自動 record が落ちない）。
+    if _ensure_initialized():
+        print("（council-data 未初期化のため自動初期化しました → CTL-0）", file=sys.stderr)
     dc = args.decision_category.upper()
     if dc not in VALID_DECISION_CATEGORIES:
         sys.exit(
@@ -206,9 +239,8 @@ def cmd_record(args) -> None:
         "ctl_at_invocation": _load_stats_ctl(),
         "actual_outcome": {"status": None, "evaluated_at": None, "modifier_note": None},
     }
-    (INVOCATIONS_DIR / fname).write_text(
-        json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    _atomic_write(INVOCATIONS_DIR / fname,
+                  json.dumps(record, ensure_ascii=False, indent=2) + "\n")
     print(f"記録: {invocation_id}")
     print(f"  → 事後評価が CTL の燃料です。結論が出たら:")
     print(f"     python3 scripts/council-ctl.py evaluate {suffix} --status agreed|modified|rejected")
@@ -220,7 +252,7 @@ def _load_stats_ctl() -> str:
 
 def cmd_pending(args) -> None:
     """未評価（律速段階）の判定を一覧する。"""
-    _require_initialized()
+    _ensure_initialized()
     rows = [
         (path, rec)
         for path, rec in _iter_invocations()
@@ -259,7 +291,7 @@ def _find_invocation(token: str):
 
 def cmd_evaluate(args) -> None:
     """事後評価: actual_outcome を埋める。これが agreement_rate を作る。"""
-    _require_initialized()
+    _ensure_initialized()
     status = args.status.lower()
     if status not in VALID_STATUSES:
         sys.exit(f"--status は {VALID_STATUSES} のいずれか")
@@ -274,7 +306,7 @@ def cmd_evaluate(args) -> None:
         "evaluated_at": _now(),
         "modifier_note": note,
     }
-    path.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _atomic_write(path, json.dumps(rec, ensure_ascii=False, indent=2) + "\n")
     verb = "再評価" if prev else "評価"
     print(f"{verb}: {rec['invocation_id'][-6:]} → {status}")
     # 評価のたびに即再計算（次プロジェクトに即反映、ctl-calculation.md §6）
@@ -287,7 +319,7 @@ def _recompute(quiet: bool) -> dict:
     評価済み（actual_outcome.status != null）のみを統計に算入する。
     未評価は CTL に未反映（pending で可視化）— 事後評価が律速、という設計を反映。
     """
-    _require_initialized()
+    _ensure_initialized()
     cats: dict[str, dict] = {}
     total = 0
     total_agreed = 0
@@ -323,7 +355,7 @@ def _recompute(quiet: bool) -> dict:
         "total_agreed": total_agreed,
         "overall_agreement_rate": round(total_agreed / total, 4) if total else 0.0,
     }
-    STATS_PATH.write_text(json.dumps(stats, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _atomic_write(STATS_PATH, json.dumps(stats, ensure_ascii=False, indent=2) + "\n")
     if not quiet:
         ctl = calculate_ctl(stats)
         print(f"再計算: 評価済み {total} 件 / 一致 {total_agreed} 件 "
@@ -378,7 +410,7 @@ def cmd_status(args) -> None:
 
 def cmd_regime_block(args) -> None:
     """REGIME.md 用ブロックを出力（ctl-calculation.md §7）。"""
-    _require_initialized()
+    _ensure_initialized()
     stats = _load_stats()
     ctl = calculate_ctl(stats)
     scope = delegation_scope(stats)

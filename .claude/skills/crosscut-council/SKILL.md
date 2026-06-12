@@ -198,6 +198,11 @@ Council Trust Level（CTL）の蓄積データになる（スキーマ・命名�
 この記録は **CTL を「回す」ための必須ステップ**であり、省略してはならない。
 記録しなければ CTL は永遠に CTL-0 に留まる（`total_invocations` が増えない）。
 
+**記録失敗時の規範（判断 ＞ 記録）**: Council の一次成果物は judgment であり、CTL 記録は従属物。
+ディスク full / 権限エラー等で記録に失敗しても **Council フロー（出力・合意プロセス）は止めない**。
+失敗は **warn として可視化**し（黙殺しない）、後日 `recompute` で invocations/ から復元する。
+記録失敗を理由に判断を握り潰すのは献上哲学（philosophy.md §5）に反する。
+
 **記録の機構（フォールバック付き — 利用者プロジェクトでも壊れない）**:
 
 1. `scripts/council-ctl.py` が存在すれば、それを使う（推奨）:
@@ -212,9 +217,36 @@ Council Trust Level（CTL）の蓄積データになる（スキーマ・命名�
      --consensus <consensus_mode>
    ```
 
+   **`init` は不要**: `record` は未初期化（`~/.claude/council-data/` 不在）でも
+   自動で CTL-0 コールドスタート初期化してから記録する（ctl-calculation.md §1/§8）。
+   「発動＝自動 record」が一度も `init` していない環境でも確実に走る。
+
 2. `scripts/council-ctl.py` が無い（DH skill のみ取り込んだ利用者プロジェクト等）場合は、
-   `ctl-calculation.md` §4 のスキーマに従い invocation JSON を `~/.claude/council-data/invocations/`
-   に直接 append する（`actual_outcome.status` は `null` で作成）。
+   下記スキーマの invocation JSON を `~/.claude/council-data/invocations/` に直接書く
+   （この経路だけで self-contained に記録できるよう全フィールドを以下に明示する。
+   一次情報源は `ctl-calculation.md` §4）。ディレクトリが無ければ先に作る。
+
+   - **ファイル名**: `<ISO8601Z のコロンをハイフン化>-<invocation_id 末尾6文字>.json`
+   - **中身**（`actual_outcome.status` は `null` で作成）:
+
+     ```json
+     {
+       "invocation_id": "council-<ISO8601Z>-<6hex>",
+       "council_type": "business",
+       "category": "<operation|judgment|conception 等>",
+       "decision_category": "<C1|C2|C3|C4>",
+       "topic_summary": "<抽象要約・80字以内>",
+       "judgment": "<recommended の抽象表現>",
+       "judgment_confidence": <0.0-1.0>,
+       "consensus_mode": "<auto_agree|escalate_to_human 等>",
+       "ctl_at_invocation": "<記録時点の CTL>",
+       "actual_outcome": {"status": null, "evaluated_at": null, "modifier_note": null}
+     }
+     ```
+
+   必須フィールドが欠けたり `decision_category` が C1〜C4 以外だと、後段の `_recompute`/
+   振り返り儀式で **warn skip され統計から静かに落ちる**（CTL が実態より低く出る）。
+   直接書き経路を採るときはこのスキーマ厳守が CTL の正確性の前提になる。
 
 **フィールド対応**:
 
