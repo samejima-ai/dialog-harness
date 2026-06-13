@@ -6,6 +6,9 @@
 #
 # placeholder: PROJECT_REVIEW_AXES（v5.26.0、ADR-002/G-001 解消。spec-architect「コードレビュアー
 # 認識合わせ」で SPEC/DONT から抽出した重点仕様軸を prompt に注入。空可）。
+# ★置換規約: PROJECT_REVIEW_AXES は prompt block scalar 内に注入。複数行値は各行を 12 スペース
+#   （${...} 行と同インデント）で注入すること（無インデントだと YAML が壊れる）。コメント内はトークン化しない。
+#   一次情報源: crosscut-autonomous-drive/references/placeholder-spec.md §インデント規約。
 # なお prompt 内の「dialog-harness 本体への独立 Gemini レビュアー」「DH 本体 PR の多くは Claude
 # (Anthropic) で書かれます」「DH レビュー用途」等の DH-specific default 文言は、利用者プロジェクトに
 # 合わせて編集することを推奨（spec-architect 対話で確認。フル generic 化は別途検討）。

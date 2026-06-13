@@ -12,8 +12,11 @@
 #   - SCOPE_PATHS            : レビューを発火させる paths（プロジェクトのコード領域。複数行 YAML リスト）
 #   - SENSITIVE_PATHS_REGEX  : 「フル Council に値する」sensitive 変更の判定 regex（プロジェクト固有）
 #   - PROJECT_REVIEW_AXES    : このプロジェクトで特に重視するコードレビュー軸（SPEC/DONT 由来、ADR-001/002。複数行）
-# 注: コメント内ではトークン化（${...}）しない。複数行 placeholder を単純置換するとコメント行が壊れるため、
-#     実注入点（paths: 直下と direct_prompt 内）でのみ ${...} を用いる。
+# 注1: コメント内ではトークン化（${...}）しない。複数行 placeholder を単純置換するとコメント行が壊れるため、
+#      実注入点（paths: 直下と direct_prompt 内）でのみ ${...} を用いる。
+# 注2: 複数行 placeholder のインデント規約（必須）。SCOPE_PATHS=各行 6 スペース（paths: 直下）。
+#      PROJECT_REVIEW_AXES=各行 12 スペース（direct_prompt block scalar 内、${...} 行と同インデント。空可）。
+#      SENSITIVE_PATHS_REGEX/REPO_NAME=1 行（インデント非依存）。一次情報源: placeholder-spec.md §インデント規約。
 #   - ${REPO_NAME}            : リポジトリ名（cosmetic、git remote から自動抽出）
 # 依存: 本 workflow は `.claude/agents/review-*.md`（8 個）と `.claude/skills/crosscut-council/` を
 # 前提とする。crosscut-autonomous-drive が claude-review 選択時に agents も併せて配備する。
@@ -40,7 +43,11 @@
 #
 # ## 必要な setup（Repo Settings → Secrets and variables → Actions）
 # - CLAUDE_CODE_OAUTH_TOKEN: `claude setup-token` で取得（サブスク、API 追加課金なし）
-# - GH_REVIEW_PAT: Fine-grained PAT（Pull requests: Read+Write, Contents: Read）。gemini-review と共用
+# - GH_REVIEW_PAT: Fine-grained PAT。claude-review **単体の最小権限**は Pull requests: Read+Write
+#   （+ checkout 用 Contents: Read, Metadata: Read）。ただし autonomous-drive の他 workflow（auto-merge /
+#   issue-pickup）と PAT を**共用する場合は setup-checklist.md の推奨権限が上位**——
+#   Contents: Read+**Write** / Issues: Read+Write も必要。共用するなら上位権限で発行すること
+#   （setup-checklist.md が PAT 権限の一次情報源。本コメントの最小権限は claude-review 単独運用時のみ）。
 # - 未設定（fork PR 等）はクリーンに skip。
 
 name: claude-review
@@ -51,6 +58,8 @@ on:
     # paths フィルタ（過剰動作の発動条件制限）。プロジェクトのコード/ロジック領域のみ対象。
     # docs/履歴/配信物のみの PR では claude-review を起動しない。
     # SCOPE_PATHS は spec-architect 認識合わせで確定（YAML リスト、各行 `- "<glob>"`）。
+    # ★置換規約: 注入値の各行を 6 スペースでインデントすること（例 `      - "src/**"`）。
+    #   無インデント値だと YAML が壊れる（placeholder-spec.md §インデント規約が一次情報源）。
     paths:
 ${SCOPE_PATHS}
 
