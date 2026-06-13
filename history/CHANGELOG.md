@@ -2,6 +2,29 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-06-13 コードレビュアーを「対話で作り込む harness 部品」化（v5.26.0、minor 昇格、in progress, target 2026-06-13）
+
+利用者（自分）の方針「DH はプロジェクト設計のためのメタスキル。CI レビュアーも固定で卸すのでなく、
+プロジェクト開始時に任意・認識合わせして作り込むのがベスト」を起点に、claude-review（4 フェーズ Council・
+汎用コードレビュー軸 = Copilot 代替）を user project に配備可能化し、**レビュアー選択自体を L0 §6 Level C の
+「コードレビュアー認識合わせ」対話ステップ**にした。ADR-002（ADR-001 の実装後継）。
+
+- **新規 template**: `templates/github-workflows/claude-review.yml.template`（DH 本体 claude-review.yml の generic 化）。
+  tier ゲート（paths フィルタ + routine pre-gate + 難度ゲート lightweight/council）維持。placeholder
+  `${REPO_NAME}` / `${SCOPE_PATHS}` / `${SENSITIVE_PATHS_REGEX}` / `${PROJECT_REVIEW_AXES}`。
+- **認識合わせ対話**: `autonomous-drive-deployment.md` §コードレビュアー認識合わせ。L0 が SPEC/DONT から
+  reviewer 構成（なし / Copilot / gemini 仕様軸 / claude 単発 / claude tier 段階 Council、組合せ可）・重点軸・
+  sensitive 範囲・コスト感を人間と擦り合わせる。tier 段階 Council の重さ（Opus OC + 3 ペルソナ、サブスク枠消費）を明示認識合わせ。
+- **agents 配備**: claude「tier 段階 Council」選択時のみ `.claude/agents/review-*.md`（8 個）を verbatim 配備
+  （crosscut-council skill は通常 skills コピーで配備済み前提）。
+- **ADR-001 実装 / G-001 解消**: `${PROJECT_REVIEW_AXES}` を claude-review/gemini-review 両 template に注入
+  （gemini 側は既存 DH-specific default 軸に加算）。
+- **コスト/品質の段階配備（案 C）**: routine PR は単発・安価、sensitive/大規模だけ Council 昇格。
+
+変更ファイル: `templates/github-workflows/claude-review.yml.template`（新規）/ `gemini-review.yml.template`（軸注入）/
+`crosscut-autonomous-drive/SKILL.md` / `references/{placeholder-spec,setup-checklist,known-gaps}.md` /
+`adr-002-...md`（新規）/ `layer0-spec-architect/references/{autonomous-drive-deployment,dev-env-spec}.md` / `README.md` / `VERSION`。
+
 ## 2026-06-11 履歴ストレージ tier 分割の Council seeds 吸収（v5.25.1、patch 昇格、released 2026-06-11、follow-up #137）
 
 PR #137（v5.25.0）merge 後の Council PR レビュー（`approve_with_seeds` / weighted_score 3.10 / HIGH 0）が出した

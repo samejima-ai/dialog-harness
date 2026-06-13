@@ -26,9 +26,9 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 
 ## 責務
 
-1. **template 取得**: `templates/github-workflows/` から `auto-merge.yml.template` / `gemini-review.yml.template` を読み込む
-2. **placeholder 置換**: spec-architect 対話で確定した値（`${ALLOWED_AUTHORS}` 等）を template に展開
-3. **配置**: 利用者プロジェクトの `.github/workflows/` 配下にコピー
+1. **template 取得**: `templates/github-workflows/` から `auto-merge.yml.template` / `gemini-review.yml.template` を読み込む。reviewer 認識合わせで claude を選んだ場合は `claude-review.yml.template` も読み込む（`autonomous-drive-deployment.md` §コードレビュアー認識合わせ参照）
+2. **placeholder 置換**: spec-architect 対話で確定した値（`${ALLOWED_AUTHORS}` / `${PROJECT_REVIEW_AXES}` / `${SENSITIVE_PATHS_REGEX}` 等）を template に展開
+3. **配置**: 利用者プロジェクトの `.github/workflows/` 配下にコピー。claude「tier 段階 Council」を選んだ場合は **`.claude/agents/review-*.md`（8 個）を verbatim でコピー**（DH リポジトリの `.claude/agents/` が source。tier2/3 Council fan-out が依存する。`crosscut-council` skill は通常 skills コピーで配備済み前提）
 4. **label 作成**: GitHub UI または API 経由で `ready-for-ai` / `do-not-merge` / `human-review-needed` label を作成（autonomous_scope に応じて）。**v5.9.0 で `auto-merge` ラベルは廃止**（opt-in→opt-out 反転、二重ラベル方式の腐敗回避）
 5. **secrets ガイド**: `GH_REVIEW_PAT` / `GEMINI_API_KEY` / **`CLAUDE_CODE_OAUTH_TOKEN`** (v5.7.1〜、issue-pickup.yml が必要とする) の設定手順をユーザーに提示（実際の入力は人間 P4 / spec-architect 対話で確認）。GH_REVIEW_PAT は **Contents/PR/Issues = Read and write** が必要（Read のみでは Claude Code 実装の commit/push が失敗）。詳細: `.claude/skills/crosscut-issue-implementer/references/setup-checklist.md`
 
@@ -51,12 +51,15 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 ```
 1. REGIME.md から dev_mode + autonomous_scope を読み取る
 2. autonomous_scope に応じた template セットを選択
-   - full: auto-merge.yml.template + gemini-review.yml.template
-   - merge_gated: gemini-review.yml.template のみ
+   - full: auto-merge.yml.template + gemini-review.yml.template（+ reviewer 認識合わせで claude を選べば claude-review.yml.template）
+   - merge_gated: gemini-review.yml.template のみ（+ claude-review 任意）
    - custom: dev-env-spec.md Level C 詳細表に従う個別選択
+   - reviewer 構成（gemini / claude 単発 / claude tier 段階 Council）は autonomous_scope と直交し、
+     `autonomous-drive-deployment.md` §コードレビュアー認識合わせで確定する
 3. 各 template ファイルを読み込み、placeholder を spec-architect 対話で確定した値で置換
    - placeholder 一覧と規約は references/placeholder-spec.md 参照
 4. 利用者プロジェクトの .github/workflows/ 配下に配置
+   - claude「tier 段階 Council」選択時は `.claude/agents/review-*.md`（8 個）も verbatim コピー
 5. label 作成（autonomous_scope に応じた set）
 6. Repository Secrets 設定ガイドを表示（人間が GitHub UI で実際に設定）
 7. 配置結果を DELIVERY.md に記録（成功/失敗、配置パス、placeholder 値、未設定 secrets）
@@ -85,6 +88,8 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 
 - `templates/github-workflows/auto-merge.yml.template` — auto-merge workflow テンプレート（dialog-harness リポジトリ ルート、v5.9.0 で opt-out 反転）
 - `templates/github-workflows/gemini-review.yml.template` — gemini-review workflow テンプレート（同上）
+- `templates/github-workflows/claude-review.yml.template` — claude-review workflow テンプレート（v5.26.0、tier 段階 Council・コード軸。reviewer 認識合わせで opt-in）
+- `.claude/agents/review-*.md` — claude-review が起動する 8 worker/persona（tier 段階 Council 選択時に verbatim 配備）
 - `.claude/skills/layer0-spec-architect/references/autonomous-drive-deployment.md` — spec-architect 対話レベルのガイド
 - `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` Level C — deploy 対象機能の autonomous_scope 別表
 - `.claude/skills/layer0-spec-architect/references/philosophy.md` 第 7 条 — DH AI 組織論（本 skill の位置づけ）
@@ -94,5 +99,8 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 
 - v0.1.0（v5.6.0 で新規導入、deployment 専念）
 - **v0.2.0（v5.9.0 で改訂）**: opt-in→opt-out 反転、`auto-merge` ラベル廃止、stop ラベル方式に統合、境界 SPEC `auto-merge-boundary.md` を一次情報源化
+- **v0.3.0（v5.26.0 で改訂）**: コードレビュアー認識合わせを deploy フローに追加。`claude-review.yml.template`
+  （tier 段階 Council・コード軸）を opt-in 配備物として追加、`.claude/agents/review-*.md` の verbatim コピー、
+  `${PROJECT_REVIEW_AXES}` / `${SENSITIVE_PATHS_REGEX}` placeholder を実装（ADR-001 → ADR-002、G-001 解消）
 - v5.6.x 候補: destructive change detector / circuit breaker（guardian 機能）の追加
 - v5.7.0 候補: ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）

@@ -4,11 +4,11 @@
 # `crosscut-autonomous-drive` skill が placeholder 置換して `.github/workflows/gemini-review.yml` に配置したものです。
 # 詳細は dialog-harness の `crosscut-autonomous-drive/references/placeholder-spec.md` 参照。
 #
-# 本 template には placeholder なし（gemini-review は project-specific 値を hardcode しないため、
-# dialog-harness 自身の workflow ファイルから直接コピーで利用可能）。
-# ただし prompt 内の「dialog-harness 本体への独立 Gemini レビュアー」「DH 本体 PR の多くは Claude
-# (Anthropic) で書かれます」「DH レビュー用途」等の文言は、利用者プロジェクトに合わせて編集する
-# ことを推奨（spec-architect 対話で確認、必要なら placeholder 化を v5.6.x patch で検討）。
+# placeholder: PROJECT_REVIEW_AXES（v5.26.0、ADR-002/G-001 解消。spec-architect「コードレビュアー
+# 認識合わせ」で SPEC/DONT から抽出した重点仕様軸を prompt に注入。空可）。
+# なお prompt 内の「dialog-harness 本体への独立 Gemini レビュアー」「DH 本体 PR の多くは Claude
+# (Anthropic) で書かれます」「DH レビュー用途」等の DH-specific default 文言は、利用者プロジェクトに
+# 合わせて編集することを推奨（spec-architect 対話で確認。フル generic 化は別途検討）。
 #
 # v5.10.0 (Issue #49 軸 G1) で template 骨格を整備:
 # - F1-F3: includeTools で read 系 + review-related write のみ expose
@@ -286,6 +286,10 @@ jobs:
             - **履歴記述の事実整合**: CHANGELOG `(in progress)/(released)`、provenance、file count の三者一致
             - **harness-verifier 整合**: `python harness-verifier/verify.py --strict` の 5 検査前提
             - **schema 厳密性**: COUNCIL-LOG / glossary.yml / frontmatter 必須フィールド
+
+            このプロジェクトで特に重視する仕様軸（spec-architect 認識合わせ済み、SPEC/DONT 由来。
+            上記の汎用仕様軸に**加えて**重点観測する。未設定なら上記軸のみ）:
+            ${PROJECT_REVIEW_AXES}
 
             汎用 code review で Copilot が拾える問題は **指摘しない**。視点が直交していることが本レビューの存在意義。
 
