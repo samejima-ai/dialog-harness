@@ -14,6 +14,37 @@
 
 **コードレビュアー認識合わせ (v5.26.0)**: spec-architect §コードレビュアー認識合わせで claude（単発 / tier 段階 Council）を選んだ場合のみ `claude-review.yml` を deploy する。必要 secrets は `CLAUDE_CODE_OAUTH_TOKEN` + `GH_REVIEW_PAT`（gemini と共用）。両方未設定なら claude-review はクリーンに skip。**tier 段階 Council** を選んだ場合は `.claude/agents/review-*.md`（8 個）も配備済みであること（crosscut-council skill が前提）。詳細: `layer0-spec-architect/references/autonomous-drive-deployment.md` §コードレビュアー認識合わせ
 
+### placeholder 置換後の YAML 検証（v5.26.0 必須・claude-review OC #145 指摘）
+
+複数行 placeholder（`${SCOPE_PATHS}` / `${PROJECT_REVIEW_AXES}`）のインデント崩れや `${SENSITIVE_PATHS_REGEX}` の
+引用崩れは **silent に paths スコープ不一致 / prompt 品質劣化 / workflow 無効化** を招く。crosscut-autonomous-drive は
+**配置前に必ず YAML 妥当性を検証**する:
+
+```
+python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1])); print('YAML OK')" .github/workflows/claude-review.yml
+python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1])); print('YAML OK')" .github/workflows/gemini-review.yml
+```
+
+- 失敗時は配置を中止し、インデント規約（`placeholder-spec.md §インデント規約`）に従って置換値を修正する。
+- `${SENSITIVE_PATHS_REGEX}` にシングルクォート `'` を含めない（bash single-quote 内注入のため。`placeholder-spec.md §bash 注入の安全規約`）。
+  さらに **有効な ERE であり、かつ空文字にマッチしないこと**を deploy 側で確認する（`.*` や空交替 `||` 等
+  空文字にマッチする式だと `grep -Eq` が常 true となり pre-gate が無効化＝全 PR がフル OC 化する）。
+  grep の exit code で判定する（`--` で `-` 始まり pattern の option 誤認も防ぐ）:
+
+  ```
+  # printf '\n' = 空行 1 つを入力（"空文字列にマッチするか" を判定。printf '' は 0 行で常に exit 1 になり判定不能）。
+  printf '\n' | grep -E -- "$SENSITIVE_PATHS_REGEX" >/dev/null 2>&1; rc=$?
+  case $rc in
+    0) echo "INVALID: 空文字列にマッチ＝pre-gate 無効化（regex が緩すぎる）" ;;
+    1) echo "OK: 空文字列に非マッチ・ERE 有効" ;;
+    2) echo "INVALID: ERE 構文エラー" ;;
+  esac
+  ```
+
+- **`.github/reviews/` を user project の `.gitignore` に追加推奨**（二重防御）。claude-review OC は Channel A artifact を
+  `.github/reviews/` に Write し Actions Artifacts として回収する設計で PR ブランチには commit しないが、
+  ローカル実行等での誤 commit を防ぐ。
+
 ## 必須 GitHub Labels
 
 v5.9.0 で opt-in→opt-out モデルに反転（`auto-merge` ラベル廃止）。`autonomous_scope` に応じて以下の **stop labels** + **ready-for-ai** を作成:
