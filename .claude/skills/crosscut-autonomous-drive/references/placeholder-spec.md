@@ -10,7 +10,9 @@
 | `${REPO_OWNER}` | リポジトリ所有者（user or organization） | `samejima-ai` | `git remote get-url origin` から自動抽出可能 |
 | `${REPO_NAME}` | リポジトリ名 | `dialog-harness` | 同上 |
 | `${VERIFIER_JOB_NAME}` | 構造的 verifier の job 名（auto-merge.yml の condition 4 で参照） | `verify`（dialog-harness 標準） | プロジェクト固有、対話で確認、デフォルト = `verify` |
-| `${SCOPE_PATHS}` | gemini-review / harness-verify が発火する paths（YAML リスト） | `- "src/**"\n- "tests/**"` | spec-architect 対話で取得 |
+| `${SCOPE_PATHS}` | gemini-review / claude-review / harness-verify が発火する paths（YAML リスト） | `- "src/**"\n- "tests/**"` | spec-architect 対話で取得 |
+| `${PROJECT_REVIEW_AXES}` | このプロジェクトで特に重視するレビュー軸（claude-review OC prompt / gemini-review prompt に注入。Markdown 箇条書き、空可） | `- 未検証入力の検出\n- blocking I/O の禁止` | spec-architect「コードレビュアー認識合わせ」で SPEC/DONT から抽出（v5.26.0、ADR-001/002） |
+| `${SENSITIVE_PATHS_REGEX}` | claude-review routine pre-gate でフル Council に値する sensitive 変更を判定する ERE | `(^\.github/)\|(^\.claude/)\|(SPEC)\|(DONT)\|(REGIME)` | spec-architect 認識合わせで取得（プロジェクト固有重要パス、v5.26.0） |
 
 ## 置換規約
 
@@ -24,9 +26,10 @@
 - 新規 placeholder 追加は v5.6.x patch 範疇（互換破壊なし）
 - 既存 placeholder 名の変更 / 削除は major 案件（template 利用プロジェクトの再 deploy 必須）
 
-### Forward-compat 命名規約（v5.11.0 追加、ADR-001 関連）
+### Forward-compat 命名規約（v5.11.0 追加、ADR-001 関連 / v5.26.0 で `${PROJECT_REVIEW_AXES}` 実装済み）
 
-将来追加予定の placeholder（例: `${PROJECT_REVIEW_AXES}` for v5.12.0、ADR-001 で予約済み）を意識し、新規 placeholder の命名は以下に準拠する:
+`${PROJECT_REVIEW_AXES}` は ADR-001 で予約され、**v5.26.0 で claude-review/gemini-review template に実装**された
+（ADR-002、G-001 解消）。新規 placeholder の命名は以下に準拠する:
 
 - SCREAMING_SNAKE_CASE 固定（既定）
 - ドメイン prefix を導入:

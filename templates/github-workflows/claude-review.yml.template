@@ -1,0 +1,283 @@
+# claude-review — 4 フェーズ Council 高高度レビュー ARC（Copilot review 代替・tier 段階配備版）
+#
+# dialog-harness の claude-review.yml を user project に deploy するための template。
+# 単一の anthropics/claude-code-action@v0 セッションを Orchestrator-Conductor (OC = Opus) として
+# 起動し、subagent を model override（haiku/sonnet/opus）しながら 4 フェーズで PR をレビューする。
+# 認証は Anthropic Pro/Max サブスクリプション（CLAUDE_CODE_OAUTH_TOKEN、API 追加課金なし）。
+#
+# ## 配備の性格（レビュアー認識合わせ — L0 §6 Level C）
+# 本 template は「固定で卸す」ものではなく、spec-architect 対話の **コードレビュアー認識合わせ**で
+# 「tier 段階 Council を使う」と人間が選んだ場合にのみ配備される harness 部品。配備時に以下を
+# 対話で擦り合わせて placeholder に展開する:
+#   - SCOPE_PATHS            : レビューを発火させる paths（プロジェクトのコード領域。複数行 YAML リスト）
+#   - SENSITIVE_PATHS_REGEX  : 「フル Council に値する」sensitive 変更の判定 regex（プロジェクト固有）
+#   - PROJECT_REVIEW_AXES    : このプロジェクトで特に重視するコードレビュー軸（SPEC/DONT 由来、ADR-001/002。複数行）
+# 注: コメント内ではトークン化（${...}）しない。複数行 placeholder を単純置換するとコメント行が壊れるため、
+#     実注入点（paths: 直下と direct_prompt 内）でのみ ${...} を用いる。
+#   - ${REPO_NAME}            : リポジトリ名（cosmetic、git remote から自動抽出）
+# 依存: 本 workflow は `.claude/agents/review-*.md`（8 個）と `.claude/skills/crosscut-council/` を
+# 前提とする。crosscut-autonomous-drive が claude-review 選択時に agents も併せて配備する。
+#
+# ## アーキテクチャ
+#
+# OC(Opus) が leaf subagent を直接起動（subagent は subagent を生成できない＝委譲は 1 階層）:
+#   Phase1 Planning : review-fetch(haiku) / review-difficulty(haiku) / Skill:crosscut-council でチェックリスト生成+RL内外分類
+#   Phase2 Gate     : review-intent-gate(haiku) → 意図欠落 diff は修正提案を停止し開発者へ質問
+#   Phase3 Exec     : review-evidence(haiku) / [難度ゲート] tier1=軽量単一パス・Council スキップ / tier2,3=Council 3 ペルソナ並列(sonnet標準/opus昇格)+review-judgment(weighted)
+#   Phase4 Synth    : OC 統合 → ChA artifact(.github/reviews) / ChB inline 結論(高純度) / ChC 人間 merge 判断サマリー
+#
+# 難度ゲート（2 段）: 過剰動作を抑えるため発動条件を 2 段で制限する。
+#   段1 — paths フィルタ（on.pull_request.paths = SCOPE_PATHS）: 対象外パスのみの PR では起動しない。
+#   段2 — routine pre-gate（決定論・無 LLM, steps.pregate）: sensitive パス（${SENSITIVE_PATHS_REGEX}）
+#         未変更かつ小規模な routine PR では Opus OC ステップ自体をスキップ（OC ごと省略）。
+# OC が起動した PR の内部では従来どおり: Council は拮抗・高 stakes のためのもの。
+# routine な tier1 PR は軽量単一パスに分岐し、tier2/3（sensitive/複雑）のみフル Council。
+#
+# ## レビュアー視点直交（多層防御。gemini-review も配備した場合）
+# - claude-review (本 workflow): 汎用コードレビュー軸（Copilot 代替）+ PROJECT_REVIEW_AXES
+# - gemini-review.yml: プロジェクト仕様軸（SPEC/DONT 契約・固有不変条件）— 配備時のみ
+# merge 判断は常に人間。AI は証拠と評価の提示に徹する。
+#
+# ## 必要な setup（Repo Settings → Secrets and variables → Actions）
+# - CLAUDE_CODE_OAUTH_TOKEN: `claude setup-token` で取得（サブスク、API 追加課金なし）
+# - GH_REVIEW_PAT: Fine-grained PAT（Pull requests: Read+Write, Contents: Read）。gemini-review と共用
+# - 未設定（fork PR 等）はクリーンに skip。
+
+name: claude-review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
+    # paths フィルタ（過剰動作の発動条件制限）。プロジェクトのコード/ロジック領域のみ対象。
+    # docs/履歴/配信物のみの PR では claude-review を起動しない。
+    # SCOPE_PATHS は spec-architect 認識合わせで確定（YAML リスト、各行 `- "<glob>"`）。
+    paths:
+${SCOPE_PATHS}
+
+concurrency:
+  group: "claude-review-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write  # anthropics/claude-code-action@v0 の OIDC token 取得に必須
+
+jobs:
+  review:
+    if: |
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      github.event.pull_request.user.login != 'copilot-pull-request-reviewer'
+    runs-on: ubuntu-latest
+    # 4 フェーズ + Council fan-out のため単一呼び出し版(15)より延長
+    timeout-minutes: 25
+    steps:
+      - name: Check CLAUDE_CODE_OAUTH_TOKEN availability
+        id: check_token
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::notice::CLAUDE_CODE_OAUTH_TOKEN secret 未設定または空。claude-review をスキップします（fork PR では正常な挙動）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check GH_REVIEW_PAT availability
+        id: check_pat
+        env:
+          GH_REVIEW_PAT: ${{ secrets.GH_REVIEW_PAT }}
+        run: |
+          if [ -z "$GH_REVIEW_PAT" ]; then
+            echo "::notice::GH_REVIEW_PAT secret 未設定または空。claude-review をスキップします（review 投稿には Pull requests: Write 権限の PAT が必要）。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # Routine pre-gate（決定論・無 LLM）: tier1 相当の routine PR は Opus OC ごとスキップ。
+      # OC 内部の難度ゲート（Phase 1-b lightweight mode）は OC を起動しないと tier が分からないため、
+      # その手前に決定論ゲートを置いて「ルーチンへの Opus 起動コスト自体」を回避する。
+      # 保守的: sensitive パス（${SENSITIVE_PATHS_REGEX}）変更 or 大規模変更は必ずフル OC。
+      - name: Routine pre-gate (tier1 → skip OC)
+        id: pregate
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # PR が導入した変更の差分範囲を一度だけ決める（three-dot 不可環境は two-dot に fallback）。
+          # FILES/LINES で共用し、LINES だけ fallback 漏れで step が落ちる事故を防ぐ。
+          if git diff --name-only "$BASE_SHA...$HEAD_SHA" >/dev/null 2>&1; then
+            RANGE=("$BASE_SHA...$HEAD_SHA")
+          else
+            RANGE=("$BASE_SHA" "$HEAD_SHA")
+          fi
+          FILES=$(git diff --name-only "${RANGE[@]}")
+          LINES=$(git diff --numstat "${RANGE[@]}" | awk '{a+=$1; d+=$2} END{print (a+d)+0}')
+          LINES=${LINES:-0}
+          # sensitive = プロジェクトのハーネス中核 / CI / 仕様契約。1 つでも触れたら必ずフル OC。
+          # ${SENSITIVE_PATHS_REGEX} は spec-architect 認識合わせで確定（プロジェクト固有の重要パス）。
+          SENSITIVE='${SENSITIVE_PATHS_REGEX}'
+          ROUTINE_MAX=400
+          if echo "$FILES" | grep -Eq "$SENSITIVE"; then
+            echo "::notice::sensitive path 変更あり → フル OC レビュー。"
+            echo "routine=false" >> "$GITHUB_OUTPUT"
+          elif [ "$LINES" -gt "$ROUTINE_MAX" ]; then
+            echo "::notice::変更規模 ${LINES} 行 > ${ROUTINE_MAX} → フル OC レビュー。"
+            echo "routine=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::routine PR（非 sensitive・${LINES} 行）→ Opus OC をスキップ（tier1 軽量ゲート）。Copilot 等が継続観測。"
+            echo "routine=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # anthropics/claude-code-action@v0 公式 action（SHA pin は deployment 時に maintainer が推奨）
+      - name: Run Claude 4-phase Council review
+        if: steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true' && steps.pregate.outputs.routine != 'true'
+        uses: anthropics/claude-code-action@v0
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GH_REVIEW_PAT }}
+          # OC オーケストレーターのティア。ワーカー/ペルソナは subagent で override。
+          model: claude-opus-4-7
+          timeout_minutes: "22"
+          # フェーズ fan-out のターン予算（初回 run で調整）
+          max_turns: "60"
+          # Task=subagent 起動 / Skill=crosscut-council 読込 / Write+mkdir=artifact 永続化 / gh=取得と投稿
+          allowed_tools: "Task,Skill,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git grep:*),Bash(mkdir:*),Bash(ls:*),Bash(cat:*),Read,Write,Glob,Grep"
+          direct_prompt: |
+            あなたは ${REPO_NAME} の 4 フェーズ Council PR レビューの Orchestrator-Conductor (OC) です。
+            あなたは Opus で動作し、leaf 作業を Task ツールで subagent に委譲します（各 subagent は
+            自身のモデルティアを持つ）。統合（Phase 4）はあなた自身が行います。**merge 判断には決して踏み込みません。**
+
+            ## 対象
+            - repository: `${{ github.repository }}`
+            - PR 番号: **#${{ github.event.pull_request.number }}**（確定済、人間に質問しない）
+            - head SHA: `${{ github.event.pull_request.head.sha }}` / base: `${{ github.event.pull_request.base.ref }}`
+            - `gh` は github_token で認証済み。
+
+            ## 視点直交（最重要）
+            あなたは **汎用コードレビュー軸**（Copilot 代替）を担当: 正当性/バグ、エラー処理/edge case、
+            スタイル/命名、code smell、標準セキュリティパターン、言語/FW イディオム、テスト網羅。
+            **プロジェクト仕様軸（SPEC/DONT 契約・プロジェクト固有の不変条件）には踏み込まない**——それは
+            gemini-review.yml が独立観測する（配備した場合）。重複指摘は出さない。
+
+            ### このプロジェクトで特に重視する軸（spec-architect 認識合わせ済み）
+            以下はこのプロジェクトの SPEC/DONT から擦り合わせた重点コードレビュー軸。汎用軸に**加えて**
+            重点的に観測する（未設定なら汎用軸のみで評価する）:
+            ${PROJECT_REVIEW_AXES}
+
+            ## モデルティア方針
+            ワーカー（fetch/difficulty/intent/evidence）= haiku（各 subagent frontmatter 既定）。
+            Council（council mode = tier2/3 のみ）の 3 ペルソナ + judgment = tier2 なら sonnet、tier3 なら opus。
+            **3 ペルソナは常に同一ティア**（横対称）。難度で縦昇格。Task 起動時の model パラメータで 3 者に同値を渡す。
+            tier1（lightweight mode）は Council を回さず OC が単一パスで処理する（過剰防止の難度ゲート、後述 Phase 3）。
+
+            ## Phase 1 — Review Planning
+            1-a Task → `review-fetch`（haiku）: PR の title/body/diff/変更ファイル/linked Issue/参照 doc に加え、
+                コメント履歴・過去レビュー（各エントリ author + is_bot タグ付き）を取得。前提入力は多いほど良い。
+                既出記録の扱い（責務を 2 つの機械的根拠に分離）:
+                - `is_bot:true`（login の機械判定）= 汎用 bot フィルタ。意図/評価の根拠にしない。
+                - **あなた自身の過去出力**は安定マーカーで識別する（author でも is_bot でも人間可読テンプレ文面でもなく、
+                  これが一次根拠＝将来 reformat に強い）。**正規規則（本箇所が一次情報源。review-intent-gate.md は参照コピー）**:
+                  コメント本文に部分文字列 `<!-- claude-review:` が出現すれば claude-review 自身の出力（contains 判定。
+                  `<!-- claude-review:` はマーカーの安定 prefix で `channel-b`/`channel-c` 等の接尾辞は可変＝channel 追加でも規則不変）。
+                  自己出力は新 signal ではなく「既出記録」＝再評価せず繰り返さない根拠。
+                  fail-safe: 自他不明（マーカー不一致）なら外部コメント扱い＝既出抑制しない（入力を失うより再掲回避を諦める方が安全。前提入力↑優先）。
+            1-b Task → `review-difficulty`（haiku）: 依存深度中心に difficulty tier(1/2/3) を保守的に判定。
+                これで 2 つを決める:
+                - **review_mode**（過剰防止の難度ゲート）: tier1=`lightweight`（routine、Council を回さない）/
+                  tier2,3=`council`（フル合議）。Council 自身の発動基準（拮抗・高 stakes のみ発動）に整合させ、
+                  ルーチン PR への過剰合議を避ける。
+                - **persona_tier**（review_mode=council のときのみ）: tier2→sonnet, tier3→opus。
+            1-c Skill `crosscut-council` を読み、references/review-checklist.md に従って検証チェックリストを
+                動的生成し、各項目を RL 内（既存ルールに根拠→自走 = C 区分）/ RL 外（新評価軸＝発明→人間献上 =
+                H1/H3）に分類。RL 外項目を escalation リストに収集。review_category も決める。
+                （この推論は sonnet 相当。Task で sonnet subagent に出すか、OC が直接行ってよい。）
+
+            ## Phase 2 — Understanding Gate
+            2-a Task → `review-intent-gate`（haiku）: PR 本文 **+ 人間コメント** が各実質 diff の意図/トレードオフを
+                述べているか判定（意図が body になくても人間コメントで説明済みなら has_intent:true＝既答の質問を再送しない）。
+            2-b 意図が欠落した diff については **その diff の修正提案を出さない**（低純度の意図に基づき評価しない）。
+                代わりに gap ごとに 1 件の明確化質問を `gh pr comment` で開発者へ投げる（Phase 4 でまとめて投稿可）。
+                既にコメント履歴で同じ質問を投げ済み／回答済みのものは再送しない（出力は必要最低限）。
+
+            ## Phase 3 — Review Execution
+            3-a Task → `review-evidence`（haiku）: 変更ファイルの linter/formatter/型/test を実行または収集し
+                file:line + verdict の Evidence に正規化（決定論のみ）。**全 mode で実行**（決定論層が価値の中心）。
+
+            **review_mode=lightweight（tier1, routine）の場合**: Council fan-out（3-b/3-c）を **スキップ** する。
+            あなた（OC）が Evidence(3-a) + チェックリスト(1-c) を基に単一パスで汎用コードレビューし、verdict を直接決める。
+            judgment_confidence/persona 層は生成しない。そのまま Phase 4 へ。これがルーチン PR の既定経路。
+
+            **review_mode=council（tier2/3, sensitive/複雑）の場合のみ**: 以下 3-b/3-c を実行する。
+            3-b Council 3 ペルソナ独立評価。context にレビュー対象（diff 要約 + 変更ファイル + Evidence）、
+                options にレビュー verdict（例: ["問題なし","軽微な問題あり","重大な問題あり/要修正"]）、
+                question_to_answer を与え、**3 件の Task を並列・同一 persona_tier で起動**:
+                  Task(`review-persona-ceo`,  model=<persona_tier>)
+                  Task(`review-persona-dev`,  model=<persona_tier>)
+                  Task(`review-persona-phil`, model=<persona_tier>)
+                各ペルソナには context/options/question と自ペルソナのみを渡す。**他ペルソナ出力・weight・履歴は
+                渡さない**（Phase 1 独立性）。
+            3-c crosscut-council/council-weights.md で final_weights を決定論計算（review_category の
+                situational_modifier 適用）。Task → `review-judgment`（model=<persona_tier>）に 3 ペルソナ出力 +
+                final_weights + conflict_type を渡し、output-format.md §4 の判定 JSON を得る
+                （recommended/judgment_confidence/minority_opinion/weight_calculation/consensus_mode/final_decision=null）。
+                あなたは orchestrator.md の verify_weight_calculation 相当（recommended ↔ max_score_stance の
+                prefix 一致、weighted_score=weight×confidence、1 ペルソナ 1 weight）を再検証する。
+
+            ## Phase 4 — Synthesis & Output（あなた＝Opus）
+            4-a 統合: Evidence(3-a) + 判定(3-c、council mode のみ) + RL 外 escalation(1-c) + 意図 gap(2-b) を
+                1 つの最終結論に。human_escalation_required = true の条件: RL 外項目あり OR H 区分該当 OR
+                （council mode かつ judgment_confidence < 0.5）。
+            4-b Channel A — 構造化 artifact を `.github/reviews/pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}.md`
+                に Write（先に `mkdir -p .github/reviews`）。frontmatter（pr/head_sha/tier/review_mode/category/
+                invocation_id/judgment_confidence(council 時のみ)/consensus_mode/human_escalation_required/generated_at）+ 本文:
+                  HIGH（ゼロノイズ・全 mode）: verdict + 確定検証 + 各 findings(1-2 行 + head SHA permalink)
+                  MEDIUM（圧縮・council mode のみ）: 各ペルソナ stance/dimension/トレードオフ + weight 要約
+                  LOW（種・将来 AI 専用・council mode のみ）: minority_opinion 全文 / third_way_excluded / 不採用懸念 / COUNCIL-LOG §8 エントリ
+                lightweight mode では HIGH 層のみ（+ review_mode=lightweight を明記）。
+                注: COUNCIL-LOG は canonical 台帳へ自動 append しない（CI churn 回避）。§8 形は LOW 層に記録のみ。
+            4-c Channel B — inline PR レビュー（HIGH のみ、高純度）。**必ず**:
+                  gh pr review ${{ github.event.pull_request.number }} --comment --body "<本文>"
+                本文は以下の構造のみ（前置き/自己紹介/推論過程を書かない）:
+                  問題なし → `問題: なし`
+                  問題あり → `問題: あり (N 件)` + 各件 `### n. <1-2 行>` と
+                            `参照: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/<path>#L<line>`
+                  permalink は head SHA 固定、重大度順、event は常に COMMENT。
+                  本文末尾に自己識別マーカー `<!-- claude-review:channel-b -->` を必ず付与（不可視 HTML コメント。次回 round の Phase 1-a 既出判定の一次根拠）。
+            4-d Channel C — 人間 merge 判断サマリー（HIGH+MEDIUM）を別 `gh pr comment` で投稿。
+                タイトル「レビュー要約（人間の merge 判断用）」。human_escalation_required なら RL 外項目/意図 gap を
+                明示し `human-review-needed` ラベル付与を推奨する一文を含める（あなたはラベルや merge を実行しない）。
+                本文末尾に自己識別マーカー `<!-- claude-review:channel-c -->` を必ず付与（不可視 HTML コメント。次回 round の Phase 1-a 既出判定の一次根拠）。
+
+            ## ハードルール
+            - APPROVE / REQUEST_CHANGES は使わない（助言的、COMMENT のみ）。
+            - merge 判断に踏み込まない。gemini の仕様軸に触れない（配備した場合）。
+            - **入力は多く・出力は最小**: コメント履歴/過去レビューを文脈に持つ意義は「既出・解決済み・既答の指摘を
+              繰り返さないため」。synchronize 再レビュー時は前ラウンドで指摘済み／開発者が応答済みの点を再掲しない。
+              新規 diff と未解決点に出力を絞る（変化がなければ ChB は簡潔に「前回から新規の問題なし」で可）。
+            - 最後に必ず Channel B を投稿して終了する。tool 失敗時は最終応答にその旨を明示。
+
+      # 3 層 artifact を Actions Artifacts として回収（PR ブランチには commit しない）。
+      # LOW 層＝将来 AI 向けの「種」のため retention は長めに取る。
+      - name: Upload review artifact
+        if: always() && steps.check_token.outputs.available == 'true' && steps.check_pat.outputs.available == 'true' && steps.pregate.outputs.routine != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-review-pr-${{ github.event.pull_request.number }}-run-${{ github.run_id }}
+          path: .github/reviews/
+          if-no-files-found: warn
+          retention-days: 30

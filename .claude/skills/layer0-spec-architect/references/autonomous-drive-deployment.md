@@ -28,10 +28,60 @@ deployment 前に対話で取得する placeholder 値：
 |---|---|---|
 | `${ALLOWED_AUTHORS}` | 「auto-merge を信頼する author の GitHub login 名は？ 複数なら space 区切り」 | プロジェクト owner（git remote から自動抽出） |
 | `${VERIFIER_JOB_NAME}` | 「構造的検証の job 名は？（auto-merge.yml の condition 4 で参照）」 | `verify`（dialog-harness 標準） |
-| `${SCOPE_PATHS}` | 「gemini-review が発火する paths は？」 | `src/**`, `tests/**`, `docs/**` 等の標準セット |
+| `${SCOPE_PATHS}` | 「gemini-review / claude-review が発火する paths は？」 | `src/**`, `tests/**`, `docs/**` 等の標準セット |
 | `autonomous_scope` | dev_mode autonomous 確定後の 1 問（dialog-questions.md 参照） | `full` |
+| **code-reviewer 構成** | 下記「コードレビュアー認識合わせ」で取得（どのレビュアー / 重点軸 / sensitive 範囲） | gemini のみ（claude-review は opt-in） |
 
 これらを取得後、`crosscut-autonomous-drive` skill を起動する。
+
+## コードレビュアー認識合わせ（v5.26.0 追加）
+
+> DH はプロジェクト設計のメタスキルであり、CI レビュアーも「固定で卸す」のではなく
+> **プロジェクト開始時に人間と認識合わせして作り込む harness 部品**として扱う。本ステップは
+> Level C deployment の一部として、どのレビュアーをどの深さ・どのコスト・どの軸で動かすかを
+> spec-architect 対話で擦り合わせる。ADR-001 が予約した `${PROJECT_REVIEW_AXES}` 抽出の実装場所。
+
+deployment 実行前に、以下 3 点を提示 → 人間が選択する（**L0 が SPEC/DONT を見て候補を提案し、人間が決める**）:
+
+### (1) どのレビュアーを使うか（任意・組合せ可）
+
+| 選択肢 | 配備物 | 性格 | コスト |
+|---|---|---|---|
+| なし | — | レビュー機構を入れない | 0 |
+| Copilot のみ | （GitHub 設定のみ） | 標準 Copilot review | 0（GitHub 側） |
+| **gemini（仕様軸）** | `gemini-review.yml` | プロジェクト仕様軸（SPEC/DONT 契約）を独立観測 | GEMINI_API_KEY 従量 |
+| **claude 単発（コード軸）** | `claude-review.yml`（pre-gate で routine skip、難度ゲートで tier1 軽量に分岐） | 汎用コードレビュー軸を高高度に。routine は安価 | サブスク枠（API 追加課金なし） |
+| **claude tier 段階 Council** | `claude-review.yml` + `.claude/agents/review-*.md`（8 個） | tier1=軽量単一パス（安価）/ tier2,3=フル Council（3 ペルソナ・重い） | サブスク枠（tier2/3 は重い・1 回 10〜20 分） |
+
+- **claude 単発と tier 段階 Council は同一 template**（`claude-review.yml.template`）。違いは agents 配備の有無 ——
+  agents を配備すると tier2/3 で Council fan-out が走る。配備しなければ OC が常に単一パス（= 実質単発）。
+- gemini と claude は **視点直交**（仕様軸 vs コード軸）なので **併用が既定の推奨**。両方使うと多層防御になる。
+- ⚠️ **コスト感の認識合わせ必須**: tier 段階 Council は sensitive/大規模 PR で重く（Opus OC + 3 ペルソナ）、
+  人間のサブスク枠を消費する。「深さ重視なら Council、軽さ重視なら単発」を明示して人間に選ばせる。
+
+### (2) `${PROJECT_REVIEW_AXES}` — このプロジェクトで特に重視する軸
+
+L0 が user project の `SPEC.md` / `DONT.md` / 固有 sensors を読み、**重点コードレビュー軸の候補を箇条書きで提案** →
+人間と擦り合わせて確定する。claude-review の OC プロンプト（視点直交セクション）と gemini-review prompt に注入される。
+
+- 例（提案 → 認識合わせ）: 「SPEC に『全 I/O は schema validation 必須』とあるので、未検証入力の検出を重点軸に？」
+  「DONT に『同期 fs 呼び出し禁止』とあるので、blocking I/O を重点軸に？」
+- 確定値は YAML/Markdown 箇条書きで `${PROJECT_REVIEW_AXES}` に展開（各行 `- <軸>`）。
+- **空でも可**: SPEC 成熟度が低ければ無理に埋めず汎用軸のみで運用（ADR-001 の観測駆動原則。空文化を避ける）。
+
+### (3) `${SENSITIVE_PATHS_REGEX}` — フル Council に値する sensitive 変更の判定
+
+claude-review の routine pre-gate で「この変更は重いレビューに値するか」を決める regex。プロジェクト固有の
+**ハーネス中核 / CI / 仕様契約パス**を人間と擦り合わせる。
+
+- デフォルト（DH-harnessed プロジェクト標準）: `(^\.github/)|(^\.claude/)|(SPEC)|(DONT)|(REGIME)`
+- プロジェクト固有の重要ディレクトリ（例 `(^src/core/)|(^migrations/)`）を追加可能。
+
+### 認識合わせ結果の記録
+
+確定した reviewer 構成・`${PROJECT_REVIEW_AXES}`・`${SENSITIVE_PATHS_REGEX}` は REGIME.md の
+`## autonomous_scope` セクション（`custom_config:` または `reviewers:` キー）に YAML で記録し、
+`crosscut-autonomous-drive` skill に渡す。
 
 ## crosscut-autonomous-drive skill 起動方法
 
@@ -55,10 +105,18 @@ deployment 完了後、利用者プロジェクトに以下が配置される：
 ├── .github/
 │   └── workflows/
 │       ├── auto-merge.yml       # placeholder 置換済
-│       └── gemini-review.yml    # placeholder 置換済
-├── (label set: ready-for-ai / auto-merge / do-not-merge を GitHub UI で確認)
-└── (Repository Secrets: GH_REVIEW_PAT / GEMINI_API_KEY を GitHub UI で設定)
+│       ├── gemini-review.yml    # placeholder 置換済
+│       └── claude-review.yml    # ★ reviewer 認識合わせで claude を選んだ場合のみ（placeholder 置換済）
+├── .claude/agents/              # ★ claude「tier 段階 Council」を選んだ場合のみ
+│       └── review-*.md          #    review-fetch / difficulty / intent-gate / evidence / persona-{ceo,dev,phil} / judgment（8 個、verbatim コピー）
+├── (label set: ready-for-ai / do-not-merge / human-review-needed を GitHub UI で確認)
+└── (Repository Secrets: GH_REVIEW_PAT / GEMINI_API_KEY / CLAUDE_CODE_OAUTH_TOKEN を GitHub UI で設定)
 ```
+
+> claude-review.yml と `.claude/agents/review-*.md` は **コードレビュアー認識合わせ（上記）で人間が
+> 明示選択した場合のみ**配備される。gemini-review.yml はコード軸ではなく仕様軸を見るので両者は直交し、
+> 併用が推奨。crosscut-council skill（`.claude/skills/crosscut-council/`）は通常の skills コピーで配備済み
+> なので、claude tier 段階 Council の追加配備物は agents 8 個のみ。
 
 ## P3（事後確認・評価）への引き継ぎ
 

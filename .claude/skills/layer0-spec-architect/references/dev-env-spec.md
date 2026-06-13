@@ -752,8 +752,12 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 
 - `templates/github-workflows/auto-merge.yml.template` を `.github/workflows/auto-merge.yml` に配置（placeholder 置換後）
 - `templates/github-workflows/gemini-review.yml.template` を `.github/workflows/gemini-review.yml` に配置（placeholder 置換後）
-- label 自動作成: `ready-for-ai` / `auto-merge` / `do-not-merge`
-- Repository Secrets 設定ガイド表示: `GH_REVIEW_PAT`（Pull requests: Read+Write） / `GEMINI_API_KEY`（Google AI Studio 発行）
+- **コードレビュアー認識合わせ（v5.26.0）**: `autonomous-drive-deployment.md` §コードレビュアー認識合わせで
+  reviewer 構成を人間と擦り合わせる。claude（単発 / tier 段階 Council）を選んだ場合は
+  `claude-review.yml.template` を `.github/workflows/claude-review.yml` に配置（tier 段階 Council 選択時は
+  `.claude/agents/review-*.md` 8 個も verbatim コピー）。gemini と claude は視点直交（仕様軸 vs コード軸）で併用推奨
+- label 自動作成: `ready-for-ai` / `do-not-merge` / `human-review-needed`
+- Repository Secrets 設定ガイド表示: `GH_REVIEW_PAT`（Pull requests: Read+Write） / `GEMINI_API_KEY`（Google AI Studio 発行） / claude-review 配備時は `CLAUDE_CODE_OAUTH_TOKEN`（`claude setup-token`、サブスク・API 追加課金なし）
 - ALLOWED_AUTHORS 確認（hardcode、変更時は spec 改修扱い）
 
 ### autonomous_scope: merge_gated
@@ -767,7 +771,8 @@ repo 側でバージョン昇格（メジャー／マイナー問わず）を行
 
 - 個別指定。spec-architect 対話で各機能を on/off 確認：
   - auto-merge workflow 配置（y/n）
-  - gemini-review workflow 配置（y/n）
+  - gemini-review workflow 配置（y/n、仕様軸）
+  - claude-review workflow 配置（none / 単発コード軸 / tier 段階 Council、§コードレビュアー認識合わせ）
   - destructive change detector（v5.6.x patch 候補、未実装）
   - circuit breaker（v5.6.x patch 候補、未実装）
   - label セット個別カスタマイズ
