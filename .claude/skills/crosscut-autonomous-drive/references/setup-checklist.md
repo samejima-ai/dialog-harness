@@ -27,11 +27,18 @@ python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1])); print('YAML OK')
 
 - 失敗時は配置を中止し、インデント規約（`placeholder-spec.md §インデント規約`）に従って置換値を修正する。
 - `${SENSITIVE_PATHS_REGEX}` にシングルクォート `'` を含めない（bash single-quote 内注入のため。`placeholder-spec.md §bash 注入の安全規約`）。
-  さらに **空でない有効な ERE であること**を deploy 側で確認する（空交替 `||` 等だと `grep -Eq` が常 true となり
-  pre-gate が無効化＝全 PR がフル OC 化する）:
+  さらに **有効な ERE であり、かつ空文字にマッチしないこと**を deploy 側で確認する（`.*` や空交替 `||` 等
+  空文字にマッチする式だと `grep -Eq` が常 true となり pre-gate が無効化＝全 PR がフル OC 化する）。
+  grep の exit code で判定する（`--` で `-` 始まり pattern の option 誤認も防ぐ）:
 
   ```
-  printf '' | grep -E "$SENSITIVE_PATHS_REGEX"; [ $? -le 1 ] && echo "regex OK" || echo "regex INVALID"
+  # printf '\n' = 空行 1 つを入力（"空文字列にマッチするか" を判定。printf '' は 0 行で常に exit 1 になり判定不能）。
+  printf '\n' | grep -E -- "$SENSITIVE_PATHS_REGEX" >/dev/null 2>&1; rc=$?
+  case $rc in
+    0) echo "INVALID: 空文字列にマッチ＝pre-gate 無効化（regex が緩すぎる）" ;;
+    1) echo "OK: 空文字列に非マッチ・ERE 有効" ;;
+    2) echo "INVALID: ERE 構文エラー" ;;
+  esac
   ```
 
 - **`.github/reviews/` を user project の `.gitignore` に追加推奨**（二重防御）。claude-review OC は Channel A artifact を

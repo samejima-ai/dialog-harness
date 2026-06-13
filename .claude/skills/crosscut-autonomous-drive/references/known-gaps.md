@@ -46,7 +46,7 @@ description: |
   まで DH-specific のまま残置する。
 scope: 局所違反（PR #72「視点直交」原則の構造的対称性に対する）
 resolution_planned: v5.12.0 の案 2 (軸 placeholder 化、`adr-001-axis-placeholder-reservation-v5.12.0.md` で予約)
-resolved_at: 2026-06-13
+resolved_at: 2026-06-13T01:00:00Z
 resolved_by: v5.26.0（ADR-002）— `${PROJECT_REVIEW_AXES}` placeholder を gemini-review.yml.template / claude-review.yml.template に注入。spec-architect「コードレビュアー認識合わせ」が SPEC/DONT から重点軸を抽出。
 residual: prompt 内の DH-specific *default* 軸列挙（philosophy 6 条等）は残置し、加算的に project 軸を注入する方式とした。default 文言のフル generic 化（案 2 完全形）は別案件として header 編集ガイドに委譲。
 status: resolved
@@ -84,7 +84,7 @@ affected_files:
   - templates/github-workflows/claude-review.yml.template
   - templates/github-workflows/gemini-review.yml.template
   - .claude/agents/review-*.md
-detected_at: 2026-06-13
+detected_at: 2026-06-13T01:00:00Z
 detected_by: claude-review OC (PR #145 Council review、LOW 4/5 phil/ceo) + copilot
 description: |
   v5.26.0 で claude-review を template 化したことで、DH 本体 `.github/workflows/claude-review.yml` と

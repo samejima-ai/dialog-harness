@@ -12,7 +12,7 @@
 | `${VERIFIER_JOB_NAME}` | 構造的 verifier の job 名（auto-merge.yml の condition 4 で参照） | `verify`（dialog-harness 標準） | プロジェクト固有、対話で確認、デフォルト = `verify` |
 | `${SCOPE_PATHS}` | gemini-review / claude-review / harness-verify が発火する paths（**複数行 YAML リスト**、要インデント注入） | 注入後イメージ:<br>`      - "src/**"`<br>`      - "tests/**"`（各行 6 スペース） | spec-architect 対話で取得 |
 | `${PROJECT_REVIEW_AXES}` | このプロジェクトで特に重視するレビュー軸（claude-review OC prompt / gemini-review prompt の **block scalar 内**に注入。Markdown 箇条書き、**複数行・要インデント**、空可） | 注入後イメージ（各行 12 スペース）:<br>`            - 未検証入力の検出`<br>`            - blocking I/O の禁止` | spec-architect「コードレビュアー認識合わせ」で SPEC/DONT から抽出（v5.26.0、ADR-001/002） |
-| `${SENSITIVE_PATHS_REGEX}` | claude-review routine pre-gate でフル Council に値する sensitive 変更を判定する ERE（**1 行**、bash single-quote 内に注入） | `(^\.github/)\|(^\.claude/)\|(SPEC)\|(DONT)\|(REGIME)` | spec-architect 認識合わせで取得（プロジェクト固有重要パス、v5.26.0） |
+| `${SENSITIVE_PATHS_REGEX}` | claude-review routine pre-gate でフル Council に値する sensitive 変更を判定する ERE（**1 行**、bash single-quote 内に注入。交替は ERE の OR メタ文字） | 正規例は `autonomous-drive-deployment.md` §コードレビュアー認識合わせ (3) のデフォルト式を参照（`grep -E` 前提・OR で複数パスを連結） | spec-architect 認識合わせで取得（プロジェクト固有重要パス、v5.26.0） |
 
 ## 置換規約
 
@@ -35,8 +35,8 @@
   軸は **user project の SPEC/DONT 由来のみ**を入れ、template が既に列挙する汎用軸との**重複表現は除外**する（純度維持）。
 - 一般則: **placeholder トークンが置かれている行頭のインデント幅を、注入値の全行頭に適用する**。
   上の例の「注入後イメージ」はインデント込みの最終形。単純な無インデント文字列をそのまま貼らない。
-- 単一行 placeholder（`${ALLOWED_AUTHORS}` / `${REPO_NAME}` / `${VERIFIER_JOB_NAME}` / `${SENSITIVE_PATHS_REGEX}`）
-  はインデント非依存（その場に 1 行で展開）。
+- 単一行 placeholder（`${ALLOWED_AUTHORS}` / `${REPO_OWNER}` / `${REPO_NAME}` / `${VERIFIER_JOB_NAME}` /
+  `${SENSITIVE_PATHS_REGEX}`）はインデント非依存（その場に 1 行で展開）。
 - template 側コメント行ではトークン化（`${...}`）しない（複数行置換でコメントが分断され壊れるため）。
   実注入点のみ `${...}` を置く（claude-review/gemini-review template 冒頭コメント参照）。
 
