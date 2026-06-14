@@ -18,12 +18,19 @@ on:
       - ".claude/skills/**"
       - "harness-verifier/**"
       - ".github/workflows/harness-verify.yml"
+      # template sync 検証（G-003）: 本体 workflow / 配布 template の変更時に drift を検知
+      - ".github/workflows/**"
+      - "templates/github-workflows/**"
+      - "scripts/check_template_sync.py"
   pull_request:
     branches: [master, main]
     paths:
       - ".claude/skills/**"
       - "harness-verifier/**"
       - ".github/workflows/harness-verify.yml"
+      - ".github/workflows/**"
+      - "templates/github-workflows/**"
+      - "scripts/check_template_sync.py"
   workflow_dispatch: {}
 
 permissions:
@@ -57,6 +64,15 @@ jobs:
         if: steps.mode.outputs.monthly != 'true'
         run: |
           python harness-verifier/verify.py --strict --commit-sha "${{ github.sha }}"
+
+      # template sync 検証（G-003、#150）: 本体 workflow と配布 template の二真実源 drift を
+      # 決定論で gate する。drift があれば exit 1 でジョブ失敗（検知器に強制力を持たせる）。
+      # 除外規約は .claude/skills/crosscut-autonomous-drive/references/placeholder-spec.md を参照。
+      # monthly cron 経路では走らせない（push/PR の変更時に閉じれば十分・cron は harness-verifier 専用）。
+      - name: Check template sync (G-003)
+        if: steps.mode.outputs.monthly != 'true'
+        run: |
+          python scripts/check_template_sync.py --verbose
 
       # 月次経路: report 生成 → commit → ジョブ失敗判定の順で動かす。
       # `continue-on-error: true` で verifier の exit code を保持しつつ、

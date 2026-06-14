@@ -167,6 +167,8 @@ jobs:
           {
             echo "# 必須コンテキストファイル (workflow 事前注入、v5.10.0)"
             echo ""
+            echo "本ファイルは gemini-review.yml が PR レビュー前に集約。MCP 経由の取得を不要にし、レビュー精度を向上させる。"
+            echo ""
           } > .gemini-context/required.md
           for f in SPEC.md DONT.md .claude/skills/layer0-spec-architect/references/philosophy.md; do
             if [ -f "$f" ]; then
@@ -178,6 +180,9 @@ jobs:
                 echo '```'
                 echo ""
               } >> .gemini-context/required.md
+              echo "::notice::Injected: $f"
+            else
+              echo "::notice::Skipped (not found): $f"
             fi
           done
 

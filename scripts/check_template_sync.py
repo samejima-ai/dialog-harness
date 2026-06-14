@@ -110,11 +110,22 @@ HOST_FREEFORM_LINE_PREFIXES = (
 PATHS_KEY_RE = re.compile(r"^\s*paths:\s*$")
 LIST_ITEM_RE = re.compile(r'^\s*-\s')
 
+# プロンプト本文（YAML ブロックスカラ）の起点マーカー。`direct_prompt: |` 等の配下は
+# AI へのレビュー指示文（自然文）で、本体は DH 仕様軸の散文、template は汎用 +
+# ${PROJECT_REVIEW_AXES} 等の自由形式を持つ。両者は本質的に機械同期不能なため
+# ブロックごと比較除外する（#7）。prompt 軸 drift は G-001/G-002 の prompt 軸レビューで
+# 別途担保するという既定方針（本ファイル冒頭 docstring）に従う。インデント深さで範囲確定。
+PROMPT_BLOCK_RE = re.compile(r"^(\s*)(direct_prompt|prompt|append_system_prompt):\s*[|>][-+]?\s*$")
+
 
 def normalize_line(line: str) -> str | None:
     """1 行を正規化。比較対象外なら None を返す（コンテキスト非依存な判定のみ）。
 
     - コメント行（# で始まる、YAML/シェル）・空行は除外（CI 方針はロジックに宿る）
+    - コード行末尾のインラインコメント（` # ...`）も除去（#7）。本体は DH 固有の詳細
+      コメント、template は汎用コメントを持つため、ロジックが一致しても末尾コメント差で
+      drift 誤検知する。ただし文字列リテラル内の `#`（jq 式 `#%s` 等）を壊さないため、
+      クォート（' / "）を含まない行に限定して保守的に除去する。
     - 自由形式 placeholder を含む行は除外（機械正規化困難・偽陽性回避）
     - 本体側の自由形式実値展開行（SENSITIVE= 等）も除外（#4）
     - DH placeholder token / 本体実値（引用 + 一部未引用）を共通 token へ畳む
@@ -125,6 +136,15 @@ def normalize_line(line: str) -> str | None:
         return None
     if stripped.startswith("#"):
         return None
+
+    # コード行末尾のインラインコメントを除去（#7）。クォートを含まない行に限定し、
+    # ` #`（スペース + ハッシュ）以降を落とす。リテラル内 `#`（'Closes #%s' 等）は
+    # クォート存在で除外され安全側に倒れる。
+    if "'" not in stripped and '"' not in stripped and " #" in stripped:
+        stripped = stripped.split(" #", 1)[0].rstrip()
+        if not stripped:
+            return None
+        line = stripped
 
     # 自由形式 placeholder を含む行（template 側）は比較から外す
     for ph in FREEFORM_PLACEHOLDERS:
@@ -164,10 +184,33 @@ def normalized_lines(path: Path) -> list[str]:
     paths: ブロック配下のリスト要素は ${SCOPE_PATHS} に対応するため除外する（#5）。
     `paths:` 行を検出したら、以降の連続するリスト要素（`- ...`）をスキップし、
     インデントが浅い非リスト行が来たらブロックを抜ける。
+
+    direct_prompt/prompt 等の YAML ブロックスカラ配下（AI 指示文の自然文）は機械同期
+    不能なためブロックごと除外する（#7）。`direct_prompt: |` のインデント深さを記録し、
+    それより深い行（およびブロック内空行）はスキップ、同深度以下の非空行で離脱する。
     """
     out: list[str] = []
     in_paths_block = False
+    prompt_indent: int | None = None  # プロンプトブロック内なら起点行のインデント幅
     for raw in path.read_text(encoding="utf-8").splitlines():
+        # プロンプトブロック内の処理（最優先・インデント深さで範囲確定）
+        if prompt_indent is not None:
+            if not raw.strip():
+                continue  # ブロック内空行はスキップ
+            indent = len(raw) - len(raw.lstrip())
+            if indent > prompt_indent:
+                continue  # 起点より深い = プロンプト本文 → 除外
+            prompt_indent = None  # 同深度以下 → ブロック終了、通常処理へフォールスルー
+
+        m = PROMPT_BLOCK_RE.match(raw)
+        if m:
+            # `direct_prompt: |` 行自体は構造として残し、配下本文を除外開始
+            prompt_indent = len(m.group(1))
+            n = normalize_line(raw)
+            if n is not None:
+                out.append(n)
+            continue
+
         if PATHS_KEY_RE.match(raw):
             # paths: 行自体は構造ヘッダとして比較に残す（キーの有無は方針差）
             in_paths_block = True

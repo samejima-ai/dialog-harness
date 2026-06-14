@@ -88,7 +88,9 @@ jobs:
       github.event.pull_request.user.login != 'dependabot[bot]' &&
       github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30  # 条件 3.5 の全 CI 完了ポーリングを吸収。最長の check（claude-review 等）の
+                         # 実行時間を待ち切れる値に揃える。短い timeout だと長い review 中に exit→
+                         # 再 trigger が来ず永続未 merge になる。
     # job レベル env: gh CLI に必要な認証 + repo 指定（v5.5.3 PR #42 初回 run で
     # checkout なし環境で gh pr view が "not a git repository" fatal を起こした
     # ため、GH_REPO で git context 不要にする）
@@ -157,7 +159,9 @@ jobs:
           set -euo pipefail
 
           # PR 詳細を一括取得
-          PR_JSON=$(gh pr view "$PR_NUMBER" --json author,labels,isDraft,state,statusCheckRollup,reviewDecision,title)
+          # field set は初回と条件 3.5 のポーリング再取得で共用（マジック文字列の二重定義回避）
+          PR_FIELDS="author,labels,isDraft,state,statusCheckRollup,reviewDecision,title"
+          PR_JSON=$(gh pr view "$PR_NUMBER" --json "$PR_FIELDS")
 
           # 条件 7: PR state OPEN
           STATE=$(echo "$PR_JSON" | jq -r '.state')
@@ -186,6 +190,58 @@ jobs:
             echo "::notice::author '$AUTHOR' が ALLOWED_AUTHORS 外。skip（信頼済 list 拡張は spec-architect 経由）。"
             exit 0
           fi
+
+          # 条件 3.5（全 CI 完了待ち）: 自分（evaluate）以外の **全 check** が COMPLETED に
+          # なるまで、その場でポーリングして待つ。timeout 到達時のみ exit 0
+          # （次の push / label / review event で再評価）。
+          #
+          # ねらい:
+          # - verify / review だけでなく copilot-pull-request-reviewer 等
+          #   **すべての CI 処理の完了を待ってから** merge する（早すぎる merge の防止）。
+          # - その check が走らない PR でも正常動作する: rollup に現れない＝
+          #   pending 集合に入らないだけで、待機対象が減るだけ（「無い場合も反応する」）。
+          # - 自分自身（"evaluate" job）は実行中 IN_PROGRESS で rollup に
+          #   居るので必ず除外する（自己待ちの deadlock 回避）。
+          #
+          # 背景（race）: 条件 4/5 の `.conclusion` 抽出は「rollup に不在」と「存在するが pending
+          # （conclusion=null）」を区別できず、check 反映/完了前に evaluate が走ると未走行と誤判定して
+          # skip していた（全 check 緑・clean なのに未 merge で滞留）。
+          # event 依存にしない理由: GITHUB_TOKEN ベースの Actions の check_suite:completed は
+          # loop 防止で本 workflow を再 trigger しない。ゆえに pending 検知→exit→event 待ちだと
+          # 永続待機になる。よって step 内ポーリングで確定させる。
+          POLL_MAX_WAIT=1500  # 最大待機秒（25min）。最長の check を同一 run 内で待ち切る。
+                              # timeout-minutes(30) 内に merge まで収まる値に揃える。
+          POLL_INTERVAL=15
+          poll_elapsed=0
+          while :; do
+            # 自分（評価 job）を除く全 check のうち未完了
+            # （CheckRun: status != COMPLETED / StatusContext: state == PENDING）の件数
+            PENDING=$(echo "$PR_JSON" | jq -r '
+              [ .statusCheckRollup[]?
+                | select((.name // .context) != "evaluate")
+                | select(
+                    (.__typename == "CheckRun"      and .status != "COMPLETED") or
+                    (.__typename == "StatusContext"  and .state  == "PENDING")
+                  )
+              ] | length')
+            if [ "$PENDING" -eq 0 ]; then
+              break   # 全 check 完了（or 自分以外不在）→ 条件 4 以降へ
+            fi
+            if [ "$poll_elapsed" -ge "$POLL_MAX_WAIT" ]; then
+              echo "::notice::PR #$PR_NUMBER の CI が ${POLL_MAX_WAIT}s 経過しても未完了（pending=$PENDING 件）。skip（次の push/label/review event で再評価）。"
+              exit 0
+            fi
+            echo "::notice::PR #$PR_NUMBER の CI 未完了（pending=$PENDING 件）。${POLL_INTERVAL}s 待機して再確認...（経過 ${poll_elapsed}s）"
+            sleep "$POLL_INTERVAL"
+            poll_elapsed=$((poll_elapsed + POLL_INTERVAL))
+            # 最新の rollup を取り直す（後続の条件 4/5/6 もこの最新 PR_JSON を使う）。
+            # gh の transient failure では前回 PR_JSON を保持して継続（red CI にしない設計）。
+            if NEW_JSON=$(gh pr view "$PR_NUMBER" --json "$PR_FIELDS" 2>/dev/null); then
+              PR_JSON="$NEW_JSON"
+            else
+              echo "::warning::gh pr view が一時失敗。前回 rollup で継続（次反復で再取得）。"
+            fi
+          done
 
           # 条件 4: harness-verify が走った場合は SUCCESS 必須（Copilot review #42 line 145）
           # 旧版は「SUCCESS 必須」と書いていたが、harness-verify.yml の paths filter は
