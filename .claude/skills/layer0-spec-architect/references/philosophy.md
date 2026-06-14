@@ -215,9 +215,37 @@ AI が自己解決不能な技術的例外に遭遇した場合の献上物。�
 以下の判断は Council で代替不可。harness の起点と分岐点に関わる。
 
 - **H1 哲学変更**: philosophy.md の改訂
-- **H2 ルール変更**: CLAUDE.md / SPEC.md / DONT.md の根本書き換え
+- **H2 ルール変更**: CLAUDE.md の根本書き換え、および DONT.md の**禁止境界そのものの定義変更**（「何を AI に禁じるか」の線引きの書き換え＝委譲境界の一種）
 - **H3 方向性発案**: 新プロジェクト立ち上げ、次の方向性の発案
 - **H4 根本設計見直し**: ARC 切替、モード昇格・降格、L2 発動
+
+> **v6.0.0 注（H2 と第 9 条 L-FULL の境界）**: SPEC.md / DONT.md の**通常改変**（機能追加・修正に伴う仕様
+> 追記、禁止項目の個別追加で既存境界の枠内に収まるもの）は第 9 条で **L-FULL（全自律）** に属す（PR diff で
+> 可視化され revert 可能＝可逆領域）。H2 が人間専管に固定するのは、**DONT.md の禁止境界そのものの定義変更**
+> （「何を AI に禁じるか」の線引きを動かす書き換え）と CLAUDE.md の根本書き換えに限る。前者は委譲線を動かす
+> 行為であり、§憲法の自己改訂禁止と同型の「止める基準そのものの変更」にあたるため L-FROZEN 同等で扱う。
+> 通常の SPEC/DONT 改変（可逆・枠内）と、禁止境界の定義変更（不可逆・枠の書き換え）を混同しないこと。
+
+### 憲法の自己改訂禁止（v6.0.0 で本文へ刻む不変条項）
+
+**dialog-harness は、自らの委譲境界を定義する文書を自ら改訂できない。** 以下の 3 文書の改訂は
+AI が提案 PR すら作らず人間専管に固定する（第 9 条 委譲境界原則の L-FROZEN 領域）:
+
+- `philosophy.md`（本憲法 = 何が H カテゴリ＝人間専管かを定義する）
+- `crosscut-autonomous-drive/references/delegation-boundary.md`（委譲線を定義する）
+- `crosscut-autonomous-drive/references/auto-merge-boundary.md`（PR 単位 merge 境界を定義する）
+
+理由は再帰の遮断にある。AI が「何を人間が握るか」を定義する文書を改訂できると、AI が「止める基準
+そのもの」を書き換えられ、merge ブロックを人間が握っていても止め忘れ 1 回で基準が変質する。その後は
+「revert すべきと判断する基準」が既に変わっており、可逆性が原理的に成立しない。可逆性が成立しない
+領域では merge ゲートではなく **起票ゲート**（PR を作る段階で人間専管）で止める。これは第 8 条
+「採用判断は AI 禁止」の哲学的延長であり、第 9 条で委譲境界として憲章化する。
+
+> **段階性（Council `council-2026-06-14T-delgbd` 哲学者 minority + 利用者判断）**: v6.0.0 では
+> philosophy.md は **L-FROZEN-PHIL（段階固定）**＝AI 提案 PR も不可。ただし 2026-11-06 の roll-back
+> 評価ゲート（v5.9.0 auto-merge 反転の経験的検証）完了 + Council 再諮問の承認を経れば、将来 L-GATE
+> （AI 提案 PR + 人間 merge）へ緩和される余地を残す。本ファイルと境界 SPEC 自身（L-FROZEN-META）は
+> 恒久固定で、この緩和対象に含まない。
 
 ### Council 代替可能判断（C カテゴリ）
 
@@ -463,6 +491,69 @@ Wave 4 末で「3 段階運用の Council 経由率 ≤ 20%」観測時、Wave 5
 
 ---
 
+## 第9条 委譲境界原則（可逆性ベース）
+
+**AI への権限委譲は「原状回復できるか」だけで線を引く**。権限の重大さ・領域の格ではなく、
+**revert / 修正で原状回復が原理的に可能か**を唯一の判定軸とする。
+
+```
+原状回復が可能       → 委譲（実行 → 出力後修正で拾う）
+原状回復が原理的に不能 → 委譲しない（事前ゲート / 人間専管で固定）
+```
+
+### 出力後修正モデル（事前ゲートからの重心移動）
+
+可逆領域では、AI は実行 → PR 作成まで無言で走り、問題は **成果物が出てから人間が修正 / revert** で
+拾う。事前に全件を人間が確認する opt-in モデルから、**実行 → 事後確認**モデルへ重心を移す。流速優先。
+「9 割は推奨でいい」という観測は **可逆領域に限って**「委譲してよい」を含意する。無関心は同意ではなく
+（第 4 条 人間 = 意図共有）、沈黙が承認に化けてよいのは後から取り消せる出力に限られる。
+
+### 4 委譲レベル
+
+| レベル | 領域 | 委譲 | 根拠 |
+|--------|------|------|------|
+| **L-FULL 全自律** | コード / テスト / docs / history / delivery / **SPEC.md・DONT.md の通常改変（枠内）** | 実行 → PR、出力後修正で拾う | revert で原状回復可能 |
+| **L-GATE 事前ゲート** | 不可逆操作（DB migration / 削除 / 保護ブランチ force push / secrets 削除 / 外部 API 破壊） | PR 作成前に発話確認 | revert 不能 |
+| **L-FROZEN-PHIL 段階固定** | philosophy.md 改訂、**DONT.md の禁止境界の定義変更**（H2） | 人間専管（ゲート後再諮問まで AI 提案 PR も不可） | 段階性 / 委譲線変更（観測フェーズ尊重） |
+| **L-FROZEN-META 不変固定** | 委譲境界 SPEC 自身（delegation-boundary / auto-merge-boundary / 本条） | 人間専管・恒久固定 | 自己改訂禁止（第 6 条） |
+
+> **L-FULL の SPEC/DONT「枠内」とは**: 機能追加・修正に伴う仕様追記、既存禁止境界の枠内での個別項目追加を
+> 指す（可逆・revert 可能）。DONT.md の**禁止境界そのものの定義変更**（「何を AI に禁じるか」の線引きを動かす）
+> は L-FROZEN-PHIL に属し、第 6 条 H2 で人間専管（§憲法の自己改訂禁止と同型の「止める基準の変更」）。
+
+### 第 8 条との接続
+
+本条は第 8 条「採用判断は AI 禁止」を**領域軸へ展開**したものである。第 8 条が「自律拡張の採用判断」
+という行為を人間に固定したのに対し、本条は「どの領域が可逆か」で委譲線を引く。L-FROZEN（自己改訂禁止）
+は第 8 条の採用判断禁止が委譲境界 SPEC へ適用された具体形にあたる。
+
+### 境界の SPEC 不変化
+
+委譲境界の具体分類・運用制約・監視指標は **AI が動かせない不変 SPEC** として
+`crosscut-autonomous-drive/references/delegation-boundary.md` に集約する（一次情報源）。本条はメタ層
+（可逆性で線を引く原則）のみを語り、具体境界は境界 SPEC に委ねる。境界 SPEC 自身の改訂は L-FROZEN-META。
+
+### local / github
+
+委譲度は local / github で同一（どちらも L-FULL）。違いは**検証手段のみ**（local = hook / lint /
+型、github = sub_agent_review + 軽量機械 CI）。local の commit が無確認で走れるのは commit が
+ローカルで revert / amend / squash 可能な可逆操作だからであり、push して公的空間に出た時点で
+sub_agent_review を必ず通す。自律走行中の試行錯誤 commit 列は PR 化時に **squash** で 1 論理単位へ畳む
+（誤 commit を公的履歴に永続させない）。
+
+### 決定論の保全（第 2 条との整合）
+
+「CI を sub_agent_review に転換」は**判断の集約であって決定論検査の廃止ではない**。型 / lint / test /
+harness-verify（構造健全性）は第 2 条「計算的解決を最優先」に従い CI に残す。コード品質 / 仕様合致 /
+Council 判断のみ sub_agent_review へ集約する。決定論で解ける検査を確率的レビューで置換してはならない。
+
+**根拠**: Council 諮問 `council-2026-06-14T-delgbd`（business / category=conception / phase_1 /
+unanimous 案C ハイブリッド境界 SPEC / weighted_score 7.80 / judgment_confidence 0.72、6 必須制約条件 +
+哲学者 minority による段階性）。roll-back 評価ゲートは 2026-11-06（v5.9.0 auto-merge 反転と同一日）に
+必須。詳細は `delegation-boundary.md`。
+
+---
+
 ## 参照関係
 
 本philosophy.md は L0 配下に原典を置き、他skillは**参照のみ**する。内容転記は禁止（散逸の原因）。
@@ -488,7 +579,10 @@ Wave 4 末で「3 段階運用の Council 経由率 ≤ 20%」観測時、Wave 5
        │
        ├── crosscut-council/SKILL.md（第6条）
        ├── crosscut-council/references/consensus-protocol.md（第6条の CTL 連動分岐）
-       └── crosscut-council/references/ctl-calculation.md（第6条の CTL 算出）
+       ├── crosscut-council/references/ctl-calculation.md（第6条の CTL 算出）
+       │
+       ├── crosscut-autonomous-drive/references/delegation-boundary.md（第6条 自己改訂禁止・第9条 委譲境界の一次情報源）
+       └── crosscut-autonomous-drive/references/auto-merge-boundary.md（第7条・第9条の PR 単位 merge 境界）
 ```
 
 各skillからの参照例：
@@ -496,3 +590,5 @@ Wave 4 末で「3 段階運用の Council 経由率 ≤ 20%」観測時、Wave 5
 - 「Shift Left の詳細は philosophy.md §2 を参照」
 
 本ファイルの**既存条**の責務再定義・削除は major 昇格（vN.0 → v(N+1).0）案件として扱う（後方互換破壊を伴うため）。新規条の追加は後方互換破壊を伴わない場合に限り minor 昇格で扱う（v4.2 第6条追加 / v5.6.0 第7条追加が該当）。
+
+**v6.0.0（major）の改訂**: 第 6 条本文へ「憲法の自己改訂禁止」不変条項を追加（既存条の責務再定義 = H カテゴリの委譲モデルを「人間専管」から「自己改訂禁止 + 可逆領域は委譲」へ再定義）＋ 第 9 条「委譲境界原則」新設。後方互換破壊（権限委譲の重心反転）を伴うため major 昇格。本改訂自体が H1（哲学変更）であり、Council 諮問 `council-2026-06-14T-delgbd`（案C 全会一致）を経て人間最終承認で確定する。

@@ -2,6 +2,80 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v6.0.0：権限委譲境界の確立（可逆性ベース・major）(in progress)
+
+利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は成果物
+出力後修正にする／DH は重大な事象にのみ人間が判断／哲学・設計・UIUX を L0 で決めて Harness 形成後は
+明示 L0 起動以外フルアクセス権限委譲オートドライブ／ローカルと github を明確に分けて再設定／github では
+CI 削除し sub_agent_review に転換」を起点に、DH 自身の権限構造を反転する major リリース。Council 諮問
+`council-2026-06-14T-delgbd`（business / category=conception / phase_1 / unanimous 案C / weighted_score
+7.80 / judgment_confidence 0.72）で **案C ハイブリッド境界 SPEC** が全会一致採択。
+
+### 設計意図の核
+
+**(a) 可逆性が唯一の委譲判定軸（第 9 条新設）**: 委譲してよいかを「権限の重大さ・領域の格」ではなく
+**revert / 修正で原状回復が原理的に可能か**だけで決める。Council 3 ペルソナ（経営者=リスク / 開発者=
+可逆性 / 哲学者=倫理）が独立に同じ軸へ収束した。「9 割は推奨でいい」は **可逆領域に限って**「委譲して
+よい」を含意する（無関心 ≠ 同意・哲学者）。
+
+**(b) 出力後修正モデルへの重心移動**: 可逆領域では AI は実行 → PR 作成まで無言で走り、問題は成果物が
+出てから人間が修正 / revert で拾う。事前に全件確認する opt-in から実行 → 事後確認へ。SPEC.md / DONT.md
+改変を v5.9.0 までの opt-in（事前ゲート）から **L-FULL（全自律）へ移す**（PR diff で可視化 → revert 可能
+= 可逆領域）。
+
+**(c) 4 委譲レベル**: L-FULL 全自律（コード/テスト/docs/history/delivery/SPEC/DONT）/ L-GATE 事前ゲート
+（不可逆操作のみ）/ L-FROZEN-PHIL 段階固定（philosophy 改訂、ゲート後再諮問まで AI 提案 PR も不可）/
+L-FROZEN-META 不変固定（委譲境界 SPEC 自身、恒久人間専管）。
+
+**(d) 憲法の自己改訂禁止（第 6 条本文へ刻む）**: AI が「何を人間が握るか」を定義する 3 文書
+（philosophy / delegation-boundary / auto-merge-boundary）を改訂できると、AI が「止める基準そのもの」を
+書き換えられ、merge ブロックを人間が握っても止め忘れ 1 回で基準が変質する（可逆性が原理的に不成立）。
+可逆性が成立しない領域は merge ゲートでなく **起票ゲート**（PR 作成段階で人間専管）で止める。第 8 条
+「採用判断は AI 禁止」の哲学的延長を第 9 条で領域軸へ展開。
+
+**(e) 段階性（哲学者 minority + 利用者判断）**: 当初要望は philosophy 改訂すら AI 提案 PR 可（H カテゴリ
+反転）だったが、**今回は H 拡張を見送り**境界 SPEC 確立 + SPEC/DONT 自律化まで。philosophy は
+L-FROZEN-PHIL（段階固定）に留め、2026-11-06 roll-back 評価ゲート（v5.9.0 auto-merge 反転の経験的検証）
+完了後に再諮問する。第 8 条「観測 → 候補化 → 人間承認」の観測フェーズを飛ばさない。
+
+**(f) local/github は権限差でなく検証手段差**: どちらも L-FULL（全自律）。local = hook/lint/型、
+github = sub_agent_review + 軽量機械 CI。local commit が無確認で走れるのは revert/amend/squash 可能な
+可逆操作だから。push 時に sub_agent_review を必ず通し、試行錯誤 commit 列は **squash** で 1 論理単位へ畳む。
+
+**(g) CI スリム化 = 判断の集約であって決定論検査の廃止ではない（第 2 条整合）**: 型/lint/test/
+harness-verify（構造健全性）は CI に残す。コード品質/仕様合致/Council 判断のみ sub_agent_review へ。
+sub_agent_review 基盤（claude-review 4 フェーズ + agents/review-* 8 個 + gemini-review）は v5.26.0 で
+既に完成・稼働中ゆえ新規構築せず、CI に残す決定論検査の範囲を明文化するに留まる。
+
+### Council 6 必須制約条件
+
+C-1 境界改訂権は人間専管・SPEC 不変化 + roll-back 閾値で機械監視（経営者）/ C-2 opt-in 縮小は不可逆操作
+のみ・local は squash 前提（開発者）/ C-3 境界 SPEC 改変 PR の独立レビュー担保（開発者・self-review の罠）/
+C-4 決定論検査を確率的 review で置換しない（開発者）/ C-5 レビュアー誤判定率を月次計測し roll-back 指標へ
+（経営者）/ C-6 憲法の自己改訂禁止を第 6 条本文へ（哲学者）。すべて `delegation-boundary.md` + philosophy
+第 6・9 条に実装。
+
+### roll-back 評価ゲート（2026-11-06、v5.9.0 と同一日）
+
+暗黙 merge 事故 / AI 判定漏れ率 / 境界曖昧化 / **レビュアー誤判定率（v6.0.0 追加）** の 4 指標で評価。
+閾値超過で L-FULL の SPEC/DONT 改変を L-GATE へ戻す等の段階縮退を検討（philosophy 改修を伴う場合は
+L-FROZEN-PHIL ゆえ人間専管起票）。
+
+### 改修内容
+
+- `crosscut-autonomous-drive/references/delegation-boundary.md`（新規・本体）
+- `philosophy.md` 第 6 条本文「憲法の自己改訂禁止」+ 第 9 条「委譲境界原則」新設 + 参照関係・改訂規定更新
+- `auto-merge-boundary.md` に上位境界（delegation-boundary）への接続注記
+- `VERSION` 5.26.0 → 6.0.0
+- 履歴層 4 ファイル（INTENT / CHANGELOG / COUNCIL-LOG / REGIME-LOG）
+
+### 温存（次サイクル / ゲート後）
+
+- **H カテゴリ反転（philosophy を L-FROZEN-PHIL → L-GATE へ）**: 2026-11-06 ゲート後に Council 再諮問
+- **local/github 分離の REGIME.md scaffold 具体化**: dev-env-spec への検証手段差テーブル展開は本 PR で方針
+  のみ、利用者プロジェクトへの scaffold 具体化は次 minor
+- **レビュアー誤判定率の sensor 化**: 本 PR は手動運用、PR3 で sensor 化候補
+
 ## v5.24.0：E2E 情報代謝サイクルの正式機構化 (in progress)
 
 v5.23.0 §9 で「温存」としたテスト情報代謝を、利用者要望（履歴を含む一連のサイクル + 代謝考慮設計）を受けて

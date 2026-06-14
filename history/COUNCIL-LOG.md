@@ -2332,3 +2332,47 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-06-11T05:35:00Z"
   cascade_to: "L0/spec-architect で history-layer-spec.md と metabolism-regime.md を改訂し、frontmatter スキーマ + 索引収穫プロトコル + 哲学者3要件を正式設計する SPEC 改訂タスク。実装（runtime/migration）はさらに別 PR。"
+
+- invocation_id: "council-2026-06-14T-delgbd"
+  timestamp: "2026-06-14T00:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "DH 自身の権限構造を『重大事象のみ人間判断・9割は AI 自律』へ反転すべきか（philosophy 第6/7/8条の同時改訂、SPEC/DONT/philosophy 改変の委譲レベル）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_1"
+  conflict_type: "unanimous"
+  decision_category: "C2"
+  options:
+    - "案A 全面反転（philosophy 改訂も AI 提案 PR 可、opt-in は不可逆操作のみ）"
+    - "案B 段階反転（philosophy だけ人間ゲート、SPEC/DONT は AI 自律）"
+    - "案C ハイブリッド境界 SPEC（AI が動かせない不変境界を SPEC 化、境界改訂のみ人間専管固定）"
+  persona_summary:
+    経営者: { stance: "案C", confidence: 0.74, dimension: "リスク", note: "案A は天井無限化でテールリスク定量不能。案C は流速便益と障害コスト上限を両取り（auto-merge-boundary と同型）" }
+    開発者: { stance: "案C", confidence: 0.86, dimension: "可逆性", note: "案A の philosophy 自己改訂 PR は第3条『実装者≠独立レビュアー』を構造破壊。境界改訂のみ人間専管固定で可逆性担保" }
+    哲学者: { stance: "案C（憲法の自己改訂禁止を第6条本文へ刻む条件付き）", confidence: 0.60, dimension: "倫理", note: "H カテゴリは harness の起点と分岐点。憲法を AI が改訂できる再帰は『止める基準そのもの』を書き換える構造。可逆領域だけ委譲" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    final_weights: { 経営者: 3, 開発者: 3, 哲学者: 5 }
+    scores:
+      - stance: "案C ハイブリッド境界 SPEC"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.80
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.74 }
+          - { persona: "開発者", weight: 3, confidence: 0.86 }
+          - { persona: "哲学者", weight: 5, confidence: 0.60 }
+    max_score_stance: "案C ハイブリッド境界 SPEC"
+    tie_break_applied: false
+  recommended: "案C ハイブリッド境界 SPEC を採用。可逆性ベースで委譲線を引き、AI が動かせない不変境界（delegation-boundary.md）を SPEC 化、境界改訂のみ人間専管固定。6 必須制約条件 C-1〜C-6 を実装前提とする。"
+  minority_opinion: "哲学者: 6ヶ月後 roll-back ゲート（2026-11-06）前に H カテゴリ反転を広げると v5.9.0 反転の経験的検証が未完のまま次の不可逆段を踏む（第8条 観測フェーズ飛ばし）。段階的展開と『憲法の自己改訂禁止』の第6条本文明文化を採用条件とする。"
+  weight_note: "conception カテゴリで哲学者 +2 加重（3/3/5）。全会一致のため案C が唯一の有支持 stance。哲学者（最大重み）が条件付き支持・confidence 0.60 のため judgment_confidence は 0.72 帯。"
+  judgment_confidence: 0.72
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "agreed_with_modification"
+  final_decision: "council≒人間合意（philosophy 第6条）。案C 採用 + 段階性（境界 SPEC は v6.0.0 で確立・SPEC/DONT は L-FULL 自律化、philosophy 改訂の H 反転は 2026-11-06 ゲート後に再諮問）。本判定は H1（哲学変更）ゆえ人間最終承認で確定。"
+  follow_up_questions_count: 0
+  agreed_at: "2026-06-14T00:00:00Z"
+  cascade_to: "delegation-boundary.md 新規 + philosophy 第6条/第9条 + VERSION 6.0.0 + 履歴層4ファイル。H カテゴリ反転は roll-back ゲート後の別サイクル。"

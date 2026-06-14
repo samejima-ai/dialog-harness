@@ -2,6 +2,21 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v6.0.0（major 昇格、権限委譲境界の確立・可逆性ベース）
+
+- 判定日: 2026-06-14
+- AI 能力バージョン: claude-opus-4-8（1M context）
+- 改修主体: layer0-spec-architect 対話セッション（L0 メタスキル開発・権限構造の根幹改訂）
+- 起源: 利用者要請「L0 自己適用の自動化を大幅に進める／9 割推奨・1 割出力後修正／重大事象のみ人間判断／
+  Harness 形成後はフルアクセス権限委譲オートドライブ／local と github 分離／CI 削除し sub_agent_review 化」
+- major 昇格の根拠: philosophy 既存条（第 6 条 H カテゴリの委譲モデル）の責務再定義 = 後方互換破壊。
+  「H = 人間専管（Council 代替不可）」を維持しつつ「自己改訂禁止 + 可逆領域は L-FULL 委譲」へ再定義し、
+  第 9 条「委譲境界原則」を新設。改訂規定（既存条の責務再定義は major）に準拠。
+- Council: `council-2026-06-14T-delgbd`（business / conception / unanimous 案C / weighted_score 7.80 /
+  judgment_confidence 0.72 / consensus_mode auto_agree）。本判定は H1（哲学変更）ゆえ人間最終承認で確定。
+- 段階性: H カテゴリ反転（philosophy を AI 提案 PR 可へ）は本 PR で見送り、2026-11-06 roll-back ゲート後に再諮問。
+- roll-back 評価ゲート: 2026-11-06（v5.9.0 auto-merge 反転と同一日、4 指標で評価）
+
 ## v5.18.0（minor 昇格、Supabase ローカル開発の推奨オプション化）
 
 - 判定日: 2026-05-24
