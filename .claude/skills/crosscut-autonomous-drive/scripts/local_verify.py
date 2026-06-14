@@ -138,8 +138,10 @@ def main() -> int:
     payload = read_payload()
     tool = tool_name(payload)
 
-    # 編集系 tool 以外は検証しない（観測でも block でもない、ただの素通り）
-    if tool and tool not in EDIT_TOOLS:
+    # 編集系 tool のときだけ検証する（それ以外は素通り）。
+    # tool 名が取れない（空 = payload 空/壊れ/キー名差異）場合も素通りにする:
+    # 想定外 payload で毎回 verify が走るとノイズ・負荷になるため安全側に倒す（Copilot #148 指摘）。
+    if tool not in EDIT_TOOLS:
         return 0
 
     root = repo_root()

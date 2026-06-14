@@ -113,15 +113,12 @@ def cmd_record(args) -> int:
     rec = {
         "id": new_id(),
         "pr": args.pr,
-        "month": args.month,  # 記録対象月（YYYY-MM、省略時は要指定）
+        "month": args.month,  # 記録対象月（YYYY-MM）。CLI で required=True
         "reviewer_verdict": args.reviewer_verdict,
         "reviewer_confidence": args.reviewer_confidence,
         "actual_level": None,  # 人間が judge で付与
         "judged": False,
     }
-    if not rec["month"]:
-        sys.stderr.write("--month YYYY-MM を指定してください（記録対象月）\n")
-        return 2
     write_record(rec)
     print(f"記録: id={rec['id']} PR#{rec['pr']} verdict={rec['reviewer_verdict']} "
           f"(month={rec['month']}, 未評価)")
@@ -194,8 +191,8 @@ def cmd_report(args) -> int:
         f"- 判定: {'要再評価（閾値超過）' if over else '閾値内'}",
         f"- 未突合（律速段階の残り）: {unjudged}",
         "",
-        "> 出典: delegation-boundary.md §5 / v6.0.0 経営者 C-5。"
-        "2026-11-06 roll-back 評価ゲートの計測根拠。",
+        "> 出典: delegation-boundary.md §5 / v6.0.0 経営者 C-5。",
+        "> 2026-11-06 roll-back 評価ゲートの計測根拠。",
         "> 生データは user-scope に閉じ、本サマリは数値のみ（プライバシー配慮）。",
         "",
     ]
