@@ -98,5 +98,39 @@ description: |
         落ち得る（`|| echo 0` fail-safe）。本体・template の同一箇所を同期修正する。
 scope: 構造的不整合（二真実源の同期保証欠如）
 resolution_planned: 未定（drift 検知 CI もしくは generator 化。本体側に version stamp ヘッダ + setup-checklist 照合手順の追加を検討。F1 振り返り儀式で棚卸し）
+resolved_at: 2026-06-14T00:00:00Z
+resolved_by: v6.0.1 — `scripts/check_template_sync.py` で drift 検知機構を設置（resolution_planned の「drift 検知」案を採用）。placeholder 正規化 + コメント/空行除去後の実質ロジック行をマルチセット比較し、本体↔template の片側のみに在る行を drift として exit 1 で検知。意図的非対称（DH 固有 harness-verify.yml / 配布専用 issue-quality-gate.yml.template）はペア除外。
+residual: 検知機構の設置が G-003 のスコープ。**検知された実 drift の修正は G-004 へ分離**（auto-merge の CI ポーリング待機ロジック等が本体のみに存在）。(a) claude-review allowed_tools の glob 化、(b) pre-gate awk の pipefail fail-safe も G-004 で本体↔template 同期修正する。
+status: resolved
+```
+
+### G-004: 本体 ↔ template の実 drift（G-003 検知機構が初回検出）
+
+```yaml
+id: G-004
+title: check_template_sync.py が検出した本体↔template の実機能 drift（auto-merge 待機ロジック等）
+affected_files:
+  - .github/workflows/auto-merge.yml
+  - templates/github-workflows/auto-merge.yml.template
+  - .github/workflows/claude-review.yml
+  - templates/github-workflows/claude-review.yml.template
+  - .github/workflows/gemini-review.yml
+  - templates/github-workflows/gemini-review.yml.template
+  - .github/workflows/issue-pickup.yml
+  - templates/github-workflows/issue-pickup.yml.template
+detected_at: 2026-06-14T00:00:00Z
+detected_by: scripts/check_template_sync.py 初回実行（G-003 解消で設置した検知機構）
+description: |
+  G-003 で設置した同期検証が、本体のみに存在し template に伝播していない実機能を検出:
+    - auto-merge: 本体に CI ポーリング待機ロジック（POLL_MAX_WAIT=1500 / 25min 待機・
+      pending check 検出後リトライ）が実装済みだが template に無い（実害大。配布先の
+      auto-merge が check 完了を待たずに判定し得る）。
+    - gemini-review: 本体にファイル注入の notice ログ等があるが template に無い。
+    - claude-review / issue-pickup: 各数行の drift（要精査、一部は正規化漏れの偽陽性可能性）。
+  これらは G-003 の resolution（検知機構設置）とは別作業。template 改変は配布先の
+  再 deploy を要する（placeholder-spec.md: 既存挙動変更は major 寄り）ため、1 ファイルずつ
+  本体↔template を慎重に突合して同期する。併せて G-003 residual の (a)(b) も本案件で対応。
+scope: 構造的不整合（二真実源の実 drift。検知済・未修正）
+resolution_planned: 別 PR で本体↔template を 1 ファイルずつ同期。`check_template_sync.py --verbose` を突合の起点にする。偽陽性（正規化漏れ）は同スクリプトの正規化規則を改善して切り分ける
 status: open
 ```
