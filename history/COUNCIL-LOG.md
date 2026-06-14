@@ -2386,7 +2386,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   council_type: "business"
   category: "maintenance"
   category_fallback: false
-  phase_reached: "phase_1→3"
+  phase_reached: "phase_3"
   conflict_type: "simple_conflict"
   options:
     - "A案 #4/#5/#6 対応のみコミット、残り本物 drift は別Issue化（PRスコープ純化）"
@@ -2417,6 +2417,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   judgment_confidence: 0.78
   human_escalated: false
   consensus_mode: "auto_agree"
-  implementer_consent: "pending"
   final_decision: null
   follow_up_questions_count: 0
+  # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
+  implementer_consent: null
