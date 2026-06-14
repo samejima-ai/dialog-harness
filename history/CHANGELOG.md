@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 2026-06-14 権限委譲境界の確立（可逆性ベース・v6.0.0、major 昇格、in progress, target 2026-06-14）
+## 2026-06-14 権限委譲境界の確立（可逆性ベース・v6.0.0、major 昇格、released 2026-06-14、PR #147/#148 merged + #153 で配布機構実体化完了）
 
 利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は出力後修正／
 重大事象のみ人間判断／Harness 形成後は明示 L0 起動以外フルアクセス権限委譲／local と github を明確分離／
@@ -25,6 +25,16 @@ github は CI 削除し sub_agent_review に転換」を起点に、DH 自身の
 
 変更ファイル: `crosscut-autonomous-drive/references/delegation-boundary.md`（新規）/ `philosophy.md`（第 6 条 +
 第 9 条 + 参照関係 + 改訂規定）/ `auto-merge-boundary.md`（上位境界注記）/ `VERSION`（6.0.0）/ 履歴層 4 ファイル。
+
+**配布機構の実体化完了（PR #153、released 確定の根拠）**: 委譲境界方針の下で自律駆動を実用化するには、
+配布する autonomous-drive 機構（issue-pickup / claude-review / gemini-review / auto-merge / issue-quality-gate）の
+本体↔template 同期と CI 強制力が前提。本 PR で known-gaps G-001〜G-004 を全 resolved 化:
+- G-004（本体↔template 実 drift）解消: auto-merge の CI 完了ポーリングループを template に伝播（配布バグ・
+  Issue #125 race の配布先再現を停止）。gemini/issue-pickup のログ・文言も同期。全 4 ペア IN_SYNC。
+- G-002（gemini includeTools と prompt 方針の不整合）解消: `add_comment_to_pending_review` を tool 露出から削除。
+- G-003 の CI 強制力達成: `harness-verify.yml` に `check_template_sync` gate を追加（以降の drift は exit 1 検知）。
+これにより「配布機構としての autonomous-drive が実用レベル」に到達し、v6.0.0 を released とする。
+なお DH 自身の完全自律（H カテゴリ反転）は設計どおり 2026-11-06 roll-back ゲート後の再諮問に保留。
 
 ## 2026-06-13 コードレビュアーを「対話で作り込む harness 部品」化（v5.26.0、minor 昇格、in progress, target 2026-06-13）
 

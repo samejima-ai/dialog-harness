@@ -227,7 +227,6 @@ jobs:
                     "get_file_contents",
                     "search_code",
                     "list_files",
-                    "add_comment_to_pending_review",
                     "pull_request_review_write"
                   ]
                 }
