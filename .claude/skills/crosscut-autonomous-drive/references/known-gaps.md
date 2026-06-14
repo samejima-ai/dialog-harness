@@ -71,7 +71,14 @@ description: |
   (Council 判定記録 + v5.11.0 SPEC 準備) を超えるため記録のみとし、実対応は別途検討する。
 scope: 局所違反（prompt 仕様と実 tool 露出の整合性）
 resolution_planned: 別 PR / Issue で対応（v5.11.0 minor 範疇、Council 諮問不要の素直対応）
-status: open
+resolved_at: 2026-06-14T00:00:00Z
+resolved_by: |
+  PR #153 で本体・template 両方の `includeTools` から `add_comment_to_pending_review` を削除。
+  prompt の「line comment は使用しない（単一 verdict body に集約）」方針を tool 露出レベルで強制し、
+  モデルが方針に反して line comment を打ち得る状態を解消。`pull_request_review_write`（verdict 投稿）は
+  方針上必要なため残す。drift は IN_SYNC 維持。
+residual: なし。
+status: resolved
 ```
 
 ### G-003: 配備 workflow / agents の二真実源 drift（本体 ↔ template ↔ user project）
