@@ -2,6 +2,30 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-06-14 権限委譲境界の確立（可逆性ベース・v6.0.0、major 昇格、in progress, target 2026-06-14）
+
+利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は出力後修正／
+重大事象のみ人間判断／Harness 形成後は明示 L0 起動以外フルアクセス権限委譲／local と github を明確分離／
+github は CI 削除し sub_agent_review に転換」を起点に、DH 自身の権限構造を反転。Council 諮問
+`council-2026-06-14T-delgbd`（unanimous 案C / weighted_score 7.80 / judgment_confidence 0.72）採択。
+
+- **第 9 条「委譲境界原則」新設**: 可逆性（revert で原状回復可能か）を唯一の委譲判定軸とする。4 委譲レベル
+  L-FULL（全自律・SPEC/DONT 含む）/ L-GATE（不可逆操作のみ事前ゲート）/ L-FROZEN-PHIL（philosophy 段階固定）/
+  L-FROZEN-META（委譲境界 SPEC 自身・恒久人間専管）。
+- **第 6 条本文へ「憲法の自己改訂禁止」**: philosophy / delegation-boundary / auto-merge-boundary の 3 文書は
+  AI が提案 PR すら作らない。「止める基準そのもの」を AI が書き換える再帰を遮断（起票ゲート）。
+- **delegation-boundary.md 新規**（本体・一次情報源）: Council 6 必須制約条件 C-1〜C-6 を実装。
+- **SPEC/DONT 改変を opt-in → L-FULL へ**: PR diff で可視化 → revert 可能（可逆領域）ゆえ全自律側へ。
+- **local/github は権限差でなく検証手段差**: どちらも L-FULL。local=hook/lint/型（squash 前提）、
+  github=sub_agent_review + 軽量機械 CI。
+- **CI スリム化 = 判断集約であって決定論検査の廃止ではない**: 型/lint/test/harness-verify は CI に残す
+  （第 2 条）、コード品質/仕様合致/Council 判断のみ sub_agent_review へ（v5.26.0 で基盤完成済）。
+- **段階性**: H カテゴリ反転（philosophy を AI 提案 PR 可へ）は **今回見送り**、2026-11-06 roll-back ゲート
+  （v5.9.0 反転の経験的検証）後に再諮問。第 8 条 観測フェーズを飛ばさない。
+
+変更ファイル: `crosscut-autonomous-drive/references/delegation-boundary.md`（新規）/ `philosophy.md`（第 6 条 +
+第 9 条 + 参照関係 + 改訂規定）/ `auto-merge-boundary.md`（上位境界注記）/ `VERSION`（6.0.0）/ 履歴層 4 ファイル。
+
 ## 2026-06-13 コードレビュアーを「対話で作り込む harness 部品」化（v5.26.0、minor 昇格、in progress, target 2026-06-13）
 
 利用者（自分）の方針「DH はプロジェクト設計のためのメタスキル。CI レビュアーも固定で卸すのでなく、

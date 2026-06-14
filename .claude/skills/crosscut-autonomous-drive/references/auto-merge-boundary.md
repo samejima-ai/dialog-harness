@@ -1,5 +1,10 @@
 # auto-merge boundary — opt-in / opt-out 領域の不変分類
 
+> **上位境界（v6.0.0）**: 本ファイルは PR 単位の **merge 境界**を定義する。harness 全体の **委譲境界**
+> （どの領域を AI に委ねるか・可逆性ベース）は `delegation-boundary.md` が一次情報源で、本ファイルは
+> その下位概念にあたる（opt-in 領域 ⊇ delegation-boundary §1 の L-GATE + L-FROZEN）。両ファイル自身の
+> 改訂は L-FROZEN-META（人間専管・恒久固定、自己改訂禁止 = philosophy 第 6 条）。
+
 v5.9.0 で auto-merge の人間承認モデルを **opt-in（明示 GO ラベル）から opt-out（暗黙オート + stop ラベル）に反転** した。本ファイルは反転の安全弁として、**AI が境界を動かせない不変仕様** を定義する。
 
 Council 諮問 `council-2026-05-06T08:30:00Z-amrev1`（unanimous C ハイブリッド、judgment_confidence 0.80）の minority_opinion 由来 4 実装要件のうち **「(1) 境界の SPEC 不変化」** に対応。
