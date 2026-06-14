@@ -132,5 +132,17 @@ description: |
   本体↔template を慎重に突合して同期する。併せて G-003 residual の (a)(b) も本案件で対応。
 scope: 構造的不整合（二真実源の実 drift。検知済・未修正）
 resolution_planned: 別 PR で本体↔template を 1 ファイルずつ同期。`check_template_sync.py --verbose` を突合の起点にする。偽陽性（正規化漏れ）は同スクリプトの正規化規則を改善して切り分ける
-status: open
+resolved_at: 2026-06-14T00:00:00Z
+resolved_by: |
+  PR #153（Issue #149/#150/#151）で全 4 ペアを IN_SYNC まで同期:
+    - auto-merge: 条件 3.5 の CI 完了ポーリングループ + timeout-minutes:30 + PR_FIELDS 変数化を
+      template に伝播（配布バグ解消・Issue #125 race の配布先再現を止めた）。
+    - gemini-review / issue-pickup: notice ログ・PR_BODY 文言を本体に揃えて同期。
+    - claude-review (a) allowed_tools / (b) pre-gate awk pipefail: 本体↔template 完全一致を確認
+      （IN_SYNC が glob 差・pipefail 差の不在を実証）。
+  偽陽性の切り分けは check_template_sync.py の正規化改善で対応（末尾インラインコメント除去 #7・
+  direct_prompt ブロックスカラ除外 #7）。併せて harness-verify.yml に CI gate を追加し、
+  以降の drift は exit 1 で検知される（G-003 の CI 強制力も本 PR で達成）。
+residual: なし（全 4 ペア IN_SYNC + CI gate 稼働）。
+status: resolved
 ```
