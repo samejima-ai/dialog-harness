@@ -293,7 +293,7 @@ jobs:
           git fetch origin
           BRANCH=$(git branch -r | grep -E "origin/(feat|claude)/issue-${ISSUE_NUMBER}[-/]?" | head -1 | sed 's|.*origin/||' | tr -d ' ')
           if [ -z "$BRANCH" ]; then
-            echo "::warning::No branch found for Issue #${ISSUE_NUMBER}. Skip fallback."
+            echo "::warning::No branch found for Issue #${ISSUE_NUMBER}. claude-code-action did not create a branch (or used unexpected naming)."
             exit 0
           fi
           echo "::notice::Detected branch: $BRANCH"
@@ -303,9 +303,9 @@ jobs:
             exit 0
           fi
           ISSUE_TITLE=$(gh issue view "$ISSUE_NUMBER" --json title --jq '.title')
-          PR_BODY=$(printf 'Closes #%s\n\nThis PR was auto-created by issue-pickup.yml fallback step (v5.10.0, Issue #51) because claude-code-action@v0 skipped `gh pr create` despite direct_prompt instruction.\n\nAuto-created via fallback step. Review and approve.' "$ISSUE_NUMBER")
+          PR_BODY=$(printf 'Closes #%s\n\nThis PR was auto-created by issue-pickup.yml fallback step (v5.10.0, Issue #51) because claude-code-action@v0 skipped `gh pr create` despite direct_prompt instruction.\n\nThe implementation was completed by autonomous-drive Claude Code CLI on branch `%s`. Please review the diff and add the `human-review-needed` label if this PR touches opt-in territory (see `auto-merge-boundary.md`).\n\nAuto-created via fallback step. Review the implementation, then approve or request changes.' "$ISSUE_NUMBER" "$BRANCH")
           gh pr create --base master --head "$BRANCH" --title "feat: $ISSUE_TITLE" --body "$PR_BODY"
-          echo "::notice::PR created for branch $BRANCH"
+          echo "::notice::PR created for branch $BRANCH closing Issue #${ISSUE_NUMBER}"
 
       - name: Handle Claude Code failure
         if: |

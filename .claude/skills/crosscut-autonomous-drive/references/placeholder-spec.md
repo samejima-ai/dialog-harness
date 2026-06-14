@@ -83,6 +83,27 @@ python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1])); print('YAML OK')
 
 詳細背景は `adr-001-axis-placeholder-reservation-v5.12.0.md`（同一 references ディレクトリ配下）を参照。
 
+## check_template_sync.py の比較除外規約（G-003、#149/#151）
+
+`scripts/check_template_sync.py` は本体 `.github/workflows/` と配布 `*.template` の二真実源 drift を
+正規化後の集合差分で検知する。**完全一致は求めず**、以下を「意図的非対称 = 比較対象外」として正規化で畳む。
+ここに列挙されない差分は本物の drift（伝播忘れ）として exit 1 で報告される。
+
+| 除外対象 | 理由 | 実装 |
+|---|---|---|
+| 行頭コメント（`#` 始まり）・空行 | CI 方針はロジックに宿る、コメント文は本体/template で言語が異なって当然 | `normalize_line` |
+| コード行末尾のインラインコメント（` # ...`） | 本体は DH 固有の詳細注記、template は汎用注記を持つ。ロジック一致でも末尾コメント差で誤検知する（#7）。文字列リテラル内 `#`（`'Closes #%s'` 等）を壊さないため**クォートを含まない行に限定** | `normalize_line`（`#7`） |
+| 自由形式 placeholder（`${SCOPE_PATHS}` / `${PROJECT_REVIEW_AXES}` / `${SENSITIVE_PATHS_REGEX}`）を含む行 | 複数行・自由形式で機械正規化困難。prompt 軸 drift は G-001/G-002 の prompt 軸レビューで別途担保 | `FREEFORM_PLACEHOLDERS` |
+| 本体側の自由形式実値展開行（`SENSITIVE=` 等） | template 側は `${...}` で除外される対応行。本体側も外さないと host_only が恒常化（#4） | `HOST_FREEFORM_LINE_PREFIXES` |
+| `paths:` ブロック配下のリスト要素 | template の `${SCOPE_PATHS}` に対応。`paths:` ヘッダは残し配下 `- ...` を除外（#5、状態機械） | `normalized_lines` |
+| `direct_prompt: \|` / `prompt: \|` / `append_system_prompt: \|` 配下の YAML ブロックスカラ全体 | AI へのレビュー指示文（自然文）。本体は DH 仕様軸の散文、template は汎用 + `${PROJECT_REVIEW_AXES}` を持ち**本質的に機械同期不能**。ブロックごと除外（#7、インデント深さで範囲確定） | `PROMPT_BLOCK_RE` + `normalized_lines` |
+| ファイル単位の意図的非対称 | `harness-verify.yml`（DH 生命線・非配布）/ `issue-quality-gate.yml.template`（配布専用） | `HOST_ONLY` / `TEMPLATE_ONLY` |
+
+**重要な含意**: 上記**以外**の差は伝播忘れ＝直すべき drift。とくに `run:` シェルスクリプトのロジック行・
+`echo "::notice::..."` 等のログ行・`timeout-minutes` 等の構造値は除外されない。本体側で workflow を
+改修したら template にも伝播し、`python scripts/check_template_sync.py` が IN_SYNC を返すことを確認する
+（逆も同様）。プロンプト本文と末尾コメントだけが「揃えなくてよい」例外領域。
+
 ## 利用者プロジェクトでの上書き
 
 deploy 後、placeholder 置換結果（実値）を利用者プロジェクトの `.github/workflows/` で直接編集することは妨げない。ただし変更は spec-architect 対話で確認した内容と乖離する場合があるため、`delivery/DELIVERY.md` の deployment 記録に「project-specific override」セクションを設ける運用を推奨。
