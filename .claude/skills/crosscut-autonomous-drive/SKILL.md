@@ -83,6 +83,7 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 - [references/placeholder-spec.md](references/placeholder-spec.md) — placeholder 一覧 + 規約
 - [references/setup-checklist.md](references/setup-checklist.md) — label / secret / PAT 設定手順チェックリスト
 - [references/auto-merge-boundary.md](references/auto-merge-boundary.md) — v5.9.0 opt-in/opt-out 境界 SPEC（一次情報源、AI が動かせない不変仕様）
+- [references/local-github-separation.md](references/local-github-separation.md) — delegation-boundary §4 を成立させる local 検証 hook + squash 運用の実装ガイド（v6.0.1、非憲法・L-FULL）
 
 ### このスキル外
 
@@ -102,5 +103,9 @@ L3 運用層ではない（運用インシデントは L0 spec-architect へ還�
 - **v0.3.0（v5.26.0 で改訂）**: コードレビュアー認識合わせを deploy フローに追加。`claude-review.yml.template`
   （tier 段階 Council・コード軸）を opt-in 配備物として追加、`.claude/agents/review-*.md` の verbatim コピー、
   `${PROJECT_REVIEW_AXES}` / `${SENSITIVE_PATHS_REGEX}` placeholder を実装（ADR-001 → ADR-002、G-001 解消）
+- **v0.4.0（v6.0.1 で改訂）**: delegation-boundary §4 / §6 の方針を実体化。local 検証 hook
+  `scripts/local_verify.py`（warn-only・第 6 条準拠）を `.claude/hooks.json` PostToolUse に併記、
+  squash 運用ガイド `references/local-github-separation.md` を追加、テンプレ二重管理同期検証
+  `scripts/check_template_sync.py` で G-003 解消。憲法 3 文書には触れず非憲法ファイルのみで実体化
 - v5.6.x 候補: destructive change detector / circuit breaker（guardian 機能）の追加
 - v5.7.0 候補: ALLOWED_AUTHORS 動的化（複数 contributor 体制で必要時）

@@ -11,7 +11,8 @@
       "UserPromptSubmit / Notification / SubagentStop event (Wave 4 申し送り、council-w3qb02 B 採決)"
     ],
     "adopted_events": ["PreToolUse", "PostToolUse", "Stop", "SessionStart", "SessionEnd", "PreCompact"],
-    "observation_target": "harness-verifier (read-only 一方向依存、独立性原則準拠)"
+    "observation_target": "harness-verifier (read-only 一方向依存、独立性原則準拠)",
+    "verify_layer": "PostToolUse に local_verify.py を併記（delegation-boundary §4 実体化、v6.0.1）。観測層(hook-observer)と検証層(local_verify)を分離。warn-only(exit 0)で philosophy 第 6 条準拠。DH 本体は harness-verifier/verify.py、配布先は DH_LOCAL_VERIFY_CMD で差替"
   },
   "hooks": {
     "PreToolUse": [
@@ -32,6 +33,10 @@
           {
             "type": "command",
             "command": "python3 .claude/skills/crosscut-hook-observer/scripts/bootstrap.py PostToolUse"
+          },
+          {
+            "type": "command",
+            "command": "python3 .claude/skills/crosscut-autonomous-drive/scripts/local_verify.py"
           }
         ]
       }
