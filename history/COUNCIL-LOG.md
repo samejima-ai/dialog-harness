@@ -2376,3 +2376,47 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   agreed_at: "2026-06-14T00:00:00Z"
   cascade_to: "delegation-boundary.md 新規 + philosophy 第6条/第9条 + VERSION 6.0.0 + 履歴層4ファイル。H カテゴリ反転は roll-back ゲート後の別サイクル。"
+
+---
+
+- invocation_id: "council-2026-06-14T-tmplsync"
+  timestamp: "2026-06-14T00:00:00Z"
+  source_skill: "layer1-independent-reviewer (PR #148 レビュー対応・check_template_sync 残り drift の扱い)"
+  question_to_answer: "PR #148 で正規化偽陽性を除去後も残る本物 drift（auto-merge ポーリング未伝播 / claude-review 自然文差 / gemini echo 差）をどう扱うか"
+  council_type: "business"
+  category: "maintenance"
+  category_fallback: false
+  phase_reached: "phase_1→3"
+  conflict_type: "simple_conflict"
+  options:
+    - "A案 #4/#5/#6 対応のみコミット、残り本物 drift は別Issue化（PRスコープ純化）"
+    - "B案 template にロジック伝播 + 自然文差も除外して drift ゼロ化"
+    - "C案 各 drift を伝播忘れ/意図的非対称に個別分類してから案決定"
+  fact_check: "check_template_sync は .github/workflows/ から未呼出 = CI ゲートでなく local hook/手動。どの案でも CI は落ちない（A案の『CI赤残り』懸念は事実誤認）。"
+  persona_summary:
+    経営者: { stance: "A案", confidence: 0.72, dimension: "ROI", note: "機会損失ゼロ。PR本来目的（正規化偽陽性除去）は達成済。B案は placeholder設計と矛盾する負債。別Issue化で早期クローズ" }
+    開発者: { stance: "A案 + drift#1 即時昇格", confidence: 0.85, dimension: "保守性", note: "drift#1（auto-merge.yml.template にポーリング+timeout:30欠落）は配布バグ=Issue#125 race 再現。#2はplaceholder自由形式で同期対象外、#3は要調査。B案一律ゼロ化は検知機構形骸化" }
+    哲学者: { stance: "C案起点→A案収束", confidence: 0.62, dimension: "意味", note: "検知器の徳は『見えること』。B案の一律ゼロ化は警告灯を除外規則で覆う自己矛盾。レビューPRに機能伝播を混ぜるのはスコープ誠実さを損なう" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    final_weights: { 経営者: 3, 開発者: 5, 哲学者: 2 }
+    scores:
+      - stance: "A案系（本PRはレビュー対応に純化＋本物driftは別Issue化、drift#1は配布バグとして優先）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 7.65
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 5, confidence: 0.85 }
+          - { persona: "哲学者", weight: 2, confidence: 0.62 }
+    max_score_stance: "A案系"
+    tie_break_applied: false
+  recommended: "A案を採用し本PRは #4/#5/#6 のレビュー対応に純化。残り本物 drift は別Issue化。ただし drift#1（auto-merge.yml.template のポーリングループ+timeout:30 欠落=配布先で全CI完了前 merge する Issue#125 race 再現）は配布バグとして別Issueの最優先項目に置く。drift#2 は placeholder 自由形式（同期対象外）と明示、drift#3 は別Issue内の最初の分類タスク。B案は全ペルソナが棄却。"
+  minority_opinion: "哲学者: このツールが workflow から呼ばれておらず G-003 主目的（CI 強制力）が未達であること自体を上位課題として問うべき。CI 統合欠落も別Issue化が望ましい。"
+  weight_note: "maintenance カテゴリで開発者 +1（3/5/2）。全員が A案クラスタに収束、B案は全棄却。支配的 weight の開発者が drift#1 即時昇格を主張し他2者も同方向。"
+  judgment_confidence: 0.78
+  human_escalated: false
+  consensus_mode: "auto_agree"
+  implementer_consent: "pending"
+  final_decision: null
+  follow_up_questions_count: 0

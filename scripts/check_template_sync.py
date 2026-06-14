@@ -91,12 +91,34 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+# 未引用でも token 化してよい実値（頻出語と衝突しないもののみ）。
+# REPO_NAME/REPO_OWNER は prompt 内に未引用で現れる（例: "あなたは dialog-harness の..."）。
+# template 側は ${REPO_NAME} が token 化されるため、本体側も未引用出現を畳まないと恒常 drift になる
+# （Copilot #148 #6）。VERIFIER_JOB_NAME の "verify" は頻出語のため未引用畳みは行わない（引用時のみ）。
+UNQUOTED_TOKENIZE = ("REPO_NAME", "REPO_OWNER", "ALLOWED_AUTHORS")
+
+# 本体側で「自由形式 placeholder に対応する実値」が現れる行頭マーカー。
+# template 側は ${SENSITIVE_PATHS_REGEX} 等 1 行に畳まれて FREEFORM 除外されるのに対し、
+# 本体側は実値が展開されて残る。これを本体側でも除外しないと host_only が恒常化する
+# （Copilot #148 #4）。SCOPE_PATHS（paths: 配下リスト）は別途ブロック状態で処理（#5）。
+HOST_FREEFORM_LINE_PREFIXES = (
+    "SENSITIVE=",  # claude-review pre-gate の ${SENSITIVE_PATHS_REGEX} 展開先
+)
+
+# paths: ブロック配下のリスト要素マーカー。template の ${SCOPE_PATHS} に対応するため、
+# 本体側の `paths:` 直後に続く `- "..."` 行は比較から除外する（Copilot #148 #5）。
+PATHS_KEY_RE = re.compile(r"^\s*paths:\s*$")
+LIST_ITEM_RE = re.compile(r'^\s*-\s')
+
+
 def normalize_line(line: str) -> str | None:
-    """1 行を正規化。比較対象外なら None を返す。
+    """1 行を正規化。比較対象外なら None を返す（コンテキスト非依存な判定のみ）。
 
     - コメント行（# で始まる、YAML/シェル）・空行は除外（CI 方針はロジックに宿る）
     - 自由形式 placeholder を含む行は除外（機械正規化困難・偽陽性回避）
-    - DH placeholder token / 本体実値を共通 token へ畳む
+    - 本体側の自由形式実値展開行（SENSITIVE= 等）も除外（#4）
+    - DH placeholder token / 本体実値（引用 + 一部未引用）を共通 token へ畳む
+    paths: ブロック配下の除外（#5）は状態を要するため normalized_lines() 側で処理。
     """
     stripped = line.strip()
     if not stripped:
@@ -109,6 +131,11 @@ def normalize_line(line: str) -> str | None:
         if "${" + ph + "}" in line:
             return None
 
+    # 本体側の自由形式実値展開行（template 側は ${...} で除外済の対応行）を外す（#4）
+    for prefix in HOST_FREEFORM_LINE_PREFIXES:
+        if stripped.startswith(prefix):
+            return None
+
     norm = line
 
     # template 側: ${VAR} を token へ
@@ -117,21 +144,42 @@ def normalize_line(line: str) -> str | None:
             continue
         norm = norm.replace("${" + ph + "}", WILDCARD)
 
-    # 本体側: 実値を token へ（VERIFIER_JOB_NAME="verify" 等、"verify" は頻出語なので
-    # 値が引用符/特定キー文脈にある場合のみ畳む簡易規則）
+    # 本体側: 引用符で囲まれた実値を token 化（VERIFIER_JOB_NAME="verify" 等）
     for ph, values in HOST_CONCRETE_VALUES.items():
         for val in values:
-            # 引用符で囲まれた実値（"samejima-ai" 等）を token 化
             norm = norm.replace(f'"{val}"', f'"{WILDCARD}"')
             norm = norm.replace(f"'{val}'", f"'{WILDCARD}'")
+
+    # 本体側: 未引用でも安全に畳める実値（REPO_NAME 等）を token 化（#6）
+    for ph in UNQUOTED_TOKENIZE:
+        for val in HOST_CONCRETE_VALUES.get(ph, []):
+            norm = norm.replace(val, WILDCARD)
 
     return norm.strip()
 
 
 def normalized_lines(path: Path) -> list[str]:
-    """ファイルを正規化済みロジック行のリストにする。"""
+    """ファイルを正規化済みロジック行のリストにする。
+
+    paths: ブロック配下のリスト要素は ${SCOPE_PATHS} に対応するため除外する（#5）。
+    `paths:` 行を検出したら、以降の連続するリスト要素（`- ...`）をスキップし、
+    インデントが浅い非リスト行が来たらブロックを抜ける。
+    """
     out: list[str] = []
+    in_paths_block = False
     for raw in path.read_text(encoding="utf-8").splitlines():
+        if PATHS_KEY_RE.match(raw):
+            # paths: 行自体は構造ヘッダとして比較に残す（キーの有無は方針差）
+            in_paths_block = True
+            n = normalize_line(raw)
+            if n is not None:
+                out.append(n)
+            continue
+        if in_paths_block:
+            if LIST_ITEM_RE.match(raw) or not raw.strip():
+                # paths 配下のリスト要素 / 空行はスキップ（SCOPE_PATHS 相当）
+                continue
+            in_paths_block = False  # 非リスト行 → ブロック終了、通常処理へ
         n = normalize_line(raw)
         if n is not None:
             out.append(n)
