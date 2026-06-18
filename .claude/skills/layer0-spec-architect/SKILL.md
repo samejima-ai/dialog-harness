@@ -525,6 +525,12 @@ project-root/
 - [ ] **broken reference 検査**: 生成した `INDEX.md` / `SPEC.md` / `DONT.md` / `REGIME.md` / `DOMAIN-CONTEXT.md` / `DESIGN.md` 等が引用するファイル・パスが実体として存在する（dead link なし）
 - [ ] **scaffold smoke test 検査**: `references/scaffold-checklist.md` の対応 stack の必須ファイルが全て揃い、smoke test コマンド（`pnpm install` / `dev` / `build` / `test`）が exit 0。通らない場合は理由を `delivery/SELF-VERIFICATION-*.md` または DELIVERY.md に明記
 - [ ] **DONT 自己照合**: `SPEC.md` 内に `DONT.md` のいずれかの禁止条項に違反する記述・機能定義が混入していない（目視 + grep）
+- [ ] **CLAUDE.md アンチパターン診断**（v6.1.0 追加）: 生成した `CLAUDE.md` が以下 5 つのアンチパターンに該当しない（claude-world 観測を DH 文脈で再構成、`references/observed-peers.md` §claude-world-examples 参照）。該当時は FAIL 扱いで §7 へ進む前に修正する
+  - **曖昧**: 「適切に」「きれいに」「ベストプラクティスで」等の判定不能な抽象指示。具体的なコマンド・閾値・条件に書き換える
+  - **コマンド欠落**: ビルド・テスト・lint の実行コマンドが書かれていない（AI が毎回推測する状態）。`scaffold-checklist.md` の対応 stack の smoke コマンドと整合させる
+  - **権限境界の未定義**: 自律実行可 / 確認必須の境界が書かれていない、または REGIME.md の dev_mode / autonomous_scope と CLAUDE.md が不整合
+  - **矛盾**: CLAUDE.md 内の記述同士、または SPEC.md / DONT.md / REGIME.md との間に矛盾がある（DONT 自己照合で拾えない CLAUDE.md 固有の矛盾）
+  - **陳腐化の放置**: 既に存在しないファイル・廃止した手順・旧バージョン前提の記述が残っている（broken reference 検査で拾えない散文レベルの陳腐化）
 - [ ] **DESIGN.md トークン一貫性検査**（DESIGN.md 生成時のみ）: YAML フロントマターで定義したトークンキーが Markdown 本体の `{colors.primary}` 等の参照と整合する（未定義参照なし・未使用定義なし）。詳細は `references/design-system-spec.md` §7.4 自己検証への組込
 - [ ] **Pre-flight 充足**: 本セッションで通過した §1.5 / §3.5 / §3.6 / §4 / §6 / §7 の各 Pre-flight 行が指定するリファレンスを実際に読んだ
 - [ ] **受け入れ基準充足**: §0 受け入れ基準の 4 条件（仕様充足 / scaffold 実体 / smoke test / 本 §7.4 PASS）を逐項チェック
@@ -627,6 +633,15 @@ project-root/
 - `references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
+
+### v6.1.0 追加（外部観測事例 claude-world の吸収・scaffold 9 stack カタログ化・CLAUDE.md アンチパターン診断、minor 昇格）
+
+後方互換維持の追加のみ。Council `council-2026-06-18T11:50:01Z-cw0rld`（全会一致 案A、最小介入）に基づく外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT）の DH 形式での吸収。
+
+- `references/observed-peers.md` に claude-world-examples を観測事例として登録（CoDD に次ぐ 2 件目）。当初発話「公式テンプレ採用」と調査結論「非公式コミュニティ事例」の乖離を明記し後世への申し送りとする
+- `references/scaffold-checklist.md` を **9 stack カタログ化**（標準 Vite+TS+React+PWA + 追加 8 stack: Next.js / Vue / Astro / FastAPI / Django / Express / Go / Rails）。各 stack を DH 形式（必須生成ファイル表 + 最低要件 + smoke test）で再構成。出典・MIT・観測経路を当該ファイルに明記。原典の散文テンプレ丸ごと転記ではない
+- §7.4 自己検証に **CLAUDE.md アンチパターン診断**（曖昧 / コマンド欠落 / 権限境界未定義 / 矛盾 / 陳腐化の 5 観点）を 1 チェック追加
+- **却下項目**: 概念文書の philosophy/references 取り込み（案B、思想の二重定義 drift）と GitHub Actions/workflow 集の取り込み（DH templates と機能重複）は Council で除外
 
 ### v5.23.0 追加（E2E 構築 BP の体系化・C5 テスト oracle 言語化・UI Baseline RL 取り込み、minor 昇格）
 
