@@ -2421,3 +2421,45 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
   implementer_consent: null
+
+- invocation_id: "council-2026-06-18T11:50:01Z-cw0rld"
+  timestamp: "2026-06-18T11:50:01Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "claude-world-examples を DH メタスキルにどう取り込むべきか、どの案を採用すべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案A", confidence: 0.72 }
+    開発者: { stance: "案A", confidence: 0.82 }
+    哲学者: { stance: "案A", confidence: 0.62 }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.72
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+          - { persona: "哲学者", weight: 5, confidence: 0.62 }
+    third_way_excluded: []
+    max_score_stance: "案A"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案A 3点最小介入（テンプレ多stack化+observed-peers登録+アンチパターン診断補強）。workflow取込は機能重複で除外、MIT出典明記必須"
+  minority_opinion: "全会一致だが各ペルソナの条件を統合: ①workflow取込除外 ②MIT出典明記+stack毎smoke維持 ③当初発話(公式テンプレ神話)と調査結論の乖離を記録 ④多stackの幅をDHが価値とするかは未問の前提"
+  consensus_mode: "auto_agree"
+  weight_note: "category=conception適用(経営者3/開発者3/哲学者5)。外部思想取込判断のため哲学者最重視"
+  reasoning: "案Bは三者とも思想の二重定義driftで退けた。案Cは1stack薄さの放置として退けた。"
+  human_escalated: false
+  # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
+  implementer_consent: null

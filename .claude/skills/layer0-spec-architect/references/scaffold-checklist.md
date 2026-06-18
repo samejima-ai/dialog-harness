@@ -1,6 +1,7 @@
-# Scaffold Checklist（v5.1.0 追加）
+# Scaffold Checklist（v5.1.0 追加 / v6.1.0 で 9 stack カタログ化）
 
 L0 §6「開発環境の設計・構築」で **stack 別に必ず生成すべきファイル群** と **smoke test 手順** を規定する。
+標準 stack（Vite+TS+React+PWA）に加え、`## 追加 stack カタログ` で Next.js / Vue / Astro / FastAPI / Django / Express / Go / Rails の 8 stack を同形式で規定する（合計 9 stack）。
 `references/dev-env-spec.md` がディレクトリ配置・参照権限マトリクス・モード別差分（M1/M2/L2）を扱うのに対し、本ファイルは **stack 単位の実体ファイル一覧と smoke 手順** に責務を絞る。
 
 **§0 受け入れ基準 2 番との対応**: 本ファイルの対応 stack テンプレートで指示されたファイル群が実体として生成されていない状態で L1 へ譲渡することは原則違反。
@@ -66,19 +67,169 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 
 ---
 
-## 将来拡張ポイント
+## 追加 stack カタログ（v6.1.0 追加）
 
-本 v5.1.0 では Vite+TS+React+PWA の **1 stack に絞る**。以下は v5.x 以降の minor で追加：
+上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **8 つの追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
 
-| stack | 想定追加バージョン | 注記 |
-|---|---|---|
-| Next.js (App Router) | v5.x | App Router 既定、Server Components 含む |
-| Vue 3 + Vite | v5.x | Composition API 既定 |
-| 純 Node.js CLI | v5.x | tsx/tsup ベース、commander/yargs |
-| Astro | v5.x | content collections 前提 |
-| SvelteKit | v5.x | adapter-auto |
+> **出典・観測経路の明示（Council `council-2026-06-18T11:50:01Z-cw0rld` 条件②）**
+> 本カタログの stack 選定・標準コマンド構成は、外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT License）の framework 別 CLAUDE.md テンプレを **観測** し、DH の scaffold-checklist 形式（必須生成ファイル + smoke 手順）に **再構成** したものである。原典の散文テンプレを丸ごと転記したものではない。観測事例としての位置づけは `references/observed-peers.md` を参照。各 stack の必須生成ファイル一覧・最低要件・smoke 手順は DH 固有の規約であり、原典には存在しない。
+>
+> **保守責務の明示（Council 条件②、開発者ペルソナ懸念）**
+> 各 stack の smoke コマンドは framework のメジャーバージョン更新で陳腐化しうる。本カタログは「実体ファイル一覧 + smoke コマンド」の決定論的記述に限定し、framework 固有の流行 lib（state 管理・UI 等）は **選択肢の例示にとどめ最低要件に含めない**（陳腐化面の最小化）。stack 追加時は対応する smoke コマンドが当該 framework の現行 CLI で通ることを L0 §7.4 自己検証で確認する。
 
-stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる予定（v5.x で追記）。
+各 stack に共通する規約：
+- `.gitignore` は最低限 `node_modules/`（または言語別の依存ディレクトリ）/ ビルド成果物 / `.env*` / テストレポート / カバレッジを含む
+- `.env` 系の秘匿値（`DATABASE_URL` / `SECRET_KEY` / `JWT_SECRET` 等）は **`.gitignore` 必須**。`.env.example` で雛形のみコミット
+- smoke test が通らない場合は §7.4 自己検証の規約に従い `DELIVERY.md` / `delivery/SELF-VERIFICATION-*.md` に失敗手順・理由・保留事由を明記して譲渡する（沈黙譲渡は §0 受け入れ基準 3 違反）
+- UI を含む stack（React/Next.js/Vue/Astro）は `## DESIGN.md 連携` の対象。非 UI stack（FastAPI/Django/Express/Go/Rails の API 専用構成）では DESIGN.md は生成しない
+
+---
+
+### Stack 2: Next.js 14+ (App Router) ＋ TypeScript
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `package.json` | 依存・scripts | `dev` / `build` / `start` / `lint` を持つ。`next` を依存に持つ |
+| 2 | `tsconfig.json` | TS 設定 | `strict: true`、Next.js プラグイン設定（`next/babel` 相当）を含む |
+| 3 | `next.config.mjs`（または `.ts`） | Next 設定 | 最低限 `export default` で設定オブジェクトを返す |
+| 4 | `tailwind.config.ts` + `postcss.config.mjs` | スタイル | `content` に `app/**` `components/**` を含む |
+| 5 | `app/layout.tsx` | ルートレイアウト | `<html>` / `<body>` と `children` を返す Server Component |
+| 6 | `app/page.tsx` | トップページ | プレースホルダ UI を返す |
+| 7 | `components/ui/` | UI コンポーネント置場 | 空でも可（ディレクトリ存在） |
+| 8 | `lib/` | DB/auth 等の共有ロジック置場 | DB 使用時は `lib/db.ts`、認証使用時は `lib/auth.ts` |
+| 9 | `.env.example` | 環境変数雛形 | DB/auth 使用時は `DATABASE_URL` / `NEXTAUTH_SECRET` / `NEXTAUTH_URL` 等のキー名を例示（値は空） |
+| 10 | `.gitignore` | git 除外 | `.next/` `node_modules/` `.env*` を含む |
+
+**Smoke test**: `npm install` → `npm run build`（exit 0、`.next/` 生成）→ `npm run dev`（`http://localhost:3000` が 200）→ `npm run lint`（exit 0）。テスト基盤を入れる場合は M2 標準に従い vitest/playwright を追加し `npm run test` を smoke に含める。
+
+---
+
+### Stack 3: Vue 3 + Vite ＋ TypeScript
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `package.json` | 依存・scripts | `dev` / `build` / `preview` / `test` / `lint` を持つ |
+| 2 | `tsconfig.json` | TS 設定 | `strict: true`、Vue SFC 用設定（`vue-tsc` 連携） |
+| 3 | `vite.config.ts` | ビルド設定 | `@vitejs/plugin-vue` を import |
+| 4 | `vitest.config.ts`（または vite.config 内統合） | unit test | `environment: "jsdom"` |
+| 5 | `index.html` | エントリ HTML | `<div id="app">` と `<script type="module" src="/src/main.ts">` |
+| 6 | `src/main.ts` | Vue mount | `createApp(App).use(router).use(pinia).mount("#app")` |
+| 7 | `src/App.vue` | ルート SFC | プレースホルダ UI |
+| 8 | `src/router/index.ts` | ルーティング | Vue Router 4、最低 1 ルート定義 |
+| 9 | `src/stores/` | Pinia ストア置場 | 空でも可（ディレクトリ存在） |
+| 10 | `.gitignore` | git 除外 | `node_modules/` `dist/` `.env*` `coverage/` |
+
+**Smoke test**: `npm install` → `npm run dev`（`http://localhost:5173` が 200）→ `npm run build`（exit 0、`dist/`）→ `npm run test`（framework 起動成功）。
+
+---
+
+### Stack 4: Astro 4+（content collections）
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `package.json` | 依存・scripts | `dev` / `build` / `preview` を持つ。`astro` を依存に持つ |
+| 2 | `astro.config.mjs` | Astro 設定 | integrations（react/vue/tailwind 等）を `defineConfig` で宣言 |
+| 3 | `tsconfig.json` | TS 設定 | Astro 既定の `astro/tsconfigs/strict` を extends |
+| 4 | `src/pages/index.astro` | トップページ | プレースホルダ UI |
+| 5 | `src/layouts/` | レイアウト置場 | 最低 1 レイアウト（`<slot />` を含む） |
+| 6 | `src/content/config.ts` | content collections 定義 | content 使用時は `defineCollection` + `z.object` スキーマ。未使用なら省略可 |
+| 7 | `public/` | 静的アセット | ディレクトリ存在 |
+| 8 | `.gitignore` | git 除外 | `dist/` `.astro/` `node_modules/` `.env*` |
+
+**Smoke test**: `npm install` → `npm run dev`（`http://localhost:4321` が 200）→ `npm run build`（exit 0、`dist/`）→ `npm run preview`（200）。
+
+---
+
+### Stack 5: Python + FastAPI
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `pyproject.toml` | 依存・ツール設定 | `fastapi` / `uvicorn` / `pydantic` を依存に持つ。`ruff` / `mypy` / `pytest` 設定を含む |
+| 2 | `app/main.py` | エントリ | `app = FastAPI()` と最低 1 つの `@app.get("/health")` |
+| 3 | `app/api/routes/` | ルート定義置場 | 空でも可（`__init__.py` 含む） |
+| 4 | `app/core/config.py` | 設定 | `pydantic-settings` で `DATABASE_URL` / `SECRET_KEY` / `ENVIRONMENT` を読む |
+| 5 | `app/models/` `app/schemas/` | ORM/Pydantic 層 | DB 使用時のみ。SQLAlchemy 2.0 想定 |
+| 6 | `alembic.ini` + `migrations/` | マイグレーション | DB 使用時のみ。`alembic init` 生成物 |
+| 7 | `tests/test_health.py` | 最小テスト | `/health` が 200 を返すことを検証 |
+| 8 | `.env.example` | 環境変数雛形 | `DATABASE_URL` / `SECRET_KEY` / `ENVIRONMENT` のキー名 |
+| 9 | `.gitignore` | git 除外 | `__pycache__/` `.venv/` `.env*` `.pytest_cache/` `.coverage` |
+
+**Smoke test**: 依存導入（`uv sync` または `pip install -e .`）→ `uvicorn app.main:app --reload`（`http://localhost:8000/health` が 200）→ `ruff check .`（exit 0）→ `mypy app/`（exit 0）→ `pytest -v`（exit 0）。DB 使用時は `alembic upgrade head` も smoke に含める。
+
+---
+
+### Stack 6: Python + Django 5 + DRF
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `pyproject.toml`（または `requirements.txt`） | 依存 | `django` / `djangorestframework` / `pytest-django` を持つ |
+| 2 | `manage.py` | Django CLI | `django-admin startproject` 生成物 |
+| 3 | `config/settings/base.py` | 共通設定 | `INSTALLED_APPS` に `rest_framework`、`DATABASES` を `DATABASE_URL` から読む |
+| 4 | `config/settings/local.py` `production.py` | 環境別設定 | `base` を import して差分のみ定義 |
+| 5 | `config/urls.py` | ルート URLconf | 最低 1 つの health エンドポイント |
+| 6 | `apps/` | 機能アプリ置場 | 空でも可（ディレクトリ存在） |
+| 7 | `tests/test_health.py` | 最小テスト | pytest-django で 1 エンドポイント検証 |
+| 8 | `.env.example` | 環境変数雛形 | `SECRET_KEY` / `DATABASE_URL` / `DJANGO_SETTINGS_MODULE` |
+| 9 | `.gitignore` | git 除外 | `__pycache__/` `.venv/` `.env*` `db.sqlite3` `staticfiles/` |
+
+**Smoke test**: 依存導入 → `python manage.py migrate`（exit 0）→ `python manage.py runserver`（health が 200）→ `pytest`（exit 0）。
+
+---
+
+### Stack 7: Node.js + Express + TypeScript
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `package.json` | 依存・scripts | `dev` / `build` / `start` / `test` / `lint` を持つ。`express` を依存に持つ |
+| 2 | `tsconfig.json` | TS 設定 | `strict: true`、`outDir: "dist"` |
+| 3 | `src/index.ts` | エントリ | Express app 起動、`GET /health` が 200 |
+| 4 | `src/routes/` `src/controllers/` `src/services/` `src/middleware/` | 層分割 | 空でも可（ディレクトリ存在） |
+| 5 | `src/types/` | 型定義置場 | 空でも可 |
+| 6 | `tests/health.test.ts` | 最小テスト | supertest 等で `/health` 検証 |
+| 7 | `.env.example` | 環境変数雛形 | `PORT` / `DATABASE_URL` / `JWT_SECRET` / `NODE_ENV` |
+| 8 | `.gitignore` | git 除外 | `node_modules/` `dist/` `.env*` `coverage/` |
+
+**Smoke test**: `npm install` → `npm run build`（exit 0、`dist/`）→ `npm run dev`（health が 200）→ `npm run lint`（exit 0）→ `npm run test`（exit 0）。Zod 等のバリデーションは選択肢として例示にとどめる。
+
+---
+
+### Stack 8: Go + Gin/Echo
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `go.mod` | モジュール定義 | `module` 宣言と Go 1.21+。gin または echo を require |
+| 2 | `cmd/api/main.go` | エントリ | HTTP サーバ起動、`GET /health` が 200 |
+| 3 | `internal/handler/` `internal/service/` `internal/repository/` `internal/model/` | 層分割 | 空でも可（最低 `.go` ファイル or `.gitkeep`） |
+| 4 | `pkg/` | 共有ユーティリティ | 空でも可 |
+| 5 | `migrations/` | DB マイグレーション | DB 使用時のみ。golang-migrate 形式 |
+| 6 | `internal/handler/health_test.go` | 最小テスト | testify で health ハンドラ検証 |
+| 7 | `.env.example` | 環境変数雛形 | `PORT` / `DATABASE_URL` / `JWT_SECRET` |
+| 8 | `.gitignore` | git 除外 | `bin/` `*.exe` `.env*` `vendor/`（vendor 運用時は調整） |
+
+**Smoke test**: `go mod download` → `go build -o bin/api cmd/api/main.go`（exit 0）→ `go run cmd/api/main.go`（health が 200）→ `go vet ./...`（exit 0）→ `go test ./...`（exit 0）。
+
+---
+
+### Stack 9: Ruby on Rails 7+
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `Gemfile` | 依存 | `rails` 7+、`rspec-rails` / `factory_bot_rails`、DB アダプタ（`pg`） |
+| 2 | `config/application.rb` `config/environments/` | アプリ設定 | `rails new` 生成物 |
+| 3 | `config/database.yml` | DB 設定 | `DATABASE_URL` 参照を含む |
+| 4 | `config/routes.rb` | ルーティング | 最低 1 つの health ルート |
+| 5 | `app/controllers/` `app/models/` `app/services/` | MVC + サービス層 | 標準生成物 + `services/` ディレクトリ |
+| 6 | `spec/requests/health_spec.rb` | 最小テスト | RSpec で health が 200 |
+| 7 | `.env.example` | 環境変数雛形 | `DATABASE_URL` / `SECRET_KEY_BASE` / `RAILS_ENV` |
+| 8 | `.gitignore` | git 除外 | `/log/*` `/tmp/*` `.env*` `/storage/*` |
+
+**Smoke test**: `bundle install` → `bin/rails db:migrate`（exit 0）→ `bin/rails server`（health が 200）→ `bundle exec rspec`（exit 0）。
+
+---
+
+### stack 未収載時の扱い
+
+上記 9 stack（標準 + 追加 8）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
 
 ---
 
