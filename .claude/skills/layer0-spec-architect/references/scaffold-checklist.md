@@ -90,7 +90,7 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 | # | パス | 役割 | 最低要件 |
 |---|---|---|---|
 | 1 | `package.json` | 依存・scripts | `dev` / `build` / `start` / `lint` を持つ。`next` を依存に持つ |
-| 2 | `tsconfig.json` | TS 設定 | `strict: true`、Next.js プラグイン設定（`next/babel` 相当）を含む |
+| 2 | `tsconfig.json` | TS 設定 | `strict: true`、Next.js TS プラグイン（`plugins: [{ name: "next" }]`）を含む |
 | 3 | `next.config.mjs`（または `.ts`） | Next 設定 | 最低限 `export default` で設定オブジェクトを返す |
 | 4 | `tailwind.config.ts` + `postcss.config.mjs` | スタイル | `content` に `app/**` `components/**` を含む |
 | 5 | `app/layout.tsx` | ルートレイアウト | `<html>` / `<body>` と `children` を返す Server Component |
