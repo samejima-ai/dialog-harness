@@ -2462,4 +2462,6 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   reasoning: "案Bは三者とも思想の二重定義driftで退けた。案Cは1stack薄さの放置として退けた。"
   human_escalated: false
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-06-18T11:50:01Z"
