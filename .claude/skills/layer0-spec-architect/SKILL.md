@@ -634,6 +634,15 @@ project-root/
 
 ※ ファイル配置規則とバージョニング規則は `references/dev-env-spec.md` に統合済み。
 
+### v6.2.0 追加（scaffold-checklist に Expo (React Native) stack 追加・10 stack 化、minor 昇格）
+
+後方互換維持の追加のみ。`references/scaffold-checklist.md` の追加 stack カタログに **Stack 10: Expo (React Native)** を DH 形式（必須生成ファイル表 + 最低要件 + smoke test）で追加し、9 stack → 10 stack 化。前 9 stack が Web/API 層なのに対し本 stack はモバイル＋Web のネイティブアプリ層を担う。
+
+- `references/scaffold-checklist.md` に Stack 10 を追加。`create-expo-app` default template（expo-router / TypeScript / 3 platform）を基準に必須生成ファイル 9 種・決定論的 smoke サブセット（`expo lint` / `tsc --noEmit` / `expo export --platform web`）を規定
+- **CLAUDE.md 共存規約**: Expo SDK 56+ の `create-expo-app` が自動生成する `AGENTS.md` / `CLAUDE.md` / `.claude/settings.json` と DH 生成物を上書きせず共存させる規約を明記（AGENTS.md を残し DH CLAUDE.md から `@AGENTS.md` import、Expo プラグイン有効化を温存）
+- 共通規約「UI を含む stack」列挙に Expo を追加（DESIGN.md 連携対象。Web スクショ比較はネイティブ E2E への読み替え規約を併記）
+- 観測元は Expo 公式ドキュメント（docs.expo.dev/agents/, /skills/, /eas/ai/mcp/、2026-06 観測）。Expo は DH が scaffold する**対象技術**であり Layer 3 方法論層ではないため `observed-peers.md` には登録しない（claude-world とは観測性質が異なる）
+
 ### v6.1.0 追加（外部観測事例 claude-world の吸収・scaffold 9 stack カタログ化・CLAUDE.md アンチパターン診断、minor 昇格）
 
 後方互換維持の追加のみ。Council `council-2026-06-18T11:50:01Z-cw0rld`（全会一致 案A、最小介入）に基づく外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT）の DH 形式での吸収。
