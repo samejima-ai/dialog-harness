@@ -277,6 +277,51 @@ npx expo export --platform web    # exit 0、dist/ 配下に web ビルド生成
 
 Expo は UI を含む stack のため `## DESIGN.md 連携` の対象。ただし Web の Playwright スクショ比較はそのままでは使えないため、視覚検証は (a) `npx expo export --platform web` 出力に対する Playwright、または (b) Maestro / Detox 等の RN E2E によるスクショ取得に読み替える。第 5 層 Vision 判定（UX Priority `standard` 以上で必須）は取得スクショ + DESIGN.md `## Do's and Don'ts` で同様に適用する。
 
+#### 実プロジェクト由来のベストプラクティス / 注意事項（Expo 固有）
+
+> 出典: 実プロジェクト由来の振り返り還流（ネイティブ機能テスター, SDK 54, 2026-06）。Expo 全般に一般化できる落とし穴を列挙する。L0/L1 は Expo scaffold・実機検証の前に本節を必読。
+
+**S1. SDK バージョンと実行クライアントの整合（最重要）**
+- `create-expo-app@latest` は **ストアの Expo Go より新しい SDK（beta/canary 含む）** を入れることがある。Expo Go は最新 1〜2 SDK しか対応しない。
+- L0 は scaffold 時に「**実機で何で動かすか**」を確定する: (a) Expo Go → 端末の Expo Go が対応する SDK に**合わせる**（必要なら `npm i expo@^<n>` + `npx expo install --fix` でダウングレード）/ (b) Development Build → SDK は最新で可。
+- 不一致時の症状:「Project is incompatible with this version of Expo Go」。
+
+**S2. Expo Go か Development Build かを早期に決める**
+- 次を使う機能は **Expo Go では不可 → dev build 必須**: カスタム通知音 / リモートプッシュ / 一部の config plugin を要するネイティブ設定。多くのネイティブ機能を伴うアプリは最初から dev build を前提にする。
+- 「アプリ内再生」（expo-audio 等）は Expo Go で動くが、「**通知音として鳴らす**」はネイティブ設定（expo-notifications plugin `sounds` + Android 通知チャンネル）が必要で dev build 限定。
+
+**S3. `expo-dev-client` の有無で `expo start` の挙動が変わる**
+- 導入されていると `expo start` は dev-client モードになり、URL が `exp+<scheme>://expo-development-client...` になる。**Expo Go ではこの URL を開けない**（QR を読んでもタップ無反応）。
+- 使い分け: Expo Go で動かす間は入れない（または `npx expo start --go`）。dev build で動かす時は入れる（`npx expo start --dev-client`）。
+
+**S4. 実機接続のネットワーク（LAN 不通の切り分け）**
+- CGNAT（IP 100.64.x.x）/ パブリック Wi-Fi / テザリング / Windows ファイアウォール / AP アイソレーション下では、端末→PC:8081 の LAN 直結が遮断されやすい。
+- 切り分け: ① 端末のエラー文（接続失敗=NW / 赤い JS 画面=コード）② Metro に「Bundling」が出るか ③ 端末ブラウザで `http://<PCのIP>:8081` が開けるか。
+- 確実策: `npx expo start --tunnel`（ngrok 経由で NW 制約を回避）。
+
+**S5. smoke は web export を決定論サブセットに使う（上記 Smoke test の補強）**
+- ネイティブ専用 API（camera/sensors/notifications/audio/biometrics/battery/brightness 等）は **Web で落ちないようガード**する（`Platform.OS` 分岐 or `isAvailableAsync`）。これにより `expo export --platform web` が device 無しでバンドル確証になる。
+
+**S6. TypeScript: テンプレ/アセットの module 宣言**
+- テンプレートが `*.module.css` / `global.css` を import するため `declare module '*.css'` 等が要る。`require()` する音声/画像アセットには `declare module '*.mp3'`（`.wav` `.caf` 等）を `src/global.d.ts` に置く。
+
+**S7. ESLint ルールは SDK 連動。SDK を跨いだルール固定をしない**
+- `eslint-config-expo` は SDK に連動。別 SDK のプラグインにしか無いルール（例: `react-hooks/set-state-in-effect`）を `eslint.config.js` で参照すると、SDK 不一致時に **eslint が起動時クラッシュ**する。ルール上書きは最小限にし、SDK 変更時は撤回する。
+
+**S8. SDK ダウングレード手順（Expo Go 合わせ等で必要な時）**
+1. `npm i expo@^<target>` → `npx expo install --fix`（全依存を当該 SDK に整合）
+2. **クリーン再インストール**（`node_modules` と lock を削除 → `npm install`。peer 衝突を避ける）
+3. **その SDK に無い新しめパッケージを除去**（例: SDK56 専用の `@expo/ui` / `expo-glass-effect` / `expo-symbols`）と、それに依存する**未使用テンプレ component を削除**
+4. SDK 差の API 修正（例: 新しい expo-router が再エクスポートする `ThemeProvider`/`DefaultTheme` は、古い SDK では `@react-navigation/native` から import する）
+
+**S9. 再ビルドの要否境界（dev build 運用）**
+- **JS/TSX のみ**の変更 → Fast Refresh で反映、**再ビルド不要**。
+- **ネイティブ設定変更**（app.json の plugins/permissions、ネイティブモジュール追加、カスタム音源等）→ **dev build を作り直す**。
+
+**S10. EAS dev build の実務**
+- ログインは人間操作（`eas login`）。`eas init --force` で project 作成 → `eas build -p android --profile development`（`developmentClient: true` + `distribution: internal` + apk、キーストアはクラウド自動生成）。
+- ビルドは **uncommitted な作業ツリーも取り込む**（`cli.requireCommit` 既定 false）。`--no-wait` で即 build URL を取得し、Expo MCP（`mcp__expo__build_*`）が利用可能なら状態監視に使える。
+
 ---
 
 ### stack 未収載時の扱い
