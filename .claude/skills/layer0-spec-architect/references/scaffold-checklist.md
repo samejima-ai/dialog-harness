@@ -1,7 +1,7 @@
-# Scaffold Checklist（v5.1.0 追加 / v6.1.0 で 9 stack カタログ化）
+# Scaffold Checklist（v5.1.0 追加 / v6.1.0 で 9 stack カタログ化 / v6.2.0 で Expo 追加 10 stack 化）
 
 L0 §6「開発環境の設計・構築」で **stack 別に必ず生成すべきファイル群** と **smoke test 手順** を規定する。
-標準 stack（Vite+TS+React+PWA）に加え、`## 追加 stack カタログ` で Next.js / Vue / Astro / FastAPI / Django / Express / Go / Rails の 8 stack を同形式で規定する（合計 9 stack）。
+標準 stack（Vite+TS+React+PWA）に加え、`## 追加 stack カタログ` で Next.js / Vue / Astro / FastAPI / Django / Express / Go / Rails / Expo の 9 stack を同形式で規定する（合計 10 stack）。
 `references/dev-env-spec.md` がディレクトリ配置・参照権限マトリクス・モード別差分（M1/M2/L2）を扱うのに対し、本ファイルは **stack 単位の実体ファイル一覧と smoke 手順** に責務を絞る。
 
 **§0 受け入れ基準 2 番との対応**: 本ファイルの対応 stack テンプレートで指示されたファイル群が実体として生成されていない状態で L1 へ譲渡することは原則違反。
@@ -67,9 +67,9 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 
 ---
 
-## 追加 stack カタログ（v6.1.0 追加）
+## 追加 stack カタログ（v6.1.0 追加 / v6.2.0 で Expo 追加）
 
-上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **8 つの追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
+上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **9 つの追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
 
 > **出典・観測経路の明示（Council `council-2026-06-18T11:50:01Z-cw0rld` 条件②）**
 > 本カタログの stack 選定・標準コマンド構成は、外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT License）の framework 別 CLAUDE.md テンプレを **観測** し、DH の scaffold-checklist 形式（必須生成ファイル + smoke 手順）に **再構成** したものである。原典の散文テンプレを丸ごと転記したものではない。観測事例としての位置づけは `references/observed-peers.md` を参照。各 stack の必須生成ファイル一覧・最低要件・smoke 手順は DH 固有の規約であり、原典には存在しない。
@@ -81,7 +81,7 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 - `.gitignore` は最低限 `node_modules/`（または言語別の依存ディレクトリ）/ ビルド成果物 / `.env*` / テストレポート / カバレッジを含む
 - `.env` 系の秘匿値（`DATABASE_URL` / `SECRET_KEY` / `JWT_SECRET` 等）は **`.gitignore` 必須**。`.env.example` で雛形のみコミット
 - smoke test が通らない場合は §7.4 自己検証の規約に従い `DELIVERY.md` / `delivery/SELF-VERIFICATION-*.md` に失敗手順・理由・保留事由を明記して譲渡する（沈黙譲渡は §0 受け入れ基準 3 違反）
-- UI を含む stack（React/Next.js/Vue/Astro）は `## DESIGN.md 連携` の対象。非 UI stack（FastAPI/Django/Express/Go/Rails の API 専用構成）では DESIGN.md は生成しない
+- UI を含む stack（React/Next.js/Vue/Astro/Expo）は `## DESIGN.md 連携` の対象。非 UI stack（FastAPI/Django/Express/Go/Rails の API 専用構成）では DESIGN.md は生成しない。Expo（ネイティブ UI）の視覚検証は各 stack 節「DESIGN.md 連携」の読み替え規約に従う
 
 ---
 
@@ -227,9 +227,61 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 
 ---
 
+### Stack 10: Expo (React Native) — SDK 54+ / Expo Router（v6.2.0 追加）
+
+モバイル（iOS / Android）＋ Web を 1 コードベースで扱う唯一のクロスプラットフォーム stack。`create-expo-app` の default template（file-based routing / TypeScript / 3 platform 対応）を基準とする。前述 9 stack が Web/API 層なのに対し、本 stack は**ネイティブアプリ層**を担う。
+
+> **Expo SDK 56+ の AI エージェント連携（観測経路の明示）**
+> Expo SDK 56 以降、`create-expo-app` は AI エージェント用の設定ファイル（`AGENTS.md` / `CLAUDE.md` / `.claude/settings.json`）を**自動生成**する。本 stack はこれを DH 形式の必須生成ファイルとして取り込み、DH の CLAUDE.md 生成（L0 §6/§7）と**共存**させる（後述「DH との共存規約」）。観測元は Expo 公式ドキュメント [docs.expo.dev/agents/](https://docs.expo.dev/agents/) / [/skills/](https://docs.expo.dev/skills/) / [/eas/ai/mcp/](https://docs.expo.dev/eas/ai/mcp/)（2026-06 観測）。Expo は DH が scaffold する**対象技術**であり、DH と競合する Layer 3 方法論層ではないため `observed-peers.md` には登録しない。
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `package.json` | 依存・scripts | `"main": "expo-router/entry"`。`scripts` に `start`（= `expo start`）/ `android` / `ios` / `web` / `lint`（= `expo lint`）を持つ。`expo` / `expo-router` / `react-native` を依存に持つ |
+| 2 | `app.json`（または `app.config.ts`） | Expo アプリ設定 | `expo.name` / `expo.slug` / `expo.scheme`（deep link 用）/ `expo.plugins` に `expo-router` を含む。新アーキ前提なら `expo.newArchEnabled: true` |
+| 3 | `tsconfig.json` | TS 設定 | `expo/tsconfig.base` を `extends`、`strict: true` |
+| 4 | `app/_layout.tsx` | ルートレイアウト | expo-router の `<Stack>` または `<Tabs>` ナビゲータを返す |
+| 5 | `app/index.tsx` | トップ画面 | プレースホルダ UI（起動エラーが出ないこと） |
+| 6 | `components/` | UI コンポーネント置場 | 空でも可（ディレクトリ存在）。RN 標準ではなく `@expo/ui` 利用を選択肢として例示（最低要件には含めない） |
+| 7 | `assets/` | アイコン・スプラッシュ等 | `app.json` の `icon` / `splash` が参照する画像が実体として存在（プレースホルダ可） |
+| 8 | `.gitignore` | git 除外 | `node_modules/` `.expo/` `dist/` `*.orig.*` `.env*` `ios/` `android/`（CNG 運用時。bare 運用なら調整） |
+| 9 | `AGENTS.md`（SDK 56+ の `create-expo-app` 生成物） | Expo 固有エージェント規約の Source of Truth | SDK バージョン・Expo 推奨パターン（`@expo/ui` / `expo/fetch` 等）への誘導を含む。SDK 55 以前で未生成の場合は L0 が最小版を生成 |
+
+`package-lock.json` / `bun.lock` 等の lock ファイルは依存導入で生成されるため初期生成チェック対象外。`ios/` `android/` は CNG（Continuous Native Generation）運用では `expo prebuild` で都度生成するため初期生成チェック対象外。
+
+#### DH との共存規約（CLAUDE.md / AGENTS.md / .claude/settings.json）
+
+`create-expo-app`（SDK 56+）が生成する 3 ファイルと DH 生成物は、責務を分けて**共存**させる（上書きしない）：
+
+| ファイル | 一次責務 | DH の扱い |
+|---|---|---|
+| `AGENTS.md` | Expo 固有ルール（SDK バージョン・`@expo/ui` / `expo/fetch` 等の推奨パターン）の Source of Truth | **残す**。Expo の知見を消さない |
+| `CLAUDE.md` | エージェント RL（ルール）定義 | DH が生成する CLAUDE.md の `## 参照` に `@AGENTS.md` を import 行として含め、DH 固有 RL（SPEC/REGIME/DONT/sensors 参照・献上規約・モード差分）を**上乗せ**する。Expo 生成の最小 CLAUDE.md は DH 版に統合 |
+| `.claude/settings.json` | Expo 公式プラグイン（Skills / MCP）の事前有効化 | **残す**。DH 固有設定（hooks 等）はマージで追記し、Expo プラグイン有効化を温存する |
+
+Expo Skills（`/plugin install expo` 等）・Expo MCP Server は利用者の任意導入とし、本カタログでは最低要件に含めない（DH の scaffold は決定論的ファイル一覧に責務を絞るため）。導入手順は AGENTS.md / Expo 公式ドキュメントに委譲する。
+
+#### Smoke test
+
+`create-expo-app` は実機/シミュレータ起動を伴うため、CI でも通る**決定論的サブセット**を smoke の必須とする：
+
+```bash
+npm install                       # exit 0、lock 生成
+npx expo lint                     # exit 0（lint 設定が呼べる状態）
+npx tsc --noEmit                  # exit 0（型エラーなし）
+npx expo export --platform web    # exit 0、dist/ 配下に web ビルド生成（バンドラ起動の確証）
+```
+
+実機/シミュレータ起動（`npx expo start` → Expo Go / dev client で画面到達）は**手動 smoke** とし、CI 必須には含めない（GUI 依存・環境依存のため）。EAS Build を使う場合は `npx eas build --platform <p> --profile preview` を別途 §7.4 自己検証の任意項目とし、本セッション環境では Expo MCP（`mcp__expo__build_*` / `workflow_*`）経由でビルド状況を観測できる。通らない場合は §7.4 自己検証の規約に従い失敗手順・理由・保留事由を明記して譲渡する。
+
+#### DESIGN.md 連携（ネイティブ UI）
+
+Expo は UI を含む stack のため `## DESIGN.md 連携` の対象。ただし Web の Playwright スクショ比較はそのままでは使えないため、視覚検証は (a) `npx expo export --platform web` 出力に対する Playwright、または (b) Maestro / Detox 等の RN E2E によるスクショ取得に読み替える。第 5 層 Vision 判定（UX Priority `standard` 以上で必須）は取得スクショ + DESIGN.md `## Do's and Don'ts` で同様に適用する。
+
+---
+
 ### stack 未収載時の扱い
 
-上記 9 stack（標準 + 追加 8）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
+上記 10 stack（標準 + 追加 9）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
 
 ---
 
