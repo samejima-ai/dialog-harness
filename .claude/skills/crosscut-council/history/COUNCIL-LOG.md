@@ -1184,3 +1184,69 @@ L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml
 3 ペルソナ独立評価結果: 経営者は案C（downstream opt-in、confidence 0.70）、開発者は案B（philosophy §4 違反と context window 圧迫を理由に非採用、confidence 0.88）、哲学者は案B 寄りの保留（『harness の責務境界を UX まで拡張する意図なら DONT.md 改訂議論が先』というメタ問い、confidence 0.55）。weighted_score では 案B 4.62 vs 案C 2.80 で 案B が明確優位。第 3 の道（哲学者の stance）は options 内 案B の解釈拡張として包摂し third_way_excluded は空に保持（grtmpl 事例と異なり付帯条件が options 内に収まるため）。judgment_confidence 0.72 で auto_agree 区分。
 
 合意プロセス: ユーザーから「Harness には不要で構築するプロジェクトにオプトインが正解だね」の応答により `agreed_recommended` を確定 (2026-05-29T08:22:00Z)。recommended の核（harness 本体での非採用）と経営者の少数意見（downstream プロジェクトでの opt-in 採用は別判断として残す）の両方を統合する方針で合意。哲学者の少数意見（DONT.md 改訂 + 第 7 条級議論）は本 invocation の判断スコープ外として L0 振り返り儀式の棚卸し対象に保持。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録。
+
+## council-2026-06-28T11:54:06Z-de8276
+
+```json
+{
+  "invocation_id": "council-2026-06-28T11:54:06Z-de8276",
+  "timestamp": "2026-06-28T11:54:06Z",
+  "source_skill": "human_direct_invocation",
+  "council_type": "business",
+  "category": "conception",
+  "category_fallback": false,
+  "question_to_answer": "henteko 氏の Zenn 記事「Loop エンジニアリングと Harness エンジニアリング」を DH の observed-peers.md（Layer 3 観測リスト）へ吸収するか、するならどの粒度か（観測ログ追記のみ / philosophy・references への概念取り込み / 却下）",
+  "phase_reached": "phase_3",
+  "conflict_type": "unanimous",
+  "final_weights": {
+    "経営者": 3,
+    "開発者": 3,
+    "哲学者": 5
+  },
+  "persona_summary": {
+    "経営者": { "stance": "案A: 観測ログ追記のみ", "confidence": 0.75, "dimension": "ROI / 機会損失" },
+    "開発者": { "stance": "案A: 観測ログ追記のみ", "confidence": 0.88, "dimension": "保守性" },
+    "哲学者": { "stance": "案A: 観測ログ追記のみ", "confidence": 0.60, "dimension": "前提への問い / 長期影響" }
+  },
+  "weight_calculation": {
+    "method": "weight_times_confidence",
+    "scores": [
+      {
+        "stance": "案A: 観測ログ追記のみ",
+        "supporters": ["経営者", "開発者", "哲学者"],
+        "weight_sum": 11,
+        "weighted_score": 7.89,
+        "components": [
+          {"persona": "経営者", "weight": 3, "confidence": 0.75},
+          {"persona": "開発者", "weight": 3, "confidence": 0.88},
+          {"persona": "哲学者", "weight": 5, "confidence": 0.60}
+        ]
+      }
+    ],
+    "third_way_excluded": [],
+    "max_score_stance": "案A: 観測ログ追記のみ",
+    "tie_break_applied": false
+  },
+  "weight_calculation_retry_count": 0,
+  "judgment_confidence": 0.85,
+  "recommended": "案A: observed-peers.md に観測ログとして 1 エントリ追記する（既存フォーマット準拠）。philosophy / references への概念取り込み（案B）は claude-world 前例と同型の「思想の二重定義 drift リスク」で見送り、概念層が最も近接する分むしろ drift 危険が高いため観測層に留める。哲学者の指摘した『Loop を誰が回すか＝人間の当事者性の置き場所』の差異（記事: Loop も人の職種 / DH: Loop は AI が回し人間は判断主体）は temporal な温存項目として当該エントリ内に明記する",
+  "minority_opinion": "全会一致のため反対意見なし。ただし哲学者が『未問の前提』として、本記事を吸収可否の二択に矮小化すると Loop の主体（人間の当事者性をどこに宿すか）という根本問いを取り逃すと警告。開発者は『Harness エンジニアリング』の語が原典定義（環境構築職）と DH 定義（Layer 3 方法論全体）でズレるため差異点への明記を必須条件として付帯。両者は案A の実行品質条件として統合する",
+  "weight_note": "category: conception → 経営者 3 / 開発者 3 / 哲学者 5（哲学者 +2 補正）。全会一致のため最大重みの哲学者 confidence 0.60 が weighted_score の最大寄与（3.00）",
+  "reasoning": "3 ペルソナとも案A を独立に選択（weighted_score 7.89、単一 stance のため対立なし）。経営者=最小工数で最大の観測リターン、開発者=既存フォーマットへの機械的完結・完全可逆・増分コード0、哲学者=概念層最近接ゆえの drift 誘惑を観測層で断つ、と異なる dimension から同一結論に収束。claude-world（cw0rld）前例の案A 採択・案B 却下と論理整合する。多様性（プルラリティ）として質が高い全会一致",
+  "human_escalated": false,
+  "consensus_mode": "auto_agree",
+  "implementer_consent": null,
+  "follow_up_questions_count": 0,
+  "agreed_at": null,
+  "modification_note": null,
+  "escalation_reason": null
+}
+```
+
+### 合意プロセス記録
+
+ユーザー（ひでさん）から henteko 氏 Zenn 記事「Loop エンジニアリングと Harness エンジニアリング」(https://zenn.dev/henteko/articles/f65485dac55599) の observed-peers.md 吸収可否を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebFetch で記事内容（Loop エンジニアリング=人が Why/What とジャッジ・AI が開発サイクルを回す / Harness エンジニアリング=新職種が安全・高速 loop の環境構築と継続運用 / 両者協調 / 既存技術の延長線と自己規定）を確認。決定的 context として observed-peers.md の既存 2 事例（CoDD coddag / claude-world cw0rld）、claude-world 前例の案A 採択・案B 却下（思想の二重定義 drift）、philosophy 第1条フラクタル原則の Layer 3 観測自己適用要請を提示。
+
+3 ペルソナ独立並列評価（Phase 1、情報純度担保のため他ペルソナ出力非共有の独立 call で生成）はいずれも案A を選択し全会一致（unanimous）。weighted_score は案A 単一 stance で 7.89。judgment_confidence 0.85 で auto_agree 区分。final_decision は null（合意プロセス未完）。
+
+実行品質条件（少数意見の統合）: (1) 開発者付帯=「Harness エンジニアリング」の語が原典定義（環境構築職）と DH 定義（Layer 3 方法論全体）でズレる点を差異点に明記、(2) 哲学者温存=「Loop を誰が回すか＝人間の当事者性の置き場所」の差異を未問の前提として温存項目に記録。実 observed-peers.md への追記とユーザー合意・commit/push は本ログ追記後に実施予定（追記後 implementer_consent / agreed_at を後埋め）。
