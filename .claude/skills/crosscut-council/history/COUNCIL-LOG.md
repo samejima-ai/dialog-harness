@@ -1235,9 +1235,9 @@ L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml
   "reasoning": "3 ペルソナとも案A を独立に選択（weighted_score 7.89、単一 stance のため対立なし）。経営者=最小工数で最大の観測リターン、開発者=既存フォーマットへの機械的完結・完全可逆・増分コード0、哲学者=概念層最近接ゆえの drift 誘惑を観測層で断つ、と異なる dimension から同一結論に収束。claude-world（cw0rld）前例の案A 採択・案B 却下と論理整合する。多様性（プルラリティ）として質が高い全会一致",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
-  "implementer_consent": null,
+  "implementer_consent": "agreed_recommended",
   "follow_up_questions_count": 0,
-  "agreed_at": null,
+  "agreed_at": "2026-06-28T12:00:00Z",
   "modification_note": null,
   "escalation_reason": null
 }
@@ -1247,6 +1247,8 @@ L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml
 
 ユーザー（ひでさん）から henteko 氏 Zenn 記事「Loop エンジニアリングと Harness エンジニアリング」(https://zenn.dev/henteko/articles/f65485dac55599) の observed-peers.md 吸収可否を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebFetch で記事内容（Loop エンジニアリング=人が Why/What とジャッジ・AI が開発サイクルを回す / Harness エンジニアリング=新職種が安全・高速 loop の環境構築と継続運用 / 両者協調 / 既存技術の延長線と自己規定）を確認。決定的 context として observed-peers.md の既存 2 事例（CoDD coddag / claude-world cw0rld）、claude-world 前例の案A 採択・案B 却下（思想の二重定義 drift）、philosophy 第1条フラクタル原則の Layer 3 観測自己適用要請を提示。
 
-3 ペルソナ独立並列評価（Phase 1、情報純度担保のため他ペルソナ出力非共有の独立 call で生成）はいずれも案A を選択し全会一致（unanimous）。weighted_score は案A 単一 stance で 7.89。judgment_confidence 0.85 で auto_agree 区分。final_decision は null（合意プロセス未完）。
+3 ペルソナ独立並列評価（Phase 1、情報純度担保のため他ペルソナ出力非共有の独立 call で生成）はいずれも案A を選択し全会一致（unanimous）。Council 出力として確定した事実は: conflict_type=unanimous / weighted_score=7.89（案A 単一 stance）/ judgment_confidence=0.85 で auto_agree 区分。決定は Council ではなく後段の人間合意プロセスに委ねられる（Council の Judgment 出力規約では決定値は設計上常に空で返り、本エントリ §8 スキーマも判断結果のみを保持する）。
 
-実行品質条件（少数意見の統合）: (1) 開発者付帯=「Harness エンジニアリング」の語が原典定義（環境構築職）と DH 定義（Layer 3 方法論全体）でズレる点を差異点に明記、(2) 哲学者温存=「Loop を誰が回すか＝人間の当事者性の置き場所」の差異を未問の前提として温存項目に記録。実 observed-peers.md への追記とユーザー合意・commit/push は本ログ追記後に実施予定（追記後 implementer_consent / agreed_at を後埋め）。
+実行品質条件（少数意見の統合）: (1) 開発者付帯=「Harness エンジニアリング」の語が原典定義（環境構築職）と DH 定義（Layer 3 方法論全体）でズレる点を差異点に明記、(2) 哲学者温存=「Loop を誰が回すか＝人間の当事者性の置き場所」の差異を未問の前提として温存項目に記録。
+
+**後埋め（合意成立）**: ひでさんの合意により判定（案A）が成立し、`implementer_consent: agreed_recommended` / `agreed_at` を後埋めした（null 宣言済みフィールドへの append-only 後埋め）。これを受けて後続作業として実 `observed-peers.md` に当該エントリを追記し、上記実行品質条件 (1)(2) を共鳴点/差異点/温存項目へ反映した。CTL 事後評価は `de8276 → agreed` で記録済み。
