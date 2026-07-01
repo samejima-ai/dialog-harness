@@ -5,6 +5,31 @@ CTL（Council Trust Level）は手で書き換える値ではなく、横断蓄�
 決定論的に算出される。**CTL を上げる = この事後評価ループを回し続けること**
 ＝ Loop Engineering の Step 5「経験の還元」を回すこと。
 
+## 記録経路（v6.1.0 — 単一情報源は COUNCIL-LOG）
+
+CTL の記録（`invocations/`）は **`history/COUNCIL-LOG.md` を単一情報源として
+`council-log-sync.py` が同期で導出する**。個別 `record` を毎回手で叩く手順書依存は
+v6.1.0 で廃した（発火を強制する主体が無く空文化した — 発動 53 回に対し記録 1 件だった）。
+
+```bash
+# COUNCIL-LOG → council-data 同期 + 孤児掃除 + CTL 再計算（主経路）
+python3 scripts/council-log-sync.py sync --prune --recompute
+
+# 生成予定を確認するだけ（書かない）
+python3 scripts/council-log-sync.py sync --dry-run
+```
+
+**発火主体**: L0 振り返り儀式（F1 ステップ 4）が同期の主たる発火点
+（`layer0-spec-architect/references/ritual-protocol.md` §F1 / §F2.5）。儀式は
+「同期 → `pending` 列挙 → 未評価を人間に問う」を 1 手順として固定する。儀式外で
+手動同期したい時は上記コマンドを直接叩く。`record`（下記）は同期を待たず 1 件だけ
+即記録したい場合の補助だが、v6.1.0（案A・単一ソース化）では **COUNCIL-LOG が唯一の一次情報源**。
+`record` を使う時は必ず同じ発動を COUNCIL-LOG にも追記すること — 追記すれば次の同期で
+正規版（同一 invocation_id → 同一ファイル名）に一本化される。COUNCIL-LOG に対応しない手動
+record は孤児として `sync --prune` の掃除対象になる（残すと二重計上源）。
+
+詳細な設計は `dh-upgrades/upgrade-spec-v6.1.0.md`。
+
 - 一次情報源: `.claude/skills/crosscut-council/references/ctl-calculation.md` /
   `ctl-maturity-strategy.md`。`council-ctl.py` の `calculate_ctl()` は §3 の忠実実装。
 - データは **user-scope（`~/.claude/council-data/`）に閉じる**（プライバシー配慮）。

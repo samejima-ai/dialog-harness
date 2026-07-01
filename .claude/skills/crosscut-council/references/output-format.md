@@ -263,6 +263,8 @@ Judgment Agent から実装者への delta 応答：
   council_type: "business"
   category: "implementation"
   category_fallback: false
+  decision_category: "C2"   # 必須（v6.1.0）: C1-C4 / H1-H4。CTL 統計のカテゴリキー。
+                            # category（重み軸）と直交。欠落すると同期で null 化され CTL に算入されない
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
   final_weights:

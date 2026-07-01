@@ -85,6 +85,12 @@ L0（spec-architect）が対話開始時に実行する「過去文脈⇔現欲�
    - **COLD（`history/archive/`）は既定でロードしない**（retrievable・必要時のみ明示 retrieve）。レベル 3 でも全 INTENT の生ロードは避け、結晶化済み HOT + 関連 WARM に絞る
    - 趣旨: F1 の入力を全 history から HOT + 関連 WARM に絞ることで読み込みコスト（AI 購読量）を激減させる（情報代謝サイクルの「最小の第一歩」。tier 定義は layer0-reindex-librarian/references/metabolism-regime.md）
 3. 人間に**1問だけ**提示: 「前回ここまで進みました。今回はこれの続きで合ってますか？」
+4. **CTL 同期（v6.1.0・儀式の発火主体）**: `scripts/council-log-sync.py` が存在すれば
+   `python3 scripts/council-log-sync.py sync --prune --recompute` を走らせる（COUNCIL-LOG →
+   council-data 導出 + 孤児掃除 + CTL 再計算）。これが CTL 記録経路の主たる発火点であり、
+   手順書依存に戻さないための実行経路接続（`crosscut-council/SKILL.md` §CTL 記録 /
+   `dh-upgrades/upgrade-spec-v6.1.0.md`）。スクリプト不在なら skip（利用者プロジェクトで壊れない）。
+   同期は読取専用の導出で可逆・低コスト。質問は挟まない（F1 は質問なしフェーズ）。
 
 ### F2: 認識ズレ検出（AI主導・検出時のみ質問）
 
@@ -98,6 +104,28 @@ L0（spec-architect）が対話開始時に実行する「過去文脈⇔現欲�
    - 復活要求 → 「F003 は 2026-03-20 に利用率低で廃止しました。復活条件を満たしますか？」
    - 再提案 → 「上限なし案は当初『パフォーマンス劣化リスク』で却下しました。状況変化ありますか？」
 4. 検出なしなら**質問なし**でF3へ
+
+### F2.5: CTL 事後評価（v6.1.0・「問う契機」の必須経路）
+
+CTL（Council Trust Level）昇格の律速は record ではなく**事後評価**（agreement_rate を
+作る唯一の燃料）。記録が満ちても事後評価が回らねば CTL は上がらない。哲学者の第3の道
+（Council `council-2026-07-01T-ctlrec1`）に基づき、儀式が「この委譲は妥当だったか」を
+**問う契機**を保証する。CTL の値ではなく「問う契機」を機構が担う設計。
+
+1. F1 ステップ 4 の同期後、`python3 scripts/council-ctl.py pending` で未評価判定を列挙する
+   （スクリプト不在なら本ステップ skip）。
+2. 未評価があれば人間に**まとめて 1 問**で問う: 「前回以降の Council 判定 N 件が未評価です。
+   それぞれ推奨どおり採用しましたか？（一括 agreed / 個別に確認 / 後で）」
+3. 回答に従い `council-ctl.py evaluate <id> --status agreed|modified|rejected` を実行する。
+   - 「後で」を選んだ場合は評価を保留（pending のまま）。強制しない（惰性で agreed を
+     押させない — 事後評価の意識的契機を守る）。
+   - `rejected` が出たら rate が下がり CTL 降格しうる（`ctl-maturity-strategy.md` §退行）。
+     これは正しい挙動（委譲が妥当でなかった事実を CTL に反映する）。
+4. 未評価なしなら**質問なし**でF3へ。
+
+**レベル別の深度**: レベル 1 は「一括 agreed / 後で」の 2 択軽量版。レベル 2/3 は個別確認を
+推奨（judgment ログをレビューして decision_category 別の傾向も見る）。本ステップは
+`scripts/council-ctl.py` 不在の利用者プロジェクトでは完全 skip（後方互換）。
 
 ### F3: 履歴更新予告（人間は承認のみ）
 
