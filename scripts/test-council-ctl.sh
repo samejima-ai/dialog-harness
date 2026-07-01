@@ -9,7 +9,9 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-CLI="python3 $HERE/council-ctl.py"
+# python3 が無い環境（Windows native 等）では python にフォールバック
+if command -v python3 >/dev/null 2>&1; then PY=python3; else PY=python; fi
+CLI="$PY $HERE/council-ctl.py"
 export COUNCIL_DATA_DIR="$(mktemp -d)"
 trap 'rm -rf "$COUNCIL_DATA_DIR"' EXIT
 
@@ -59,7 +61,7 @@ COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI status >/dev/null 2>/dev/null || fail "破�
 HEALED="$(COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI status 2>/dev/null | sed -n 's/^現在の CTL: //p' | head -1)"
 [ "$HEALED" = "CTL-1" ] || fail "破損 stats でも自己修復して CTL-1 のはず（実際 $HEALED）"
 COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI recompute >/dev/null 2>/dev/null || fail "破損 stats.json で recompute が落ちた"
-python3 -c "import json; json.load(open('$CORRUPT_DIR/stats.json'))" || fail "recompute 後も stats.json が不正"
+$PY -c "import json; json.load(open('$CORRUPT_DIR/stats.json'))" || fail "recompute 後も stats.json が不正"
 rm -rf "$CORRUPT_DIR"
 echo "  ok: 破損 stats を invocations/ から自己修復（CTL-1 維持）＋recompute で永続化"
 

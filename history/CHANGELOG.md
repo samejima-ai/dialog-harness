@@ -2,6 +2,42 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 2026-07-01 CTL 記録経路の再設計（分断解消・単一ソース化・v6.1.0、minor 昇格、PR 準備中）
+
+利用者（ひでさん）の指摘「多くの council 判定をしてきたのに CTL のデータがない＝機能していない」を
+起点に、CTL（Council Trust Level）記録経路の分断を解消。調査で根本原因を確定：`record` を強制する
+実行主体が無く手順書依存で空文化（発動 53 回に対し CTL 用記録 1 件）、`decision_category`（CTL 必須キー）
+が COUNCIL-LOG 53 件中 2 件のみ、`category`（重み軸）と `decision_category`（委譲軸）の二重管理。
+過去に AD-004（v4.2）で「機構はあるが動作分岐に未接続」という同型欠陥を修正済みだが記録経路は手つかず
+で残った＝「機構を作るが実行経路に接続しない」反復欠陥。
+
+- **同期スクリプト新設** `scripts/council-log-sync.py`: `history/COUNCIL-LOG.md`（append-only・全発動が
+  確実に追記される）を**単一情報源**として `~/.claude/council-data/invocations/` を導出。二重書き経路を解消。
+- **decision_category は機械導出しない**（Council `council-2026-07-01T-ctlrec1`, unanimous 案A修正）:
+  明示があれば採用・無ければ null 保持。`category`→`decision_category` の写像は非全射で「満ちているが
+  意味は空」な統計汚染を生むため却下。null は既存 `_compute_stats` の null-skip で統計除外。
+- **単一ソース化 + prune**（Council `council-2026-07-01T-ctldedup`, unanimous 案A）: COUNCIL-LOG 対応は
+  常に上書き、孤児（別採番の手動 record 等）は `--prune` で掃除。手動 record を「COUNCIL-LOG 即時追記
+  トリガ」へ再定義し二重計上を構造的に防止。
+- **Phase 0 で decision_category 必須ゲート化**（`pre-check.md` / `output-format.md`）: 将来分の CTL 軸
+  欠落を予防。COUNCIL-LOG エントリスキーマに `decision_category` を必須追加。
+- **振り返り儀式に CTL 事後評価を接続**（`ritual-protocol.md` F1 同期 + F2.5 事後評価）: 哲学者の第3の道
+  「問う契機を機構が保証」を必須化。儀式冒頭で `sync --prune --recompute` を発火（手順書依存に戻さない
+  実行経路接続）。
+- **SKILL.md §CTL 記録改訂**: 「発動のたびに手で record」→「COUNCIL-LOG 単一ソース・同期経路が保証」。
+- 過去 53 件をバックフィル済み（可逆）。うち `decision_category` 明示は僅少のため CTL は依然 CTL-0
+  （＝正しい実態。過去分の真の救済には C1〜C4 の人手分類が必要）。
+
+変更ファイル: `scripts/council-log-sync.py`（新規）/ `scripts/test-council-log-sync.sh`（新規）/
+`scripts/council-ctl.py` テストの python3→python フォールバック / `crosscut-council/SKILL.md` /
+`crosscut-council/references/pre-check.md` / `output-format.md` /
+`layer0-spec-architect/references/ritual-protocol.md` / `scripts/README-council-ctl.md` /
+`dh-upgrades/upgrade-spec-v6.1.0.md`（新規）/ `VERSION`(6.1.0) / 履歴層。
+
+**既知の制約（本 PR スコープ外）**: `test-council-ctl.sh` は通し実行時に Windows(MSYS/native Python) 環境で
+`_atomic_write` の os.replace タイミングに起因する不安定性がある（`council-ctl.py` 本体・単独実行は健全、
+新規 `test-council-log-sync.sh` は全 PASS）。既存問題であり別 issue とする。
+
 ## 2026-06-14 権限委譲境界の確立（可逆性ベース・v6.0.0、major 昇格、released 2026-06-14、PR #147/#148 merged + #153 で配布機構実体化完了）
 
 利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は出力後修正／

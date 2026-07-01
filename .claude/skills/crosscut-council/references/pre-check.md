@@ -52,6 +52,7 @@ PR3 では以下に拡張：
 - `question_to_answer`（答えるべき問い、1 文）
 - `source_skill`（発動元スキル名）
 - `category`（重み配分カテゴリ、`implementation` 等）
+- `decision_category`（判断委譲カテゴリ、`C1`〜`C4` / `H1`〜`H4`）— **v6.1.0 で必須化**
 
 差し戻し時の応答：
 
@@ -59,9 +60,38 @@ PR3 では以下に拡張：
 {
   "status": "pre_check_failed",
   "reason": "required field 'options' is missing or has < 2 entries",
-  "required_fields": ["context", "options", "question_to_answer", "source_skill", "category"]
+  "required_fields": ["context", "options", "question_to_answer", "source_skill", "category", "decision_category"]
 }
 ```
+
+### decision_category 必須ゲート（v6.1.0 追加）
+
+CTL（Council Trust Level）は `decision_category`（C1〜C4）でカテゴリ分けして
+判断委譲精度を学習する。この値が発動時に記録されないと、CTL 統計に算入されず
+（null は `_compute_stats` の null-skip で除外）、CTL が実態より低く出続ける
+（v6.0.1 まで 53 発動中 2 件しか記録されず CTL-0 に張り付いた根本原因）。
+
+Council 発動の**単一情報源は COUNCIL-LOG**（同期で council-data を導出、
+[../SKILL.md](../SKILL.md) §CTL 記録）。よって Pre-Check は `decision_category` を
+**必須フィールドとして検証し、COUNCIL-LOG エントリに必ず書かせる**。
+
+- **値域**: `C1`/`C2`/`C3`/`C4`（Council 代替可能判断）または `H1`/`H2`/`H3`/`H4`
+  （人間専管判断）。定義は `philosophy.md` 第 6 条が原典。
+- **重み軸 `category` と混同しない**: `category`（conception/judgment 等、重み配分用）と
+  `decision_category`（C/H、判断委譲用）は直交した別概念
+  （[consensus-protocol.md](consensus-protocol.md) §category と decision_category の役割分担）。
+  同期スクリプトは両者を写像しない（写像は非全射）。だからこそ**発動時に両方を明示**する。
+- **H カテゴリ検知時**: `decision_category` が `H1`〜`H4` なら即時献上（Council を起動せず
+  `escalate_to_human`）。この分岐自体が `decision_category` の記録を前提とする。
+- **差し戻し例**:
+
+  ```json
+  {
+    "status": "pre_check_failed",
+    "reason": "required field 'decision_category' missing or not in C1-C4/H1-H4",
+    "required_fields": ["context", "options", "question_to_answer", "source_skill", "category", "decision_category"]
+  }
+  ```
 
 ## category 選択ガイド（発動側向け）
 
@@ -113,9 +143,14 @@ PR3 では以下に拡張：
   "status": "pre_check_passed",
   "council_type": "business",
   "category": "implementation",
+  "decision_category": "C2",
   "invocation_id": "council-2026-04-21T15:30:00Z-a1b2c3"
 }
 ```
+
+`decision_category` は Pre-Check が検証した値をそのまま透過する（v6.1.0）。この値は
+COUNCIL-LOG エントリの `decision_category` フィールドに必ず記録され、同期で council-data へ
+運ばれて CTL 統計に算入される。
 
 `invocation_id` は Pre-Check が採番する。形式は `council-<ISO 8601 timestamp with Z>-<6 文字の英小文字+数字ランダム>`。PR1 簡略実装では以下を採用：
 

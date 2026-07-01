@@ -188,24 +188,54 @@ Judgment Agent 出力（Council の判断）
 
 COUNCIL-LOG は append-only。編集不可。振り返り儀式（F1-F3、PR3 で連携）で監査する。
 
-### CTL 記録（user-scope, 自動・毎回必須）
+### CTL 記録（user-scope, COUNCIL-LOG から同期）
 
-COUNCIL-LOG（project-scope）とは別に、**発動のたびに自動で** user-scope の
-`~/.claude/council-data/invocations/` に invocation を 1 件記録する。これが
-Council Trust Level（CTL）の蓄積データになる（スキーマ・命名は
-[references/ctl-calculation.md](references/ctl-calculation.md) §4 が一次情報源）。
+CTL（Council Trust Level）の蓄積データ `~/.claude/council-data/invocations/` は、
+**`history/COUNCIL-LOG.md`（project-scope, append-only）を単一情報源として同期で導出する**
+（スキーマ・命名は [references/ctl-calculation.md](references/ctl-calculation.md) §4 が一次情報源）。
 
-この記録は **CTL を「回す」ための必須ステップ**であり、省略してはならない。
-記録しなければ CTL は永遠に CTL-0 に留まる（`total_invocations` が増えない）。
+**なぜ同期経路か（v6.1.0 で再設計、Council 諮問 `council-2026-07-01T-ctlrec1`）**:
+かつては「発動のたびに手で `record` を叩く」手順書依存だったが、それを強制する実行主体が
+無く空文化した（発動 53 回に対し CTL 記録は 1 件）。COUNCIL-LOG には**全発動が確実に追記される**
+（本 SKILL §ログ要件）ので、これを唯一のソースとし、`scripts/council-log-sync.py` が
+council-data を導出する。これで「書く側の経路」の二重化を解消する。詳細は
+`dh-upgrades/upgrade-spec-v6.1.0.md`。
+
+```bash
+python3 scripts/council-log-sync.py sync --prune --recompute  # 同期 + 孤児掃除 + CTL 再計算（主経路）
+python3 scripts/council-log-sync.py sync --dry-run            # 生成予定を確認（書かない）
+```
+
+**同期の発火主体（実行経路への接続 — 手順書依存に戻さない）**:
+同期は「スクリプトを作っただけ」では①と同じ轍を踏む。以下を主経路とする：
+- **L0 振り返り儀式（F1/F2/F3）の冒頭で必ず同期を走らせる**（`layer0-spec-architect/references/ritual-protocol.md` §CTL 事後評価）。儀式は「同期 → `pending` 列挙 → 未評価判定を人間に問う」を 1 手順として固定する。
+- CC hooks は tool 単位発火で「Council 発動」という抽象イベントに口が無いため、hook 発火は主経路にしない（`upgrade-spec-v6.1.0.md` §2.1 案B 却下理由）。
+
+**decision_category は同期で機械導出しない**: COUNCIL-LOG に明示された C1〜C4 / H1〜H4 が
+あればそれを使い、無ければ `null` で載せる。重み配分軸の `category`（conception/judgment 等）
+から `decision_category`（委譲軸）へ写像してはならない（両者は
+[references/consensus-protocol.md](references/consensus-protocol.md) §category と decision_category の役割分担
+で直交と明記。写像は非全射で、埋めると「満ちているが意味は空」な統計になり CTL 算出が偽の確信を生む）。
+`null` の invocation は `_compute_stats` の null-skip で統計から除外される。よって**将来分は
+Phase 0（発動時）で `decision_category` を必須記録する**（[references/pre-check.md](references/pre-check.md) §decision_category 必須ゲート）。
 
 **記録失敗時の規範（判断 ＞ 記録）**: Council の一次成果物は judgment であり、CTL 記録は従属物。
-ディスク full / 権限エラー等で記録に失敗しても **Council フロー（出力・合意プロセス）は止めない**。
-失敗は **warn として可視化**し（黙殺しない）、後日 `recompute` で invocations/ から復元する。
-記録失敗を理由に判断を握り潰すのは献上哲学（philosophy.md §5）に反する。
+COUNCIL-LOG への追記（本 SKILL §ログ要件）さえ済んでいれば、同期はいつでも後追いできる。
+同期・record が失敗しても **Council フロー（出力・合意プロセス）は止めない**。失敗は **warn として
+可視化**し（黙殺しない）、後日 `sync --recompute` で復元する。記録失敗を理由に判断を握り潰すのは
+献上哲学（philosophy.md §5）に反する。
 
-**記録の機構（フォールバック付き — 利用者プロジェクトでも壊れない）**:
+**個別 record は「COUNCIL-LOG 即時追記トリガ」であって第二の記録ストアではない**
+（v6.1.0 案A / Council `council-2026-07-01T-ctldedup`）:
 
-1. `scripts/council-ctl.py` が存在すれば、それを使う（推奨）:
+「単一情報源は COUNCIL-LOG」と宣言しながら手動 record を独立ストアとして温存すると、
+同一発動が二重計上され CTL 統計を歪める（v6.1.0 が葬った二重書き経路の再来）。よって
+**手動 record を使う時は必ず COUNCIL-LOG にも同じ発動を追記する**。追記すれば次の同期で
+正規版（COUNCIL-LOG 由来の invocation_id）に一本化される。COUNCIL-LOG に追記しない手動
+record は「孤児」として `council-log-sync sync --prune` の掃除対象になる（残すと二重計上源）。
+
+1. `scripts/council-ctl.py` が存在すれば、同期を待たず 1 件だけ即記録できる。
+   **ただし同時に COUNCIL-LOG へ追記すること**（§ログ要件。追記なしは二重計上源）:
 
    ```bash
    python3 scripts/council-ctl.py record \
@@ -215,11 +245,11 @@ Council Trust Level（CTL）の蓄積データになる（スキーマ・命名�
      --judgment "<recommended の抽象表現>" \
      --confidence <judgment_confidence> \
      --consensus <consensus_mode>
+   # → この発動を history/COUNCIL-LOG.md にも必ず追記する（同期で正規版へ一本化される）
    ```
 
    **`init` は不要**: `record` は未初期化（`~/.claude/council-data/` 不在）でも
    自動で CTL-0 コールドスタート初期化してから記録する（ctl-calculation.md §1/§8）。
-   「発動＝自動 record」が一度も `init` していない環境でも確実に走る。
 
 2. `scripts/council-ctl.py` が無い（DH skill のみ取り込んだ利用者プロジェクト等）場合は、
    下記スキーマの invocation JSON を `~/.claude/council-data/invocations/` に直接書く

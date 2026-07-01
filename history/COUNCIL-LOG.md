@@ -2465,3 +2465,94 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
   agreed_at: "2026-06-18T11:50:01Z"
+
+- invocation_id: "council-2026-07-01T13:04:40Z-ctlrec1"
+  timestamp: "2026-07-01T13:04:40Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "CTL 記録経路（council-ctl.py record の自動発火）をどの機構で保証すべきか"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案A（同期＋事後評価運用の確立を条件）", confidence: 0.72 }
+    開発者: { stance: "案A（category→decision_category 導出せず null 埋め）", confidence: 0.82 }
+    哲学者: { stance: "案A（decision_category は機械導出せず未分類保持）", confidence: 0.55 }
+  judgment_confidence: 0.67
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.37
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+          - { persona: "哲学者", weight: 5, confidence: 0.55 }
+    third_way_excluded: []
+    max_score_stance: "案A"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案A（COUNCIL-LOG を単一情報源とし同期スクリプトで council-data を導出）。ただし3ペルソナ独立収束の必須修正: (1) category→decision_category の機械導出はしない・同期時 null で載せ既存 _compute_stats の null-skip に委ねる (2) 同期の発火主体を実行経路に明示接続 (3) 事後評価を『問う契機』として振り返り儀式に経路化"
+  minority_opinion: "哲学者の第3の道（重み5）: decision_category を自動記録せず、Council 発動の一定間隔ごとに人間へ『この委譲は妥当だったか』を問う軽量な事後レビュー儀式を経路化。CTL の値でなく『問う契機』を機構が保証する設計。経営者の『事後評価が回らねば昇格に結実しない』と整合し advisory でなく必須。既存 F1/F2/F3 儀式に CTL 事後評価を接続する形で実現"
+  consensus_mode: "escalate_to_human"
+  weight_note: "category=conception 適用（経営者3/開発者3/哲学者5）。CTL 記録機構の意味論判断のため哲学者最重視。全会一致だが3者が ROI/技術的実現性/意味 の異なる次元から独立に同一 stance かつ同一修正条件へ収束（プルラリティの質が高い）"
+  reasoning: "案Bは CC hooks が tool 単位発火で Council 発動という抽象イベントに口がなく前提破綻。案Cはその案Bを冗長追加するだけで YAGNI。案A当初の『導出規則で decision_category を埋める』は却下— category(閾値軸)と decision_category(H/C 委譲軸)は consensus-protocol.md §311-324 で直交と明記、写像は非全射で損失なく作れず、埋めると『満ちているが意味は空』な統計で CTL 算出が偽の確信を生む"
+  human_escalated: true
+  # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  escalation_reason: "judgment_confidence 0.67 かつ CTL-0 のため compute_consensus_mode は escalate_to_human。人間（ひでさん）は recommended（修正後案A）を採用で合意。記録は escalate 経路だが合意成立、判定は人間が引き受け"
+  agreed_at: "2026-07-01T13:04:40Z"
+
+- invocation_id: "council-2026-07-01T13:30:57Z-ctldedup"
+  timestamp: "2026-07-01T13:30:57Z"
+  source_skill: "layer1-autonomous-dev"
+  question_to_answer: "同期版と同一発動を指す手動record由来 invocation の council-data 二重計上をどう解消するか"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "案A（+初回掃除条件）", confidence: 0.72 }
+    開発者: { stance: "案A（案B近似照合は拒否）", confidence: 0.82 }
+    哲学者: { stance: "案A（+第3の道: 即時追記トリガ再定義）", confidence: 0.68 }
+  judgment_confidence: 0.77
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 7.72
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.72 }
+          - { persona: "開発者", weight: 6, confidence: 0.82 }
+          - { persona: "哲学者", weight: 2, confidence: 0.68 }
+    third_way_excluded: []
+    max_score_stance: "案A"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案A（手動record保護撤廃・COUNCIL-LOG 単一ソース化）。必須条件: (1)COUNCIL-LOG が全情報包含の確認 (2)既存二重計上(19e4c2/2f317a)の初回掃除 (3)哲学者の第3の道『手動record を COUNCIL-LOG 即時追記トリガへ再定義』を明文化し直接JSON書きの抜け道を塞ぐ"
+  minority_opinion: "哲学者の第3の道(重み2): 手動record を撤廃でなく『COUNCIL-LOG への即時追記トリガ』へ再定義する止揚。即記録の動機を single store への即時 write として実装すれば単一ソースを保ったまま『待てない』要求を満たせる。advisory でなく設計に組み込む"
+  consensus_mode: "escalate_to_human"
+  weight_note: "category=implementation 適用（経営者2/開発者6/哲学者2）。技術的実現性が問われる案件ゆえ開発者最重。全会一致だが3者が リスク/技術/前提 の異なる次元から収束"
+  reasoning: "案B(timestamp+topic 近似照合)は topic_summary 80字トランケートで照合キーが脆く統計に非決定性を持ち込むため開発者(重み6)が却下。案C(人手掃除依存)は保守負債で全員却下。案Aは marker 保護分岐を削るだけで実装最小・冪等・COUNCIL-LOG から再生成可能で可逆。哲学者は『単一ソース宣言下で手動record を任意補助として温存し上書き保護までかけたのは v6.1.0 が葬った二重書き経路の再来=AD-004 反復欠陥』と喝破"
+  human_escalated: true
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  escalation_reason: "judgment_confidence 0.77 かつ CTL-0 で escalate_to_human。人間（ひでさん）が recommended（案A + 3条件）を採用で合意。判定は人間が引き受け"
+  agreed_at: "2026-07-01T13:30:57Z"
