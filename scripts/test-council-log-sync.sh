@@ -80,7 +80,9 @@ cat > "$LOG" <<'EOF'
   judgment_confidence: 0.4
   recommended: "案 E"
   human_escalated: true
-  implementer_consent: "null"
+  implementer_consent: null
+  # 後追記（append-only 例外条項）: 上の null 宣言に実値を単方向埋め込み。後勝ちで採るべき
+  implementer_consent: "agreed_recommended"
 EOF
 
 field() {
@@ -133,9 +135,11 @@ ok "agreed_with_modification → modified"
 f="$(inv_file council-2026-01-04T00-00-00Z-ddd444)"
 [ "$(field "$f" actual_outcome.status)" = "null" ] || fail "deferred → null(未評価) 失敗"
 ok "deferred → 未評価(null)"
+echo "== 4b. 同一キー後追記は後勝ち（append-only null→実値の単方向埋め込み）=="
 f="$(inv_file council-2026-01-05T00-00-00Z-eee555)"
-[ "$(field "$f" actual_outcome.status)" = "null" ] || fail "consent=null → null 失敗"
-ok "consent null → 未評価(null)"
+# eee555 は null 宣言後に "agreed_recommended" を後追記 → 後勝ちで agreed になるべき
+[ "$(field "$f" actual_outcome.status)" = "agreed" ] || fail "後追記 consent が後勝ちで採れていない（setdefault 退行）"
+ok "後追記は後勝ち（CTL データ欠落を防止）"
 
 echo "== 5. 冪等性: 2 回目は全件変更なし =="
 out="$($SYNC sync --log "$LOG")"
@@ -174,14 +178,15 @@ echo "$out" | grep -q "孤児 1 件を掃除" || fail "prune が掃除しない:
 [ ! -f "$orphan" ] || fail "prune 後も孤児が残る"
 ok "prune: 孤児を掃除（二重計上解消）"
 
-echo "== 7. council-ctl.py が同期由来を壊さず recompute（C1×1, C2×1 が評価済み） =="
+echo "== 7. council-ctl.py が同期由来を壊さず recompute（評価済み 3 件） =="
 # 手動編集した aaa111 を戻すため council-data を消して再同期（可逆性テスト兼）
 rm -rf "$COUNCIL_DATA_DIR/invocations"
 $SYNC sync --log "$LOG" --recompute >/dev/null
-# 評価済み = agreed(C2 aaa111) + modified(C1 bbb222) = 2 件。ccc333 は dc=null で skip。
+# 評価済み = agreed(C2 aaa111) + modified(C1 bbb222) + agreed(C2 eee555 後勝ち) = 3 件。
+# ccc333 は dc=null で skip、ddd444 は deferred で未評価。
 total="$($CTL status | sed -n 's/^ *評価済み判定: \([0-9]*\) .*/\1/p' | head -1)"
-[ "$total" = "2" ] || fail "評価済み 期待 2 / 実際 $total（dc=null は算入されないはず）"
-ok "recompute: 評価済み 2 件（dc=null は統計除外）"
+[ "$total" = "3" ] || fail "評価済み 期待 3 / 実際 $total（dc=null は算入されないはず）"
+ok "recompute: 評価済み 3 件（dc=null は統計除外）"
 
 echo "== 8. 可逆性: 消して再同期で同一結果 =="
 signature() {

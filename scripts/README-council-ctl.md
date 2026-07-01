@@ -23,7 +23,10 @@ python3 scripts/council-log-sync.py sync --dry-run
 （`layer0-spec-architect/references/ritual-protocol.md` §F1 / §F2.5）。儀式は
 「同期 → `pending` 列挙 → 未評価を人間に問う」を 1 手順として固定する。儀式外で
 手動同期したい時は上記コマンドを直接叩く。`record`（下記）は同期を待たず 1 件だけ
-即記録したい場合の任意補助で、同期由来ファイルとは区別され上書きされない。
+即記録したい場合の補助だが、v6.1.0（案A・単一ソース化）では **COUNCIL-LOG が唯一の一次情報源**。
+`record` を使う時は必ず同じ発動を COUNCIL-LOG にも追記すること — 追記すれば次の同期で
+正規版（同一 invocation_id → 同一ファイル名）に一本化される。COUNCIL-LOG に対応しない手動
+record は孤児として `sync --prune` の掃除対象になる（残すと二重計上源）。
 
 詳細な設計は `dh-upgrades/upgrade-spec-v6.1.0.md`。
 

@@ -135,9 +135,11 @@ def parse_council_log(text: str) -> list[dict]:
             # ネスト親（値が空でコロン終わり）は無視。スカラーのみ格納。
             if val == "" or val.rstrip().endswith(":"):
                 continue
-            # 同一キーが二重定義されても最初の宣言を優先（append-only の後追記は
-            # コメント経由の単方向埋め込みなので、素の再代入は稀。安全側に倒す）。
-            cur.setdefault(key, _unquote(val))
+            # 同一キーが二重定義された場合は**後勝ち**で上書きする。COUNCIL-LOG は
+            # append-only 例外条項で「null 宣言済みフィールドへの単方向埋め込み」を許容する
+            # （output-format.md §後追記）。実値が後の行で追記されうるため、先勝ち(setdefault)だと
+            # 後追記の implementer_consent 等を取り落とし status=null で CTL データが欠落する。
+            cur[key] = _unquote(val)
     if cur is not None:
         entries.append(cur)
     return entries
