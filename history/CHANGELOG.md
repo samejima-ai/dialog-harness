@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## CTL 記録経路の再設計（分断解消・単一ソース化・v6.1.0、minor 昇格、in progress, target 2026-07-01, PR #161）
+## CTL 記録経路の再設計（分断解消・単一ソース化・v6.1.0、minor 昇格、released 2026-07-01、PR #161 merged）
 
 利用者（ひでさん）の指摘「多くの council 判定をしてきたのに CTL のデータがない＝機能していない」を
 起点に、CTL（Council Trust Level）記録経路の分断を解消。調査で根本原因を確定：`record` を強制する
