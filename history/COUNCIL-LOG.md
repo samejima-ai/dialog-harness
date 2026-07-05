@@ -2556,3 +2556,49 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   escalation_reason: "judgment_confidence 0.77 かつ CTL-0 で escalate_to_human。人間（ひでさん）が recommended（案A + 3条件）を採用で合意。判定は人間が引き受け"
   agreed_at: "2026-07-01T13:30:57Z"
+
+- invocation_id: "council-2026-07-05T10:37:44Z-pony01"
+  timestamp: "2026-07-05T10:37:44Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "GitHub の外部 OSS スキル Ponytail（最小主義決定ラダー）を DH に組み込むべきか。組み込むなら『L0 が環境構築時に利用者プロジェクトへ配布する D2/D3 scaffold rule』としての人間提案が妥当か"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B", confidence: 0.70 }
+    開発者: { stance: "B", confidence: 0.82 }
+    哲学者: { stance: "第3の道（可逆性尺度の条件付き問いへ再鋳造）", confidence: 0.55 }
+  judgment_confidence: 0.60
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "B"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 6
+        weighted_score: 4.56
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+    third_way_excluded:
+      - { persona: "哲学者", weight: 5, confidence: 0.55, stance: "量のラダーでなく可逆性を尺度とする条件付きの問いを配れ。REGIME で締緩を調律。批判精神は AI 要件異議でなく Council/人間の『そもそも要るか』へ再定置" }
+    max_score_stance: "B"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "B（Ponytail の決定ラダーを D4=philosophy でなく D2/D3 scaffold rule として組み込む）。ただし哲学者の第3の道を織り込んだ止揚案 B′ で確定: (1)『量』でなく DH 固有の『可逆性』尺度で綴じ直す (2)固定命令でなく REGIME が締緩を調律できる条件付きルール化（探索/prototype で YAGNI 緩和・当事者性の均質化防止）(3)品質ゲート(検証/セキュリティ/アクセシビリティ非バイパス)を第7段の前提として明記 (4)Ultra『要件異議』は P1 侵犯ゆえ除外するが批判精神は削除せず Council/タイプC献上へ再定置 (5)原典 MIT/出典/再構成範囲を明記・散文は転記しない"
+  minority_opinion: "哲学者の第3の道（重み5・最重量）: 『最良のコードは書かないコード』は中立でなく生産最適化という特定の美学の刻印。全ドメインへ default 配布すれば探索projの萌芽を刈り当事者性を均質化する。だが最小主義の核は実は可逆性思想と共鳴する（書かないコードは最も可逆）→ 止揚点は『量』でなく『可逆性』。ラダーを固定 scaffold 化するより可逆性を尺度に domain が調律する条件付きの問いへ再鋳造せよ。Ultra 除外は P1 と整合するが従順な身体だけ残し批判の魂を抜けば code-golf に堕す。『量を可逆性の proxy と取り違え DH 本来の尺度を隠蔽しないか』は未問の前提として温存"
+  consensus_mode: "escalate_to_human"
+  weight_note: "category=conception 適用（経営者3/開発者3/哲学者5）。外部概念の新規採用ゆえ哲学者最重視（過去の吸収 Council coddag/cw0rld/de8276 と同一規約）。哲学者は options 外の第3の道へ分岐したため output-format §third_way_excluded 規約により PR1 では重み加算から除外し minority_opinion へ転載。scored options 内では経営者・開発者が ROI/技術実現性の異なる次元から独立に B へ収束"
+  reasoning: "案A(観測のみ)は利用者プロジェクトに何も届かず効果ゼロ（経営者=機会損失）。案C(D4 philosophy 昇格)は不変資産に実装工芸を混入させ責務越境・保守硬直・思想二重定義 drift（claude-world/henteko 前例）で否決。案B は既存 templates/rules/common の D2/D3 配布機構への rule 1本追加で実現性高・削除1回で可逆（開発者 conf 0.82）。最重量の哲学者は B を否定せず『量→可逆性』への再鋳造という B の修正を提示 → B′ に止揚"
+  human_escalated: true
+  # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
+  implementer_consent: "agreed_with_modification"
+  follow_up_questions_count: 0
+  escalation_reason: "judgment_confidence 0.60（最重量の哲学者が option 集合外へ退避したため中庸）+ category=conception + D4 template 追加は DIMENSIONS §4 で council+人間承認。人間（ひでさん）が『実装してください』で B′（止揚案）採用を合意。actual_outcome=modified（原案 B に哲学者条件を織り込み）"
+  agreed_at: "2026-07-05T10:37:44Z"

@@ -77,6 +77,7 @@ L0 spec-architect の `dialog-questions.md` に以下の質問が追加されて
 ## common/ の現況
 
 - `agentshield-reference.md`（Wave 2、PR #78）— セキュリティ静的解析の参照導入規約
+- `minimalism-ladder.rules.md`（v6.2.0、Council `pony01`）— 実装工芸の最小主義ラダー RL（外部 OSS [Ponytail](https://github.com/DietrichGebert/ponytail) の決定ラダーを DH 形式に再構成、可逆性尺度・REGIME 調律・品質ゲート `MUST`）。L1/L2 の実装フェーズに適用。観測経路は DH 側 `.claude/skills/layer0-spec-architect/references/observed-peers.md` §Ponytail
 - `ui-baseline.rules.md`（v5.23.0）— UI Baseline RL（相互作用層・常時適用、B-01〜B-25）。UI を伴うプロジェクトで共通 RL として読み込む。適用経路は DH 側 `.claude/skills/layer0-spec-architect/references/design-system-spec.md`「UI 相互作用層」
 - `ui-specialization.context.md`（v5.23.0）— UI 目的特化（S-01〜S-06 + 衝突解決）。利用者は `.dh/rules/common/ui-specialization.context.md` で override 可
 - `<lang>/`: 存在しない（L0 対話確定後に必要言語のみ生成）
