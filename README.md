@@ -268,7 +268,7 @@ DH は **「人間が手を動かさずに済む開発」を本気で追求す�
 
 ## 兄弟メタスキル
 
-- [**venture-os**](https://github.com/samejima-ai/venture-os) — DH の兄弟メタスキル。DH が「意図 → 自律ソフトウェア開発」の OS なら、venture-os は「意図 → 自律事業設計・検証・運営」の OS。DH の 8/9 条憲法を継承し、**信用経済を軸**とする事業固有条（V1〜V6）を上層に重ねる。事業がソフトを要するとき、VO の `THESIS` を DH の `SPEC` に渡して DH に製品開発を発注する（入れ子連携）。
+- [**venture-os**](https://github.com/samejima-ai/venture-os) — DH の兄弟メタスキル。DH が「意図 → 自律ソフトウェア開発」の OS なら、venture-os は「意図 → 自律事業設計・検証・運営」の OS。DH の憲法を継承し、**信用経済を軸**とする事業固有条（V1〜V6）を上層に重ねる。事業がソフトを要するとき、venture-os の `THESIS` を DH の `SPEC` に渡して DH に製品開発を発注する（入れ子連携）。
 
 ---
 
