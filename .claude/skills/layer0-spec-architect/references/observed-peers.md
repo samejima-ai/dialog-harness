@@ -115,6 +115,34 @@ DH は Layer 3 の内部設計を哲学・原則レベルから定義してお�
 - **温存項目（未問の前提・哲学者ペルソナ）**: 「**Loop を誰が回すか＝人間の当事者性をどこに宿すか**」を未問の問いとして温存する。本記事は Loop を人の職種とし、DH は Loop を AI に委ね人間を判断主体に閉じる。この差が単なる設計選択なのか、当事者性をどこに宿すかという倫理的賭けなのかは、職種分化の語彙が固着して前提が不可視化される前に問い直す対象として記録する
 - **温存項目（断絶性の自己評価）**: 本記事の「既存技術の延長線」という自己規定を DH が無批判に受け入れると、Layer 3 の断絶性・新規性を自ら過小評価しかねない点を留保する
 
+### Ponytail（DietrichGebert 氏 / 最小主義スキル）
+
+- **観測登録**: 2026-07-05（Council `council-2026-07-05T10:37:44Z-pony01` 採決による初回登録、recommended B）
+- **URL**: https://github.com/DietrichGebert/ponytail
+- **ライセンス**: MIT License、v4.x（2026-06-12 作成、〜44k stars）
+- **位置づけ**: 厳密には **Layer 1〜2**（Prompt / Context Engineering）の**実装ルール注入**事例。Layer 3（Harness Engineering）の方法論層ではない。CoDD（D1〜D3 実装）・claude-world（Layer 1〜2 啓蒙）・henteko（Layer 3 役割論）とも異なり、本事例は「AI エージェントの実装工芸に最小主義を注入する運用ルール」を扱う。DH とは層が異なるが、DH の philosophy が空白にしていた「実装時にコードを少なく書く」領域に触れる
+- **核心機構**: セッション開始時に「最も怠惰なシニア開発者のように考える＝最良のコードは書かないコード」ルールセットを注入。7 段の決定ラダー（YAGNI → 既存再利用 → 標準ライブラリ → ネイティブ機能 → 既存依存 → ワンライナー → 最小限コード）+「要求されない抽象化の禁止」+「入力検証 / セキュリティ / アクセシビリティは決してバイパスしない品質ゲート」
+- **コア思想**: 「The best code is the code you never wrote」。フィフティ行を見せられて何も言わず 1 行に置き換えるシニアの archetype。実測 ~54% 減コード / ~20% 安 / ~27% 速（Claude Code 実セッション計測）
+
+#### DH との共鳴点
+
+- 「書かないコード」＝最も可逆（消す対象すら存在しない）→ philosophy 第 9 条「委譲境界原則（可逆性ベース）」と深く共鳴
+- YAGNI・過剰抽象の抑制 → 第 3 条 情報純度（依存トポロジー DAG の縮小）
+- 品質ゲート非バイパス → 第 2 条 Shift Left / 5 層検出スタックと非衝突
+
+#### DH との差異点
+
+- **層の違い**: Ponytail は本質的に **プロンプト注入**（Layer 1〜2）。DH は Layer 3 の方法論層。原典散文の丸取りは category error（claude-world / henteko と同型の思想二重定義 drift リスク）
+- **常時 active / Ultra**: 原典は毎レスポンス常時 active、Ultra モードで「**要件そのものに異議を唱える**」。後者は DH 第 4 条「開発中に質問しない」・第 7 条 P1「発案は人間専管」と衝突
+- **尺度の違い**: 原典は「量（行数）」を規範化。DH は「可逆性」を尺度に綴じ直す
+
+#### DH への影響
+
+- **吸収済（DH 形式に再構成）**: Council `pony01`（2026-07-05）で recommended B（D2/D3 scaffold 組み込み）。哲学者の第 3 の道を織り込んだ止揚案 **B′** で確定。決定ラダーを `templates/rules/common/minimalism-ladder.rules.md` として **DH 形式に再構成**（原典散文は転記せず、可逆性尺度・REGIME 調律・批判精神の Council 再定置を追加）。出典・MIT・観測経路を当該ファイルに明記
+- **却下項目**: philosophy への条追加（案 C = D4 昇格）は Council で否決（実装工芸であり統治原則ではない、不変資産への越境・保守硬直）。常時 active 注入・Ultra「要件異議」モード・原典散文の丸取りは棄却（当該 rule ファイル §棄却経路 に明記）
+- **温存項目（哲学者 minority・重み 5）**: 「最良のコードは書かないコード」を全ドメインへ default 配布すると、探索・研究・prototype 領域の投機的コードという萌芽を刈り、多様な当事者性を均質化しうる。→ B′ で「固定命令でなく REGIME が締緩を調律できる条件付きルール」として解いた。ただし「量を可逆性の proxy と取り違え DH 本来の尺度を隠蔽しないか」は未問の前提として温存
+- **将来検討**: L0 対話での「ドメイン特性 → ラダー強度」判定質問の `dialog-questions.md` 追加。Ponytail 原典のメジャー更新時に決定ラダーの差分を再観測
+
 ## 観測の更新プロトコル
 
 - 新規事例の追加は spec-architect 対話または直接 council 諮問経由で行う
@@ -126,6 +154,8 @@ DH は Layer 3 の内部設計を哲学・原則レベルから定義してお�
 
 - 親 Council（CoDD）: [history/COUNCIL-LOG.md](../../../../history/COUNCIL-LOG.md) 内 `council-2026-05-16T06:00:00Z-coddag` エントリ
 - 親 Council（claude-world）: [history/COUNCIL-LOG.md](../../../../history/COUNCIL-LOG.md) 内 `council-2026-06-18T11:50:01Z-cw0rld` エントリ
+- 親 Council（Ponytail）: [history/COUNCIL-LOG.md](../../../../history/COUNCIL-LOG.md) 内 `council-2026-07-05T10:37:44Z-pony01` エントリ
+- Ponytail 吸収先: [templates/rules/common/minimalism-ladder.rules.md](../../../../templates/rules/common/minimalism-ladder.rules.md)（決定ラダーの DH 形式再構成先）
 - 人間可読版: [history/archive/2026-06/council-readable/council-2026-05-16T060000Z-coddag.md](../../../../history/archive/2026-06/council-readable/council-2026-05-16T060000Z-coddag.md)（情報代謝で COLD 移送済み）
 - philosophy 接続: [philosophy.md](./philosophy.md) 第 1 条 §依存トポロジーの追跡可能性 から本リストへ参照
 - scaffold 連動: [scaffold-checklist.md](./scaffold-checklist.md) §追加 stack カタログ（claude-world 観測の吸収先）

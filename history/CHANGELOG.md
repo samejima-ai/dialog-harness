@@ -2,6 +2,39 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 外部 OSS「Ponytail」の最小主義ラダーを D2/D3 scaffold rule として吸収（v6.2.0、minor 昇格、Council `pony01`、PR #TBD）
+
+利用者（ひでさん）の問い「GitHub の Ponytail は DH に導入する価値があるか」を起点に、外部 OSS スキル
+[Ponytail](https://github.com/DietrichGebert/ponytail)（MIT、〜44k stars、「最良のコードは書かないコード」の
+最小主義決定ラダー）の吸収可否を評価。DH の philosophy（9 条）は統治・責務・可逆性・合議に重心があり
+「実装時にコードを少なく書く」という**実装工芸レベルの規範がほぼ空白**だった点を、Ponytail が突くと確認。
+
+- **Council 諮問** `council-2026-07-05T10:37:44Z-pony01`（business / category=conception / 経営者3・開発者3・
+  哲学者5）: recommended **B**（D4=philosophy 昇格でなく D2/D3 scaffold rule 化）。最重量の哲学者が
+  options 外の第 3 の道へ分岐（output-format §third_way_excluded で重み除外・minority 転載）。判定を
+  人間（ひでさん）が『実装してください』で引き受け、哲学者の第 3 の道を織り込んだ止揚案 **B′** で合意
+  （implementer_consent=agreed_with_modification）。
+- **新設** `templates/rules/common/minimalism-ladder.rules.md`: 決定ラダー（YAGNI → 既存再利用 → 標準lib →
+  ネイティブ → 既存依存 → ワンライナー → 最小コード）+ 要求されない抽象化の禁止を DH 形式に再構成。
+  原典散文は転記せず、DH 固有の**可逆性尺度**（書かないコード＝最も可逆、philosophy 第 9 条と接続）で
+  綴じ直した。
+- **止揚（B′）で加えた DH 固有の 3 点**: (1) 固定命令でなく **REGIME が締緩を調律できる条件付きルール**化
+  （探索/prototype で YAGNI 緩和 → 多様なドメインの当事者性の均質化を防ぐ）(2) 品質ゲート（入力検証/
+  セキュリティ/アクセシビリティ非バイパス）を第 7 段「最小限」の前提として `MUST` 明記 (3) Ultra
+  「要件異議」は philosophy 第 4 条・第 7 条 P1 侵犯ゆえ**除外**するが、批判精神は削除せず
+  **Council / タイプ C 献上へ再定置**。
+- **棄却**: 案 C（philosophy への条追加＝D4 昇格）は Council 否決（実装工芸であり統治原則でない・不変資産
+  への越境・思想二重定義 drift）。原典の常時 active 注入 / Ultra 要件異議 / 散文丸取りも棄却（rule
+  ファイル §棄却経路 に明記）。
+- **観測登録** `observed-peers.md` §Ponytail: Layer 1〜2（Prompt/Context Engineering）の実装ルール事例
+  として記録。「量を可逆性の proxy と取り違え DH 本来の尺度を隠蔽しないか」を未問の前提として温存。
+- **VERSION**: 6.1.0 → 6.2.0（Expo scaffold 追加 #157 が docs 上で先行して 6.2.0 を名乗りつつ VERSION/
+  CHANGELOG 未反映だった drift を、本 minor で 6.2.0 として前進・確定）。
+
+変更ファイル: `templates/rules/common/minimalism-ladder.rules.md`（新規）/ `templates/rules/README.md` /
+`.claude/skills/layer0-spec-architect/references/observed-peers.md` / `history/COUNCIL-LOG.md`（append）/
+`VERSION`(6.2.0) / 本 CHANGELOG。
+
 ## CTL 記録経路の再設計（分断解消・単一ソース化・v6.1.0、minor 昇格、released 2026-07-01、PR #161 merged）
 
 利用者（ひでさん）の指摘「多くの council 判定をしてきたのに CTL のデータがない＝機能していない」を
