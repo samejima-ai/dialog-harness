@@ -67,9 +67,25 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 
 ---
 
-## 追加 stack カタログ（v6.1.0 追加 / v6.2.0 で Expo 追加）
+## runtime_profile 別要求水準（v6.3.0 追加）
 
-上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **9 つの追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
+本カタログの全 stack は従来「ローカル CLI で決定論 smoke が回る」「GitHub Actions CI が実行環境に届く」を暗黙前提としてきた。この前提を明示化し、実行環境プロファイル（判定プロトコルは `regime-assessment.md` §runtime_profile 判定）ごとに smoke / E2E / CI の要求水準を読み替える。**既定は `local-reproducible`** であり、例外の stack のみ各 stack 節見出しに profile を注記する（注記なし = local-reproducible。既存 stack の記述は不変）。
+
+| 要求 | `local-reproducible`（既定） | `cloud-managed` | `device-bound`（観測温存） |
+|---|---|---|---|
+| smoke test（§7.4 必須） | install / build / dev / test / lint がすべてローカルで exit 0 | **決定論サブセット**（install / build / lint / unit test）がローカル・認証不要で exit 0。cloud 配置検証（push 成功）は認証必須のため実施可能時のみ | 静的検証（schema / lint / 型）のみ必須。実行検証は要求しない |
+| E2E（5 層第 2 層） | Playwright 等をローカル / CI で実行 | deploy 済みエンドポイントへの HTTP / Playwright、または MCP 経由の実データ読み取り検証に読み替え | テレメトリ還流 or 人間確認（第 5 層比重増を DELIVERY に明示） |
+| CI 到達性 | GitHub Actions で全 smoke を再現 | 静的検証のみ CI 必須。cloud 検証は資格情報の Secret 化（人間専管）が済んだ場合のみ | CI は静的検証のみ |
+| smoke 不通・未実施時 | 共通規約どおり DELIVERY に明記 | cloud 検証未実施は「cloud 未検証」として DELIVERY に明記（沈黙譲渡禁止は同一） | 実行未検証が既定である旨を DELIVERY に明記 |
+
+- `device-bound` は **定義のみ**（正式適用 stack なし）。要求水準の較正は実適用例の観測を待つ（Council `07oknv` 制約 C-b。MacroDroid 等は `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md` §3.3 の観測温存段階）
+- auto-merge SUCCESS 条件 / 5 層検出スタックの層別配分 / e2e-ci 雛形など下流機構への機械接続は v6.3.0 では行わない（同 C-c、scope creep 防止）。本表の第一消費者は L0 §7.4 自己検証の smoke 判定である
+
+---
+
+## 追加 stack カタログ（v6.1.0 追加 / v6.2.0 Expo / v6.3.0 GAS 追加）
+
+上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **10 の追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
 
 > **出典・観測経路の明示（Council `council-2026-06-18T11:50:01Z-cw0rld` 条件②）**
 > 本カタログの stack 選定・標準コマンド構成は、外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT License）の framework 別 CLAUDE.md テンプレを **観測** し、DH の scaffold-checklist 形式（必須生成ファイル + smoke 手順）に **再構成** したものである。原典の散文テンプレを丸ごと転記したものではない。観測事例としての位置づけは `references/observed-peers.md` を参照。各 stack の必須生成ファイル一覧・最低要件・smoke 手順は DH 固有の規約であり、原典には存在しない。
@@ -81,7 +97,7 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 - `.gitignore` は最低限 `node_modules/`（または言語別の依存ディレクトリ）/ ビルド成果物 / `.env*` / テストレポート / カバレッジを含む
 - `.env` 系の秘匿値（`DATABASE_URL` / `SECRET_KEY` / `JWT_SECRET` 等）は **`.gitignore` 必須**。`.env.example` で雛形のみコミット
 - smoke test が通らない場合は §7.4 自己検証の規約に従い `DELIVERY.md` / `delivery/SELF-VERIFICATION-*.md` に失敗手順・理由・保留事由を明記して譲渡する（沈黙譲渡は §0 受け入れ基準 3 違反）
-- UI を含む stack（React/Next.js/Vue/Astro/Expo）は `## DESIGN.md 連携` の対象。非 UI stack（FastAPI/Django/Express/Go/Rails の API 専用構成）では DESIGN.md は生成しない。Expo（ネイティブ UI）の視覚検証は各 stack 節「DESIGN.md 連携」の読み替え規約に従う
+- UI を含む stack（React/Next.js/Vue/Astro/Expo、GAS は HtmlService Web アプリ構成時のみ）は `## DESIGN.md 連携` の対象。非 UI stack（FastAPI/Django/Express/Go/Rails の API 専用構成）では DESIGN.md は生成しない。Expo（ネイティブ UI）の視覚検証は各 stack 節「DESIGN.md 連携」の読み替え規約に従う
 
 ---
 
@@ -324,9 +340,44 @@ Expo は UI を含む stack のため `## DESIGN.md 連携` の対象。ただ�
 
 ---
 
+### Stack 11: Google Apps Script (GAS) + clasp + TypeScript（runtime_profile: `cloud-managed`）
+
+Google Workspace（Sheets / Drive / Gmail / Calendar 等）を実行基盤とするサーバレス stack。実行環境は Google 側にのみ存在しローカルランタイムが無いため、**runtime_profile = `cloud-managed` の第一適用例**（§runtime_profile 別要求水準の cloud-managed 列を実参照する）。clasp により git 中心開発が成立する。観測元は Google 公式ドキュメント（developers.google.com/apps-script / github.com/google/clasp、2026-07 観測。claude-world 由来ではない）。
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `package.json` | 依存・scripts | devDependencies に `@google/clasp` / `typescript` / `@types/google-apps-script`。`scripts` に `build` / `lint` / `test` / `push`（= build 後 `clasp push`）を持つ |
+| 2 | `.clasp.json` | clasp 設定 | `scriptId`（**開発用** Apps Script プロジェクトの ID）+ `rootDir`（ビルド出力 dir）。本番 scriptId を直書きしない（本番反映は `clasp deploy` 手順で分離） |
+| 3 | `appsscript.json` | GAS マニフェスト | `runtimeVersion: "V8"` / `timeZone` を持つ。`oauthScopes` は使用 API の最小権限で明示 |
+| 4 | `src/logic/` | 純粋ロジック層 | GAS グローバル API を参照しない純 TypeScript（層分離規約・下記） |
+| 5 | `src/adapters/` | GAS API 接触層 | `SpreadsheetApp` / `DriveApp` 等のグローバル API 呼び出しをここに集約（薄く保つ） |
+| 6 | `src/main.ts` | エントリポイント | トリガー・メニューから呼ばれる関数をトップレベルで宣言（bundle 時に global へ割当、罠 G6） |
+| 7 | `tsconfig.json` | TS 設定 | `strict: true`。GAS は ES modules 非対応のため esbuild bundle（IIFE）または namespace 方式で出力 |
+| 8 | unit test | ロジック検証 | adapter をモックした `src/logic/` の unit test が GAS 環境なしで exit 0（vitest 等） |
+| 9 | `.claspignore` | push 除外 | テスト・設定・rootDir 外ソースを push 対象から除外 |
+| 10 | `.gitignore` | git 除外 | `node_modules/` / ビルド出力 / **`.clasprc.json`（clasp 認証情報。commit 厳禁）** / `.env*` |
+
+**Smoke test（cloud-managed 読み替え）**: 決定論サブセット = `npm install` → `npm run build`（exit 0、rootDir にビルド成果物生成）→ `npm run lint` → `npm run test`（すべてローカル・認証不要で exit 0）。cloud 配置検証 = `clasp push`（開発用 script へ）成功。cloud 検証は `clasp login`（人間専管）済み環境でのみ実施し、未実施の場合は §runtime_profile 別要求水準に従い DELIVERY に「cloud 未検証」と明記する。
+
+**層分離規約（本 stack の最低要件）**: 純粋ロジック層（#4）と GAS API 接触層（#5）の分離は任意でなく**必須**。GAS はローカル実行できないため、この分離が無いと 5 層検出スタック第 1 層（型 / lint / unit test）の検出力が確保できず、検証が cloud 側の手動確認に全転嫁される（Shift Left 原則の cloud-managed における実装）。
+
+**E2E（該当時）**: HtmlService による Web アプリ（`doGet` / `doPost`）を持つ場合は DESIGN.md 連携対象。E2E は開発用 deployment の URL への Playwright に読み替える（ローカル起動の代わりに dev deployment を対象にする）。Sheets 等をデータ層に使う場合はテスト専用スプレッドシート fixture を分離する（本番データ保護は `supabase-local-dev.md` と同趣旨）。
+
+**人間専管事項（環境設定）**: `clasp login`（OAuth 認証）/ Apps Script API の有効化（script.google.com/home/usersettings）/ GCP プロジェクト紐付け（`clasp run` 使用時のみ）/ Script Properties の実値設定 / CI から cloud 検証する場合の資格情報 Secret 化。
+
+**罠（DONT 候補・scaffold 時に DONT.md への転記を推奨）**:
+- **G1 実行時間 6 分制限**（アカウント種別で変動）: 長時間バッチは分割 + time-based trigger の継続方式にする
+- **G2 quota**: サービス呼び出しの日次上限（MailApp 送信数等）。ループ内の GAS API 呼び出しは batch 化（`getValues` / `setValues` の一括操作）に寄せる
+- **G3 simple trigger の制約**: `onEdit` / `onOpen` は認可が必要な API を呼べない。要認可処理は installable trigger にする
+- **G4 秘匿値のハードコード禁止**: API キー等は `PropertiesService`（Script Properties）に置く
+- **G5 trigger の冪等性**: installable trigger はコードから重複登録されうる。登録前に既存 trigger の有無を確認する
+- **G6 モジュール形式**: GAS は ES modules 非対応。トリガーから呼ばれる関数はトップレベル global 宣言が必須（bundle 設定で保証し、§7.4 で build 出力に関数が露出していることを確認）
+
+---
+
 ### stack 未収載時の扱い
 
-上記 10 stack（標準 + 追加 9）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
+上記 11 stack（標準 + 追加 10）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
 
 ---
 

@@ -206,6 +206,13 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 
 （判定プロトコルは `regime-assessment.md` §autonomous_scope 判定 参照。詳細は `dev-env-spec.md` Level C 参照。Person 責務 P1〜P4 と autonomous_scope の対応は `philosophy.md` 第 7 条参照。）
 
+## runtime_profile（v6.3.0 追加、`local-reproducible` の場合は省略可）
+- profile: [local-reproducible / cloud-managed / device-bound]
+- 確度: [人間確認済み / AI推定]
+- 判定根拠: [stack からの自動推定内容（例: GAS → cloud-managed）]
+
+（判定プロトコルは `regime-assessment.md` §runtime_profile 判定 参照。stack から AI 自動推定・新規質問ゼロ。smoke / E2E / CI の要求水準読み替えは `scaffold-checklist.md` §runtime_profile 別要求水準 参照。省略時は `local-reproducible` と等価＝既存プロジェクト後方互換。）
+
 ## persona（v5.17.0 追加、任意）
 - active: [persona 名（拡張子なし） / 例: default, sheep-navigator]
 - override_state: [Normal / Overflow / Attention / null]
