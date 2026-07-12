@@ -2,6 +2,35 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## runtime_profile 軸新設 + GAS を 11 番目の正規 stack として追加（v6.3.0、minor 昇格、Council `07oknv`、PR #TBD）
+
+解析レポート `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md`（PR #165）の提案 2 件を、人間
+（ひでさん）の明示承認「L0 起動、runtime_profile 軸を進める / GAS は正規 Stack に追加する」を受けて
+L0 spec-architect セッションで実装。GAS / Google エコシステム / Android / MacroDroid 等の特殊環境が破る
+暗黙前提「ローカル CLI で決定論 smoke が回る・CI が実行環境に届く」を軸として明示化した。
+
+- **Council 諮問** `council-2026-07-12T11:10:45Z-07oknv`（business / category=conception / 経営者3・
+  開発者3・哲学者5）: 導入形態 3 案から **unanimous 案A**（REGIME.md 独立軸として新設、weighted_score
+  8.06/11）。3 ペルソナの懸念が同一点に収束し、4 制約条件として採用 — C-a: GAS 節が同一リリースで
+  要求水準表を実参照（死蔵機構＝v6.1.0 CTL 分断型の反復欠陥防止）/ C-b: device-bound は定義のみ・
+  要求水準較正は実適用例の観測まで温存 / C-c: auto-merge 等下流への機械接続は本版では行わない
+  （scope creep 防止）/ C-d: AI 自動推定 + 不明時 local-reproducible fallback + 手動 override（ADR 記録）。
+- **runtime_profile 軸**: `local-reproducible`（既定）/ `cloud-managed` / `device-bound`（観測温存）の
+  3 値。判定は stack から AI 自動推定（新規質問ゼロ・フラクタル原則）。既存プロジェクトは REGIME.md
+  未記載 = local-reproducible と等価（後方互換・遡及追記不要）。
+- **Stack 11: GAS + clasp + TypeScript**: cloud-managed の第一適用例。決定論サブセット smoke
+  （install/build/lint/unit test、認証不要）+ cloud 配置検証（`clasp push`、人間専管認証）の二段構え。
+  純粋ロジック層 / GAS API 接触層の**層分離を最低要件化**（第 1 層検出力の確保）。罠 G1〜G6 を明記。
+  カタログ昇格は第 8 条 3 段階モデルの人間承認（明示指示）を経由（観測は公式ドキュメント・2026-07、
+  pitfalls の厚みは実プロジェクト還流で観測駆動に補完）。
+- **GAS 以外の特殊環境**: Google Workspace 追加バックエンド層（`google-workspace-dev.md` 相当）と
+  MacroDroid（device-bound 試金石）は本版では実装せず、解析レポート §4 P2 の申し送りのまま観測温存。
+
+変更ファイル: `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md`（§runtime_profile
+別要求水準 新設 + Stack 11 GAS + 11 stack 化）/ `references/regime-assessment.md`（§runtime_profile 判定
+新設）/ `assets/meta-spec-template.md`（REGIME テンプレ欄）/ `SKILL.md`（v6.3.0 節）/ `VERSION`(6.3.0) /
+`history/COUNCIL-LOG.md`（append）/ `history/INTENT.md` / 本 CHANGELOG。
+
 ## 外部 OSS「Ponytail」の最小主義ラダーを D2/D3 scaffold rule として吸収（v6.2.0、minor 昇格、Council `pony01`、PR #TBD）
 
 利用者（ひでさん）の問い「GitHub の Ponytail は DH に導入する価値があるか」を起点に、外部 OSS スキル

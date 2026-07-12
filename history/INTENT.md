@@ -2,6 +2,52 @@
 
 DH 本体の設計意図・新規概念の記録。
 
+## v6.3.0：runtime_profile 軸新設 + GAS 正規 stack 化 (in progress)
+
+利用者（ひでさん）の要請「GAS や Google エコシステム、Android 端末や MacroDroid などを使用する開発環境も
+想定したい」を起点に、解析レポート（`delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md`、PR #165）が
+特定した**暗黙前提の破れ**を軸として明示化する minor リリース。Council 諮問
+`council-2026-07-12T11:10:45Z-07oknv`（business / conception / unanimous 案A / weighted_score 8.06）。
+
+### 設計意図の核
+
+**(a) 破られた暗黙前提の名指し（哲学者の収束点）**: 10 stack 全てが「ローカル CLI で決定論 smoke が回る」
+「GitHub Actions CI が実行環境に届く」を暗黙前提としてきた。GAS（ローカルランタイム無）・MacroDroid
+（実機必須）はこれを破る。runtime_profile 軸は新概念の発明ではなく**既に骨格に埋まっていた暗黙軸の言語化**
+であり、名指さなければ異質な実行環境が来るたびに同じ問いが再演される（認識の負債）。
+
+**(b) 軸はデータ側・判定は自動推定（A-3 + フラクタル原則）**: stack 軸（言語/FW）と直交する軸として
+REGIME.md に記録するが、判定は stack からの AI 自動推定で**人間への新規質問はゼロ**。不明時は
+`local-reproducible` fallback、訂正は手動 override + ADR（dev_mode 昇降格と同一規約）。Expo が導入した
+「読み替え規約」（v6.2.0）の一般化であり、要求水準表を scaffold-checklist に一元化することで stack 追加の
+限界コストを下げる（経営者）・読み替え規約の stack 節散在 drift を防ぐ（開発者）。
+
+**(c) 死蔵機構の防止（Council 制約 C-a、3 ペルソナ全員の懸念収束点）**: v6.1.0 で自己診断した
+「機構を作るが実行経路に接続しない」反復欠陥を避けるため、GAS stack が**同一リリースで**要求水準表の
+第一消費者として実参照する。軸だけ先に作って消費者を後送りしない。
+
+**(d) YAGNI 側の締め（C-b / C-c）**: device-bound は 3 値目として定義のみ置き、要求水準の較正は実適用例
+（MacroDroid 等）の観測まで温存（観測なき分類の形骸化防止）。auto-merge SUCCESS 条件・5 層配分・e2e-ci
+雛形への機械接続も本版では行わず、将来接続点の明文化に留める。cloud-managed の適用例が GAS 1 件しか
+ない段階での過剰一般化を避ける（N=1 帰納への警戒は Issue #70 / cookpato A1-A5 と同型）。
+
+**(e) GAS の層分離規約は Shift Left の cloud-managed 実装**: ローカル実行できない stack では、純粋ロジック
+層と GAS API 接触層の分離がないと第 1 層（型/lint/unit test）の検出力が確保できず、検証が cloud 側の手動
+確認に全転嫁される。ゆえに層分離を任意でなく**最低要件**に置く。これは「決定論 smoke」を cloud-managed で
+成立させるための構造条件であり、単なるコード整理の推奨ではない。
+
+**(f) 第 8 条 3 段階モデルとの整合**: GAS のカタログ直接追加は、解析レポート（観測・候補化）→ 人間の明示
+指示「正規 Stack に追加する」（人間承認）の 3 段階を経由。pitfalls の厚みは Expo と異なり実プロジェクト
+還流前のため薄いが、これは他 8 stack と同水準（陳腐化最小化方針）であり、還流駆動で補完する。
+
+### 温存（次サイクル / 観測駆動）
+
+- **Google Workspace 追加バックエンド層**（`google-workspace-dev.md` 相当、Supabase 層と同型）: GAS stack の
+  実利用が発生した時点で設計
+- **MacroDroid / device-bound の要求水準較正**: テレメトリ還流（webhook→Sheets/GAS）の観測チャネル 1 件
+  試行後に規約化を再判定
+- **下流機構（auto-merge / 5 層配分 / e2e-ci）への profile 機械接続**: cloud-managed 運用データ蓄積後
+
 ## v6.0.0：権限委譲境界の確立（可逆性ベース・major）(in progress)
 
 利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は成果物

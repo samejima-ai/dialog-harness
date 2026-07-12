@@ -529,6 +529,32 @@ v5.0.0〜v5.5.x で記録された REGIME.md は `dev_mode: github_autonomous` �
 
 ---
 
+## runtime_profile 判定（v6.3.0 追加）
+
+実行環境プロファイル。stack（言語 / FW）軸と直交する軸として、smoke test / E2E / CI 到達性の要求水準を読み替える。要求水準表の正本は `scaffold-checklist.md` §runtime_profile 別要求水準。
+
+| runtime_profile | 定義 | 例 |
+|---|---|---|
+| `local-reproducible`（既定） | ローカル CLI で build / test / 起動が全再現可能 | 標準 + 追加 stack の大半 |
+| `cloud-managed` | 実行環境がマネージドクラウド側にのみあり、ローカルは静的検証まで | GAS（Stack 11） |
+| `device-bound` | 実機・物理デバイスでのみ実行可能 | MacroDroid 等（定義のみ・正式適用例なし、観測温存） |
+
+### 判定プロトコル（新規質問ゼロ）
+
+1. stack 確定時に AI が stack から自動推定する（`scaffold-checklist.md` の各 stack 節見出しの profile 注記に従う。注記なし = `local-reproducible`）
+2. 判定不能・境界例（ローカル再現層と cloud 実行層が混在する hybrid 構成等）は `local-reproducible` に fallback し、REGIME.md に `確度: AI推定` を付す
+3. 人間への新規質問は投げない（フラクタル原則）。誤判定の訂正は REGIME.md の手動 override + ADR 記録（dev_mode 昇降格と同一規約）
+
+### 記録
+
+REGIME.md `## runtime_profile` に記録する（テンプレは `meta-spec-template.md`）。`local-reproducible` の場合はセクション省略可。**後方互換**: 既存プロジェクトは全て未記載 = `local-reproducible` と等価であり、遡及追記は不要。
+
+### 下流機構との関係（v6.3.0 時点）
+
+profile を参照しうる下流（auto-merge SUCCESS 条件 / 5 層検出スタックの層別配分 / e2e-ci 雛形）への機械接続は**本版では行わない**（Council `council-2026-07-12T11:10:45Z-07oknv` 制約 C-c、scope creep 防止）。第一消費者は scaffold-checklist の要求水準表（L0 §7.4 自己検証の smoke 判定）のみ。`device-bound` の要求水準は実適用例の観測まで較正しない（同 C-b）。
+
+---
+
 ## current_focus 判定（v5.7.0 追加、autonomous-drive 入口側 Issue pickup で参照）
 
 REGIME.md の `## current_focus` セクションは、autonomous-drive 入口側（Issue → AI pickup）で「pickup すべき Issue か」を判定する基準として使われる。

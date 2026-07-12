@@ -2602,3 +2602,49 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   escalation_reason: "judgment_confidence 0.60（最重量の哲学者が option 集合外へ退避したため中庸）+ category=conception + D4 template 追加は DIMENSIONS §4 で council+人間承認。人間（ひでさん）が『実装してください』で B′（止揚案）採用を合意。actual_outcome=modified（原案 B に哲学者条件を織り込み）"
   agreed_at: "2026-07-05T10:37:44Z"
+
+- invocation_id: "council-2026-07-12T11:10:45Z-07oknv"
+  timestamp: "2026-07-12T11:10:45Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "runtime_profile（実行環境プロファイル）を DH にどの形態で導入すべきか？（採否は人間承認済み・導入形態の設計判断。案A: REGIME.md 独立軸新設 / 案B: Expo 前例の stack 節個別読み替え / 案C: scaffold-checklist 内分類ラベルのみ）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案A", confidence: 0.70 }
+    開発者: { stance: "案A", confidence: 0.82 }
+    哲学者: { stance: "案A", confidence: 0.70 }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "案A"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.06
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.70 }
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+          - { persona: "哲学者", weight: 5, confidence: 0.70 }
+    third_way_excluded: []
+    max_score_stance: "案A"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "案A（REGIME.md 独立軸として runtime_profile を新設。判定は stack から AI 自動推定・新規質問ゼロ、要求水準表は scaffold-checklist に一元化）。ただし 3 ペルソナの収束懸念を 4 制約条件として同梱: C-a) GAS stack が同一リリースで要求水準表の第一消費者として実参照する（実行経路未接続の死蔵機構＝v6.1.0 CTL 分断型反復欠陥の防止）C-b) device-bound は定義のみ・要求水準の較正は実適用例の観測まで温存（観測なき分類の形骸化防止・YAGNI）C-c) auto-merge SUCCESS 条件等の下流機構への機械接続は本版では行わず将来接続点の明文化に留める（scope creep 防止）C-d) 判定プロトコルに不明時 local-reproducible fallback + 手動 override（ADR 記録・dev_mode 昇降格と同一規約）を定義する"
+  minority_opinion: "全会一致のため採用されなかった stance はない。ただし哲学者は『REGIME 軸の増殖が判定プロトコル自体を重くし最小主義ラダーと緊張する長期リスク』『cloud-managed の一例（GAS）だけから 3 値分類を一般化する帰納の飛躍』を、経営者は『cloud-managed 適用例 1 件での要求水準表の過剰一般化リスク』を懸念として残しており、これらは C-b/C-c の温存条件として保持する"
+  consensus_mode: "escalate_to_human"
+  weight_note: "category=conception 適用（経営者3/開発者3/哲学者5）。新軸の導入形態判断ゆえ哲学者最重視（pony01 等の conception 前例と同一規約）"
+  reasoning: "案B は device-bound 到来時に読み替え規約が stack 節へ散在し drift 源になる（開発者）・11 stack 規模で保守 ROI 最悪（経営者）。案C は REGIME に記録されないため下流が機械可読に参照できず実行時再推定の非決定性を残す（開発者）・同じ設計作業の二度払い（経営者）・前提を暗黙のまま温存する認識の負債（哲学者）。案A は既存の暗黙軸の言語化にすぎず（哲学者）、フラクタル原則（新規質問ゼロ）を満たす限り名指すコストは低く名指さないコストは累積する。3 ペルソナが ROI・決定論性・前提への問いの異なる次元から独立に案A へ収束した"
+  human_escalated: true
+  # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  escalation_reason: "CTL-0 運用のため全件人間献上。ただし人間（ひでさん）は本諮問に先立ち解析レポート §3.4（REGIME.md 軸新設の提案 = 案A と同形）を踏まえ『L0 起動 1を進める』と明示指示済みであり、導入形態の事前承認が存在する。judgment（unanimous 案A + 4 制約）は当該指示の範囲内のため recommended をそのまま採用"
+  agreed_at: "2026-07-12T11:10:45Z"
