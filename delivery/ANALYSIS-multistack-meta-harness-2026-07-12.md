@@ -18,7 +18,7 @@
 | C | **実装実行層** | L1 autonomous-dev + independent-reviewer / L2 orchestrator + integration-verifier（L2 閾値 10 項目で発動） | `layer1-*` / `layer2-*` / `regime-assessment.md:240-257` |
 | D | **判断機構** | Council 3 ペルソナ独立並列 × 加重判定（judgment であって decision でない・minority_opinion 必須保持）+ CTL 0〜3 による自律範囲の動的委譲 | `crosscut-council` / `ctl-calculation.md` / `scripts/council-ctl.py` |
 | E | **検証層** | 5 層検出スタック（計算 30%→E2E 20%→IC 10%→推論 7%→Vision 3%）+ verifier-drift（CTL≥1）+ verifier-philosophy（placeholder）+ harness-verifier（D4 自己検査・非配布） | `inferential-sensor-v2.md` / `harness-verifier/` |
-| F | **ガバナンス（憲法）** | philosophy 9 条。核は第 9 条「可逆性ベース委譲境界」（L-FULL / L-GATE / L-FROZEN-PHIL / L-FROZEN-META）+ 第 6 条「憲法の自己改訂禁止」 | `layer0-spec-architect/references/philosophy.md` |
+| F | **ガバナンス（憲法）** | philosophy 9 条。核は第 9 条「可逆性ベース委譲境界」（L-FULL / L-GATE / L-FROZEN-PHIL / L-FROZEN-META）+ 第 6 条「人間 ≒ Council 原則」内の不変条項「憲法の自己改訂禁止」 | `layer0-spec-architect/references/philosophy.md` |
 | G | **配布・更新機構** | dh-manifest.yml（overwrite/merge/redeploy/never_touch の 4 分類）+ UPDATE.md 手順書 + templates placeholder 置換（autonomous-drive skill が deploy） | `dh-manifest.yml` / `UPDATE.md` / `placeholder-spec.md` |
 | H | **CI / 自動駆動** | 5 workflow: harness-verify（+template-sync gate）/ claude-review（4 フェーズ Council レビュー）/ gemini-review（異ベンダー独立軸）/ auto-merge（opt-out・境界 SPEC 準拠）/ issue-pickup（Issue→AI 実装→PR） | `.github/workflows/` |
 | I | **観測・学習層** | hooks 6 event 観測（warn のみ・block しない）+ continuous-learning（候補出力のみ・自動 promote 禁止）+ 情報代謝（HOT/WARM/COLD・購読量上限が最上位不変条件） | `.claude/hooks.json` / `crosscut-hook-observer` / `history/.metabolism-config.yml` |
@@ -87,7 +87,7 @@ clasp によって git 中心開発が成立するため、**正規 stack 化が
 - **層分離規約が必須**: 「GAS グローバル API に触る薄い adapter 層」と「純粋ロジック層」の分離を最低要件に置く。これが無いと第 1 層検出率 30% が確保できない
 - **E2E**: doGet/doPost の Web アプリなら Playwright がそのまま届く（既存 5 層スタックと接続可能）。Sheets 連携はテスト専用スプレッドシート fixture
 - **CI**: OAuth refresh token（`.clasprc.json` 相当）を Repository Secret 化すれば Actions から clasp 可。「人間がやる範囲」表に **GCP project / OAuth 同意 / Script Properties 設定** を追加する必要
-- **DONT 罠候補**: 6 分実行制限 / quota / simple trigger（onEdit 等）の権限制約 / Script Properties にすべき値のハードコード / トリガー重複登録の非冪等性 / V8 と rhino の差異
+- **DONT 罠候補**: 6 分実行制限 / quota / simple trigger（onEdit 等）の権限制約 / Script Properties にすべき値のハードコード / トリガー重複登録の非冪等性 / V8 と Rhino の差異
 
 ### 3.2 Google エコシステム（Sheets / Drive / Calendar をバックエンドとする構成）— 適合度: 高
 
