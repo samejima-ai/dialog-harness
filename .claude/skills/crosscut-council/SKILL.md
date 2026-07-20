@@ -130,12 +130,32 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
 [出力] JSON（final_decision は常に null）
   ↓
 [ログ] history/COUNCIL-LOG.md に追記（project-scope）
+  → decision_category（C1〜C4 / H1〜H4）を**必ず含める**（Phase 0 で判定済み・§CTL 記録）
   ↓
-[CTL記録] ~/.claude/council-data/ に invocation を記録（user-scope, **自動・毎回必須**）
+[CTL記録] 同期コマンドを実行（user-scope, **自動・毎回必須**・下記 §クロージング手順）
   → 事後評価（actual_outcome）は後段の合意プロセス完了時／振り返り儀式で埋める
   ↓
 [合意プロセス] 実装者が理解→質問→方針決定（references/consensus-protocol.md）
 ```
+
+### クロージング手順（CTL 自動同期・毎回必須）
+
+**COUNCIL-LOG への追記を終えたら、同じターン内で必ず以下を実行する**。これが CTL 記録の主経路
+（§CTL 記録 §同期の発火主体）。実行を次ターンや儀式まで先送りしない — 先送りが v6.1.0 以前の
+「手順書依存で空文化」を再演させる。
+
+```bash
+# 発動したプロジェクトの COUNCIL-LOG を同期する（自プロジェクトのみ・--prune は付けない）
+python3 scripts/council-log-sync.py sync --recompute
+```
+
+- **`scripts/` が無い利用者プロジェクトの場合**: DH 本体の clone から
+  `python3 <DH>/scripts/council-log-sync.py sync --recompute --log ./history/COUNCIL-LOG.md`
+  を実行する。それも不可なら §CTL 記録 2. の「invocation JSON 直接書き」でフォールバックする。
+- **`--prune` は付けない**（他プロジェクトの invocation を巻き添えで消す。§CTL 記録の警告参照）。
+- **失敗しても Council フローは止めない**（判断 ＞ 記録）。warn として可視化し、次回の同期または
+  L0 振り返り儀式で回収する。同期は冪等ゆえ再実行は無害。
+- 実行後、`python3 scripts/council-ctl.py status` で CTL と未評価件数を確認できる（任意）。
 
 ## 入出力規格
 
@@ -202,14 +222,31 @@ council-data を導出する。これで「書く側の経路」の二重化を�
 `dh-upgrades/upgrade-spec-v6.1.0.md`。
 
 ```bash
-python3 scripts/council-log-sync.py sync --prune --recompute  # 同期 + 孤児掃除 + CTL 再計算（主経路）
-python3 scripts/council-log-sync.py sync --dry-run            # 生成予定を確認（書かない）
+python3 scripts/council-log-sync.py sync --recompute           # 同期 + CTL 再計算（主経路）
+python3 scripts/council-log-sync.py sync --dry-run             # 生成予定を確認（書かない）
 ```
 
+> **`--prune` を主経路に置かない**（2026-07-20 改訂）: `--prune` は「引数のログに対応しない
+> invocation」を全件削除する。council-data は **user-scope でプロジェクト横断**（philosophy 第 6 条）
+> ゆえ、あるプロジェクトのログで同期すると**他プロジェクト由来の invocation が全件孤児判定される**。
+> 実測では DH 本体のログで同期して platform 由来 43 件が、逆で DH 由来 57 件が孤児として列挙された。
+> `--prune` は「同一ログ内の別採番手動 record を掃除する」目的でのみ、**削除対象 id を目視確認した上で**
+> 使う。孤児警告が出ても、他プロジェクトを併用しているなら**それは正常**であり掃除してはならない。
+
 **同期の発火主体（実行経路への接続 — 手順書依存に戻さない）**:
-同期は「スクリプトを作っただけ」では①と同じ轍を踏む。以下を主経路とする：
-- **L0 振り返り儀式（F1/F2/F3）の冒頭で必ず同期を走らせる**（`layer0-spec-architect/references/ritual-protocol.md` §CTL 事後評価）。儀式は「同期 → `pending` 列挙 → 未評価判定を人間に問う」を 1 手順として固定する。
-- CC hooks は tool 単位発火で「Council 発動」という抽象イベントに口が無いため、hook 発火は主経路にしない（`upgrade-spec-v6.1.0.md` §2.1 案B 却下理由）。
+同期は「スクリプトを作っただけ」では①と同じ轍を踏む。以下 2 つを主経路とする：
+
+- **【主】Council 発動のたび、本 SKILL の最終ステップで同期する**（§9 クロージング手順）。
+  COUNCIL-LOG への追記直後に実行するため、**発動と記録の間に時間差が生じない**。
+  「発動 → COUNCIL-LOG 追記 → 同期」を 1 つの不可分な手順として扱う。
+- **【従】L0 振り返り儀式（F1/F2/F3）の冒頭でも同期を走らせる**
+  （`layer0-spec-architect/references/ritual-protocol.md` §CTL 事後評価）。
+  儀式は「同期 → `pending` 列挙 → 未評価判定を人間に問う」を 1 手順として固定する。
+  主経路が失敗・省略された場合の**取りこぼし回収**として機能する（同期は冪等ゆえ二重実行は無害）。
+
+CC hooks は tool 単位発火で「Council 発動」という抽象イベントに口が無いため、**hook 発火は採らない**
+（`upgrade-spec-v6.1.0.md` §2.1 案B 却下理由）。上記【主】は hook ではなく**skill 自身の手順**として
+実装するため、この却下理由の射程外である（skill は自分の発動を知っている）。
 
 **decision_category は同期で機械導出しない**: COUNCIL-LOG に明示された C1〜C4 / H1〜H4 が
 あればそれを使い、無ければ `null` で載せる。重み配分軸の `category`（conception/judgment 等）
