@@ -2,6 +2,61 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## CTL 収集経路の実地適用と発動時自動同期（v6.4.0、minor 昇格、PR #TBD）
+
+利用者（ひでさん）の要請「kakuman-platform の CTL を蓄積していきたい」を起点に、利用者プロジェクトの
+Council 資産を CTL へ載せる実作業を行い、**CTL-0 → CTL-1 到達**（評価済み 3 件 → 89 件、C1 が
+count=20 / rate=0.90 で委譲対象カテゴリ化）。作業中に判明した 5 つの欠落のうち 3 件を本版で実装した。
+
+**判明した構造的欠落**: v6.1.0 は「書く側の経路」（発動 → 記録）を直したが、**「複数プロジェクトから
+集める側の経路」は手つかず**だった。philosophy 第 6 条は「Council データはユーザー単位で蓄積・
+プロジェクト横断で学習資産が引き継がれる」と明記するが、実装・ドキュメント・儀式のすべてが
+**自プロジェクト単独を暗黙前提**にしていた。AD-004（v4.2、機構と動作分岐の未接続）/ v6.1.0
+（記録経路の分断）に続く**同型欠陥の第 3 波**。詳細な解析は
+`delivery/PROPOSAL-ctl-collection-2026-07-20.md`。
+
+- **発動時自動同期を SKILL の手順として実装**（本版の主眼）: Council skill のクロージング手順に
+  `sync --recompute` を必須ステップとして固定（`crosscut-council/SKILL.md` §クロージング手順）。
+  主経路＝発動のたび / 従経路＝L0 振り返り儀式 F1 の二段構成とし、儀式側は取りこぼし回収に位置づけ
+  （同期は冪等ゆえ二重実行は無害）。**v6.1.0 が却下した案B（hook 経由発火）とは別物**: hook で外から
+  抽象イベントを検知するのではなく、**skill が自分の発動を知っている**事実を使う。hook は導入しない。
+- **`implementer_consent` 正規化**（`normalize_consent()` 新設）: 利用者プロジェクトの語彙
+  （`agreed` / `approved` / `agreed_recommended_with_N_conditions` / `_with_substitution` /
+  `agreed_minority_opinion`）が完全一致テーブルから漏れ、**評価済み 39 件中 14 件（36%）が
+  「未評価」として統計から脱落**していた。接頭辞 + 条件マーカーによる正規化に置換。条件付き同意は
+  `modified` に倒す（一致率を過大評価しない保守判断）。**機械導出禁止（`ctlrec1`）には非抵触** —
+  却下されたのは `category` → `decision_category` という**直交軸間**の写像であり、本件は
+  `implementer_consent` → `status` の**同一軸内の表記ゆれ正規化**。
+- **`--prune` の危険性を警告文で明示**: `--prune` は「引数のログに対応しない invocation」を全件削除する。
+  council-data は user-scope 横断ゆえ、**あるプロジェクトのログで同期すると他プロジェクト由来が
+  全件孤児判定される**（実測: DH のログで platform 由来 43 件、逆で DH 由来 57 件）。旧警告文は
+  「--prune で掃除できます」と実行を促す語調で、素直に従うとデータが消える。SKILL の主経路コマンドから
+  `--prune` を除去し、警告ブロックを追加。
+- **C1〜C4 の運用判定基準表を新設**（`pre-check.md`）: 原典（philosophy 第 6 条）の 1 行定義だけでは
+  実際の発動で分類が割れるため、過去 85 件の遡及分類で用いた基準と「迷ったときの決め手」を明文化。
+  **語彙の正規表現マッチによる自動分類は実測で破綻**（「適用」「投入」等が実装判断一般に頻出し
+  C3 が 85 件中 28 件と過剰検出、実態と乖離）したため禁止を明記。`ctlrec1` の「満ちているが意味は空」
+  と同根の failure mode。分類は発動時に判断者が付け、遡及付与は AI 原案 → 人間承認とする。
+- **過去分の遡及分類**: DH 本体 47 件 + 利用者プロジェクト 38 件の計 85 件に `decision_category` を
+  付与（COUNCIL-LOG 側＝単一ソースに追記。append-only 例外条項「null 宣言済みフィールドへの
+  単方向埋め込み」に適合）。AI が原案提示 → 人間承認の経路を通した。
+
+変更ファイル: `.claude/skills/crosscut-council/SKILL.md`（§クロージング手順 新設 + `--prune` 警告）/
+`references/pre-check.md`（C1〜C4 運用判定基準表）/ `scripts/council-log-sync.py`
+（`normalize_consent()` + 警告文）/ `scripts/test-council-log-sync.sh`（文言追随、全 15 項目 PASS）/
+`history/COUNCIL-LOG.md`（47 件に decision_category 追記）/
+`delivery/PROPOSAL-ctl-collection-2026-07-20.md`（新規・解析と未実装項目）/ `VERSION`(6.4.0) / 本 CHANGELOG。
+
+**未実装（採否は次版以降の判断）**: `--prune` のスコープ構造化（`_source_log` による由来識別・
+削除対象 id の列挙）/ 同期対象レジストリ（`sources.yml` + `sync --all`）/ `council-ctl.py classify`
+サブコマンド / `status` への未分類件数表示 / council-data 手動編集の検出警告。
+いずれも `delivery/PROPOSAL-ctl-collection-2026-07-20.md` §8 に整理。
+
+**CTL 現況**: CTL-1（評価済み 89 件 / 全体一致率 0.8876）。C1 count=20 rate=0.90（委譲対象）/
+C2 count=55 rate=0.87 / C3 count=5 rate=1.0 / C4 count=9 rate=0.89。CTL-2 の残条件は
+「4 カテゴリ中 3 以上で count≥10 かつ rate≥0.90」で、C3/C4 は母数不足。**自然蓄積を待つのが妥当**
+（無理に分類を寄せれば「満ちているが意味は空」の再演になる）。
+
 ## runtime_profile 軸新設 + GAS を 11 番目の正規 stack として追加（v6.3.0、minor 昇格、Council `07oknv`、PR #TBD）
 
 解析レポート `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md`（PR #165）の提案 2 件を、人間

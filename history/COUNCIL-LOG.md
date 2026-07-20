@@ -20,6 +20,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "次元論の命名統一（D-numbering / Tier naming / 階層形容詞）"
   council_type: "business"
   category: "conception"
+  decision_category: "C4"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -44,6 +45,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "D4 検査機構の名称（meta-verifier / harness-verifier / dh-integrity / singularity）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -68,6 +70,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "バージョン昇格区分（v5.2.0 minor / v6.0.0 major / v5.2.0 + v5.3.0 後送）"
   council_type: "business"
   category: "judgment"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -92,6 +95,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "検証スコープ 5 項目の D4 対象妥当性"
   council_type: "business"
   category: "implementation"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -116,6 +120,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "C-1 解決方針（自前パーサ拡張 / インライン化 / PyYAML 採用）"
   council_type: "business"
   category: "implementation"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -140,6 +145,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "S/U/R 三軸スコア統合方針（議題 1 / D4 整合性監査 PR-γ）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -181,6 +187,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "DH-PHILOSOPHY-INSIGHTS.md 最終配置（議題 2 / D4 整合性監査 PR-γ）"
   council_type: "business"
   category: "operation"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -222,6 +229,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "philosophy.md 第 7 条「次元論と D4 の独立性」昇格スケジュール（議題 3 / D4 整合性監査 PR-γ）"
   council_type: "business"
   category: "conception"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -263,6 +271,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "5 本柱 vs 5 本柱+第 6 条 表記統一（議題 4 / D4 整合性監査 PR-γ、HIGH-1 思想統一案件）"
   council_type: "business"
   category: "conception"
+  decision_category: "C4"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -304,6 +313,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "cross-project ログ集約の Mirror 方式（Push/Pull/Council のみ Push/Hybrid）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -345,6 +355,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "cross-project ログ集約の対象スコープ（Council のみ / +DH evolution / +verification / すべて）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -386,6 +397,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "user-scope 集約時の Privacy フィルタ（全文転送/schema-only/自動匿名化/Council のみ匿名化）"
   council_type: "business"
   category: "judgment"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -427,6 +439,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "Consumer (spec-architect / harness-verifier / Council CTL) が user-scope を読むクエリ API（直読み/共通ライブラリ/CLI/harness-verifier 統合）"
   council_type: "business"
   category: "implementation"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -468,6 +481,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "1機能完遂の自律駆動WFにおける『献上トリガー』の分類構造をどう設計すべきか（HANDOFF 2026-04-30 論点2）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -509,6 +523,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "1機能完遂の自律駆動WFの基底構造をどう設計すべきか（HANDOFF 2026-04-30 論点1）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -555,6 +570,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "PR #30 (v5.4.0 archeo-architect) が open のまま LC 命名変更を進めるべきか、それとも PR #30 merge を待つべきか（PR #31 INTENT.md 記載の発動条件 (a)『PR #30 merge かつ PR #31 merge 両方完了後』との関係）"
   council_type: "business"
   category: "judgment"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -596,6 +612,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "v5.5.0（adrv01-Ph1 + Phase γ）着手前に、DH 本体の実装妥当性をどの深度で再検証すべきか（V-1 狭義 / V-2 中庸 / V-3 広義 の 3 候補）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -644,6 +661,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   source_skill: "layer0-spec-architect"
   council_kind: "business"
   category: "judgment"
+  decision_category: "C2"
   decision_category: "implementation"
   question_to_answer: "v5.6.0 で autonomous-drive 標準化を実装するにあたり、template 適用ロジックを新 crosscut skill (crosscut-autonomous-drive) として skill 化するか、spec-architect reference + L1 直接参照で済ませるか"
   context: |
@@ -722,6 +740,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "cookpato retro A1〜A5 の振り分けポートフォリオは妥当か（特に A3 を #46 に統合するか独立採用するか）"
   council_type: "business"
   category: "judgment"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -771,6 +790,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "crosscut-council Phase 1 独立性侵害の修正方針（単一セッション順次生成での情報純度違反を物理分離 / sub-agent 並列 / system prompt 強化 / ハイブリッドのいずれで解決するか）"
   council_type: "business"
   category: "implementation"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -817,6 +837,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "auto-merge の人間承認モデルを opt-in（明示 GO ラベル）から opt-out（暗黙オート + stop ラベル）に反転すべきか"
   council_type: "business"
   category: "conception"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -960,6 +981,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "「私の哲学をベースにエンジニアの叡智を咀嚼して取り込む」前提のもとで、ECC 吸収案件をどう進めるべきか"
   council_type: "business"
   category: "conception"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -1011,6 +1033,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "Wave 1 で採用する Claude Code hooks.json の event types はどのサブセットか?"
   council_type: "business"
   category: "implementation"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -1053,6 +1076,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "候補 1（PROACTIVELY トリガー語彙）の規約確定後、既存 17 skill の description 監査・修正をいつ実施するか?"
   council_type: "business"
   category: "operation"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -1100,6 +1124,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "候補 6（rules common + 14 言語別）の Wave 1 採用において、言語別 rules を先取りで含めるか?"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -1143,6 +1168,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T07:00:00Z-w2qb01"
   judgment_type: "tradeoff"
+  decision_category: "C1"
   context: "PR #77 後続、咀嚼プロトコル Wave 2 Phase B。候補 5 (continuous-learning v2.1) で pattern 検出 → instinct promote の自動度を確定。philosophy 第 6 条「人間最終承認」+ 第 7 条 P4 介入権 + 第 8 条候補との同時整合が必須"
   questions_count: 0
   proposed_stances:
@@ -1203,6 +1229,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T07:00:00Z-w2qb02"
   judgment_type: "tradeoff"
+  decision_category: "C2"
   context: "Wave 2 Phase B 諮問 2。候補 4 (AgentShield ルールサブセット選別)。観察結果 (delivery/refs-draft/ecc/agentshield-spec.md) により AgentShield は 102 静的解析ルール × 5 カテゴリ、ecc-agentshield npm package で独立配布。`--fix` 自動修復経路と `--opus --stream` 外部 LLM 経路は DH 哲学 (独立性原則・観察温存) と緊張。哲学者重み増強 (5 → 6) で諮問"
   questions_count: 0
   proposed_stances:
@@ -1264,6 +1291,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T07:00:00Z-w2qb03"
   judgment_type: "simple_conflict"
+  decision_category: "C2"
   context: "Wave 2 Phase B 諮問 3。候補 2 (origin/version frontmatter 規格) を Wave 1 で crosscut-hook-observer/SKILL.md に先取り適用済。既存 17 skill への展開タイミングを確定。Wave 1 諮問 w1qb02 (skill description 監査) と同型問題"
   questions_count: 0
   proposed_stances:
@@ -1324,6 +1352,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T09:00:00Z-w3qb01"
   judgment_type: "tradeoff"
+  decision_category: "C1"
   category: "conception"
   context: "Wave 3 Phase B 諮問 1。philosophy 第 8 条本格諮問。Wave 1 PHILOSOPHY-NOTE-autonomy-with-guardrails-2026-05-11 で起草、Wave 1 + Wave 2 の B 系収束 2 サンプルを経験的根拠として philosophy.md に正式追加するかを諮問。council-weights.md §situational_modifier.conception 適用 (経営者 0 / 開発者 -1 / 哲学者 +2)"
   questions_count: 0
@@ -1387,6 +1416,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T09:00:00Z-w3qb02"
   judgment_type: "tradeoff"
+  decision_category: "C2"
   category: "judgment"
   context: "Wave 3 Phase B 諮問 2。議題 2 残候補 (hooks 9 event 残り 4 / continuous-learning CTL 連動自動度) の Wave 3 採用判断。council-weights.md §situational_modifier.judgment 適用 (経営者 +1 / 開発者 0 / 哲学者 0)"
   questions_count: 0
@@ -1449,6 +1479,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T09:00:00Z-w3qb03"
   judgment_type: "simple_conflict"
+  decision_category: "C2"
   category: "operation"
   context: "Wave 3 Phase B 諮問 3。philosophy.md 改訂時の delta を history/PHILOSOPHY-CHANGELOG.md に追記する機構の運用方式選定。council-weights.md §situational_modifier.operation 適用 (経営者 +1 / 開発者 0 / 哲学者 -1)"
   questions_count: 0
@@ -1511,6 +1542,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T19:00:00Z-w4qb01"
   judgment_type: "tradeoff"
+  decision_category: "C4"
   category: "conception"
   context: "Wave 4 Phase B 諮問 1。Wave 3 w3qb01 (philosophy 第 8 条 3 段階明文化、conf 0.55 接近採決、minority C 温存) の minority opinion C (4 段階モデル拡張) 再諮問。delivery/CHEW-PROTOCOL-SPEC-wave4-starter.md §2.1 参照。council-weights.md §situational_modifier.conception 適用 (経営者 0 / 開発者 -1 / 哲学者 +2)"
   questions_count: 0
@@ -1576,6 +1608,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 - invocation_id: "council-2026-05-11T19:30:00Z-w4qb02"
   judgment_type: "tradeoff"
+  decision_category: "C2"
   category: "implementation"
   context: "Wave 4 Phase B 諮問 2。L0 対話パイプラインへの ECC 参照モード組込（HANDOFF 旧タスク B の Wave 4 着地）。ユーザー 3 不満（自立駆動の甘さ / Copilot レビュー耐性 / 多様な開発対応）の核心解決議題。delivery/CHEW-PROTOCOL-SPEC-wave4-starter.md §2.2 参照。council-weights.md §situational_modifier.implementation 適用 (経営者 -1 / 開発者 +2 / 哲学者 -1)。W4-Q1 採決結果 (3 段階モデル維持) と整合する実装範囲を採決"
   questions_count: 0
@@ -1645,6 +1678,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "W5-Q2 subphase 5 ファイル改修の Wave 5 Phase C 着地範囲は A 全 / B 部分 / C 全延期 のうちどれか"
   council_type: "business"
   category: "implementation"
+  decision_category: "C2"
   category_fallback: false
   context: "Wave 5 Phase B 単独諮問。Wave 4 W4-Q2 採決 B (段階組込、conf 0.78 全会一致、council-2026-05-11T19:30:00Z-w4qb02) の Wave 5 申し送り直接後続。subphase-common-protocol.md Phase γ-i フックは Wave 4 PR #83 で先行追加済、残作業として subphase-l03-api / subphase-l04-transition / subphase-l05-authz / subphase-l06-invariants + scaffold-checklist の 5 ファイル改修が Wave 5 申し送り。Wave 5 Phase A で W5-Q0 観測機構稼働化完遂 (PR #86 merged、2026-05-11T12:08:47Z 観測サイクル起算)。delivery/CHEW-PROTOCOL-SPEC-wave5-starter.md §2.2 参照。council-weights.md §situational_modifier.implementation 適用 (経営者 -1 / 開発者 +2 / 哲学者 -1)"
   phase_reached: "phase_3"
@@ -1789,6 +1823,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "人間の刻み方を捨て AI スペックに依存した開発スピードで進める方針を DH 全体に採用すべきか、その境界条件は何か"
   council_type: "business"
   category: "judgment"
+  decision_category: "C1"
   category_fallback: true  # 元議題 meta-governance は output-format.md §8 許容カテゴリに直接該当しないため judgment にフォールバック
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -1861,6 +1896,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "rtk-integration/scripts/install.ps1 の `$ExpectedSha256` が空文字のままだと default で install 失敗する挙動について、(A) v0.37.1 の公式 SHA を populate (B) empty → warn のみ install 続行 (C) 現状維持 + Copilot 指摘 close (D) A + SHA 更新 protocol を SKILL.md / references で明文化、のいずれを採るか (kakuman PR #75 Copilot review 起点、kakuman 側で touch せず DH 側で諮問する方針)"
   council_type: "business"
   category: "operation"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -1906,6 +1942,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "Council 判定の最終出力 (history/COUNCIL-LOG.md) は schema 準拠 YAML (machine-readable) で記録されているが、人間が離席復帰時の判断スピード向上のための human-readable form の永続化をどう扱うか (A=現状維持 / B-1=本件のみ markdown 追加 / B-2=consensus-protocol.md に規約追記 + 併合 / 第4の道=schema 拡張)。本 council 自身が確立 council となるメタ反復"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -1955,6 +1992,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "CoDD (Coherence-Driven Development) の DAG (有向非巡回グラフ) 概念を Dialog Harness (DH) に咀嚼すべきか。咀嚼するなら 5 本柱との関係をどう位置づけるか (A=新規 P6 として独立追加 / B=P1 フラクタル原則の派生概念として吸収 / C=実装詳細として棄却 / 第 4 の道=哲学を変えず業界 Layer 3 観測リストに追加)。ローカルブレスト議案 BRAINSTORMCoDDDAGvsDH.md を Issue #98 として起票後の人間直接諮問"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -2000,6 +2038,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "philosophy.md 第 1 条 フラクタル原則 への派生節「依存トポロジーの追跡可能性 = 形状保存メカニズム」をどの形式で埋め込むべきか (案 α=新規小節として独立追加 / 案 β=既存「分岐の決定責務」を 1〜2 段落延長して統合 / 案 γ=philosophy.md 本体は最小変更、詳細を references/dependency-topology.md に切り出す)。Council coddag の sub-scope として、人間 Q1 回答「咀嚼のための Council 起動」で発動"
   council_type: "business"
   category: "conception"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -2045,6 +2084,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "情報代謝サイクル（履歴結晶化）設計のまま layer0-reindex-librarian 新設＋regime定義＋REGIME/SPECテンプレ追記＋F1振り返り儀式の入力をHOT+関連WARMに絞る変更の実装に進んでよいか"
   council_type: "business"
   category: "judgment"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -2096,6 +2136,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "THEORY『context情報の生きる循環cycle』を philosophy 並びの理論層として今 framework に結晶化してよいか"
   council_type: "business"
   category: "conception"
+  decision_category: "C1"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "simple_conflict"
@@ -2147,6 +2188,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "パターン結晶の形式 {発火条件,反-発火条件,力学,定石,信頼度} を今確定すべきか"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -2193,6 +2235,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "DH本体の情報代謝パラメータ（token_budget / dry_run_cycles / council_gate 閾値）の正本（canonical location）をどこに置くか"
   council_type: "business"
   category: "judgment"
+  decision_category: "C4"
   category_fallback: false
   phase_reached: "phase_1_to_3 (2 rounds: 初回 + 追加質問1往復)"
   conflict_type: "round1=unanimous(A) / round2=converged_aufhebung"
@@ -2236,6 +2279,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "本番 reindex 第二弾で (b)中確度 / (c)サブ作業ログをどこまで COLD 移送するか"
   council_type: "business"
   category: "judgment"
+  decision_category: "C3"
   category_fallback: false
   phase_reached: "phase_1_to_3"
   conflict_type: "converged_with_gate"
@@ -2272,6 +2316,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "mtb2sc で据え置いた wave2/wave3 を移送してよいか（w2qb04/w3qb04 未結晶の正体が判明後の再判断）"
   council_type: "business"
   category: "judgment"
+  decision_category: "C3"
   references_prior: "council-2026-06-07T05:00:00Z-mtb2sc"
   consensus_basis: "council≒人間合意(philosophy 第6条) + mtb2sc が既に承認した開発者ゲート原則を、判明事実に適用（新規ペルソナ投票は行わず、Council 承認済み基準の事実適用）。"
   clarified_facts: "mtb2sc の開発者ゲートが wave2/wave3 で検出した未結晶 w2qb04/w3qb04 の正体は『諮問省略』（chewing protocol §3 で confidence ≥ 0.7 のため Council を意図的にスキップした記録）であり、結晶化を待つ『沈黙した声』ではなかった。COUNCIL-LOG エントリが無いのは設計通り（諮問が発生していない）。"
@@ -2294,6 +2339,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "履歴ストレージの保持構造はどれを採るべきか（案A 1ファイル蓄積 / 案B 1ジャンル+frontmatter索引 / 案C 1事象1ファイル / 案D tier分割の止揚案）"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"
@@ -2428,6 +2474,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   question_to_answer: "claude-world-examples を DH メタスキルにどう取り込むべきか、どの案を採用すべきか"
   council_type: "business"
   category: "conception"
+  decision_category: "C2"
   category_fallback: false
   phase_reached: "phase_3"
   conflict_type: "unanimous"

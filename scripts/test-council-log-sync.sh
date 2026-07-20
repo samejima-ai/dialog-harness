@@ -169,7 +169,7 @@ cat > "$orphan" <<'JSON'
 JSON
 # prune なしでは孤児は残り、注意が出る
 out="$($SYNC sync --log "$LOG")"
-echo "$out" | grep -q "孤児 invocation が 1 件" || fail "孤児の注意が出ない: $out"
+echo "$out" | grep -q "対応しない invocation が 1 件" || fail "孤児の注意が出ない: $out"
 [ -f "$orphan" ] || fail "prune なしで孤児が消えた"
 ok "prune なし: 孤児は残り注意表示"
 # --prune で孤児掃除

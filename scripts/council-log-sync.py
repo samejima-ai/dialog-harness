@@ -43,7 +43,8 @@ append-only）には全発動が確実に追記されている。本ツールは
     python3 scripts/council-log-sync.py sync --dry-run       # 生成予定を出すだけ（書かない）
     python3 scripts/council-log-sync.py sync --log <path>    # 別の COUNCIL-LOG を指定
     python3 scripts/council-log-sync.py sync --recompute     # 同期後に stats.json も再計算
-    python3 scripts/council-log-sync.py sync --prune         # COUNCIL-LOG 非対応の孤児を掃除
+    python3 scripts/council-log-sync.py sync --prune         # 同一ログ内の別採番 record を掃除
+                                                             # ※他プロジェクト由来も消える。下記警告参照
 
 同期後の CTL 反映・事後評価は council-ctl.py に委ねる:
     python3 scripts/council-ctl.py recompute
@@ -83,8 +84,41 @@ VALID_DECISION_CATEGORIES = ("C1", "C2", "C3", "C4", "H1", "H2", "H3", "H4")
 CONSENT_TO_STATUS = {
     "agreed_recommended": "agreed",
     "agreed_with_modification": "modified",
+    # 表記ゆれ（利用プロジェクト側の語彙。同一軸の正規化であって軸間写像ではない）
+    "agreed": "agreed",
+    "approved": "agreed",
+    "agreed_minority_opinion": "agreed",
     # escalated / deferred_pending_dependent / null は結論未定 → 未評価（None）
 }
+
+# 条件・置換を伴う同意は「推奨そのままではない」= modified 相当。接尾辞が可変
+# （_with_3_conditions / _with_6_conditions / _with_substitution / _under_purity_caveat 等）
+# のため完全一致テーブルでは網羅できず、接頭辞 + マーカーで正規化する。
+#
+# なぜ機械導出禁止（council-2026-07-01T-ctlrec1）に抵触しないか:
+#   却下されたのは category（重み軸）→ decision_category（委譲軸）という**直交する別軸**への
+#   写像。ここは implementer_consent → status の**同一軸内の表記ゆれ正規化**であり、
+#   「同意したが推奨そのままではない」という原文の意味を保存する方向にしか動かさない。
+_CONDITIONAL_MARKERS = ("_with_", "_under_")
+
+
+def normalize_consent(consent: str | None) -> str | None:
+    """implementer_consent を actual_outcome.status へ正規化する。
+
+    完全一致 → 条件付き同意（modified）→ 未評価（None）の順で判定する。
+    """
+    if not consent:
+        return None
+    v = consent.strip()
+    if v in CONSENT_TO_STATUS:
+        return CONSENT_TO_STATUS[v]
+    # agreed_* / approved_* に条件・置換マーカーが付くものは modified
+    if v.startswith(("agreed", "approved")) and any(m in v for m in _CONDITIONAL_MARKERS):
+        return "modified"
+    # 上記以外の agreed_* 派生は素直な同意として扱う
+    if v.startswith(("agreed", "approved")):
+        return "agreed"
+    return None
 
 
 def _now() -> str:
@@ -177,7 +211,7 @@ def _filename_for(invocation_id: str) -> str:
 def entry_to_invocation(entry: dict) -> dict:
     """COUNCIL-LOG エントリ 1 件を council-data invocation JSON に変換する。"""
     consent = entry.get("implementer_consent")
-    status = CONSENT_TO_STATUS.get(consent) if consent else None
+    status = normalize_consent(consent)
 
     outcome = {
         "status": status,
@@ -311,8 +345,11 @@ def cmd_sync(args) -> None:
         print(f"  prune: COUNCIL-LOG 非対応の孤児 {pruned} 件を掃除"
               f"（手動 record の二重計上を解消・案A）")
     elif orphans:
-        print(f"  注意: COUNCIL-LOG に対応しない孤児 invocation が {len(orphans)} 件あります"
-              f"（手動 record 等）。--prune で掃除できます（二重計上の恐れ）")
+        print(f"  参考: このログに対応しない invocation が {len(orphans)} 件あります")
+        print(f"    council-data は user-scope でプロジェクト横断（philosophy 第 6 条）ゆえ、"
+              f"他プロジェクト由来ならこれは正常です。")
+        print(f"    --prune はこれらを**全件削除**します。同一ログ内の別採番 record を掃除する"
+              f"目的でのみ、削除対象を確認した上で使ってください。")
 
     if args.dry_run:
         print("  （--dry-run: 何も書き込んでいません）")
