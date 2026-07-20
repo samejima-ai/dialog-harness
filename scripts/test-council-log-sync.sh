@@ -134,6 +134,18 @@ f="$(inv_file council-2026-01-02T00-00-00Z-bbb222)"
 ok "agreed_with_modification → modified"
 f="$(inv_file council-2026-01-04T00-00-00Z-ddd444)"
 [ "$(field "$f" actual_outcome.status)" = "null" ] || fail "deferred → null(未評価) 失敗"
+# rejected 系（Council 推奨の人間 override 等）は rejected として統計の分母に入る
+out="$($PY - "$HERE/council-log-sync.py" <<'PYEOF'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("s", sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+assert m.normalize_consent("rejected") == "rejected"
+assert m.normalize_consent("rejected_human_override") == "rejected"
+print("ok")
+PYEOF
+)"
+[ "$out" = "ok" ] || fail "rejected 系の写像失敗: $out"
+ok "rejected / rejected_* → rejected"
 ok "deferred → 未評価(null)"
 echo "== 4b. 同一キー後追記は後勝ち（append-only null→実値の単方向埋め込み）=="
 f="$(inv_file council-2026-01-05T00-00-00Z-eee555)"
