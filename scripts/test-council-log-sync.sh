@@ -25,7 +25,7 @@ CTL="$PY $HERE/council-ctl.py"
 
 export COUNCIL_DATA_DIR="$(mktemp -d)/council-data"
 LOG="$(mktemp)"
-trap 'rm -rf "$COUNCIL_DATA_DIR" "$LOG"' EXIT
+trap 'rm -rf "$COUNCIL_DATA_DIR" "$LOG" "${LOG}.heading"' EXIT
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 ok()   { echo "  ok: $1"; }
@@ -202,6 +202,27 @@ $SYNC sync --log "$LOG" >/dev/null
 sig2="$(signature)"
 [ "$sig1" = "$sig2" ] || fail "再同期で結果が変わった（非可逆）"
 ok "可逆（再同期で同一）"
+
+echo "== 9. 書式逸脱センサー: 見出し形式（## council-...）を warn で可視化 =="
+# 見出し形式の記録（パーサ非対応 = CTL に載らない）を混ぜ、warn が出ることを確認
+LOG_HEADING="${LOG}.heading"
+cp "$LOG" "$LOG_HEADING"
+cat >> "$LOG_HEADING" <<'MD'
+
+## council-2026-01-02T-heading1 — 見出し形式の記録（自由 Markdown）
+
+- **recommended**: 案 X を採用
+MD
+out="$($SYNC sync --log "$LOG_HEADING" --dry-run)"
+echo "$out" | grep -q "見出し形式記録（## council-...）が 1 件" || fail "見出し形式の warn が出ない: $out"
+echo "$out" | grep -q "council-2026-01-02T-heading1" || fail "見出し形式の id が列挙されない: $out"
+# 見出し形式は同期対象にならない（エントリ数が増えない）こと
+echo "$out" | grep -q "heading1.json" && fail "見出し形式が誤って同期対象になった"
+ok "見出し形式センサー: warn + id 列挙 + 同期対象外"
+# 見出しが無いログでは warn が出ないこと
+out="$($SYNC sync --log "$LOG" --dry-run)"
+echo "$out" | grep -q "見出し形式記録" && fail "見出しが無いのに warn が出た: $out"
+ok "見出しなしログでは warn なし"
 
 echo ""
 echo "PASS: council-log-sync 全テスト通過"
