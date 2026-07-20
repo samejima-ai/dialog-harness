@@ -88,6 +88,9 @@ CONSENT_TO_STATUS = {
     "agreed": "agreed",
     "approved": "agreed",
     "agreed_minority_opinion": "agreed",
+    # Council 推奨が実装者/人間 override で不採用になった場合（council-ctl.py VALID_STATUSES 対応）。
+    # rejected は agreement_rate の分母に入り率を下げる = 委譲精度の学習に不可欠な負例
+    "rejected": "rejected",
     # escalated / deferred_pending_dependent / null は結論未定 → 未評価（None）
 }
 
@@ -118,6 +121,9 @@ def normalize_consent(consent: str | None) -> str | None:
     # 上記以外の agreed_* 派生は素直な同意として扱う
     if v.startswith(("agreed", "approved")):
         return "agreed"
+    # rejected_* 派生（human_override 等の接尾辞付き）も不採用として扱う
+    if v.startswith("rejected"):
+        return "rejected"
     return None
 
 
