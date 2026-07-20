@@ -287,7 +287,18 @@ def cmd_sync(args) -> None:
     if not log_path.exists():
         sys.exit(f"COUNCIL-LOG が見つかりません: {log_path}")
 
-    entries = parse_council_log(log_path.read_text(encoding="utf-8"))
+    log_text = log_path.read_text(encoding="utf-8")
+
+    # 書式逸脱センサー（2026-07-20）: 見出し形式（`## council-...`）の記録はパーサが読めず
+    # CTL に載らない。silent 素通りさせず warn で可視化する（検出のみ・削除/自動変換しない）。
+    heading_records = re.findall(r"^#{2,}\s+(council-[\w:.\-]+)", log_text, re.M)
+    if heading_records:
+        print(f"  警告: 同期対象外の見出し形式記録（## council-...）が {len(heading_records)} 件あります"
+              f"（CTL に載りません）。output-format.md §8 のブロック形式へ転記してください:")
+        for h in heading_records:
+            print(f"    - {h}")
+
+    entries = parse_council_log(log_text)
     if not entries:
         print(f"エントリなし: {log_path}")
         return

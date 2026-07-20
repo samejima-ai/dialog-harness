@@ -255,6 +255,20 @@ Judgment Agent から実装者への delta 応答：
 
 `history/COUNCIL-LOG.md` に追記される 1 エントリ：
 
+> **本ブロック形式以外の記録は CTL に載らない（2026-07-20 明文化）**: `council-log-sync.py` の
+> パーサは `- invocation_id: "..."` で始まる本 §8 ブロック形式**のみ**を読む。見出し形式
+> （`## council-...`）や自由 Markdown での記録は同期対象外＝**CTL 統計に一切算入されない**
+> （実害: 利用者プロジェクトで 2026-06〜07 の発動 6 件が見出し形式で記録され、全件 CTL から
+> 脱落していた）。詳細な議論内容を自由記述で残したい場合は別ファイル（triage doc /
+> delivery 等）に書き、COUNCIL-LOG には必ず本ブロック形式で追記する。
+>
+> **CTL 最小必須セット**: フル §8 スキーマが重い軽量発動（issue triage 等の定型判断）は、
+> 以下の最小セットのみで記録してよい（残りフィールドは欠落許容）:
+> `invocation_id` / `timestamp` / `source_skill` / `question_to_answer` / `council_type` /
+> `category` / **`decision_category`**（CTL 統計のカテゴリキー・欠落すると null-skip で
+> 統計除外）/ `judgment_confidence` / `recommended` / `implementer_consent`（合意プロセス
+> 完了時の後追記可）。
+
 ```yaml
 - invocation_id: "council-2026-04-21T15:30:00Z-a1b2c3"
   timestamp: "2026-04-21T15:30:00Z"

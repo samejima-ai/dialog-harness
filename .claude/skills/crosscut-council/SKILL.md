@@ -206,6 +206,13 @@ Judgment Agent 出力（Council の判断）
 - implementer_consent（後追記、合意プロセス完了時）
 - human_escalated（bool）
 
+**記録は必ず `- invocation_id: "..."` ブロック形式（[references/output-format.md](references/output-format.md) §8）で書く**
+（2026-07-20 明文化）。見出し形式（`## council-...`）や自由 Markdown での記録は
+`council-log-sync.py` のパーサが読めず**CTL に一切算入されない**（利用者プロジェクトで
+発動 6 件が見出し形式で記録され全件 CTL から脱落した実害あり）。軽量発動は §8 の
+「CTL 最小必須セット」だけで記録してよい。詳細な議論の自由記述は別ファイル
+（triage doc / delivery 等）へ分離する。
+
 COUNCIL-LOG は append-only。編集不可。振り返り儀式（F1-F3、PR3 で連携）で監査する。
 
 ### CTL 記録（user-scope, COUNCIL-LOG から同期）

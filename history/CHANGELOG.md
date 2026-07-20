@@ -2,6 +2,36 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## COUNCIL-LOG 書式統一 — 見出し形式センサー + 最小必須セット明文化（v6.4.1、patch 昇格、PR #TBD）
+
+v6.4.0 の実地適用の続報。利用者プロジェクトの COUNCIL-LOG に**パーサが読めない見出し形式
+（`## council-...`、自由 Markdown）の記録が混在**し、CTL に載らず脱落していることが判明した。
+当初の目視調査では 6 件（07 月の feedback-triage 系）と見積もったが、**本版で実装した
+書式逸脱センサーの初回実行で 20 件と実測**され、5〜6 月分 14 件の脱落も発覚した
+（目視 grep はキーワード依存で漏れる — センサーを機構化する価値の実証）。
+
+- **書式逸脱センサー**（`council-log-sync.py`）: パース時に `^## council-...` 見出しを検知したら
+  「同期対象外の見出し形式記録が N 件あります（CTL に載りません）」と warn + id 列挙。
+  削除・自動変換はしない（検出のみ・第 6 条「人間最終承認」整合）。テスト 2 項目追加（全 17 項目 PASS）。
+- **output-format.md §8 に明文化**: 「本ブロック形式以外の記録は CTL に載らない」注記 +
+  **CTL 最小必須セット**（invocation_id / timestamp / source_skill / question_to_answer /
+  council_type / category / decision_category / judgment_confidence / recommended /
+  implementer_consent〔後追記可〕）を新設。フル §8 が重い軽量発動（issue triage 等）は
+  最小セットで記録可とし、「重いから自由記述に逃げる」誘因を断つ。
+- **SKILL.md §ログ要件に同注記**: ブロック形式必須 + 詳細な議論の自由記述は別ファイル
+  （triage doc / delivery 等）へ分離する役割分担を明記。
+
+原因は書式の未強制: §8 スキーマは存在したが「これ以外は CTL に載らない」という帰結が
+どこにも書かれておらず、軽量発動の運用が読みやすい見出し形式へ自然に流れた。
+記録形式の規範はパーサという機械的現実と lock-step で明文化されなければ drift する。
+
+変更ファイル: `scripts/council-log-sync.py`（センサー）/ `scripts/test-council-log-sync.sh`
+（テスト 2 項目）/ `.claude/skills/crosscut-council/references/output-format.md`（§8 注記 +
+最小セット）/ `.claude/skills/crosscut-council/SKILL.md`（§ログ要件注記）/ `VERSION`(6.4.1) / 本 CHANGELOG。
+
+利用者プロジェクト側の対応（転記 20 件 + feedback-triage skill への記録手順組込）は
+プロジェクト側 PR で別途実施。
+
 ## CTL 収集経路の実地適用と発動時自動同期（v6.4.0、minor 昇格、PR #TBD）
 
 利用者（ひでさん）の要請「kakuman-platform の CTL を蓄積していきたい」を起点に、利用者プロジェクトの
