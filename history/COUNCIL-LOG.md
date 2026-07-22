@@ -14,6 +14,33 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
 
 ---
 
+- invocation_id: "council-2026-07-23T-claude-md-purity"
+  timestamp: "2026-07-23T00:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "利用者プロジェクトの CLAUDE.md 方針『薄くせよ』を『純化せよ（常駐購読層は grep 到達前に必ず踏む規範だけ索引常駐・実体は所有元一元化・禁じるのは行数でなく二重定義）』へ見直すべきか"
+  council_type: "business"
+  category: "conception"
+  decision_category: "C4"
+  category_fallback: false
+  phase_reached: "phase_3"
+  conflict_type: "unanimous"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "純化へ見直す + 機械判定できる線引きを同梱 + 既存は段階移行", confidence: 0.72 }
+    開発者: { stance: "純化が技術的に正しい（常駐/随時の購読階層差、キャッシュ階層を無視してメモリを減らせと言うに等しい）。lock-step を sensor で強制", confidence: 0.83 }
+    哲学者: { stance: "置換でなく包摂。到達可能性の必然が基準。D2/D3 rule として立てれば D4 否決先例と非衝突。現行購読モデル前提の条件付き", confidence: 0.78 }
+  judgment_confidence: 0.80
+  recommended: "「薄くせよ」を上位原則『常駐購読層は grep 到達前に必ず踏む規範だけ索引常駐・実体一元化』へ包摂（廃止でなく一帰結へ）。(a) 量でなく配置で規範を立てる (b) 罠索引の常駐 + 詳細を TRAPS-FULL に逃がす lock-step は正規化された参照であり二重定義でない、ただし同期 sensor 必須 (c) D4 でなく minimalism-ladder 同格の D2/D3 rule として新設すれば philosophy 否決先例と非衝突。純化基準 = 『AI が grep 到達する前に必ず踏まねば事故るか』の到達可能性の必然性"
+  minority_opinion: "哲学者: 純化論は現行の常駐購読モデル（CLAUDE.md 毎ターン全文 load / SPEC・DONT は grep 部分読み）を前提とした条件付きの正しさ。将来 AI harness が『CLAUDE.md も随時読み』に進化し常駐/随時の非対称が消えれば、購読コスト差を根拠にした純化論は土台を失い素朴な『薄くせよ』が再び正しくなる。この条件性を消さず、その時は再諮問する（claude-md-purity.rules.md §6 に明記済）"
+  weight_note: "conception ゆえ哲学者 5 が最重。3 者が見直し支持で unanimous、差は『置換 vs 包摂』と扱いの重さ（D4 vs D2/D3）。哲学者の『D2/D3 で立てれば否決先例と非衝突』が扱いを適切に軽くし、開発者の『常駐/随時の購読階層差』が技術的骨格を、経営者の『機械判定できる線引き + sensor』が運用可能性を与えた止揚形"
+  human_escalated: false
+  implementer_consent: "agreed_recommended（ひでさん合意 = D2/D3 rule として新設を進める、2026-07-23。成果物 = templates/rules/common/claude-md-purity.rules.md）"
+  follow_up_questions_count: 0
+  agreed_at: "2026-07-23T00:00:00Z"
+
 - invocation_id: "council-2026-04-29T21:00:00Z-d4mtr1"
   timestamp: "2026-04-29T21:00:00Z"
   source_skill: "layer0-spec-architect"
