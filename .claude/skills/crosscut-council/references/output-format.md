@@ -98,7 +98,12 @@ PR1 でも記録は取る（将来の振り返り儀式で活用）。
     "max_score_stance": "string (recommended と接頭辞一致必須、tie 時 null)",
     "tie_break_applied": "boolean"
   },
-  "judgment_confidence": "number (0.0-1.0, Judgment Agent の自己評価)",
+  "judgment_confidence": "number (0.0-1.0, Judgment Agent の自己評価。confidence_band の内側でなければならない)",
+  "confidence_band": {
+    "lo": "number (0.0-1.0)",
+    "hi": "number (0.0-1.0)",
+    "basis": "string (gap_ratio | third_way_ratio | malformed | tie_break のどれが帯を決めたか)"
+  },
   "consensus_mode": "auto_agree | escalate_to_human (Orchestrator が決定論で計算、PR2 拡張領域)",
   "final_decision": null,
 
@@ -310,6 +315,7 @@ Judgment Agent から実装者への delta 応答：
     max_score_stance: "案B"
     tie_break_applied: false
   weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.60, hi: 0.90, basis: "gap_ratio" }   # v6.5.0 追加（optional・欠落許容）
   recommended: "案B（一文で）"
   # 以下は §4 Judgment Agent 出力から派生する optional field（該当時のみ記録、欠落許容）
   minority_opinion: "string | null  # 採用されなかった視点の保持（200 字以内、§4 由来）"
@@ -331,6 +337,7 @@ Judgment Agent から実装者への delta 応答：
 | field | 由来 | 用途 |
 |-------|------|------|
 | `minority_opinion` | §4 line 80 | 採用されなかった視点を 200 字以内で保持。少数意見を持つ persona が存在する判定で記録 |
+| `confidence_band` | §4（v6.5.0 追加） | `{lo, hi, basis}`。`judgment_confidence` の妥当性を事後監査できるようにする。gap という連続量が判定に効いた証跡であり、F2/F3 の帯校正の入力になる |
 | `consensus_mode` | §4 line 102（v4.2 追加） | Orchestrator が決定論で計算する `auto_agree` / `escalate_to_human` の二値。Phase 3 出力からそのまま転記 |
 | `weight_note` | §4 + council-weights.md | `situational_modifier` 適用根拠等、weight 配分の解釈注記 |
 | `reasoning` | §4 + judgment-agent.md | judgment 導出の補足説明（推奨選択肢と他案の score 差等） |
@@ -353,6 +360,7 @@ Judgment Agent から実装者への delta 応答：
 | `actual.weight_calculation.max_score_stance` または再計算した `expected.max_score_stance` が `recommended` 接頭辞と不一致、または `actual.weight_calculation.max_score_stance` と `expected.max_score_stance` が不一致 | 1 回リトライ → 不一致継続なら `judgment_failed` で人間エスカレーション |
 | `weight_calculation.scores[*].weighted_score` が `compute_weight_scores` 結果と不一致（小数第2位） | 1 回リトライ → 不一致継続なら `judgment_failed` |
 | `weight_calculation.tie_break_applied = true` かつ `judgment_confidence ≥ 0.4` | 1 回リトライ（同点処理の confidence 引き下げ要求）→ 不一致継続なら `judgment_failed` |
+| `judgment_confidence` が `compute_confidence_band` の帯の外（v6.5.0 新規） | 1 回リトライ（帯を提示して再提出要求）→ 帯外継続なら `judgment_failed` |
 
 ## PR1 での制限
 
