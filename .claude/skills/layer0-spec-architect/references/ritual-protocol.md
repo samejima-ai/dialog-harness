@@ -91,6 +91,24 @@ L0（spec-architect）が対話開始時に実行する「過去文脈⇔現欲�
    手順書依存に戻さないための実行経路接続（`crosscut-council/SKILL.md` §CTL 記録 /
    `dh-upgrades/upgrade-spec-v6.1.0.md`）。スクリプト不在なら skip（利用者プロジェクトで壊れない）。
    同期は読取専用の導出で可逆・低コスト。質問は挟まない（F1 は質問なしフェーズ）。
+5. **軸独立性・観測バイアス監査（v6.6.0）**: `scripts/council-axis-audit.py` が存在すれば
+   `python3 scripts/council-axis-audit.py` を走らせ、出力の「総括」節だけを読む
+   （スクリプト不在なら skip）。CTL 同期と同様に**読取専用の集計**であり、質問は挟まない。
+
+   warn が出た場合の扱い：
+
+   | warn | 意味 | 還流先 |
+   |---|---|---|
+   | 軸冗長の疑い（`stance` 一致率 **と** `dimension` Jaccard の両方が閾値超え） | 観測次元が重複している＝軸の再設計対象 | **F3 で人間に予告**（軸の増減は L0 対話 + 人間承認） |
+   | confidence 固定の疑い（軸内 σ < 0.10） | 議題ではなく役柄を採点している | persona prompt に軸固有の帯が書かれていないか点検（`crosscut-council/references/personas/business/README.md` §編集プロトコル） |
+   | 実効配分が系統的に有利な軸あり | confidence が第二の重みとして働き宣言配分を歪めている | **F3 で人間に予告**（`council-weights.md` の数値是正は L0/D5 専管） |
+   | `situational_modifier` の合計 0 宣言違反 | 重み表そのものの不整合 | 同上 |
+   | `dimension` 記録率 < 50% | 冗長判定の分解能不足 | Council 発動側に `dimension` 記録を促す（`output-format.md` §8 で必須と規定済み） |
+
+   **本監査は LLM 判定を含まない**（集計のみ）。軸のバイアスを LLM に検査させると検査側が
+   同じ死角を共有するため、判定は人間に残す
+   （`delivery/ANALYSIS-council-axis-independence-2026-07-26.md` §3-1）。
+   したがって warn は**検出の報告**であり、是正の実行を含まない。
 
 ### F2: 認識ズレ検出（AI主導・検出時のみ質問）
 
