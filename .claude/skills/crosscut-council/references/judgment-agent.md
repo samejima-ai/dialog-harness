@@ -39,7 +39,7 @@
     {"persona": "哲学者", "stance": "案A", "reason": "...", "confidence": 0.5, ...}
   ],
   "final_weights": {"経営者": 2, "開発者": 6, "哲学者": 2},
-  "conflict_type": "simple_conflict",  // PR1: unanimous / simple_conflict
+  "conflict_type": "simple_conflict",  // unanimous / reason_divergence / simple_conflict
   "discussion_log": null  // PR2 で Phase 2 結果
 }
 ```
@@ -78,7 +78,8 @@
 出力形式: 別添 schema（output-format.md §4 Judgment Agent 出力）
 
 入力に含まれる discussion_log が null の場合は、Phase 1 のみで判定する（PR1）。
-conflict_type が "unanimous" の場合は、多様性として質を評価する（minority_opinion を「全員一致だが …」形式で記述）。
+conflict_type が "reason_divergence" の場合は多様性として質を評価し、どの次元がどう満たされたかを軸ごとに列挙する。
+conflict_type が "unanimous" の場合は観測次元も重複しているため被覆不足を疑い、未被覆の観点を minority_opinion に記録する（多様性として扱わない）。
 
 重み計算規則（PR1 単純対立、必須遵守）:
 - 各 Persona の final_weight は不可分の整数。複数 stance に按分してはならない（按分は哲学違反）
@@ -112,6 +113,15 @@ gap 1.4 で jc が 0.45〜0.82 に散っていた。すなわち重みの精緻�
 （[orchestrator.md](orchestrator.md) §confidence 帯プロトコル）が行い、
 Judgment Agent には**帯だけを渡す**（gap の生値は渡さない — 忖度を防ぐため）。
 
+**stance が全一致した場合**（gap が定義されない）は `conflict_type` で帯が決まる（v6.7.0）：
+
+| conflict_type | 帯 | 根拠 |
+|---|---|---|
+| `reason_divergence` | 0.60 – 0.90 | 独立した次元からの同一結論 ＝ 真の多様性 |
+| `unanimous` | 0.45 – 0.70 | 次元も重複 ＝ 被覆不足の疑い（§stance 一致時の扱い） |
+
+**stance が割れた場合**は gap（1 位と 2 位の `weighted_score` 差）で決まる：
+
 | gap 率（= gap ÷ ΣW） | 帯 | 意味 |
 |---|---|---|
 | < 0.10（拮抗） | 0.30 – 0.50 | 収束していない。人間エスカレーション圏 |
@@ -138,7 +148,8 @@ escalation 率に直接効くため（帯を狭めると献上が増え CTL 蓄�
 以下は帯の**内側で**自己評価する際の考慮事項である（帯と矛盾する場合は帯が優先する）：
 
 - 重み配分が支配的（最大重み Persona の confidence が高い、かつ stance が他と一致）→ 高 confidence
-- 全会一致（unanimous） → 0.7-0.9
+- `reason_divergence`（独立した次元から同一結論） → 0.6-0.9
+- `unanimous`（次元も重複） → 0.45-0.7（被覆不足の疑いゆえ引き下げる。v6.7.0 で是正）
 - 単純対立だが重み差が大きい → 0.6-0.8
 - 単純対立で重みが拮抗 → 0.4-0.6
 - 全 Persona の confidence が低い → 0.3-0.5
@@ -149,17 +160,41 @@ escalation 率に直接効くため（帯を狭めると献上が増え CTL 蓄�
 
 `judgment_confidence < 0.5` の場合、Orchestrator は出力に `human_escalation_required: true` を付加する。
 
-## 全会一致時の扱い
+## stance 一致時の扱い（v6.7.0 で 2 分）
 
-`conflict_type = "unanimous"` の場合、Judgment Agent は：
+`stance` が全一致した場合、**観測次元が分離しているかどうかで扱いを分ける**
+（判定は決定論。[conflict-typology.md](conflict-typology.md) §判定ロジック）。
+
+### `conflict_type = "reason_divergence"`（類型 B ＝ 独立した次元から同一結論）
+
+**これが「多様性（プルラリティ）として質を評価する」対象である**（`council-philosophy.md` §2）。
+3 軸が異なる物差しで同じ答えに到達したのだから、3 つの独立した支持を得たことになる。
 
 1. 一致した stance を `recommended` に設定
-2. 3 Persona の reason から多様な根拠を `reasoning` に統合（多角的に理由付けされた良い意見の可能性が高い）
-3. `minority_opinion` には「全員一致だが、各 Persona の dimension が異なる場合はその差異を記録」
-4. `weight_note` に「全会一致のため重み配分は判定に影響しなかった」と記載
-5. `judgment_confidence` は 0.7-0.9 程度（高めに設定）
+2. `reasoning` に**どの次元がどう満たされたかを軸ごとに列挙する**
+   （例「ROI 軸では〜、保守性軸では〜、意味軸では〜が満たされる」）。
+   単に「全員一致」と書いてはならない——**何が独立に支持されたかが本類型の情報である**
+3. `minority_opinion` に「結論は一致するが観測次元は分離（各軸の dimension を列挙）」を記録
+4. `weight_note` に「stance 一致のため重み配分は判定に影響しなかった」と記載
+5. `judgment_confidence` は高め（帯 0.60–0.90）
 
-これは「全会一致を**多様性**として評価する」という Council 哲学の実装（`council-philosophy.md` §2 対立の哲学）。
+### `conflict_type = "unanimous"`（次元も一致 ＝ 観測の重複の疑い）
+
+**多様性として扱ってはならない。** 同じ物差しで同じ答えが出ただけであり、
+3 軸で観測したことによる被覆の増加が得られていない。
+
+1. 一致した stance を `recommended` に設定
+2. `reasoning` に**観測次元が重複している事実を明記する**（どの軸間で重なったか）
+3. `minority_opinion` に「**被覆不足の疑い**: 本判定は 3 軸が同一次元を観測したため、
+   未観測の次元が残っている可能性がある」を記録し、各軸の `concerns` から
+   本判定で扱われなかった観点を拾って列挙する
+4. `weight_note` に「stance 一致のため重み配分は判定に影響しなかった」と記載
+5. `judgment_confidence` は**引き下げる**（帯 0.45–0.70）
+
+> **なぜ引き下げるか**: `council-philosophy.md` 第2条の系のとおり、
+> 「全会一致を質と読む」規則は被覆不足の隠蔽装置に反転しうる。
+> v6.6.0 までは次元の重複を問わず 0.7–0.9 を与えていたため、
+> **最も情報の少ない一致に最も高い確信度が付いていた**。v6.7.0 でこれを是正する。
 
 ## 単純対立時の扱い（PR1）
 

@@ -210,7 +210,7 @@ Orchestrator が実装者に返す最終応答：
   "invocation_id": "string",
   "council_type": "business",
   "phase_reached": "phase_1 | phase_2 | phase_3",
-  "conflict_type": "unanimous | simple_conflict",
+  "conflict_type": "unanimous | reason_divergence | simple_conflict",
   "final_weights": {"経営者": 2, "開発者": 6, "哲学者": 2},
   "persona_outputs": [{...Persona 出力 × 3...}],
   "judgment": {...Judgment Agent 出力...},
@@ -290,6 +290,10 @@ Judgment Agent から実装者への delta 応答：
   council_type: "business"
   category: "implementation"
   category_fallback: false
+  # options（v6.7.0 追加・optional）: conflict_type の分類は stance を options へ正規化してから
+  # 行う（conflict-typology.md §stance の正規化）。options を記録しないと
+  # scripts/council-axis-audit.py が分類を再現できず、B6 の照合が「正規化ギャップ」に留まる
+  options: ["案A", "案B"]
   decision_category: "C2"   # 必須（v6.1.0）: C1-C4 / H1-H4。CTL 統計のカテゴリキー。
                             # category（重み軸）と直交。欠落すると同期で null 化され CTL に算入されない
   phase_reached: "phase_3"
@@ -349,6 +353,7 @@ Judgment Agent から実装者への delta 応答：
 |-------|------|------|
 | `minority_opinion` | §4 line 80 | 採用されなかった視点を 200 字以内で保持。少数意見を持つ persona が存在する判定で記録 |
 | `confidence_band` | §4（v6.5.0 追加） | `{lo, hi, basis}`。`judgment_confidence` の妥当性を事後監査できるようにする。gap という連続量が判定に効いた証跡であり、F2/F3 の帯校正の入力になる |
+| `options` | §1 発動要請（v6.7.0 追加） | `conflict_type` の分類は `stance` を `options` へ正規化してから行うため、記録がないと事後に分類を再現できない（`scripts/council-axis-audit.py` B6 が「正規化ギャップ」として報告する） |
 | `consensus_mode` | §4 line 102（v4.2 追加） | Orchestrator が決定論で計算する `auto_agree` / `escalate_to_human` の二値。Phase 3 出力からそのまま転記 |
 | `weight_note` | §4 + council-weights.md | `situational_modifier` 適用根拠等、weight 配分の解釈注記 |
 | `reasoning` | §4 + judgment-agent.md | judgment 導出の補足説明（推奨選択肢と他案の score 差等） |
