@@ -71,6 +71,14 @@ Council System の全エントリポイントの入出力 JSON スキーマ定�
 対立類型 D（次元ずれ、PR2 実装）の判定に使用。
 PR1 でも記録は取る（将来の振り返り儀式で活用）。
 
+**v6.6.0 追記 — `dimension` は軸独立性の唯一の観測窓である**:
+`stance` の一致率だけでは軸の冗長性を判定できない。一致には 2 つの原因があり
+（異なる次元から同じ結論に達した ＝ 対立類型 B ／ 同じ次元を二重に見た ＝ 冗長）、
+`dimension` を見なければ区別できない。実測でこの区別が診断を覆した事例がある
+（`delivery/ANALYSIS-council-axis-independence-2026-07-26.md`: `stance` 一致率 71% に対し
+`dimension` 語彙の Jaccard は 0.000 で、「軸が冗長」という当初診断は誤りだった）。
+したがって `persona_summary` への `dimension` 記録は §8 で**必須扱い**とする。
+
 ## 4. Judgment Agent 出力（Phase 3）
 
 ```json
@@ -291,9 +299,12 @@ Judgment Agent から実装者への delta 応答：
     開発者: 6
     哲学者: 2
   persona_summary:
-    経営者: { stance: "案A", confidence: 0.7 }
-    開発者: { stance: "案B", confidence: 0.9 }
-    哲学者: { stance: "案A", confidence: 0.5 }
+    # dimension を必ず含める（v6.6.0）。stance だけでは軸の独立性を測れない —
+    # 「異なる次元から同じ結論」と「同じ次元の二重計上」を区別できないため
+    # （scripts/council-axis-audit.py B1、実測で記録率 60% だったものを 100% に引き上げる）
+    経営者: { stance: "案A", confidence: 0.7, dimension: "ROI / 機会損失" }
+    開発者: { stance: "案B", confidence: 0.9, dimension: "保守性 / 可逆性" }
+    哲学者: { stance: "案A", confidence: 0.5, dimension: "意味 / 長期影響" }
   judgment_confidence: 0.75
   weight_calculation:
     method: "weight_times_confidence"
