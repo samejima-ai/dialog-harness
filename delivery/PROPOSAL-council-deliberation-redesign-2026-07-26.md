@@ -1,7 +1,8 @@
 # PROPOSAL: Council 合議機構の再設計審査
 
 > **本文書は変更提案書（献上物）である。仕様変更ではない。**
-> 対象は `crosscut-council` skill（**D4**）。D4 変更は major 昇格相当（`philosophy.md` §憲法の自己改訂禁止／H2 相当）であり、
+> 対象は `crosscut-council` skill（**D4**）。D4 変更は major 昇格相当
+> （`.claude/skills/layer0-spec-architect/references/philosophy.md` §憲法の自己改訂禁止／H2 相当）であり、
 > 本審査は skill を直接編集していない（HANDOFF §7 X5 遵守）。決定権は D5 に留保する（P5 献上）。
 
 | 項目 | 内容 |
@@ -20,7 +21,14 @@
 ## 1. 現行仕様レポート（事実のみ）
 
 調査対象: `.claude/skills/crosscut-council/` 全 19 ファイル（4,784 行）＋ `history/COUNCIL-LOG.md`（56 entry）
-＋ `philosophy.md` 第6条 ＋ `DH-PHILOSOPHY-INSIGHTS.md` 第10章。
+＋ `.claude/skills/layer0-spec-architect/references/philosophy.md` 第6条
+＋ `history/DH-PHILOSOPHY-INSIGHTS.md` 第10章。
+
+> **引用表記**: 以下 `philosophy.md` は
+> `.claude/skills/layer0-spec-architect/references/philosophy.md`（DH 憲法）を指す。
+> `council-philosophy.md` は `.claude/skills/crosscut-council/references/council-philosophy.md`（Council 6 公理）で、
+> 両者は別文書である。`references/` のみを付した引用（`orchestrator.md` 等）は
+> `.claude/skills/crosscut-council/references/` 配下を指す。
 
 ### 1-1. 重みの束縛先 = ペルソナ名（文字列キー）
 
@@ -68,9 +76,9 @@
 | E2 | `recommended` に「止揚／統合／ハイブリッド／併用／折衷」を含むもの **12 件（21%）**。形は「案B 採択 **+** 他案要素を吸収」＝接頭辞一致を満たしつつ自由文で他案を追記。 |
 | E3 | `implementer_consent`: `agreed_recommended` 45／`agreed_with_modification` 8／他 3。`human_escalated: true` 8 件。**`tie_break_applied: true` 0 件**。 |
 | E4 | `judgment_confidence` 平均 0.743（n=50）。`decision_category` は C2 34／C1 12／C4 4／C3 2／欠落 4。 |
-| E5 | skill 内部 `crosscut-council/history/COUNCIL-LOG.md`（20 entry）は `## <invocation_id>` ＋ fenced JSON 形式 = **同期パーサ対象外**。 |
-| E6 | HANDOFF が参照する `DH-PHILOSOPHY-INSIGHTS §10.7 ドメイン語彙汚染の禁止` / `§10.9 一発使い捨て派生・反対意見専門派生` は**リポジトリ内に存在しない**（第10章は §10.1〜10.7、§10.7 は「本章のまとめ」。当該文字列は全 md で 0 ヒット）。 |
-| E7 | HANDOFF の `philosophy.md §6.2「定款変更」` も不在（該当機能は「憲法の自己改訂禁止」＝ L-FROZEN 条項、`philosophy.md:229-248`）。 |
+| E5 | skill 内部 `.claude/skills/crosscut-council/history/COUNCIL-LOG.md`（20 entry）は `## <invocation_id>` ＋ fenced JSON 形式 = **同期パーサ対象外**。 |
+| E6 | HANDOFF が参照する `DH-PHILOSOPHY-INSIGHTS §10.7 ドメイン語彙汚染の禁止` / `§10.9 一発使い捨て派生・反対意見専門派生` は**リポジトリ内に存在しない**（実体は `history/DH-PHILOSOPHY-INSIGHTS.md`。第10章は §10.1〜10.7 で §10.7 は「本章のまとめ」、§10.8 以降は無い。当該文字列は全 md で 0 ヒット）。 |
+| E7 | HANDOFF の `philosophy.md §6.2「定款変更」` も不在（第6条に §6.2 の細分は無い。該当機能は「憲法の自己改訂禁止」＝ L-FROZEN 条項、`.claude/skills/layer0-spec-architect/references/philosophy.md:229-248`）。 |
 | E8 | Council 内部に「観測軸が足りているか」を判定する機構は**存在しない**。類型 D（次元ずれ）は軸がバラバラな時の分離方法であり、軸の**欠落**検知ではない。 |
 
 ---
