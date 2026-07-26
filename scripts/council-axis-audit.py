@@ -54,7 +54,10 @@ from pathlib import Path
 
 # stance 一致率がこれを超え、かつ DIMENSION_JACCARD_MAX も超えたときのみ軸冗長を疑う
 STANCE_AGREEMENT_MAX = 0.65
-# dimension 語彙の Jaccard がこれを超えると観測次元の重複＝真の冗長の疑い
+# dimension 語彙の Jaccard がこれを超えると観測次元の重複＝真の冗長の疑い。
+# **`conflict-typology.md` §判定ロジック の DIMENSION_OVERLAP_MAX と同値でなければならない。**
+# 同じ現象（次元の重複）を分類器と監査で別基準にすると、監査が「冗長なし」と言う一方で
+# 分類器が `unanimous` を出す不整合が生じる。変更するときは両方を同時に変える（B6 が検出する）。
 DIMENSION_JACCARD_MAX = 0.30
 # 軸内 confidence の標準偏差がこれ未満なら「議題に反応していない」（persona 固定の疑い）
 CONFIDENCE_SIGMA_MIN = 0.10
@@ -312,6 +315,100 @@ def audit_effective_weights(
     return {"per_category": per_category, "summary": summary}
 
 
+# ---- B6: conflict_type 分類の整合性（v6.7.0）-----------------------------------
+
+
+def classify_conflict(personas: dict, axes: list[str]) -> str | None:
+    """`conflict-typology.md` §判定ロジック の決定論分類を再現する。
+
+    分類器（Council 実行時）と監査（本ツール）が同じ規則を持つことを保証するための再実装。
+    どちらかの閾値だけを動かすと B6 が不整合として検出する。
+    """
+    rows = [personas.get(ax) for ax in axes]
+    if any(not r or "stance" not in r for r in rows):
+        return None
+    if len({r["stance"] for r in rows}) != 1:
+        return "simple_conflict"
+    dims = [r.get("dimension") for r in rows]
+    if any(not d for d in dims):
+        return "unanimous"      # dimension 欠落は判定不能 → 保守的
+    for i, a in enumerate(dims):
+        for b in dims[i + 1:]:
+            ta, tb = _dimension_tokens(a), _dimension_tokens(b)
+            if not (ta or tb):
+                continue
+            if len(ta & tb) / len(ta | tb) > DIMENSION_JACCARD_MAX:
+                return "unanimous"
+    return "reason_divergence"
+
+
+_STANCE_AGREED = ("unanimous", "reason_divergence")
+# conflict_type の値域（output-format.md §5 / §8）。PR2 で類型 A-G が入る予定
+_CONFLICT_TYPE_DOMAIN = ("unanimous", "reason_divergence", "simple_conflict")
+
+
+def audit_classification(entries: list[dict], axes: list[str]) -> dict:
+    """記録された conflict_type と、dimension から再計算した分類の一致を検査する。
+
+    **本監査は stance を正規化できない**（`options` が COUNCIL-LOG に無いエントリでは
+    `conflict-typology.md` §stance の正規化 を再現できない）。したがって検出結果を
+    2 つの診断に**分けて**報告する。混ぜると原因の異なる問題が同じ warn になる:
+
+    - `threshold_mismatches`: 記録も再計算もどちらも「stance 一致」側なのに
+      `unanimous` / `reason_divergence` が食い違う → **閾値ずれ**（本監査の本来の検出目的）
+    - `normalization_gap`: 記録は「stance 一致」側だが再計算は `simple_conflict`
+      → **stance 文字列の完全一致と実践の乖離**（各軸が同じ選択肢に自分の条件を付記している）。
+      閾値の問題ではないので閾値を動かして直してはならない
+
+    v6.7.0 以前の `unanimous` は「次元を問わない一致」を意味したため、
+    再計算が `reason_divergence` になるケースは遡及照合しない（append-only・再解釈しない）。
+    """
+    threshold_mismatches: list[dict] = []
+    normalization_gap: list[dict] = []
+    out_of_domain: list[dict] = []
+    checked = 0
+    legacy = 0
+    for e in entries:
+        recorded = e.get("conflict_type")
+        if not recorded:
+            continue
+        expected = classify_conflict(e["personas"], axes)
+        if expected is None:
+            continue
+        if recorded not in _CONFLICT_TYPE_DOMAIN:
+            # 値域外の ad-hoc な値（実例: converged_with_gate / converged_aufhebung）。
+            # 分類の食い違いではなく記録の逸脱なので、閾値ずれと混ぜない
+            out_of_domain.append({"invocation_id": e["invocation_id"], "recorded": recorded})
+            continue
+        if recorded == "unanimous" and expected == "reason_divergence":
+            legacy += 1
+            continue
+        if recorded in _STANCE_AGREED and expected == "simple_conflict":
+            normalization_gap.append({
+                "invocation_id": e["invocation_id"],
+                "recorded": recorded,
+            })
+            continue
+        checked += 1
+        if recorded != expected:
+            threshold_mismatches.append({
+                "invocation_id": e["invocation_id"],
+                "recorded": recorded,
+                "expected": expected,
+            })
+    return {
+        "checked": checked,
+        "legacy_unanimous_skipped": legacy,
+        "threshold_mismatches": threshold_mismatches,
+        "normalization_gap": normalization_gap,
+        "out_of_domain": out_of_domain,
+        "note": (
+            "threshold_mismatches は分類器と本監査の DIMENSION_JACCARD_MAX のずれを示す。"
+            "normalization_gap は stance 完全一致規則と実践の乖離を示し、options の記録で解消する"
+        ),
+    }
+
+
 # ---- B5: dimension 記録率 -----------------------------------------------------
 
 
@@ -418,6 +515,41 @@ def render(result: dict) -> str:
             )
     L.append("")
 
+    cls = result["classification"]
+    L.append("## B6. conflict_type 分類の整合性（分類器 ⇄ 監査の閾値共有）")
+    L.append("")
+    L.append(f"- 照合 {cls['checked']} 件 / 閾値ずれ {len(cls['threshold_mismatches'])} 件")
+    if cls["legacy_unanimous_skipped"]:
+        L.append(
+            f"- 遡及照合しない {cls['legacy_unanimous_skipped']} 件"
+            "（v6.7.0 以前の `unanimous` は次元を問わない一致を意味した）"
+        )
+    for m in cls["threshold_mismatches"]:
+        L.append(f"- {warn} `{m['invocation_id']}`: 記録 `{m['recorded']}` / 再計算 `{m['expected']}`")
+    if cls["out_of_domain"]:
+        L.append("")
+        L.append(
+            f"- {warn} **値域外の conflict_type {len(cls['out_of_domain'])} 件**: "
+            + ", ".join(f"`{m['recorded']}`" for m in cls["out_of_domain"])
+            + "。値域は `unanimous` / `reason_divergence` / `simple_conflict`"
+            "（`output-format.md` §5）。ad-hoc な値は集計から静かに落ちる。"
+        )
+    if cls["normalization_gap"]:
+        L.append("")
+        L.append(
+            f"- {warn} **正規化ギャップ {len(cls['normalization_gap'])} 件**: "
+            "記録は stance 一致だが、完全一致で再計算すると `simple_conflict` になる。"
+            "各軸が同じ選択肢に自分の条件を付記しているケース。"
+            "**閾値の問題ではない** — `options` を §8 に記録すれば本監査も正規化でき解消する "
+            "（`conflict-typology.md` §stance の正規化）。"
+        )
+        L.append(
+            "  - 該当: "
+            + ", ".join(f"`{m['invocation_id'][-8:]}`" for m in cls["normalization_gap"][:12])
+            + ("…" if len(cls["normalization_gap"]) > 12 else "")
+        )
+    L.append("")
+
     warns = result["warnings"]
     L.append("## 総括")
     L.append("")
@@ -460,6 +592,23 @@ def collect_warnings(result: dict) -> list[str]:
         w.append(
             f"dimension 記録率 {cov['dimension_record_rate']:.0%} — B1 の冗長判定の分解能が不足"
         )
+    cls = result["classification"]
+    if cls["threshold_mismatches"]:
+        w.append(
+            f"conflict_type の閾値ずれ {len(cls['threshold_mismatches'])} 件 — "
+            "分類器（conflict-typology.md）と本監査の DIMENSION_JACCARD_MAX が不一致の可能性"
+        )
+    if cls["out_of_domain"]:
+        w.append(
+            f"値域外の conflict_type {len(cls['out_of_domain'])} 件 — "
+            "ad-hoc な値は集計から静かに落ちる（output-format.md §5 の値域を使うこと）"
+        )
+    if cls["normalization_gap"]:
+        w.append(
+            f"正規化ギャップ {len(cls['normalization_gap'])} 件 — "
+            "stance 完全一致では simple_conflict になる記録が stance 一致として残っている。"
+            "options を §8 に記録すれば本監査も正規化できる（閾値の問題ではない）"
+        )
     return w
 
 
@@ -490,6 +639,7 @@ def main(argv: list[str] | None = None) -> int:
         "axes": axes,
         "dimension_coverage": audit_dimension_coverage(entries, axes),
         "axis_independence": audit_axis_independence(entries, axes),
+        "classification": audit_classification(entries, axes),
         "confidence_spread": conf,
         "effective_weights": (
             audit_effective_weights(weights_path, conf, axes)

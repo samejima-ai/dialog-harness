@@ -1,34 +1,129 @@
-# Conflict Typology — 対立類型（PR1: スタブ）
+# Conflict Typology — 対立類型（PR1: スタブ ＋ 類型 B 実装済み）
 
 3 Persona の発言から対立構造を分類し、適切な対応を導く。
 
-> **PR1 ステータス**: スタブ。本ファイルでは類型 A-G を**定義**するが、PR1 では `unanimous` と `simple_conflict` の 2 値のみ判定する。完全な類型判定は PR2 で実装する。
+> **ステータス**: 類型 A-G を**定義**する。判定は現在 **3 値**（`unanimous` / `reason_divergence` / `simple_conflict`）。
+> `reason_divergence`（類型 B）は v6.7.0 で `unanimous` から**分離**した（§類型 B の分離 参照）。
+> 残る類型 A/C/D/E/F/G の完全判定は PR2 で実装する。
 
 ## 対立類型一覧
 
-| 類型 | 定義 | 対応 | PR1 動作 |
+| 類型 | 定義 | 対応 | 現在の動作 |
 |------|------|------|---------|
 | A. 結論対立 | `stance` が割れる | Phase 2 反駁 → Phase 3 | simple_conflict として Phase 3 直行 |
-| B. 理由対立 | 結論同じ、`reason` 違う | 対立ではない、Phase 3 で多様性として構造化 | unanimous として処理 |
+| B. 理由対立 | 結論同じ、`reason` 違う | 対立ではない、Phase 3 で多様性として構造化 | **`reason_divergence` として分離（v6.7.0 実装済み）** |
 | C. 確信度対立 | `confidence` に大差 | Phase 2 質問 → Phase 3 | simple_conflict として Phase 3 直行 |
 | D. 次元ずれ | `dimension` がバラバラ | Phase 3 で客観的に多次元分離 | simple_conflict として Phase 3 直行 |
 | E. 前提対立 | `premise` が揃っていない | Phase 0 差し戻し + 人間献上 | simple_conflict として Phase 3 直行（PR2 で正規化） |
 | F. 時間軸対立 | 短期 vs 長期 | Phase 3 で時間軸を分けて判定 | simple_conflict として Phase 3 直行 |
 | G. メタ対立 | 問い自体が疑われる | 人間エスカレーション + 何があったかを報告 | simple_conflict として Phase 3 直行（PR2 で正規化） |
 
-## PR1 の簡略判定ロジック
+## 類型 B の分離（v6.7.0・D5 決定「C1' は分離して別物として扱う」）
 
+### なぜ分離するか
+
+PR1 は類型 B を `unanimous` として処理していた。しかし実測（`delivery/ANALYSIS-council-axis-independence-2026-07-26.md`）で
+**`stance` が一致した判定でも観測次元は完全に分離していた**ことが判明した
+（軸ペアの `dimension` 語彙の Jaccard は 25/25 で 0.000、3 軸の共有トークンは 0 件）。
+すなわち **類型 B は例外ではなく主要形態**であり、`unanimous` に潰すと
+「何が独立に支持されたか」が記録から消える。
+
+さらに重要なのは、**現行の扱いが逆になっていた**ことである。
+
+| | 現行（v6.6.0 まで） | 是正後（v6.7.0） |
+|---|---|---|
+| 「多様性（プルラリティ）として質を評価し confidence を高くする」対象 | `unanimous`（次元が同じか違うかを問わない） | **`reason_divergence` のみ** |
+| 同一次元での一致 | 同じく高 confidence | **被覆不足の疑いとして confidence を引き下げる** |
+
+3 軸が**同じ物差しで**同じ答えを出したなら、それは多様性ではなく**観測の重複**である。
+逆に**独立した次元から**同じ結論に達したなら、それは 3 つの独立した支持であり最も強い推奨根拠になる。
+この区別は `council-philosophy.md` 第2条の系「全会一致は被覆不足の可能性も同時に疑う」の実装であり、
+分離しなければ実装できない。
+
+### 判定ロジック（決定論・v6.7.0）
+
+#### 前提: stance の正規化（v6.7.0 で明文化）
+
+**`stance` の完全一致で比較してはならない。** 実運用では各軸が同じ選択肢を指しつつ
+自分の条件を付記する（実例: `council-2026-07-01T13:04:40Z-ctlrec1` は 3 軸すべてが
+案A を支持しながら `案A（同期＋事後評価運用の確立を条件）` / `案A（category→decision_category 導出せず null 埋め）` /
+`案A（decision_category は機械導出せず未分類保持）` と記録された）。
+完全一致で比較すると、これらが `simple_conflict` になり分類が実態から乖離する
+（`scripts/council-axis-audit.py` B6 の実測で **32 件中 11 件**がこの乖離だった）。
+
+正規化は `options` への**双方向の接頭辞一致**で行う。これは
+`recommended` と `max_score_stance` の接頭辞一致検証（[judgment-agent.md](judgment-agent.md)）と
+同型の既存イディオムであり、新しい判定原理を導入しない。
+
+```python
+def normalize_stance(stance, options):
+    """stance を options のいずれかへ正規化する。決定論。
+
+    - stance が option で始まる、または option が stance で始まるなら一致とみなす
+    - 複数一致する場合は**最長の option** を採る（"案A" と "案A: 詳細" の両方があるケース）
+    - どの option にも一致しなければ stance をそのまま返す（options 外 stance ＝ 第3の道）
+    """
+    matched = [o for o in options if stance.startswith(o) or o.startswith(stance)]
+    return max(matched, key=len) if matched else stance
 ```
-def classify_conflict(persona_outputs):
-    stances = [p.stance for p in persona_outputs]
-    if len(set(stances)) == 1:
-        return "unanimous"
-    else:
+
+#### 分類本体
+
+```python
+# dimension トークン化は scripts/council-axis-audit.py と同一規則（`/` `／` 区切り・完全一致）
+DIMENSION_OVERLAP_MAX = 0.30   # 同 script の DIMENSION_JACCARD_MAX と同値
+
+def classify_conflict(persona_outputs, options):
+    """conflict_type を決定論で導く。LLM 判定は禁止（§決定論性）。
+
+    Returns: "unanimous" | "reason_divergence" | "simple_conflict"
+    """
+    stances = [normalize_stance(p["stance"], options) for p in persona_outputs]
+    if len(set(stances)) != 1:
         return "simple_conflict"
+
+    # 以降は stance 全一致。観測次元が分離しているかで 2 分する
+    dims = [p.get("dimension") for p in persona_outputs]
+    if any(not d for d in dims):
+        # dimension 欠落時は判定不能 → 保守的に unanimous
+        # （output-format.md §8 で dimension は必須。欠落は記録側の不備）
+        return "unanimous"
+
+    def toks(s):
+        return {t.strip() for t in re.split(r"[/／]", s) if t.strip()}
+
+    for a, b in itertools.combinations(dims, 2):
+        ta, tb = toks(a), toks(b)
+        if not (ta or tb):
+            continue
+        jaccard = len(ta & tb) / len(ta | tb)
+        if jaccard > DIMENSION_OVERLAP_MAX:
+            # どこか 1 ペアでも次元が重なっていれば「独立な支持」とは言えない
+            return "unanimous"
+    return "reason_divergence"
 ```
 
-`reason` / `confidence` / `dimension` / `premise` は記録するが PR1 では判定に使わない。
-PR2 で完全類型判定に拡張する際、過去の COUNCIL-LOG エントリから類型分布を分析できるよう、データは取り続ける。
+**しきい値を `council-axis-audit.py` と共有する理由**: 同じ現象（次元の重複）を
+2 箇所で別の基準で判定すると、監査が「冗長なし」と言う一方で分類器が `unanimous` を出す等の
+不整合が生じる。閾値を変えるときは**両方を同時に**変える（同 script の B6 が不一致を検出する）。
+
+> **監査側は正規化できない**: `options` は COUNCIL-LOG に記録されていないため、
+> `council-axis-audit.py` は `normalize_stance` を再現できない。したがって同 script の B6 は
+> 「閾値ずれ」と「正規化ギャップ」を**別の診断として分けて報告する**。
+> `options` を §8 に記録すれば監査側も正規化できるようになる
+> （[output-format.md](output-format.md) §8 で optional field として追加済み）。
+
+### 既存エントリの扱い
+
+**再解釈しない。** COUNCIL-LOG は append-only であり、既存の `unanimous` 24 件は
+当時の規格での記録として保持する。本分類は**v6.7.0 以降の新規発動から適用**する。
+過去分の類型 B 実態を知りたい場合は `scripts/council-axis-audit.py` の
+dimension Jaccard を見る（記録を書き換えずに観測できる）。
+
+## PR2 以降に残る判定
+
+`premise` / `confidence` 差による類型 C/D/E/F/G の判定は PR2 で実装する。
+データ（`reason` / `confidence` / `dimension` / `premise`）は PR1 から取り続けている。
 
 ## 第3の道 stance の PR1 暫定運用ルール
 
@@ -130,10 +225,14 @@ Persona の発言中に「この問い自体が誤っている」「options が�
 - Phase 3 を実行せず人間エスカレーション
 - COUNCIL-LOG に「メタ対立検出」と Persona 発言の該当箇所を記録
 
-## 全会一致時の扱い
+## stance 一致時の扱い（v6.7.0 で 2 分）
 
-`conflict_type = "unanimous"`（PR1）または類型 B（PR2）の場合、Judgment Agent は**多様性として質を評価**する。
-詳細は [judgment-agent.md](judgment-agent.md) §全会一致時の扱い 参照。
+| conflict_type | 意味 | Judgment Agent の扱い |
+|---|---|---|
+| `reason_divergence`（類型 B） | 独立した次元から同一結論 ＝ **真の多様性** | 多様性として質を評価。各次元がどう満たされたかを `reasoning` に列挙。confidence は高め |
+| `unanimous`（次元も一致） | 同じ物差しで同じ答え ＝ **観測の重複の疑い** | 被覆不足を疑う。重複した次元を明示し、`concerns` から未被覆の観点を拾う。confidence は引き下げ |
+
+詳細は [judgment-agent.md](judgment-agent.md) §stance 一致時の扱い 参照。
 
 ## 対立類型判定の主体
 
@@ -154,7 +253,7 @@ LLM による判定は禁止する。
 PR1 では類型判定はしないが、後続 PR で類型分析できるよう、COUNCIL-LOG に以下を記録する：
 
 - 各 Persona の `stance` / `confidence` / `dimension` / `premise`
-- conflict_type（unanimous / simple_conflict）
+- conflict_type（unanimous / reason_divergence / simple_conflict）
 - `weight_calculation.third_way_excluded`（PR1 新規、third_way 類型移行のための分布データ）
 - `weight_calculation_retry_count`（決定論検算リトライ回数、Judgment Agent の規定逸脱頻度の指標）
 

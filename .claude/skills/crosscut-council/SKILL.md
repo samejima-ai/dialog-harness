@@ -155,14 +155,15 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
   → それぞれに「他ペルソナ出力を含まない context + system prompt」のみ渡す
   → 各 Persona は references/personas/business/*.md の system prompt に従う
   ↓
-[対立度判定] PR1 は簡略版: 全会一致 / 単純対立 の2値のみ
+[対立度判定] 3値: 次元分離の同一結論 / 全会一致 / 単純対立（v6.7.0 で類型 B を分離）
   → 完全な類型 A-G 判定は PR2 で実装（references/conflict-typology.md 参照）
   ↓
 [Phase 2] PR1 ではスキップ（PR2 で追加）
   ↓
 [Phase 3] Judgment Agent による重み付き単一回答の導出
   → temperature 0.1、人格なし（references/judgment-agent.md）
-  → 全会一致時は多様性（プルラリティ）として質を評価
+  → 次元分離の同一結論（reason_divergence）は多様性として質を評価
+  → 次元も重複した全会一致（unanimous）は被覆不足を疑い confidence を引き下げる
   ↓
 [出力] JSON（final_decision は常に null）
   ↓
@@ -237,7 +238,7 @@ Judgment Agent 出力（Council の判断）
 - question_to_answer
 - Council種別
 - Phase到達（PR1 は常に `1→3`）
-- conflict_type（PR1 は `unanimous` / `simple_conflict` のみ）
+- conflict_type（`unanimous` / `reason_divergence` / `simple_conflict`）
 - final_weights（適用された重み配分）
 - judgment_confidence
 - implementer_consent（後追記、合意プロセス完了時）

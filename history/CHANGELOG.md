@@ -2,6 +2,90 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 対立類型 B の分離 ＋ 分類整合性の監査（v6.7.0、minor、PR #TBD）
+
+D5 決定「C1' は分離して別物として扱う」。`conflict_type` を 2 値から **3 値**へ拡張し、
+分離後の扱いに実際の差をつけた。
+
+### なぜ分離するか — 現行の扱いが逆になっていた
+
+PR1 は対立類型 B（結論同じ・理由違う）を `unanimous` として処理していた。しかし実測
+（PR #171）で **stance が一致した判定でも観測次元は完全に分離していた**ことが判明した
+（軸ペアの `dimension` Jaccard は 25/25 で 0.000）。すなわち類型 B は例外ではなく主要形態である。
+
+より重要なのは扱いの向きである：
+
+| | v6.6.0 まで | v6.7.0 |
+|---|---|---|
+| 「多様性として質を評価し confidence を高くする」対象 | `unanimous`（次元を問わない） | **`reason_divergence` のみ** |
+| 同一次元での一致 | 同じく高 confidence（0.7–0.9） | **被覆不足を疑い引き下げ（0.45–0.70）** |
+
+3 軸が**同じ物差しで**同じ答えを出したなら、それは多様性ではなく**観測の重複**である。
+v6.6.0 までは **最も情報の少ない一致に最も高い確信度が付いていた**。
+これは `council-philosophy.md` 第2条の系「全会一致は被覆不足の可能性も同時に疑う」（v6.5.0 で追加）を
+字義どおり実装したものであり、**分離しなければ実装できない**。
+
+### 判定ロジック（決定論・LLM 判定なし）
+
+- `stance` が割れる → `simple_conflict`
+- `stance` 全一致 かつ 全ペアの `dimension` Jaccard ≤ 0.30 → **`reason_divergence`**
+- `stance` 全一致 かつ いずれかのペアで Jaccard > 0.30 → `unanimous`
+- `dimension` 欠落時は判定不能 → 保守的に `unanimous`
+
+閾値 0.30 は `scripts/council-axis-audit.py` の `DIMENSION_JACCARD_MAX` と**同値**である
+（同じ現象を 2 箇所で別基準にすると監査と分類器が食い違う）。この契約はテストで固定した。
+
+### 実装中に発覚した仕様と実践の乖離: stance の正規化
+
+新設した B6（分類整合性の監査）が **32 件中 11 件**で「記録は stance 一致だが完全一致では
+`simple_conflict`」を検出した。原因は**各軸が同じ選択肢に自分の条件を付記している**こと：
+
+```
+ctlrec1 (記録: unanimous)
+  経営者: 案A（同期＋事後評価運用の確立を条件）
+  開発者: 案A（category→decision_category 導出せず null 埋め）
+  哲学者: 案A（decision_category は機械導出せず未分類保持）
+```
+
+すなわち文書化されていた「`stance` の完全一致」規則は**実践を記述していなかった**。
+この規則のままでは類型 B の分離は一度も発火しない。したがって
+**`options` への双方向の接頭辞一致による正規化**を明文化した（`normalize_stance`）。
+これは `recommended` と `max_score_stance` の接頭辞一致検証と同型の既存イディオムであり、
+新しい判定原理を導入しない。
+
+あわせて `options` を COUNCIL-LOG §8 の optional field に追加した。
+記録がないと事後に分類を再現できない（監査側が正規化できない）。
+
+### 監査の拡張: B6 分類整合性（3 診断に分離）
+
+`scripts/council-axis-audit.py` に B6 を追加。**原因と対処が異なるものを混ぜない**：
+
+| 診断 | 意味 | 対処 |
+|---|---|---|
+| `threshold_mismatches` | 分類器と監査の閾値がずれている | 両方を同時に直す |
+| `normalization_gap` | `stance` 完全一致規則と実践の乖離 | `options` を記録する（**閾値を動かして直してはならない**） |
+| `out_of_domain` | 値域外の ad-hoc な値（実例 `converged_with_gate`） | 値域を使う（ad-hoc 値は集計から静かに落ちる） |
+
+実ログでの初回実行: 閾値ずれ **0 件**（機構は整合）／値域外 1 件／正規化ギャップ 10 件。
+既存 `unanimous` の再計算が `reason_divergence` になるケースは**遡及照合しない**
+（v6.7.0 以前の `unanimous` は次元を問わない一致を意味した。append-only ゆえ再解釈もしない）。
+
+### 変更ファイル
+
+- `conflict-typology.md`: §類型 B の分離（stance 正規化 ＋ 判定ロジック ＋ 既存エントリの扱い）
+- `judgment-agent.md`: §stance 一致時の扱い を 2 分。confidence 帯に `conflict_type` 分岐を追加
+- `orchestrator.md`: `classify_conflict` の宣言、`compute_confidence_band` に `conflict_type` 引数
+- `phase-protocol.md` / `output-format.md` / `SKILL.md`: 値域を 3 値に、Judgment Agent のモード差を明記
+- `council-philosophy.md`: 第2条の系に「v6.7.0 で実装された」を追記
+- `council-axis-audit.py` ＋ `test-council-axis-audit.py`: B6 追加
+
+### 検証
+
+- `scripts/test-council-axis-audit.py`: **41 項目 PASS**（+11）。3 値分類／dimension 欠落時の保守的
+  フォールバック／B6 の 3 診断分離／閾値の同値契約を含む
+- `harness-verifier/verify.py`: 全 6 層 PASS
+- 既存 56 件の再解釈なし。`council-log-sync.py` は `conflict_type` を読まないため同期は無影響
+
 ## 軸独立性の測定機構 ＋ confidence バイアス源の除去（v6.6.0、minor、PR #TBD）
 
 L0 メタ開発。D5 承認により `delivery/ANALYSIS-council-axis-independence-2026-07-26.md`（PR #171）の

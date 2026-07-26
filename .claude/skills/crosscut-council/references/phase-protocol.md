@@ -73,12 +73,15 @@ Council の処理フロー全体の規格。Orchestrator が本プロトコル�
 
 ## 対立度判定
 
-### PR1（簡略版）
+### 現在（3 値・v6.7.0 で類型 B を分離）
 
-2 値のみ：
+- **reason_divergence**: `stance` が全一致 **かつ** `dimension` が分離（全ペアで Jaccard ≤ 0.30）
+  ＝ 独立した次元から同一結論に達した（対立類型 B。真の多様性）
+- **unanimous**: `stance` が全一致 **かつ** いずれかのペアで `dimension` が重複（Jaccard > 0.30）
+  ＝ 同じ物差しで同じ答え（観測の重複の疑い）。`dimension` 欠落時もここへフォールバック
+- **simple_conflict**: `stance` が割れる
 
-- **unanimous**: 3 Persona の `stance` が全て一致
-- **simple_conflict**: それ以外
+判定は決定論（[conflict-typology.md](conflict-typology.md) §判定ロジック）。LLM 推論は使わない。
 
 ### PR2 以降（完全版）
 
@@ -86,7 +89,10 @@ Council の処理フロー全体の規格。Orchestrator が本プロトコル�
 
 ### PR1 での動作
 
-- `unanimous`: Phase 2 スキップ、Phase 3 へ（Judgment Agent は多様性評価モードで動作）
+- `reason_divergence`: Phase 2 スキップ、Phase 3 へ（Judgment Agent は**多様性評価モード**で動作。
+  どの次元がどう満たされたかを軸ごとに列挙する）
+- `unanimous`: Phase 2 スキップ、Phase 3 へ（Judgment Agent は**被覆不足を疑うモード**で動作。
+  多様性として扱わず、未被覆の観点を `minority_opinion` に記録し confidence を引き下げる）
 - `simple_conflict`: Phase 2 スキップ（PR1 は未実装）、Phase 3 へ（Judgment Agent が重み付きで単一回答を導出）
 
 ## Phase 2: 討論
@@ -112,7 +118,7 @@ Council の処理フロー全体の規格。Orchestrator が本プロトコル�
 
 - Phase 1 の 3 Persona 出力
 - `final_weights`（Orchestrator 計算結果）
-- `conflict_type`（PR1: unanimous / simple_conflict）
+- `conflict_type`（`unanimous` / `reason_divergence` / `simple_conflict`）
 - `discussion_log`（PR1: null）
 - 元の `question_to_answer` と `options`
 

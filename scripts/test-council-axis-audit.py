@@ -13,6 +13,8 @@
   6. B3: situational_modifier の合計 0 宣言違反を検出
   7. B5: dimension 記録率の算出
   8. 終了コードは常に 0（warn のみ・block しない）
+  9. classify_conflict: 3 値分類（dimension 分離で reason_divergence / 重複で unanimous）
+ 10. B6: 閾値ずれ・正規化ギャップ・値域外を **別の診断として分離**する
 
 使い方: python3 scripts/test-council-axis-audit.py
 """
@@ -45,9 +47,16 @@ def check(cond: bool, label: str) -> None:
         _failures.append(label)
 
 
-def entry(inv: str, rows: list[tuple[str, str, float, str | None]]) -> str:
+def entry(
+    inv: str,
+    rows: list[tuple[str, str, float, str | None]],
+    conflict_type: str | None = None,
+) -> str:
     """COUNCIL-LOG の 1 エントリを組む。rows = [(軸, stance, confidence, dimension|None)]"""
-    lines = [f'- invocation_id: "{inv}"', '  timestamp: "2026-07-26T00:00:00Z"', "  persona_summary:"]
+    lines = [f'- invocation_id: "{inv}"', '  timestamp: "2026-07-26T00:00:00Z"']
+    if conflict_type is not None:
+        lines.append(f'  conflict_type: "{conflict_type}"')
+    lines.append("  persona_summary:")
     for ax, stance, conf, dim in rows:
         body = f'stance: "{stance}", confidence: {conf}'
         if dim is not None:
@@ -188,6 +197,93 @@ with tempfile.TemporaryDirectory() as td:
     check(rc == 0, "8: warn があっても終了コード 0（--json）")
     check(rc_text == 0, "8: warn があっても終了コード 0（レポート形式）")
     check(rc_missing == 0, "8: ログ不在でも終了コード 0（利用者プロジェクトで壊れない）")
+
+# ---- 9. classify_conflict: 3 値分類 ------------------------------------------
+
+def personas(rows: list[tuple[str, str, str | None]]) -> dict:
+    return {
+        ax: ({"stance": st, "dimension": dim} if dim else {"stance": st})
+        for ax, st, dim in rows
+    }
+
+
+# stance 一致 + dimension 完全分離 → reason_divergence（真の多様性）
+check(
+    audit.classify_conflict(personas([
+        ("経営者", "案A", "ROI / 機会損失"),
+        ("開発者", "案A", "保守性 / 可逆性"),
+        ("哲学者", "案A", "意味"),
+    ]), AXES) == "reason_divergence",
+    "9: stance 一致 + 次元分離 → reason_divergence",
+)
+# stance 一致 + dimension 重複 → unanimous（被覆不足の疑い）
+check(
+    audit.classify_conflict(personas([
+        ("経営者", "案A", "ROI / 保守性"),
+        ("開発者", "案A", "ROI / 保守性"),
+        ("哲学者", "案A", "意味"),
+    ]), AXES) == "unanimous",
+    "9: stance 一致 + 1 ペアでも次元重複 → unanimous",
+)
+# stance 割れ → simple_conflict
+check(
+    audit.classify_conflict(personas([
+        ("経営者", "案A", "ROI"), ("開発者", "案B", "保守性"), ("哲学者", "案A", "意味"),
+    ]), AXES) == "simple_conflict",
+    "9: stance 割れ → simple_conflict",
+)
+# dimension 欠落 → 保守的に unanimous（判定不能を reason_divergence に倒さない）
+check(
+    audit.classify_conflict(personas([
+        ("経営者", "案A", None), ("開発者", "案A", "保守性"), ("哲学者", "案A", "意味"),
+    ]), AXES) == "unanimous",
+    "9: dimension 欠落は保守的に unanimous",
+)
+# 軸が欠けている → 判定不能（None）
+check(
+    audit.classify_conflict(personas([("経営者", "案A", "ROI")]), AXES) is None,
+    "9: 軸が揃わなければ None",
+)
+
+# ---- 10. B6: 3 診断の分離 ------------------------------------------------------
+
+log_cls = "\n".join([
+    # (a) 記録 unanimous / 実際は次元分離 → 遡及照合しない（legacy）
+    entry("b6-legacy", [
+        ("経営者", "案A", 0.7, "ROI"), ("開発者", "案A", 0.8, "保守性"), ("哲学者", "案A", 0.6, "意味"),
+    ], conflict_type="unanimous"),
+    # (b) 記録 reason_divergence / 実際は次元重複 → 閾値ずれ
+    entry("b6-threshold", [
+        ("経営者", "案A", 0.7, "ROI"), ("開発者", "案A", 0.8, "ROI"), ("哲学者", "案A", 0.6, "ROI"),
+    ], conflict_type="reason_divergence"),
+    # (c) 記録 unanimous / stance 文字列が微妙に違う → 正規化ギャップ
+    entry("b6-normgap", [
+        ("経営者", "案A（条件つき）", 0.7, "ROI"),
+        ("開発者", "案A（別の条件）", 0.8, "保守性"),
+        ("哲学者", "案A（さらに別）", 0.6, "意味"),
+    ], conflict_type="unanimous"),
+    # (d) 値域外の ad-hoc な値 → out_of_domain
+    entry("b6-domain", [
+        ("経営者", "案A", 0.7, "ROI"), ("開発者", "案B", 0.8, "保守性"), ("哲学者", "案A", 0.6, "意味"),
+    ], conflict_type="converged_with_gate"),
+    # (e) 一致するケース（simple_conflict）→ 照合成功
+    entry("b6-ok", [
+        ("経営者", "案A", 0.7, "ROI"), ("開発者", "案B", 0.8, "保守性"), ("哲学者", "案A", 0.6, "意味"),
+    ], conflict_type="simple_conflict"),
+])
+cls = audit.audit_classification(audit.parse_entries(log_cls), AXES)
+check(cls["legacy_unanimous_skipped"] == 1, "10: legacy（旧 unanimous → reason_divergence）を遡及照合しない")
+check([m["invocation_id"] for m in cls["threshold_mismatches"]] == ["b6-threshold"],
+      "10: 閾値ずれのみを threshold_mismatches に入れる")
+check([m["invocation_id"] for m in cls["normalization_gap"]] == ["b6-normgap"],
+      "10: **正規化ギャップを閾値ずれと混ぜない**（原因と対処が異なる）")
+check([m["invocation_id"] for m in cls["out_of_domain"]] == ["b6-domain"],
+      "10: 値域外の値を独立の診断にする")
+check(cls["checked"] == 2, "10: 照合できた件数（b6-threshold と b6-ok）")
+
+# 分類器と監査の閾値が同値であること（conflict-typology.md §判定ロジックとの契約）
+check(audit.DIMENSION_JACCARD_MAX == 0.30,
+      "10: DIMENSION_JACCARD_MAX は conflict-typology.md の DIMENSION_OVERLAP_MAX と同値")
 
 # ---- 結果 ---------------------------------------------------------------------
 
