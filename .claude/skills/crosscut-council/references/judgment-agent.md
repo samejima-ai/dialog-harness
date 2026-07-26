@@ -1,11 +1,16 @@
-# Judgment Agent — 重み付き判定機構
+# Judgment Agent — 優先度バランス評定機構
 
-3 Persona の発言と重み配分から、`question_to_answer` に対する単一の答えを導く。
+3 軸の観測と優先度配分から、`question_to_answer` に対する単一の答えを導く。
+
+> **本機構は投票の集計装置ではない**（[../SKILL.md](../SKILL.md) §重みの意味論）。
+> 重みは議決権数ではなく「単独通過に要する強度の閾値」であり、`weighted_score` の比較は
+> 多数派の判定ではなく**優先度バランスの評定**である。`recommended` は「勝った案」ではなく
+> 「骨格として選ばれた案」であり、敗れた軸の主張は `minority_opinion` と（統合した場合は）本文に吸収される。
 
 ## 役割
 
-- 3 Persona 出力 + （PR2: 討論ログ）+ 重み配分 + conflict_type を受領
-- 重み付きで単一回答を構成
+- 3 Persona 出力 + （PR2: 討論ログ）+ 優先度配分 + conflict_type を受領
+- 優先度バランスを評定して単一回答を構成
 - 意見の質と動的変化を評価
 - 少数意見を保持（消さない）
 
@@ -90,9 +95,47 @@ PR1 では Few-shot 例を 2 例埋め込む（unanimous と simple_conflict 各
 内容は本ファイルでは省略。実装時に Orchestrator が prompt 組み立て時に挿入する。
 PR2 以降で COUNCIL-LOG から実例を抽出して差し替える。
 
+## judgment_confidence の帯（v6.5.0 追加・決定論の上下限）
+
+`judgment_confidence` は「推奨の正しさへの自信」ではなく
+**「バランス評定が単一の推奨に収束した度合い」**である。したがって
+スコア差（gap）という連続量から決定論で帯（下限・上限）を導き、
+Judgment Agent の自己評価はその帯の内側でのみ許される。
+
+**設計契機**: 2026-07-26 の実測で、gap と `judgment_confidence` の相関が **r = +0.341**（n=17）と弱く、
+gap 1.4 で jc が 0.45〜0.82 に散っていた。すなわち重みの精緻さが算出されながら下流で消費されていない。
+本帯を適用すると既存 17 件のうち **7 件が「過信」として検出される**（過小は 0 件）。
+検出された 7 件は全て gap が小さい領域にあり、gap が大きい 6 件は全て帯内だった
+＝ **jc は gap によらず 0.7〜0.8 に張り付く系統的バイアスがあった**。
+
+算出は Orchestrator の純粋関数 `compute_confidence_band`
+（[orchestrator.md](orchestrator.md) §confidence 帯プロトコル）が行い、
+Judgment Agent には**帯だけを渡す**（gap の生値は渡さない — 忖度を防ぐため）。
+
+| gap 率（= gap ÷ ΣW） | 帯 | 意味 |
+|---|---|---|
+| < 0.10（拮抗） | 0.30 – 0.50 | 収束していない。人間エスカレーション圏 |
+| 0.10 – 0.25 | 0.45 – 0.70 | 部分的に収束 |
+| ≥ 0.25（明瞭） | 0.60 – 0.90 | 単一の推奨に収束 |
+
+上書き規則（既存規則を帯へ統合）：
+
+- `third_way_excluded` の weight 合計が ΣW の 30% 以上 → 上限を **0.50** に切り下げ
+  （高優先度軸が選択形式で吸収できないシグナル）
+- `malformed` Persona を含む → 帯は **0.00 – 0.30**
+- `tie_break_applied = true` → 帯は **0.00 – 0.39**（既存の「0.4 未満」要求と等価）
+
+帯を外れた出力は Orchestrator が検算でリトライを要求する
+（[orchestrator.md](orchestrator.md) §決定論検算プロトコル）。2 回目も帯外なら `judgment_failed`。
+
+**帯の幅は校正パラメータである**: 上表の初期値は 2026-07-26 時点の実測 17 件から逆算した。
+escalation 率に直接効くため（帯を狭めると献上が増え CTL 蓄積速度が落ちる）、
+振り返り儀式 F2/F3 で実測分布を見て校正する。校正時は本表と
+`compute_confidence_band` の定数を同時に更新する（片方だけ変えると検算が恒常的に落ちる）。
+
 ## judgment_confidence の算出指針
 
-Judgment Agent は以下を考慮して `judgment_confidence` を 0.0-1.0 で自己評価する：
+以下は帯の**内側で**自己評価する際の考慮事項である（帯と矛盾する場合は帯が優先する）：
 
 - 重み配分が支配的（最大重み Persona の confidence が高い、かつ stance が他と一致）→ 高 confidence
 - 全会一致（unanimous） → 0.7-0.9
