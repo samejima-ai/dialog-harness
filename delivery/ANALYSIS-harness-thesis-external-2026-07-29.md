@@ -18,9 +18,9 @@
 |---|---|---|
 | 実体 | **検証環境**（環境・検証ループ・観測） | **規律**（SPEC / DONT / REGIME / Workflow / Sensors / philosophy） |
 | 役割 | 間違いに**すぐ気づく**ための装置 | 間違いを**起こさない**ための装置（philosophy 第 2 条 Shift Left） |
-| 出典 | 資料 5 面 | `README.md:23-31`, `philosophy.md:59-72` |
+| 出典 | 資料 5 面 | `README.md:23-31`, `.claude/skills/layer0-spec-architect/references/philosophy.md:59-72` |
 
-つまり資料は**検出（右）を速くして探索を回す**戦略、DH は**発生防止（左）に重心を置く**戦略。**この 2 つは対立ではなく、DH が第 2 条で明示的に選んだトレードオフの反対側**にある。したがって以下の評価は「DH が間違っている」ではなく「DH が左に寄せた結果、右側で何を失っているか」の測定として読む。
+ここでの「左 / 右」は上表の列位置ではなく、**第 2 条 Shift Left の上流 / 下流軸**を指す（`.claude/skills/layer0-spec-architect/references/philosophy.md:61`「問題は可能な限り左（上流）で解く。発生後の検出より発生防止を優先する」）。この軸に置くと、資料は**下流（右）の検出を速くして探索を回す**戦略、DH は**上流（左）の発生防止に重心を置く**戦略になる。**この 2 つは対立ではなく、DH が第 2 条で明示的に選んだトレードオフの反対側**にある。したがって以下の評価は「DH が間違っている」ではなく「DH が上流（左）に寄せた結果、下流（右）で何を失っているか」の測定として読む。
 
 ### 0.2 評価軸（資料から抽出した 7 軸）
 
@@ -44,10 +44,10 @@ DH の成果物はコードではなく **skill（プロンプト）と規約**�
 
 | 軸 | 判定 | 根拠（一次情報源） |
 |---|---|---|
-| A-1 環境 | ◎ **資料より進んでいる** | 11 stack の scaffold カタログ + stack 別 smoke test 手順。さらに **L0 完了の受け入れ基準に「scaffold 実体生成」「smoke test 通過」を条件化**（`layer0-spec-architect/SKILL.md:38-47`, `references/scaffold-checklist.md`）。「ドキュメント生成完了は L0 完了と見なさない」と明文化済み（`history/ARCH-DECISIONS.md:253`） |
+| A-1 環境 | ◎ **資料より進んでいる** | 11 stack の scaffold カタログ + stack 別 smoke test 手順。さらに **L0 完了の受け入れ基準に「scaffold 実体生成」「smoke test 通過」を条件化**（`.claude/skills/layer0-spec-architect/SKILL.md:38-47`, `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md`）。「ドキュメント生成完了は L0 完了と見なさない」と明文化済み（`history/ARCH-DECISIONS.md:253`） |
 | A-2 検証ループ | △ **速いが正直さが未検証** | `harness-verifier/verify.py` は 6 検査を **0.18 秒**で完走・全 PASS（実測）。速度は資料の要求を満たす。ただし**この検証器自身のテストが存在しない**（`scripts/test-*.sh` は council 系 4 本のみ、harness-verifier を対象にしたものはゼロ）。Red になれることが誰も確認していない |
-| A-3 観測 | ✕ **機構はあるが稼働していない** | hook 観測 6 event の bridge を実装済（`crosscut-hook-observer`）。しかし `harness-verifier/reports/hook-observations.jsonl` は **実データ 2 行**、いずれも 2026-05-11 の `_smoke_test: true`。にもかかわらず検査 6「hook 観測一貫性」は PASS を返す（`checks/hook_observations.py:12` が `観測ログが存在しないこと自体は PASS（fail-open）` と宣言）。これは資料 9 面「接続を切っても Green ならそのテストは何も見ていない」の実例 |
-| B-1 判定基準を先に固定 | ◎ **資料と完全一致・独自に到達** | ステップ 2.6「C5 テスト oracle 言語化」が実装済み。「AI は見ると宣言したものしか見えない」ゆえに TQ1「壊れてたら絶対に世に出したくない瞬間」を **細部仕様の前に** 人間から取る（`SKILL.md:204-232`, `references/test-oracle-dialog.md`）。目的（SPEC WHY）・境界（DONT.md）も同様に先行 |
+| A-3 観測 | ✕ **機構はあるが稼働していない** | hook 観測 6 event の bridge を実装済（`crosscut-hook-observer`）。しかし `harness-verifier/reports/hook-observations.jsonl` は **実データ 2 行**、いずれも 2026-05-11 の `_smoke_test: true`。にもかかわらず検査 6「hook 観測一貫性」は PASS を返す（`harness-verifier/checks/hook_observations.py:9` が `観測ログが存在しないこと自体は PASS（fail-open）` と宣言）。これは資料 9 面「接続を切っても Green ならそのテストは何も見ていない」の実例 |
+| B-1 判定基準を先に固定 | ◎ **資料と完全一致・独自に到達** | ステップ 2.6「C5 テスト oracle 言語化」が実装済み。「AI は見ると宣言したものしか見えない」ゆえに TQ1「壊れてたら絶対に世に出したくない瞬間」を **細部仕様の前に** 人間から取る（`.claude/skills/layer0-spec-architect/SKILL.md:204-232`, `.claude/skills/layer0-spec-architect/references/test-oracle-dialog.md`）。目的（SPEC WHY）・境界（DONT.md）も同様に先行 |
 | B-2 細部は証拠が出てから | ✕ **順序が逆（最大の乖離）** | 後述 §3 |
 | C-1 判定の分離 | ◎ **資料より進んでいる** | 3 ペルソナ独立並列（相互の出力を渡さない）+ 加重判定、`judgment` と `decision` の分離（`final_decision` は常に null）、L1 実装者とは別スキルの independent-reviewer、異ベンダー独立軸（gemini-review / claude-review）、判定基準を候補側から書き換えられない `.github/workflows/` に配置。判定の独立性については資料の要求を超える |
 | C-2 known-bad 校正 | △ **素材はあるが回していない** | 後述 §4 |
@@ -61,8 +61,8 @@ DH の成果物はコードではなく **skill（プロンプト）と規約**�
 資料 6 面「設計仮説は文書ではなく動く候補で比べる」は、DH がすでに自前の実測で到達していた結論と一致する。
 
 - Council は設計仮説を**文書（ペルソナ意見 + confidence 申告）**として比較する機構である
-- その confidence は実測で **gap との相関 r = +0.341（n=17）** と弱かった（`crosscut-council/references/judgment-agent.md:106`）
-- 最重量軸（weight 5）が **17 件中 11 件で敗れて**いる（`council-weights.md:11`）
+- その confidence は実測で **gap との相関 r = +0.341（n=17）** と弱かった（`.claude/skills/crosscut-council/references/judgment-agent.md:106`）
+- 最重量軸（weight 5）が **17 件中 11 件で敗れて**いる（`.claude/skills/crosscut-council/council-weights.md:11`）
 
 つまり「文書ベースの自己申告は校正が効きにくい」という資料の主張を、DH は v6.6.0 / v6.7.0 の軸独立性測定で**すでに独立に観測している**。資料は DH の進行中の課題設定（`delivery/ANALYSIS-council-axis-independence-2026-07-26.md`）に外部からの裏づけを与える。
 
@@ -77,24 +77,24 @@ DH の成果物はコードではなく **skill（プロンプト）と規約**�
 | 対象 | 行数 |
 |---|---|
 | DH 所有分（`.claude/` + `templates/` + `harness-verifier/` + `.github/` の md/py/yml） | **33,922** |
-| `layer0-spec-architect` 単体 | 10,475 |
-| `references/dev-env-spec.md` 単体 | 1,045 |
+| `.claude/skills/layer0-spec-architect/` 単体 | 10,475 |
+| `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` 単体 | 1,045 |
 
-`dev-env-spec.md` は 1 ファイルの中に「用語定義／配置規則／モード別差分／バージョニング規則／ECC 咀嚼規約／philosophy CHANGELOG 運用」を混載しており、責務が単一でない。また L0 の 1 走行は **§1.5 / §3.5 / §3.6 / §4 / §6 / §7 の Pre-flight 必読**を要求する（未読での進行は「原則違反」）。資料の「AI に書かせると長すぎてレビューが形骸化する」に構造的に該当する。
+`.claude/skills/layer0-spec-architect/references/dev-env-spec.md` は 1 ファイルの中に「用語定義／配置規則／モード別差分／バージョニング規則／ECC 咀嚼規約／philosophy CHANGELOG 運用」を混載しており、責務が単一でない。また L0 の 1 走行は **§1.5 / §3.5 / §3.6 / §4 / §6 / §7 の Pre-flight 必読**を要求する（未読での進行は「原則違反」）。資料の「AI に書かせると長すぎてレビューが形骸化する」に構造的に該当する。
 
 ### 3.2 壁 02「腐る」— 実際に腐っている箇所
 
 | 箇所 | 状態 |
 |---|---|
-| `philosophy.md` | 本文は **第 1〜9 条**。ところが 1 行目のタイトルは `Philosophy — dialog-harness v4`、3 行目は「dialog-harness の**6 条**憲法」 |
+| `.claude/skills/layer0-spec-architect/references/philosophy.md` | 本文は **第 1〜9 条**。ところが 1 行目のタイトルは `Philosophy — dialog-harness v4`、3 行目は「dialog-harness の**6 条**憲法」 |
 | `README.md` | 「philosophy (**8 条**)」「**8 条**憲法」と記載 |
-| `crosscut-verifier-philosophy/SKILL.md` | description が「**v5.0.0 では発動禁止**、判定ロジックは **v5.1.0 minor 改修で本実装**」のまま。現行は **v6.7.0**（1 メジャー + 7 マイナー経過）。本文も「6条憲法と照合」 |
+| `.claude/skills/crosscut-verifier-philosophy/SKILL.md` | description が「**v5.0.0 では発動禁止**、判定ロジックは **v5.1.0 minor 改修で本実装**」のまま。現行は **v6.7.0**（1 メジャー + 7 マイナー経過）。本文も「6条憲法と照合」 |
 
 条数という最も機械検証しやすい事実が **3 箇所で 6 / 8 / 9 に分裂**している。harness-verifier の 6 検査（frontmatter / 参照 path / SK 間参照 / 5 層構造 / 用語辞書 / hook 観測）はいずれもこれを検出しない。**「腐り」に対する検出器が、最も腐りやすい箇所を見ていない。**
 
 ### 3.3 壁 03「邪魔になる」— L0 のステップ順序
 
-L0 の処理フロー（`SKILL.md:70-95`）を資料 4 面・10 面の主張と並べる。
+L0 の処理フロー（`.claude/skills/layer0-spec-architect/SKILL.md:70-95`）を資料 4 面・10 面の主張と並べる。
 
 ```
 DH の現行順序:
@@ -111,7 +111,7 @@ DH はステップ 3.5 で **ドメインモデル・API 契約・状態機械�
 
 1. 環境は細部の**検証**には使えるが、細部の**発見**には使えない（順番として不可能）
 2. ステップ 5→2 の「最も重要」とされるループは、**文書上の認識ズレ**のみを回す。実行結果は入力になっていない
-3. 資料 8 面「要求の一行に設計判断が 4 層隠れている」に対応する DH の機構は `subphase-l06-invariants.md`（Gherkin での層間不変条件）だが、これも**動かす前に書き切る**設計
+3. 資料 8 面「要求の一行に設計判断が 4 層隠れている」に対応する DH の機構は `.claude/skills/layer0-spec-architect/references/subphase-l06-invariants.md`（Gherkin での層間不変条件）だが、これも**動かす前に書き切る**設計
 
 なお A-1 で見たとおり DH は v5.1.0 で「smoke test 通過を L0 完了条件に入れる」という**正しい方向の一歩を既に踏んでいる**。乖離は思想ではなく**位置**の問題であり、ステップ 6 を 3.5 の前に置けるかという設計判断に還元される。
 
@@ -129,7 +129,7 @@ DH はステップ 3.5 で **ドメインモデル・API 契約・状態機械�
 
 | 層 | 校正状況 |
 |---|---|
-| 決定論スクリプト（council-ctl / council-log-sync / auto-merge 判定 / axis-audit） | ✅ **負例あり**。壊した `stats.json` を渡して復旧を確認、不正な `decision_category` が null 化されることを確認（`scripts/test-council-log-sync.sh:117-123`, `test-council-ctl.sh:64`） |
+| 決定論スクリプト（council-ctl / council-log-sync / auto-merge 判定 / axis-audit） | ✅ **負例あり**。壊した `stats.json` を渡して復旧を確認、不正な `decision_category` が null 化されることを確認（`scripts/test-council-log-sync.sh:117-123`, `scripts/test-council-ctl.sh:64`） |
 | skill の発火判定 | ⚠️ **known-bad が存在するのに回っていない**。`skill-audit-workspace/eval-sets/` に 6 ファイル・**`should_trigger: false` の負例を含む** eval set がある（例: spec-architect に対する「リファクタしたい」→ false、rtk に対する「今日の天気を教えて」→ false）。しかし CI から参照されておらず（`.github/workflows/` に該当記述なし）、`history/CHANGELOG.md:1099` の位置づけも「**将来の trigger eval 自動最適化用に温存**」。**資料 12 面の「明日からの初手」を DH は素材だけ揃えて実行していない** |
 | harness-verifier 自身（6 検査） | ❌ **無校正**。テストが存在せず、全 PASS が「健全」なのか「何も見ていない」のか区別できない。検査 6 は fail-open を自ら宣言しており（§1 A-3）、少なくとも 1 検査は「接続が切れていても Green」であることが設計として確定している |
 
@@ -143,11 +143,11 @@ DH はステップ 3.5 で **ドメインモデル・API 契約・状態機械�
 
 ### 提言 1（最小コスト・即日）— eval-sets を CI に接続する
 
-`skill-audit-workspace/eval-sets/` の負例込み eval set を `harness-verify.yml` から回し、`should_trigger: false` が発火したら Red にする。**新規に作るものは何もなく、温存されている素材を起動するだけ**で §4.2 の中段が埋まる。これが DH における「known-bad をレビューに流す」の実体である。
+`skill-audit-workspace/eval-sets/` の負例込み eval set を `.github/workflows/harness-verify.yml` から回し、`should_trigger: false` が発火したら Red にする。**新規に作るものは何もなく、温存されている素材を起動するだけ**で §4.2 の中段が埋まる。これが DH における「known-bad をレビューに流す」の実体である。
 
 ### 提言 2（低コスト）— harness-verifier に負例フィクスチャを置く
 
-6 検査それぞれに「わざと壊した最小フィクスチャ」を用意し、**Red になることを CI で確認**する。同時に検査 7「憲法条数の整合」（`philosophy.md` の `第N条` 最大値 = 冒頭記述 = README 記述）を追加すれば §3.2 の 3 分裂は機械的に閉じる。`glossary.yml` を持つ既存機構の素直な拡張であり、Python 標準ライブラリのみという harness-verifier の制約も崩さない。
+6 検査それぞれに「わざと壊した最小フィクスチャ」を用意し、**Red になることを CI で確認**する。同時に検査 7「憲法条数の整合」（`.claude/skills/layer0-spec-architect/references/philosophy.md` の `第N条` 最大値 = 冒頭記述 = README 記述）を追加すれば §3.2 の 3 分裂は機械的に閉じる。`harness-verifier/glossary.yml` を持つ既存機構の素直な拡張であり、Python 標準ライブラリのみという harness-verifier の制約も崩さない。
 
 ### 提言 3（要 Council 諮問）— L0 のステップ順序を再検討する
 
