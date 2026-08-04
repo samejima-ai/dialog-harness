@@ -485,7 +485,7 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 **重要**: 検証agent（layer1-independent-reviewer / layer2-integration-verifier）や layer2-orchestrator の本体は **Level A（共通スキル）** に存在し、プロジェクト側で再生成しない。autonomous-drive deployment skill (`crosscut-autonomous-drive`) も Level A として配置される。プロジェクト差異は sensors やチェックリストに閉じる。
 
 生成する開発環境構成（M2 標準）：
-- **CLAUDE.md / .claude/settings.json** — プロジェクト統括者（純化された常駐 + ルーティング表）+ 設定。規格は `references/dev-env-spec.md` §CLAUDE.md（v6.5.0 で RL 平置きから再定義）
+- **CLAUDE.md / .claude/settings.json** — プロジェクト統括者（純化された常駐 + ルーティング表）+ 設定。規格は `references/dev-env-spec.md` §CLAUDE.md（v6.8.0 で RL 平置きから再定義）
 - **.claude/skills/** — プロジェクト固有のSK（検証agent本体は含まない）
 - **sensors/** — センサー定義（計算的＋推論的）
 - **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）
@@ -506,7 +506,7 @@ project-root/
 ├── REGIME.md           # モード判定結果（AI能力バージョン含む）
 ├── DESIGN.md           # 視覚仕様（任意・UI プロジェクトのみ。§3.6 で生成判定）
 ├── DOMAINS.md          # L2のみ。ドメイン境界定義
-├── CLAUDE.md           # プロジェクト統括者（v6.5.0）
+├── CLAUDE.md           # プロジェクト統括者（v6.8.0）
 ├── .claude/
 │   ├── settings.json
 │   └── skills/         # プロジェクト固有SKのみ

@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.5.0、minor 昇格、in progress, target 2026-08-05、PR #175）
+## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.8.0、minor 昇格、in progress, target 2026-08-05、PR #175）
 
 kakuman-platform CLAUDE.md のメタ診断（2026-08-04）を起点に、L0 メタハーネス対話（ひでさん）で確定した
 minor リリース。純化 RL（Council `claude-md-purity`、feat/claude-md-purity-and-retrospective ブランチ先行分）を
@@ -21,9 +21,247 @@ v0.2.0 へ拡張し、dev-env-spec の CLAUDE.md 規格を「エージェント 
 - **`regime-assessment.md` §dev_mode 二軸注記**: GitHub 利用を保管庫軸 / 実行環境軸に分離。保管庫利用は Actions を
   要求しない。CI にしか存在しない検査を作らない（2026-08-05 ひでさん宣言）。`github_assisted` の「Actions 任意」を
   「Actions 不要」へ読み替え
-- **`docs/migration-guide-v6.5.0.md` 新設**: 既存プロジェクト移行 6 手順（診断に機械依存洗い出しを必須化・
+- **`docs/migration-guide-v6.8.0.md` 新設**: 既存プロジェクト移行 6 手順（診断に機械依存洗い出しを必須化・
   atomic 1 PR・段階適用オプション・移行しない選択の正当性）
-- 温存: `templates/github-workflows/` の位置づけ再定義（次サイクル、INTENT v6.5.0 参照）
+- 温存: `templates/github-workflows/` の位置づけ再定義（次サイクル、INTENT v6.8.0 参照）
+## 対立類型 B の分離 ＋ 分類整合性の監査（v6.7.0、minor、PR #TBD）
+
+D5 決定「C1' は分離して別物として扱う」。`conflict_type` を 2 値から **3 値**へ拡張し、
+分離後の扱いに実際の差をつけた。
+
+### なぜ分離するか — 現行の扱いが逆になっていた
+
+PR1 は対立類型 B（結論同じ・理由違う）を `unanimous` として処理していた。しかし実測
+（PR #171）で **stance が一致した判定でも観測次元は完全に分離していた**ことが判明した
+（軸ペアの `dimension` Jaccard は 25/25 で 0.000）。すなわち類型 B は例外ではなく主要形態である。
+
+より重要なのは扱いの向きである：
+
+| | v6.6.0 まで | v6.7.0 |
+|---|---|---|
+| 「多様性として質を評価し confidence を高くする」対象 | `unanimous`（次元を問わない） | **`reason_divergence` のみ** |
+| 同一次元での一致 | 同じく高 confidence（0.7–0.9） | **被覆不足を疑い引き下げ（0.45–0.70）** |
+
+3 軸が**同じ物差しで**同じ答えを出したなら、それは多様性ではなく**観測の重複**である。
+v6.6.0 までは **最も情報の少ない一致に最も高い確信度が付いていた**。
+これは `council-philosophy.md` 第2条の系「全会一致は被覆不足の可能性も同時に疑う」（v6.5.0 で追加）を
+字義どおり実装したものであり、**分離しなければ実装できない**。
+
+### 判定ロジック（決定論・LLM 判定なし）
+
+- `stance` が割れる → `simple_conflict`
+- `stance` 全一致 かつ 全ペアの `dimension` Jaccard ≤ 0.30 → **`reason_divergence`**
+- `stance` 全一致 かつ いずれかのペアで Jaccard > 0.30 → `unanimous`
+- `dimension` 欠落時は判定不能 → 保守的に `unanimous`
+
+閾値 0.30 は `scripts/council-axis-audit.py` の `DIMENSION_JACCARD_MAX` と**同値**である
+（同じ現象を 2 箇所で別基準にすると監査と分類器が食い違う）。この契約はテストで固定した。
+
+### 実装中に発覚した仕様と実践の乖離: stance の正規化
+
+新設した B6（分類整合性の監査）が **32 件中 11 件**で「記録は stance 一致だが完全一致では
+`simple_conflict`」を検出した。原因は**各軸が同じ選択肢に自分の条件を付記している**こと：
+
+```
+ctlrec1 (記録: unanimous)
+  経営者: 案A（同期＋事後評価運用の確立を条件）
+  開発者: 案A（category→decision_category 導出せず null 埋め）
+  哲学者: 案A（decision_category は機械導出せず未分類保持）
+```
+
+すなわち文書化されていた「`stance` の完全一致」規則は**実践を記述していなかった**。
+この規則のままでは類型 B の分離は一度も発火しない。したがって
+**`options` への双方向の接頭辞一致による正規化**を明文化した（`normalize_stance`）。
+これは `recommended` と `max_score_stance` の接頭辞一致検証と同型の既存イディオムであり、
+新しい判定原理を導入しない。
+
+あわせて `options` を COUNCIL-LOG §8 の optional field に追加した。
+記録がないと事後に分類を再現できない（監査側が正規化できない）。
+
+### 監査の拡張: B6 分類整合性（3 診断に分離）
+
+`scripts/council-axis-audit.py` に B6 を追加。**原因と対処が異なるものを混ぜない**：
+
+| 診断 | 意味 | 対処 |
+|---|---|---|
+| `threshold_mismatches` | 分類器と監査の閾値がずれている | 両方を同時に直す |
+| `normalization_gap` | `stance` 完全一致規則と実践の乖離 | `options` を記録する（**閾値を動かして直してはならない**） |
+| `out_of_domain` | 値域外の ad-hoc な値（実例 `converged_with_gate`） | 値域を使う（ad-hoc 値は集計から静かに落ちる） |
+
+実ログでの初回実行: 閾値ずれ **0 件**（機構は整合）／値域外 1 件／正規化ギャップ 10 件。
+既存 `unanimous` の再計算が `reason_divergence` になるケースは**遡及照合しない**
+（v6.7.0 以前の `unanimous` は次元を問わない一致を意味した。append-only ゆえ再解釈もしない）。
+
+### 変更ファイル
+
+- `conflict-typology.md`: §類型 B の分離（stance 正規化 ＋ 判定ロジック ＋ 既存エントリの扱い）
+- `judgment-agent.md`: §stance 一致時の扱い を 2 分。confidence 帯に `conflict_type` 分岐を追加
+- `orchestrator.md`: `classify_conflict` の宣言、`compute_confidence_band` に `conflict_type` 引数
+- `phase-protocol.md` / `output-format.md` / `SKILL.md`: 値域を 3 値に、Judgment Agent のモード差を明記
+- `council-philosophy.md`: 第2条の系に「v6.7.0 で実装された」を追記
+- `council-axis-audit.py` ＋ `test-council-axis-audit.py`: B6 追加
+
+### 検証
+
+- `scripts/test-council-axis-audit.py`: **41 項目 PASS**（+11）。3 値分類／dimension 欠落時の保守的
+  フォールバック／B6 の 3 診断分離／閾値の同値契約を含む
+- `harness-verifier/verify.py`: 全 6 層 PASS
+- 既存 56 件の再解釈なし。`council-log-sync.py` は `conflict_type` を読まないため同期は無影響
+
+## 軸独立性の測定機構 ＋ confidence バイアス源の除去（v6.6.0、minor、PR #TBD）
+
+L0 メタ開発。D5 承認により `delivery/ANALYSIS-council-axis-independence-2026-07-26.md`（PR #171）の
+**第 1 段（案 A1 ＋ B1/B2/B3/B5）** を実装し、あわせて同分析の献上事項 3
+（`situational_modifier` の宣言違反）を**検出の実行経路に接続**した。
+
+### 実装した機構: `scripts/council-axis-audit.py`（新規）
+
+`COUNCIL-LOG.md` から Council の軸独立性と観測バイアスを**決定論で**測る。LLM 判定を含まない
+（軸のバイアスを LLM に検査させると検査側が同じ死角を共有する ＝ 分析文書 §3-1
+「死角を持つ者に死角の有無を尋ねる構造」）。終了コードは常に 0（warn のみ・block しない）。
+
+| 検査 | 内容 |
+|---|---|
+| **B1 軸独立性** | 軸ペアの `stance` 一致率 **と** `dimension` 語彙の Jaccard 係数。**両方が閾値超え（一致率 > 0.65 かつ Jaccard > 0.3）のときのみ**「軸冗長の疑い」を報告する |
+| **B2 confidence 固定** | 軸内の標準偏差 σ < 0.10 で warn（議題ではなく役柄を採点している疑い） |
+| **B3 実効配分の乖離** | 宣言配分（weight のみ）と実効配分（weight × 実測 confidence 平均）の差。乖離はゼロサムゆえ **warn は「得ている軸」のみ**に出す（失う軸は裏面であり独立の異常ではない）。あわせて `situational_modifier` の合計 0 宣言違反も検出 |
+| **B5 dimension 記録率** | 記録率が低いと B1 の分解能が落ちるため可視化 |
+
+**B1 で 2 指標を対で読むのが本ツールの中核契約**である。`stance` 一致率だけでは
+「異なる次元から同じ結論に達した」（＝ 情報。`conflict-typology.md` の対立類型 B）と
+「同じ次元を二重に見た」（＝ 冗長）を区別できない。分析文書の rev.1 が実際にこれを誤診し、
+一致率 71% だけを見て「経営者軸は冗長」と結論して軸の縮退を推奨した。
+`dimension` を測ったら Jaccard 0.000 で診断は覆った。**片方だけの機構は誤診を機構化する。**
+
+実ログでの初回実行結果（56 件）: 軸冗長は 0 件（全ペアで Jaccard 0.000）／
+confidence 固定が 3 軸すべてで検出（σ 0.039 / 0.044 / 0.080）／
+開発者の実効配分が +4.8pt 系統的に有利／`judgment` と `conception` の宣言違反を検出。
+
+### 是正した機構: confidence 帯の prompt 指定を削除（案 A1）
+
+**実測で唯一確認された collapse 源**への対処。`ceo.md` 「中庸 0.5-0.8」/ `dev.md` 「高め 0.7-0.95」/
+`phil.md` 「揺れる 0.4-0.8」という軸ごとの帯指定を削除し、**3 軸共通の校正基準**
+（`personas/business/README.md` §confidence の校正基準）に置換した。
+
+新基準は `confidence` を「その軸の人格がどれくらい自信家か」ではなく
+**この観測が議題に対して持つ確度**と定義し、**根拠の種類**で採点する
+（一次情報・実測値 0.90+／類似事例・間接証拠 0.70-0.89／未検証の推論 0.50-0.69／
+経験則 0.30-0.49／情報不足 0.29 以下）。
+
+**Few-shot 例は変更していない。** 既存 9 例の `confidence` は既に広く散っており
+（経営者 0.3/0.75/0.85、開発者 0.4/0.85/0.95、哲学者 0.5/0.6/0.7）新基準と整合している。
+それにも関わらず実出力が σ ≈ 0.04 に収縮していたことから、**軸ごとの帯を書いた指示文 1 行が、
+広く散った Few-shot 実例 3 件を上書きしていた**と判断できる。是正はその 1 行の削除で足りる。
+
+**同じ帯指定が `.claude/agents/review-persona-{ceo,dev,phil}.md`（PR レビュー Council）にも
+複製されていた**ため同期した。これらのファイルは自ら「`personas/business/*.md` を一次情報源とし
+転記」と宣言しており、正本を変えた以上の同期は必須である。片方だけの是正では A1 は半分しか効かない。
+
+### 閉じたガバナンスの穴
+
+`council-weights.md` は「実装者による直接編集は禁止・L0 経由でのみ」と厳格に定めていたが、
+**`personas/business/` には編集プロトコルが存在しなかった**。そこに書かれた `confidence` 帯が
+実効配分を最大 ±5pt 動かしていた ＝ **重み配分の正典が二重化していた**。
+
+- `personas/business/README.md` に §編集プロトコル を新設し、`confidence` の採点基準を
+  `council-weights.md` と**同格**に位置づけた（軸ごとの帯・固定値の記述を禁止）。
+- `council-weights.md` §編集プロトコル に「本プロトコルの射程は本ファイルに閉じない」を追記。
+- 判定の目安を明文化: **その記述が全議題に対して同じ数値を生むなら、それは重み配分である。**
+
+### 実行経路への接続（注記だけでは是正されない）
+
+- `ritual-protocol.md` F1 に**ステップ 5「軸独立性・観測バイアス監査」**を追加。
+  CTL 同期（ステップ 4）と同型の読取専用集計として毎回走らせ、warn 種別ごとの還流先を表で規定した
+  （軸の増減と重み数値の変更は F3 で人間に予告 ＝ L0/D5 専管）。
+- `council-weights.md` の既知の宣言違反（`judgment` +1 / `conception` +1、全発動の 74% に影響）に
+  実行経路を接続。**v6.1.0 の CTL 記録が「手順書依存で空文化」した轍を踏まないため**、
+  注記に留めず B3 が毎回検出する形にした。数値の是正判断は D5 に残る。
+- `output-format.md`: §8 の `persona_summary` 例に `dimension` を明記し（記録率 60% → 100% を狙う）、
+  §3 に「`dimension` は軸独立性の唯一の観測窓である」を追記。
+
+### 検証
+
+- `scripts/test-council-axis-audit.py`（新規）: **30 項目 PASS**。
+  パース／B1 の中核契約（一致率 100% でも dimension 分離なら冗長判定しない）／
+  dimension 不在時の判定保留／B2 の σ 検出／B3 のゼロサム性と「得ている軸のみ warn」／
+  宣言違反検出／記録率算出／終了コードが常に 0。
+- `harness-verifier/verify.py`: 全 6 層 PASS。
+- 既存ログ・既存 council-data への影響なし（本監査は読取専用、スキーマ変更なし）。
+
+### 未実施（判断待ち）
+
+案 A2（confidence を `weighted_score` から外す）は **B3 の実測待ち**——A1 だけで乖離が
+±1pt 以内に収まれば不要。案 C1'（対立類型 B の分離）／C2'（`recommended` への次元写像）は
+D5 判断待ち。C4（派生軸）／D1（別モデル）は発火条件（被覆不足の実測）が存在しないため保留。
+
+## Council の定義是正 ＋ confidence 帯の導入（v6.5.0、minor、PR #170）
+
+**D5 直接決定による D4 更新**（Council 経由ではない。本件の審査自身が「投票機構を投票で審査すれば
+循環する」という遮断条項下で行われたため、Council を発動していない）。
+
+経緯は `delivery/PROPOSAL-council-deliberation-redesign-2026-07-26.md`（rev.2）。
+「Council」という命名が含意する合議制・多数決・投票から出発した機構が、実装では別物に
+なっていた。そして実測は**別物のほうが機能していた**ことを示した。D5 は「命名は保持し、
+判定機構の本質に合わせて概要・定義を更新する」と決定した。
+
+### 実測（`history/COUNCIL-LOG.md` の `simple_conflict` 17 件、2026-07-26）
+
+- 最大重み軸の stance が `recommended` になったのは **6/17**。11 件で最重量軸が敗れている
+  → 重みは議決権数ではない。`weighted_score` は stance ごとの合算なので、重み 5 の単独軸は
+  重み 3+3 の合意に敗れる。
+- `judgment_confidence < 0.5` の 4 件は**全件が「第3の道／止揚」を含む**（第3の道なし 9 件では 0 件、
+  jc 平均 0.750 vs 0.565）→ 高優先度軸が options 外に出たことを機構が検知して献上している。
+- gap と `judgment_confidence` の相関は **r = +0.341**（n=17）と弱く、gap 1.4 で jc が 0.45〜0.82 に散る
+  → **連続量が算出されて下流で消費されていない**。
+
+### 定義是正（命名は「Council / 合議」を保持）
+
+- `SKILL.md`: 概要を「合議制判定機構」→「**多軸観測 ＋ 優先度バランス評定機構**」に。
+  **§重みの意味論**を新設（誤読 4 パターン × 実体、実測の裏づけ、実装上の禁止事項 3 点）。
+  重みの定義を「議決権数」から「**その軸の主張を単独で通すために要する強度の閾値**」に確定。
+- `council-philosophy.md` 第2条に**系「重みは差異を消す装置ではない」**を追加。
+  公理は増やさない（6 公理を維持）。「全会一致 = 多様性の質評価」を
+  「**全会一致は被覆不足の可能性も同時に疑う**」へ拡張。
+- `council-weights.md`: `base_weights` の定義を「開発者の思想・熱量」→「**判定軸の恒常的な優先度**」、
+  `ethos_multiplier` を「熱量係数 / Persona の熱量・コミット度合い」→
+  「**軸強度係数 / 当該判定軸の相対的な効き幅**」に是正（旧定義は F2「ペルソナは切り口であり
+  人格・利害・物語ではない」と正面衝突していた）。YAML キー名は互換性のため維持。
+- `judgment-agent.md`: 「重み付き判定機構」→「**優先度バランス評定機構**」。
+  `recommended` は「勝った案」ではなく「骨格として選ばれた案」であることを明記。
+
+### 精緻さの向上: `judgment_confidence` の帯（決定論）
+
+gap という連続量を初めて下流挙動に接続する。
+
+- `orchestrator.md`: 純粋関数 **`compute_confidence_band`** を新設。gap 率（gap ÷ ΣW）から
+  帯を導く（< 0.10 → 0.30-0.50 / 0.10-0.25 → 0.45-0.70 / ≥ 0.25 → 0.60-0.90）。
+  既存の上書き規則（third_way 30% / malformed / tie_break）を帯へ統合。
+  **gap の生値は Judgment Agent に渡さない**（重み配分を渡さないのと同じ理由 — 忖度の防止）。
+- `verify_weight_calculation` に帯検査を 1 件追加。帯外は 1 回リトライ → 2 回目で `judgment_failed`。
+- `output-format.md`: §4 に `confidence_band {lo, hi, basis}`、§8 に optional field として追加、
+  §バリデーション表に帯外の行を追加。
+- **gap を絶対値でなく比率で評価する**理由: `situational_modifier` の宣言違反（下記）により
+  実 ΣW が 10 と 11 で揺れているため、数値是正の前後で帯の意味が変わらないようにする。
+
+### 検出した欠陥（**数値の是正は L0/D5 待ち**）
+
+`council-weights.md` の `situational_modifier` は「合計は 0（ニュートラル補正）」と宣言しているが、
+**`judgment`（+1）と `conception`（+1）が違反**しており実 ΣW が 11 になる。この 2 カテゴリは
+全発動の **74%（54 件中 40 件）** を占め、大半の判定が宣言と異なる配分で走ってきた。
+同ファイル §編集プロトコル により実装者は YAML 数値を直接編集できないため、
+**欠陥の記録と是正 2 案の提示に留め**、数値変更は F1-F3 で D5 承認を経る。
+
+### 検証
+
+- `harness-verifier/verify.py`: 全 6 層 PASS（形式整合 / 依存 / 5 層構造 / 用語辞書 / hook 観測）。
+- `council-log-sync.py` の同期経路は無影響（invocation への変換はキーの whitelist 方式であり、
+  新設した `confidence_band` はスカラー文字列としてパースされ無視される）。
+- 既存 56 件のログは再解釈不要（新フィールドは全て optional・欠落許容）。
+
+### 未実施（献上として残す）
+
+被覆による停止条件への移行（提案書 §4-1）は**実装していない**。Q1 の採否は D5 判断待ちであり、
+本版は「定義の是正」と「既存機構の精緻化」に限定した。
 
 ## COUNCIL-LOG 書式統一 — 見出し形式センサー + 最小必須セット明文化（v6.4.1、patch 昇格、PR #TBD）
 

@@ -2,7 +2,7 @@
 
 DH 本体の設計意図・新規概念の記録。
 
-## v6.5.0：CLAUDE.md 統括者モデル + ローカル自律実行ファースト (in progress)
+## v6.8.0：CLAUDE.md 統括者モデル + ローカル自律実行ファースト (in progress)
 
 利用者（ひでさん）の「L0 メタハーネス開発起動 — CLAUDE.md をプロジェクト統括者として再構築する。
 DH 全体で開発を担保するために CLAUDE.md は薄くプロジェクト全体を管理できるようにする」（2026-08-04/05）を起点とする
@@ -27,7 +27,7 @@ minor リリース。直接の契機は kakuman-platform CLAUDE.md のメタ診�
 - **dev-env-spec §CLAUDE.md を「エージェント RL」から「プロジェクト統括者」へ再定義**: Identity / 常時規範 /
   ルーティング表 / 参照 の 4 部構成。add-demote-check で定常サイズの循環層に保つ
 - **移行は任意・boundary 不変**: CLAUDE.md は dh-manifest never_touch のまま（DH は「あるべき形」の規格のみ持つ）。
-  既存プロジェクトの移行は `docs/migration-guide-v6.5.0.md`（6 手順・atomic 1 PR・機械依存洗い出し必須）。
+  既存プロジェクトの移行は `docs/migration-guide-v6.8.0.md`（6 手順・atomic 1 PR・機械依存洗い出し必須）。
   第一適用予定 = kakuman-platform（構造 parse 依存は `check-traps-sync.mjs` 1 本のみと実測済み）
 
 ### 温存（次サイクル / 観測駆動）

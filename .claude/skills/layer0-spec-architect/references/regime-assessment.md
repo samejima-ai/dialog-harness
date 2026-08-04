@@ -418,11 +418,11 @@ GitHub 連携前提の自律駆動を 3 段階で表現する追加軸。規模�
 
 旧名 `github_autonomous` は v5.6.0 で `autonomous` にリネーム（autonomous_scope 軸との整合）。後方互換は §dev_mode 旧名対応 参照。
 
-### 二軸注記（v6.5.0・ローカル自律実行ファースト）
+### 二軸注記（v6.8.0・ローカル自律実行ファースト）
 
 GitHub 利用は**保管庫軸**（remote push / PR 履歴 / レビュー記録の保存・可視化）と**実行環境軸**（Actions）の二軸に分離して判定する。**保管庫利用は Actions を要求しない** — 上表 `github_assisted` の「Actions 任意」は「Actions 不要（保管庫のみで完全動作）」と読み替える。検証・ゲート・センサー・マージ判断の一次実装は常に実行主体のローカルに置き、**CI にしか存在しない検査を作らない**（2026-08-05 ひでさん宣言）。
 
-Actions が正当化されるのは、実行主体そのものが GitHub 上で動くリモート実行型開発のみ — その場合も検査は「runner 内エージェントにとってのローカル」で走らせ、独立した検査 workflow を一次実装にしない。`autonomous` でも「ローカル実行 + GitHub 保管庫」構成を既定として推奨する（先例: kakuman の Actions 無効化 + Vercel ゲート自動マージ + ローカル独立レビュー）。`templates/github-workflows/` の独立検査 workflow 群（auto-merge / gemini-review 等）の位置づけ再定義は次サイクル温存（`history/INTENT.md` v6.5.0）。
+Actions が正当化されるのは、実行主体そのものが GitHub 上で動くリモート実行型開発のみ — その場合も検査は「runner 内エージェントにとってのローカル」で走らせ、独立した検査 workflow を一次実装にしない。`autonomous` でも「ローカル実行 + GitHub 保管庫」構成を既定として推奨する（先例: kakuman の Actions 無効化 + Vercel ゲート自動マージ + ローカル独立レビュー）。`templates/github-workflows/` の独立検査 workflow 群（auto-merge / gemini-review 等）の位置づけ再定義は次サイクル温存（`history/INTENT.md` v6.8.0）。
 
 ### 判定プロトコル（2 段階判定）
 

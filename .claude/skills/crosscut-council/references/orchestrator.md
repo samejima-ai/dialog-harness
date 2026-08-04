@@ -189,6 +189,86 @@ def compute_weight_scores(persona_outputs, final_weights, options):
     }
 ```
 
+### classify_conflict（純粋関数・v6.7.0 で 3 値化）
+
+`conflict_type` を決定論で導く。実装と設計根拠は
+[conflict-typology.md](conflict-typology.md) §判定ロジック（決定論・v6.7.0）が一次情報源。
+
+- `stance` が割れる → `simple_conflict`
+- `stance` 全一致 かつ 全ペアの `dimension` Jaccard ≤ 0.30 → **`reason_divergence`**（類型 B）
+- `stance` 全一致 かつ いずれかのペアで Jaccard > 0.30 → `unanimous`
+- `dimension` 欠落時は判定不能 → 保守的に `unanimous`
+
+Orchestrator は判定結果を Judgment Agent に渡すのみで、**内容評価はしない**（フラット原則）。
+判定は純粋関数であり LLM 推論を挟まない（`philosophy.md` §2 Shift Left）。
+
+### compute_confidence_band（純粋関数・v6.5.0 新規 / v6.7.0 で conflict_type 対応）
+
+gap（1 位と 2 位の `weighted_score` 差）という連続量から `judgment_confidence` の許容帯を導く。
+`stance` 全一致時は gap が定義されないため `conflict_type` で帯を決める。
+設計根拠と校正の扱いは [judgment-agent.md](judgment-agent.md) §judgment_confidence の帯。
+
+```python
+def compute_confidence_band(scores, third_way_excluded, final_weights,
+                            malformed_count=0, tie_break_applied=False,
+                            conflict_type=None):
+    """
+    Args:
+        scores: compute_weight_scores() の "scores"（stance ごとの weighted_score を含む）
+        third_way_excluded: 同 "third_way_excluded"
+        final_weights: {"経営者": int, ...}
+        malformed_count: stance == "malformed" の Persona 数
+        tie_break_applied: 同点判定フラグ
+        conflict_type: classify_conflict の出力（v6.7.0）。stance 全一致時の帯を決める
+
+    Returns:
+        (lo: float, hi: float)  # judgment_confidence の許容帯（両端含む）
+
+    注意: 本関数は帯だけを返す。gap の生値を Judgment Agent へ渡してはならない
+    （重み配分を渡さないのと同じ理由 — 忖度の防止、§重要な禁止事項）。
+    """
+    # ハードストップ（既存規則との等価性を保つ）
+    if malformed_count > 0:
+        return (0.00, 0.30)
+    if tie_break_applied:
+        return (0.00, 0.39)
+
+    total_weight = sum(final_weights.values())
+    if total_weight <= 0:
+        return (0.00, 0.30)
+
+    ranked = sorted((s["weighted_score"] for s in scores), reverse=True)
+    if len(ranked) < 2:
+        # 単一 stance のみ ＝ stance 全一致。gap が定義されないので conflict_type で決める。
+        # reason_divergence（独立した次元から同一結論）＝ 真の多様性 → 高め
+        # unanimous（次元も重複）＝ 被覆不足の疑い → 引き下げ
+        # （judgment-agent.md §stance 一致時の扱い / council-philosophy.md 第2条の系）
+        if conflict_type == "unanimous":
+            return (0.45, 0.70)
+        return (0.60, 0.90)   # reason_divergence および conflict_type 未指定時
+    gap_ratio = (ranked[0] - ranked[1]) / total_weight
+
+    if gap_ratio < 0.10:
+        lo, hi = 0.30, 0.50
+    elif gap_ratio < 0.25:
+        lo, hi = 0.45, 0.70
+    else:
+        lo, hi = 0.60, 0.90
+
+    # 高優先度軸が options 外に出たシグナル（既存の 30% 規則を帯へ統合）
+    tw_weight = sum(x.get("weight", 0) for x in third_way_excluded)
+    if tw_weight / total_weight >= 0.30:
+        hi = min(hi, 0.50)
+        lo = min(lo, hi - 0.10)
+
+    return (round(lo, 2), round(hi, 2))
+```
+
+**ΣW について**: `total_weight` は `final_weights` の実測合計を使う（定数 10 を仮定しない）。
+`council-weights.md` の `situational_modifier` は `judgment` / `conception` で合計が +1 になっており
+実 ΣW が 11 になる既知の宣言違反があるため（同ファイル §既知の宣言違反）、
+gap を絶対値でなく**比率**で評価することで、数値是正の前後で帯の意味が変わらないようにする。
+
 ### verify_weight_calculation（決定論検算）
 
 ```python
@@ -310,6 +390,23 @@ def verify_weight_calculation(judgment_output, persona_outputs, final_weights, o
                 return ("retry",
                         f"components[*].confidence != persona_outputs stance={stance} "
                         f"persona={persona} actual={c.get('confidence')} expected={expected_conf}")
+
+    # judgment_confidence の帯検査（v6.5.0 新規、compute_confidence_band）
+    # gap という連続量を下流に接続する。帯の外は「収束度の申告が実測と乖離」として retry。
+    band_lo, band_hi = compute_confidence_band(
+        expected["scores"], expected["third_way_excluded"], final_weights,
+        malformed_count=sum(1 for p in persona_outputs if p.get("stance") == "malformed"),
+        tie_break_applied=expected["tie_break_applied"],
+        conflict_type=classify_conflict(persona_outputs),   # v6.7.0
+    )
+    jc = judgment_output.get("judgment_confidence")
+    if not isinstance(jc, (int, float)):
+        return ("retry", "judgment_confidence が数値でない")
+    if not (band_lo <= jc <= band_hi):
+        return ("retry",
+                f"judgment_confidence {jc} が許容帯 [{band_lo}, {band_hi}] の外 "
+                f"（judgment-agent.md §judgment_confidence の帯）。"
+                f"帯内で再提出すること")
 
     # 1 persona = 1 weight 不可分担保: 各 persona は scores または third_way_excluded
     # のいずれか一箇所にのみ出現すべき（重複出現は按分の兆候）

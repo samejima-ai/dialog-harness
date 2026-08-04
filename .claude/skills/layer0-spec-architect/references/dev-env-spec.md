@@ -114,9 +114,9 @@ README.md 等のクレジットでは `dialog-harness/layer's` を使用する�
 
 ## CLAUDE.md（プロジェクト統括者）
 
-> v6.5.0 で「エージェント RL（ルールの平置き）」から「プロジェクト統括者（純化された常駐 + ルーティング）」へ再定義。
+> v6.8.0 で「エージェント RL（ルールの平置き）」から「プロジェクト統括者（純化された常駐 + ルーティング）」へ再定義。
 > 配置規範の正本は `templates/rules/common/claude-md-purity.rules.md`（Council `claude-md-purity` 採択、v0.2.0 でルーティング表型を追加）。
-> 旧 4 セクション形式（原則 / コーディング規約 / 禁止事項 / 参照）で生成済みの既存プロジェクトはそのまま有効（CLAUDE.md は dh-manifest の never_touch）。移行は任意 — `docs/migration-guide-v6.5.0.md` 参照。
+> 旧 4 セクション形式（原則 / コーディング規約 / 禁止事項 / 参照）で生成済みの既存プロジェクトはそのまま有効（CLAUDE.md は dh-manifest の never_touch）。移行は任意 — `docs/migration-guide-v6.8.0.md` 参照。
 
 エージェントの常駐購読層。プロジェクトルートに配置。コンテキストに強制読み込みされる。
 常駐させるのは「grep 到達前に必ず踏まねば事故る規範（純化 RL §3 到達可能性基準）」と
@@ -153,7 +153,7 @@ README.md 等のクレジットでは `dialog-harness/layer's` を使用する�
 - **実体の二重定義禁止（MUST）**: 所有元に本体がある規範を段落で書き直さない。索引 1 行 + lock-step sensor が正規形（純化 RL §2/§4）
 - **ルーティング表の各行に gate ID（`G-` prefix）を振る**。L1 は作業開始時に該当 gate を特定し、DELIVERY.md「通過ゲート記録」へ明記する（`layer1-autonomous-dev/references/delivery-format.md`）
 - **add-demote-check**: 常時規範に 1 項目足すとき、既存項目に領域規範へ降格できるものがないか必ず 1 回チェックする（CLAUDE.md を「増える一方の台帳」でなく「定常サイズの循環層」に保つ）
-- サイズの定量規定は置かない（量規範は純化 RL が否定）。ただし配置 drift の**計算的センサー**として byte 検査を必須配備する（本ファイル「CLAUDE.md 配置 drift センサー」参照）。行数規定（旧 200 行以内）は v6.5.0 で廃止 — 1 行の肥大で迂回された実績があるため（kakuman メタ診断 2026-08-04）
+- サイズの定量規定は置かない（量規範は純化 RL が否定）。ただし配置 drift の**計算的センサー**として byte 検査を必須配備する（本ファイル「CLAUDE.md 配置 drift センサー」参照）。行数規定（旧 200 行以内）は v6.8.0 で廃止 — 1 行の肥大で迂回された実績があるため（kakuman メタ診断 2026-08-04）
 
 ### ゲート強制の 3 段（すべて実行主体ローカル）
 
@@ -622,7 +622,7 @@ layer2-orchestrator / layer2-integration-verifier の扱い：
 - DOMAINS.md（L2のみ）
 
 ### 原則
-- 常駐購読層（CLAUDE.md）は純化 RL（`templates/rules/common/claude-md-purity.rules.md`）で律する。量の上限規定は置かず、配置 drift センサー（20KB warn / 32KB fail）で検出する（v6.5.0 で旧「合計300行以内」を置換）
+- 常駐購読層（CLAUDE.md）は純化 RL（`templates/rules/common/claude-md-purity.rules.md`）で律する。量の上限規定は置かず、配置 drift センサー（20KB warn / 32KB fail）で検出する（v6.8.0 で旧「合計300行以内」を置換）
 - 動的読み込みファイルへのパスはINDEX.mdに明記する
 - エージェントが「何を読めばよいか」を判断できるよう、INDEX.mdの目次を正確に保つ
 - REGIME.md はモード分岐判断に使うため、Layer 1 起動時に必ず読み込む
@@ -683,7 +683,7 @@ rg --type tsx 'w-(?:[1-9]|10) h-(?:[1-9]|10)' src/components \
 - **相補的位置づけ**: crosscut-verifier-drift（SPEC ↔ 実装差分）とは独立したセンサーカテゴリ
 - **M1 対応**: M1 でも定量規約がある場合は 1 行の grep は過剰にならない
 
-### パターン：CLAUDE.md 配置 drift センサー（v6.5.0）
+### パターン：CLAUDE.md 配置 drift センサー（v6.8.0）
 
 CLAUDE.md の肥大は「配置違反（実体の抱え込み・要約の独立肥大 = 純化 RL §1 ②③）」の**代理指標**として検出する。byte 値は規範ではなくセンサー閾値（純化が守られていればまず超えない値に設定）。発火時の対処は「量を削る」ではなく「配置を直す（②③を所有元へ移送）」。
 
@@ -699,7 +699,7 @@ LC_ALL=C awk 'length($0)>400 {print FILENAME": L"NR" "length($0)"byte"}' CLAUDE.
 - **発動条件**: CLAUDE.md を変更する献上の前に必須
 - 閾値は既定値（確度: AI 推定 2026-08-05）。プロジェクトの REGIME.md で調律可
 
-### パターン：ルーティング突合センサー（v6.5.0）
+### パターン：ルーティング突合センサー（v6.8.0）
 
 ゲート強制 3 段の第 3 段（`§CLAUDE.md` 参照）。変更パスがルーティング表の領域に該当するのに「通過ゲート記録」がない献上を検出する。
 

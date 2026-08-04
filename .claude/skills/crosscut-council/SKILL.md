@@ -4,9 +4,12 @@ dimension: D4
 description: >
   横断判定機構（crosscut prefix）。Layer 0/1/2 のいずれにも属さず、全 Layer から献上を受けて判定を返す。
   人間 ≒ Council 原則（philosophy.md 第6条）の実装主体。
-  実装中に発生する判断点で AI 自身が発動する**合議制判定機構（Council / 合議）の sub-skill**。
-  3 ペルソナの並列独立意見生成と重み付き判定でトレードオフ判断・結論対立・
+  実装中に発生する判断点で AI 自身が発動する**多軸観測 ＋ 優先度バランス評定機構（Council / 合議）の sub-skill**。
+  3 軸の並列独立観測と、軸ごとに宣言された優先度による**バランス評定**で、トレードオフ判断・結論対立・
   不可逆操作・SPEC 矛盾・複数実装案の拮抗に対する判断支援を提供する。
+  **本機構は多数決でも投票でもない**（§重みの意味論）。重みは議決権数ではなく
+  「その軸の主張を単独で通すために要する強度の閾値」であり、高重み軸の単独主張は
+  低重み 2 軸の合意に敗れうる。
   L1（autonomous-dev）/ L2（orchestrator/integration-verifier）/ L0（仕様策定中）から
   横断的に呼ばれる。
   **ユーザーが対話段階で「迷っている」と発話するケース自体は起動条件に含めない** —
@@ -18,13 +21,46 @@ description: >
   出力は判断（judgment）であって決定（decision）ではなく、実装者は合意プロセスで方針化する。
   final_decision は常に null で返し、人間または実装者の合意プロセスが埋める。
   タイポ修正・フォーマット調整・明確仕様の素直実装・リファクタ定型処理では起動しない。
-  PR1 スコープ: business Council（経営者/開発者/哲学者）固定、Phase 1 のみ、単純重み付き判定。
+  PR1 スコープ: business Council（経営者/開発者/哲学者）固定、Phase 1 のみ、単一段のバランス評定。
 ---
 
-# Council System (合議制判定機構)
+# Council System (多軸観測 ＋ 優先度バランス評定機構)
 
-実装中に発生する判断要請を受理し、3 視点の重み付き判定で単一の推奨を導く sub-skill。
+実装中に発生する判断要請を受理し、3 軸の独立観測を優先度バランスで評定して単一の推奨を導く sub-skill。
 Dialog Harness 本体から**独立**した構造で設計され、将来切り出し可能。
+
+## 重みの意味論（v6.5.0 で明文化・最初に読むこと）
+
+**「Council」「合議」の名称は保持する。ただしその語が含意する多数決・投票は本機構の実体ではない。**
+
+命名は合議制・多数決・投票の含意から出発したが、実装された機構は別物であり、
+実測（`history/COUNCIL-LOG.md` の `simple_conflict` 17 件）はその別物のほうが機能していることを示した。
+本節はその実体を定義として確定する。
+
+| 誤読 | 実体 |
+|---|---|
+| 重み = 議決権数。重い軸が勝つ | 重み = **その軸の主張を単独で通すために要する強度の閾値**。`weighted_score` は stance ごとの**合算**なので、重み 5 の単独軸は重み 3+3 の合意に敗れる |
+| 判定 = 選択肢の取捨選択（投票） | 判定 = **軸ごとに宣言された優先度によるトレードオフのバランス評定**。捨てるのではなく釣り合わせる |
+| 全会一致 = 合意が取れた | 全会一致 = 多様性（プルラリティ）の質評価（`council-philosophy.md` 第2条）。**被覆不足の可能性も同時に疑う** |
+| 高重み軸が options 外に出たら少数意見として保存 | それは「**選択では吸収できない**」というシグナル。`judgment_confidence` を押し下げ、判定を降りて人間に渡す経路が正しい挙動 |
+
+### 実測による裏づけ（2026-07-26、`simple_conflict` 17 件）
+
+- 最大重み軸の stance が `recommended` になったのは **6/17**。11 件で最重量軸が負けている
+  → 「重い軸が勝つ機構」ではない。
+- `judgment_confidence < 0.5`（判定を降りた）4 件は**全件が「第3の道／止揚」を含む**。
+  第3の道を含まない 9 件では 0 件（jc 平均 0.750 vs 0.565）
+  → 高優先度軸が options 外に出たことを機構が検知して献上している。
+- 以上より、重みは「勝たせる装置」ではなく「**取り落とせない主張を明示する装置**」である。
+
+### 帰結（実装上の禁止事項）
+
+- **重みを「多数派の形成」として説明してはならない**（Persona prompt・ログの `weight_note`・
+  人間可読 markdown のいずれにおいても）。
+- **`recommended` を「勝った案」と記述してはならない**。骨格として選ばれた案であり、
+  敗れた軸の主張は `minority_opinion` と（統合した場合は）本文に吸収されている。
+- `judgment_confidence` は「推奨の正しさへの自信」ではなく
+  **「バランス評定が単一の推奨に収束した度合い」**である（§judgment_confidence の帯）。
 
 ## 原則
 
@@ -33,6 +69,7 @@ Dialog Harness 本体から**独立**した構造で設計され、将来切り�
 - **判断 ≠ 決定**: Judgment Agent の出力は Council の最終判断。**決定は実装者の合意プロセスを経て成立**する
 - **final_decision は常に null**: Council は決して決定を埋めない。実装者が合意プロセスで方針化するか、人間に献上する
 - **対立は構造化する**: 対立は合意のために討論する価値がある差異。解消は目的ではない、見える化が目的
+- **重みは議決権ではない**: 重みは「単独通過に要する強度の閾値」であり、多数派形成の道具ではない（§重みの意味論）
 - **少数意見を必ず保持**: Judgment Agent 出力の `minority_opinion` フィールドで保持
 - **実装者の裁量を尊重**: 優秀な実装者である前提で設計する。過度に縛らない
 - **情報純度**: Persona は独立に意見生成する（Phase 1 では他 Persona 出力を参照しない）
@@ -118,14 +155,15 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
   → それぞれに「他ペルソナ出力を含まない context + system prompt」のみ渡す
   → 各 Persona は references/personas/business/*.md の system prompt に従う
   ↓
-[対立度判定] PR1 は簡略版: 全会一致 / 単純対立 の2値のみ
+[対立度判定] 3値: 次元分離の同一結論 / 全会一致 / 単純対立（v6.7.0 で類型 B を分離）
   → 完全な類型 A-G 判定は PR2 で実装（references/conflict-typology.md 参照）
   ↓
 [Phase 2] PR1 ではスキップ（PR2 で追加）
   ↓
 [Phase 3] Judgment Agent による重み付き単一回答の導出
   → temperature 0.1、人格なし（references/judgment-agent.md）
-  → 全会一致時は多様性（プルラリティ）として質を評価
+  → 次元分離の同一結論（reason_divergence）は多様性として質を評価
+  → 次元も重複した全会一致（unanimous）は被覆不足を疑い confidence を引き下げる
   ↓
 [出力] JSON（final_decision は常に null）
   ↓
@@ -200,7 +238,7 @@ Judgment Agent 出力（Council の判断）
 - question_to_answer
 - Council種別
 - Phase到達（PR1 は常に `1→3`）
-- conflict_type（PR1 は `unanimous` / `simple_conflict` のみ）
+- conflict_type（`unanimous` / `reason_divergence` / `simple_conflict`）
 - final_weights（適用された重み配分）
 - judgment_confidence
 - implementer_consent（後追記、合意プロセス完了時）
