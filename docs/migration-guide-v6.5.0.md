@@ -19,7 +19,7 @@
 
 ### 1. 診断
 
-- サイズ実測: `wc -c CLAUDE.md` / `awk 'length($0)>400' CLAUDE.md`（配置 drift センサーと同じ式）
+- サイズ実測: `wc -c CLAUDE.md` / `LC_ALL=C awk 'length($0)>400' CLAUDE.md`（配置 drift センサーと同じ式。`LC_ALL=C` を省くとロケールにより文字数計測になり byte 閾値とずれる）
 - 参照実在: CLAUDE.md が引用する全パス・アンカーの実在確認（broken reference）
 - lock-step 同期: 既存の索引 ⇄ 所有元の同期検査（例: kakuman `check-traps-sync.mjs`）を実行
 - 自己規範違反: CLAUDE.md 自身が定める必須手順（マトリクス追記等）の履行漏れを検出

@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.5.0、minor 昇格、PR #TBD）
+## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.5.0、minor 昇格、in progress, target 2026-08-05、PR #175）
 
 kakuman-platform CLAUDE.md のメタ診断（2026-08-04）を起点に、L0 メタハーネス対話（ひでさん）で確定した
 minor リリース。純化 RL（Council `claude-md-purity`、feat/claude-md-purity-and-retrospective ブランチ先行分）を

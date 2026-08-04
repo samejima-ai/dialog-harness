@@ -692,7 +692,8 @@ CLAUDE.md の肥大は「配置違反（実体の抱え込み・要約の独立�
 #       32768 byte 超で FAIL（超過状態での新規追記禁止 — 先に降格・排出）
 wc -c CLAUDE.md
 # 行肥大: 400 byte 超の行は「実体・経緯の混入」シグナル → 所有元へ移送
-awk 'length($0)>400 {print FILENAME": L"NR" "length($0)"byte"}' CLAUDE.md
+# LC_ALL=C 必須（省略するとロケールにより length() が文字数になり UTF-8 行で byte 閾値とずれる）
+LC_ALL=C awk 'length($0)>400 {print FILENAME": L"NR" "length($0)"byte"}' CLAUDE.md
 ```
 
 - **発動条件**: CLAUDE.md を変更する献上の前に必須
