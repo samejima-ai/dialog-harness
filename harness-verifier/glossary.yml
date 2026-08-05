@@ -176,7 +176,7 @@ five_layer_stack:
 crosscut_prefix:
   pattern: "crosscut-"
   definition: "全 Layer 横断 skill の命名規則"
-  members: [crosscut-council, crosscut-issue-dispatcher, crosscut-issue-implementer, crosscut-verifier-drift, crosscut-verifier-philosophy, crosscut-feedback-loop, crosscut-autonomous-drive, crosscut-issue-quality-gate, crosscut-hook-observer, crosscut-continuous-learning]
+  members: [crosscut-council, crosscut-issue-dispatcher, crosscut-issue-implementer, crosscut-verifier-drift, crosscut-verifier-philosophy, crosscut-feedback-loop, crosscut-autonomous-drive, crosscut-issue-quality-gate, crosscut-hook-observer, crosscut-continuous-learning, crosscut-cycle-retrospective]
 
 # layerN prefix
 layern_prefix:

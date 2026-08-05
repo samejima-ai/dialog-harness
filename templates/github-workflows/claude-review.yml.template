@@ -26,7 +26,7 @@
 # OC(Opus) が leaf subagent を直接起動（subagent は subagent を生成できない＝委譲は 1 階層）:
 #   Phase1 Planning : review-fetch(haiku) / review-difficulty(haiku) / Skill:crosscut-council でチェックリスト生成+RL内外分類
 #   Phase2 Gate     : review-intent-gate(haiku) → 意図欠落 diff は修正提案を停止し開発者へ質問
-#   Phase3 Exec     : review-evidence(haiku) / [難度ゲート] tier1=軽量単一パス・Council スキップ / tier2,3=Council 3 ペルソナ並列(sonnet標準/opus昇格)+review-judgment(weighted)
+#   Phase3 Exec     : review-evidence(haiku) / [難度ゲート] tier1=軽量単一パス・Council スキップ / tier2,3=Council 3 ペルソナ並列(Sonnet 5標準/Opus 5昇格)+review-judgment(weighted)
 #   Phase4 Synth    : OC 統合 → ChA artifact(.github/reviews) / ChB inline 結論(高純度) / ChC 人間 merge 判断サマリー
 #
 # 難度ゲート（2 段）: 過剰動作を抑えるため発動条件を 2 段で制限する。
@@ -160,7 +160,9 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GH_REVIEW_PAT }}
           # OC オーケストレーターのティア。ワーカー/ペルソナは subagent で override。
-          model: claude-opus-4-7
+          # 2026-08: claude-opus-4-7 → claude-opus-5（同価格 $5/$25・キャッシュ最小 2048→512 tok。
+          # 判断材料: delivery/ANALYSIS-model-selection-2026-08-05.md D1）
+          model: claude-opus-5
           timeout_minutes: "22"
           # フェーズ fan-out のターン予算（初回 run で調整）
           max_turns: "60"
@@ -190,7 +192,8 @@ jobs:
 
             ## モデルティア方針
             ワーカー（fetch/difficulty/intent/evidence）= haiku（各 subagent frontmatter 既定）。
-            Council（council mode = tier2/3 のみ）の 3 ペルソナ + judgment = tier2 なら sonnet、tier3 なら opus。
+            Council（council mode = tier2/3 のみ）の 3 ペルソナ + judgment = tier2 なら `claude-sonnet-5`、
+            tier3 なら `claude-opus-5`（エイリアスでなくフル ID を渡す。action 同梱 CLI のエイリアス解決差を回避）。
             **3 ペルソナは常に同一ティア**（横対称）。難度で縦昇格。Task 起動時の model パラメータで 3 者に同値を渡す。
             tier1（lightweight mode）は Council を回さず OC が単一パスで処理する（過剰防止の難度ゲート、後述 Phase 3）。
 
@@ -210,7 +213,7 @@ jobs:
                 - **review_mode**（過剰防止の難度ゲート）: tier1=`lightweight`（routine、Council を回さない）/
                   tier2,3=`council`（フル合議）。Council 自身の発動基準（拮抗・高 stakes のみ発動）に整合させ、
                   ルーチン PR への過剰合議を避ける。
-                - **persona_tier**（review_mode=council のときのみ）: tier2→sonnet, tier3→opus。
+                - **persona_tier**（review_mode=council のときのみ）: tier2→`claude-sonnet-5`, tier3→`claude-opus-5`。
             1-c Skill `crosscut-council` を読み、references/review-checklist.md に従って検証チェックリストを
                 動的生成し、各項目を RL 内（既存ルールに根拠→自走 = C 区分）/ RL 外（新評価軸＝発明→人間献上 =
                 H1/H3）に分類。RL 外項目を escalation リストに収集。review_category も決める。
@@ -229,6 +232,8 @@ jobs:
 
             **review_mode=lightweight（tier1, routine）の場合**: Council fan-out（3-b/3-c）を **スキップ** する。
             あなた（OC）が Evidence(3-a) + チェックリスト(1-c) を基に単一パスで汎用コードレビューし、verdict を直接決める。
+            発見は網羅優先: 確信が持てない・軽微と思う指摘も確信度と重大度を付けて列挙し、重要度による自己フィルタは
+            かけない（選別・ランク付けは Phase 4 統合の責務。Opus 5 は重要度フィルタ指示に字義通り従い recall が落ちるため）。
             judgment_confidence/persona 層は生成しない。そのまま Phase 4 へ。これがルーチン PR の既定経路。
 
             **review_mode=council（tier2/3, sensitive/複雑）の場合のみ**: 以下 3-b/3-c を実行する。
