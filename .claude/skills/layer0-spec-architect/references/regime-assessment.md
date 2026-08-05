@@ -559,6 +559,31 @@ v5.0.0〜v5.5.x で記録された REGIME.md は `dev_mode: github_autonomous` �
 
 REGIME.md `## runtime_profile` に記録する（テンプレは `meta-spec-template.md`）。`local-reproducible` の場合はセクション省略可。**後方互換**: 既存プロジェクトは全て未記載 = `local-reproducible` と等価であり、遡及追記は不要。
 
+## lifecycle_stage 判定（2026-08 追加）
+
+プロジェクトのライフサイクル段階。規範に段階スコープ（`dev-env-spec.md` §規範メタデータの `stage:` /
+`review_trigger: stage_transition`）を与えるための判定基盤（Council `council-2026-08-05T14:34:36Z-f5fc45`
+合意。段階定義の詳細・既存機構マッピング・型×段階の需要マトリクスは
+`delivery/ANALYSIS-norm-lifecycle-metabolism-2026-08-05.md`）。
+
+| 段階 | 名称 | 主活動の一言 |
+|---|---|---|
+| S0 | 構想・仕様策定 | L0 対話・SPEC 化 |
+| S1 | 構築 | scaffold・smoke |
+| S2 | 開発 | 機能実装・検証・レビュー |
+| S3 | 運用 | 本番稼働（インシデントは新仕様発見として S0 へ還流） |
+| S4 | 保守 | bugfix・依存更新・情報代謝 |
+| S5 | 改修 | 意図復元（archeo）→ 再設計 → 実装 |
+| S6 | 移植 | stack 変更・環境移行・モデル世代交代 |
+| S7 | 廃止 | deprecation-protocol |
+
+- **記載は primary + secondary の 2 値**（段階は直線でなく循環・並存するため。例: S5 改修中も S3 運用は継続）
+- **更新は手動 + ADR 記録必須**（dev_mode 昇格と同型）。段階遷移の自動判定はしない — 判定機構自体が
+  「govern-the-governors」コストを再生産するため。遷移すると振り返り儀式 F2.6 の `stage_transition`
+  トリガが発火し、旧段階スコープの規範が再審に上がる
+- **後方互換**: 未記載 = 段階スコープ規範を使わないプロジェクト（F2.6 の stage_transition 判定は skip、遡及追記不要）
+- 将来接続点（本版では接続しない）: モデルティア・検証スタック重量の段階別読み替え（材料 §3.3）
+
 ### 下流機構との関係（v6.3.0 時点）
 
 profile を参照しうる下流（auto-merge SUCCESS 条件 / 5 層検出スタックの層別配分 / e2e-ci 雛形）への機械接続は**本版では行わない**（Council `council-2026-07-12T11:10:45Z-07oknv` 制約 C-c、scope creep 防止）。第一消費者は scaffold-checklist の要求水準表（L0 §7.4 自己検証の smoke 判定）のみ。`device-bound` の要求水準は実適用例の観測まで較正しない（同 C-b）。
