@@ -967,6 +967,38 @@ subagent 定義雛形（`explore-worker` / `digest-worker`、いずれも `model
 
 ---
 
+## 規範メタデータ（stage / review_trigger、2026-08 追加）
+
+「足したら忘れずに減らす」を構造として保証するための任意メタデータ（Council
+`council-2026-08-05T14:34:36Z-f5fc45` メタ診断への応答。設計材料と段階定義 S0-S7 は
+`delivery/ANALYSIS-norm-lifecycle-metabolism-2026-08-05.md`）。適用対象は RL frontmatter・
+CLAUDE.md 常駐行・センサー定義・罠エントリ等、任意の規範単位。
+
+| フィールド | 値 | 意味 |
+|---|---|---|
+| `stage:` | S0-S7（複数可・省略 = 全段階） | 規範が効くライフサイクル段階。段階を出たら常駐正当性が消える（再審対象になる） |
+| `review_trigger:` | `stage_transition: <Sx→Sy>` / `model_generation` / `cycles: <N>` / `measured: <条件>` / `date: <YYYY-MM-DD>` のリスト | 失効・再審トリガ。発火の列挙と人間への問いは振り返り儀式 F2.6（`ritual-protocol.md`）が担う |
+
+- **新規規範には必須・既存規範は儀式で出会ったときに後付け**（遡及作業を作らない）
+- **非対称原則**: 降格・廃止は追加より軽い手続き（F2.6 の一言承認）で実行する。例外は予防型規範の廃止のみ慎重側
+- 第一適用例: §CLAUDE.md 標準行の G-AGENT 凍結 = `{ status: frozen, stage: S2, review_trigger: [measured: 委譲漏れの実測が顕著, model_generation, stage_transition: S2→S3] }`
+
+## 検証・献上運用の罠（2026-08 追加）
+
+2026-08-05 cycle の実詰まりから採録（振り返り提案の人間承認済み）:
+
+- **罠 V1 — 検証 exit のパイプ越し誤読**: 検証コマンドの exit code をパイプ越しに読まない
+  （`cmd | tail -5; echo $?` の `$?` は tail の exit）。`cmd > log 2>&1; RC=$?` で直接取得する。
+  実例: verify.py の FAIL をローカルで PASS と誤認し CI で発覚。
+  `{ stage: 全段階, review_trigger: [measured: 同種誤認が 12 cycle 再発なしなら降格候補] }`
+- **罠 V2 — マージ後ブランチの再スタート**: PR マージ後の継続開発は、同名ブランチを最新 default branch
+  から `checkout -B` で再スタートする（マージ済み履歴に積まない）。リモートブランチはマージ時に
+  自動削除されることがあり、`push --force-with-lease` が stale info で失敗する — fetch で実在を
+  確認し、削除済みなら通常 push で再作成する。
+  `{ stage: S2-S6, review_trigger: [measured: 同種摩擦が 12 cycle 再発なしなら降格候補] }`
+
+---
+
 ## origin/version frontmatter 規格（Wave 2 候補 2、PR #78）
 
 **origin**: ECC-derived（everything-claude-code v2.0.0-rc.1 `agents/*.md` / `skills/**/SKILL.md` の frontmatter 慣例）

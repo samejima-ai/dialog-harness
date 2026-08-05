@@ -145,6 +145,24 @@ CTL（Council Trust Level）昇格の律速は record ではなく**事後評価
 推奨（judgment ログをレビューして decision_category 別の傾向も見る）。本ステップは
 `scripts/council-ctl.py` 不在の利用者プロジェクトでは完全 skip（後方互換）。
 
+### F2.6: 時限規範の再審（review_trigger 発火列挙・2026-08 追加）
+
+「足す機構」と同格の「減らす・時限化する機構」の実行経路（Council `council-2026-08-05T14:34:36Z-f5fc45`
+メタ診断への応答。設計材料: `delivery/ANALYSIS-norm-lifecycle-metabolism-2026-08-05.md`）。
+新しい常駐機構は作らず、既存の儀式に寄生する。
+
+1. `review_trigger:` メタデータ（`dev-env-spec.md` §規範メタデータ）を持つ規範を grep で収集する
+   （rules / CLAUDE.md 常駐行 / センサー定義等。**LLM 判定を含まない機械列挙**）。
+2. 発火判定: `stage_transition`（REGIME の lifecycle_stage が前回儀式から遷移）/
+   `model_generation`（model-recommendations.md の参照世代が改訂）/ `cycles: N`（N サイクル経過）/
+   `measured: <条件>` / `date:` のいずれかに該当する規範を列挙する。
+3. 発火ありなら人間に**まとめて 1 問**: 「時限規範 N 件が再審期です。残す / 降格 / 廃止？
+   （一括残す / 個別に確認 / 後で）」。「後で」は保留可（強制しない）。
+4. **非対称原則**: 降格・廃止は軽い手続き（本ステップの一言承認）で実行してよい —
+   追加側の重い手続き（Council・純化 RL 判定）を削除側に課さない（重くすると減らす機構が使われず死ぬ）。
+   例外: **予防型規範**（踏み外すと本番事故）の廃止だけは慎重側に倒し、拮抗すれば Council に諮る。
+5. 該当なし・メタデータ未使用のプロジェクトでは**完全 skip**（質問なし・後方互換）。
+
 ### F3: 履歴更新予告（人間は承認のみ）
 
 1. 対話で確定した更新内容を AI が**通知形式**で宣言
