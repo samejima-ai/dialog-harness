@@ -2722,3 +2722,39 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   follow_up_questions_count: 0
   escalation_reason: "CTL-0 運用のため全件人間献上。ただし人間（ひでさん）は本諮問に先立ち解析レポート §3.4（REGIME.md 軸新設の提案 = 案A と同形）を踏まえ『L0 起動 1を進める』と明示指示済みであり、導入形態の事前承認が存在する。judgment（unanimous 案A + 4 制約）は当該指示の範囲内のため recommended をそのまま採用"
   agreed_at: "2026-07-12T11:10:45Z"
+
+- invocation_id: "council-2026-08-05T14:34:36Z-f5fc45"
+  timestamp: "2026-08-05T14:34:36Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "規範肥大の懸念を踏まえ、CLAUDE.md 生成規格への G-AGENT/G-MODEL 標準ルーティング行追加をどの形で採るべきか（併せて DH の規範量が開発速度・トークンを過剰に重くしていないかの診断と対処方針）"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案B", confidence: 0.70, dimension: "ROI" }
+    開発者: { stance: "案B", confidence: 0.75, dimension: "保守性" }
+    哲学者: { stance: "第3の道（予防型/診断可能性型の規範カテゴリ分離＋時限的再評価を先行）", confidence: 0.58, dimension: "前提への問い" }
+  judgment_confidence: 0.45
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "案B"
+    scores:
+      - { stance: "案B", supporters: ["経営者", "開発者"], weight_sum: 6, weighted_score: 4.35 }
+    third_way_excluded:
+      - { persona: "哲学者", weight: 5, confidence: 0.58, reason: "options 外の自由記述。weight 非加算・minority_opinion へ転載" }
+    tie_break_applied: false
+  recommended: "案B 骨格（G-MODEL 即時追加・G-AGENT は実測データが閾値を超えるまで凍結）＋哲学者の形統合（予防型/診断可能性型の規範階層分離、凍結には時限的自動再評価を組込）"
+  minority_opinion: "哲学者: 枠浪費を事故基準で測ること自体がカテゴリ誤り。G-AGENT は予防規範でなく診断可能性規範という別階層の可能性。意思決定コストが対象の重みを超える非対称は規範肥大に先行する指標。棚卸し自体が新たな常駐機構を生むパラドックスに注意"
+  meta_diagnosis_summary: "3 軸一致: 短期スループットは高いが、規範追加ごとに随伴機構（verify/lock-step/sensor）が複利で増える構造は中期の固定費。対処: 効果不確実な規範は『追加せず実測待ち』を既定動作化、減らす/時限化する機構を足す機構と同格に構造化、定期棚卸しのルーティン化"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  implementer_consent: null
+  final_decision: null
+  note: "PR1 制約: persona 温度は未制御（subagent 実行）。meta_diagnosis は §3 スキーマへの追加フィールドとして収集（本発動限り）。既知の ΣW=11（conception）で実行"
