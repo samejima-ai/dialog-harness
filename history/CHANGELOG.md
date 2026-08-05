@@ -2,6 +2,28 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.8.0、minor 昇格、in progress, target 2026-08-05、PR #175）
+
+kakuman-platform CLAUDE.md のメタ診断（2026-08-04）を起点に、L0 メタハーネス対話（ひでさん）で確定した
+minor リリース。純化 RL（Council `claude-md-purity`、feat/claude-md-purity-and-retrospective ブランチ先行分）を
+v0.2.0 へ拡張し、dev-env-spec の CLAUDE.md 規格を「エージェント RL」から「プロジェクト統括者」へ再定義した。
+
+- **`templates/rules/common/claude-md-purity.rules.md` v0.2.0**: §7 ルーティング表型索引（per-領域 1 行、
+  ゲート強制 3 段があるときのみ許容・罠索引型とのトレードオフ明記）/ §8 配置 drift の計算的検出
+  （byte は代理指標: 20KB warn / 32KB fail / 1 行 400 byte、add-demote-check）/ §9 検証のローカル性
+- **`dev-env-spec.md` §CLAUDE.md 再定義**: 統括者 4 部構成（Identity / 常時規範 / ルーティング表 / 参照）、
+  gate ID 規約、ゲート強制 3 段表。行数規定（200 行 / 強制読み込み 300 行）を廃止し純化 RL + センサーへ置換。
+  M1 簡略版の行数規定も撤廃
+- **`dev-env-spec.md` センサー 2 パターン新設**: CLAUDE.md 配置 drift センサー / ルーティング突合センサー
+  （いずれも実行主体ローカル・献上前必須）
+- **`delivery-format.md`**: DELIVERY.md テンプレに「通過ゲート記録」セクション追加（ルーティング表型のみ・M2 以上必須、
+  省略はセンサー FAIL 扱い）
+- **`regime-assessment.md` §dev_mode 二軸注記**: GitHub 利用を保管庫軸 / 実行環境軸に分離。保管庫利用は Actions を
+  要求しない。CI にしか存在しない検査を作らない（2026-08-05 ひでさん宣言）。`github_assisted` の「Actions 任意」を
+  「Actions 不要」へ読み替え
+- **`docs/migration-guide-v6.8.0.md` 新設**: 既存プロジェクト移行 6 手順（診断に機械依存洗い出しを必須化・
+  atomic 1 PR・段階適用オプション・移行しない選択の正当性）
+- 温存: `templates/github-workflows/` の位置づけ再定義（次サイクル、INTENT v6.8.0 参照）
 ## 対立類型 B の分離 ＋ 分類整合性の監査（v6.7.0、minor、PR #TBD）
 
 D5 決定「C1' は分離して別物として扱う」。`conflict_type` を 2 値から **3 値**へ拡張し、
