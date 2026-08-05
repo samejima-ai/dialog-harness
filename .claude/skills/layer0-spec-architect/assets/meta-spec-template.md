@@ -213,6 +213,13 @@ AI能力の向上に伴い、将来的にスコープ内に移行する可能性
 
 （判定プロトコルは `regime-assessment.md` §runtime_profile 判定 参照。stack から AI 自動推定・新規質問ゼロ。smoke / E2E / CI の要求水準読み替えは `scaffold-checklist.md` §runtime_profile 別要求水準 参照。省略時は `local-reproducible` と等価＝既存プロジェクト後方互換。）
 
+## lifecycle_stage（2026-08 追加、任意）
+- primary: [S0-S7]
+- secondary: [S0-S7 / なし]（並存する副段階。例: S5 改修中も S3 運用は継続）
+- 更新根拠: [遷移の一言 + ADR 参照]
+
+（段階定義 S0 構想〜S7 廃止と判定は `regime-assessment.md` §lifecycle_stage 判定 参照。更新は手動 + ADR 記録（dev_mode 昇格と同型・自動判定しない）。規範メタデータ `stage:` / `review_trigger: stage_transition`（`dev-env-spec.md` §規範メタデータ）の判定基盤。未記載 = 段階スコープ規範を使わないプロジェクト（後方互換・遡及追記不要）。）
+
 ## persona（v5.17.0 追加、任意）
 - active: [persona 名（拡張子なし） / 例: default, sheep-navigator]
 - override_state: [Normal / Overflow / Attention / null]
