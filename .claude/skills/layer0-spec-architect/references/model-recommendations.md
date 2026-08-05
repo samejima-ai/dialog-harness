@@ -3,8 +3,23 @@
 実行前にユーザーへ提示する推奨モデル一覧。
 Layer 0（spec-architect）のステップ5「人間レビュー」時点で、REGIME.md 確定後にユーザーへ提示する。
 
-最終更新: 2026-04-18
-参照モデル世代: Claude Opus 4.7 / GPT-5.4 / Gemini 3.1 Pro 世代
+最終更新: 2026-08-05（判断材料: `delivery/ANALYSIS-model-selection-2026-08-05.md`）
+参照モデル世代: Claude 5 系（Opus 5 / Sonnet 5）/ GPT-5.6 / Gemini 3.6 世代
+
+---
+
+## 選定原則（2026-08 改訂で新設）
+
+1. **ティア名でなくベンチ実測でマッピングする**。2026 年半ばから「上位ティア = エージェント性能上位」の前提が崩れている
+   （例: Terminal-Bench 2.1 で Claude Sonnet 5 80.4% > Claude Opus 4.8 74.6%、Gemini 3.6 Flash はコーディング系で 3.1 Pro に全勝）。
+2. **主軸ベンチは SWE-bench Pro と Terminal-Bench 2.1**。SWE-bench Verified は上位飽和（95%+）と汚染問題により
+   フラッグシップ間の弁別力を失っており、参考値に降格する。
+3. **課金モデルで最適化軸が変わる**:
+   - API 従量課金 → 金額（$/M tok）の最適化
+   - **サブスクリプション（Claude Pro/Max 等）→ 利用枠（レート制限ウィンドウ）の消費速度の最適化**。
+     トークン単価はゼロ扱いだが、上位モデルほど同一枠を早く使い切る。
+     DH の CI（claude-code-action + OAuth トークン）もサブスクリプション枠で動作する。
+4. scaffold・試行回数の違いでベンチスコアは数〜10 ポイント級にブレる。ベンダー公表値と第三者値（vals.ai / BenchLM 等）を併記で見る。
 
 ---
 
@@ -12,92 +27,125 @@ Layer 0（spec-architect）のステップ5「人間レビュー」時点で、R
 
 | モード | 推奨モデル | 許容モデル | 非推奨モデル |
 |---|---|---|---|
-| M1 単体モード | Sonnet 4.6 / GPT-5.4 mini / Gemini 3 Flash | Haiku 4.5 / GPT-5.4 nano / Gemini 3.1 Flash-Lite | - |
-| M2 標準モード | **Opus 4.7 / Sonnet 4.6 / GPT-5.4 / Gemini 3.1 Pro** | GPT-5.4 mini（Layer 1のみ） | Haiku / nano / Flash-Lite 系 |
-| L2 統括指揮 | **Opus 4.7 / GPT-5.4 / Gemini 3.1 Pro** | Sonnet 4.6（DOMAINS.md 人間レビュー必須） | 上記以外 |
+| M1 単体モード | Sonnet 5 / GPT-5.6 Terra / Gemini 3.6 Flash | Haiku 4.5 / GPT-5.6 Luna / Gemini 3.5 Flash-Lite | - |
+| M2 標準モード | **Opus 5 / Sonnet 5 / GPT-5.6 Sol / Gemini 3.6 Flash** | GPT-5.6 Terra（Layer 1のみ） | Haiku / Luna / Flash-Lite 系の**レイヤー主担当**（leaf worker は可、後述） |
+| L2 統括指揮 | **Opus 5 / GPT-5.6 Sol** | Sonnet 5（DOMAINS.md 人間レビュー必須）/ Gemini 3.1 Pro（1段劣後を許容する場合のみ） | 上記以外 |
+
+Fable 5（$10/$50）は「最上位ティア」として存在するが、**モード別推奨には含めない**:
+超長時間自律・最難タスク限定。安全分類器による refusal（`stop_reason: "refusal"`）と 30 日データ保持必須（ZDR 不可）のため、
+CI・自動パイプラインへの組込は非推奨（組み込む場合はフォールバック設計が前提）。
 
 ---
 
-## 同等SPECマッピング
+## 同等SPECマッピング（2026-08 版）
 
 | ティア | Anthropic | OpenAI | Google |
 |---|---|---|---|
-| フラッグシップ | Opus 4.7 | GPT-5.4 | Gemini 3.1 Pro / 3 Pro |
-| 標準 | Sonnet 4.6 | GPT-5.4 mini | Gemini 3 Flash |
-| バジェット | Haiku 4.5 | GPT-5.4 nano | Gemini 3.1 Flash-Lite |
+| 最上位 | Fable 5 | -（該当なし） | -（該当なし） |
+| フラッグシップ | Opus 5 | GPT-5.6 Sol | Gemini 3.1 Pro ※ |
+| 標準 | Sonnet 5 | GPT-5.6 Terra | **Gemini 3.6 Flash** |
+| バジェット | Haiku 4.5 | GPT-5.6 Luna | Gemini 3.5 Flash-Lite |
 
-※ SK駆動型開発における挙動の近さで判定。ベンチマーク横並びではない。同等SPEC内でも実挙動差あり。
+※ Gemini 3.1 Pro はフラッグシップ帯で 1 段劣後（SWE-bench Pro 54.2% vs Opus 系 69-80%）だが価格は標準帯（$2/$12）。
+**Google 採用時は「Pro = フラッグシップ」の思い込みを捨て、コーディング/エージェント用途は 3.6 Flash を標準実装モデルに据える**。
+Haiku 4.5 に後継（Haiku 5）は存在せず、バジェット層の現行正解（retirement 下限 2026-10-15、60 日前通知ポリシーの監視のみ継続）。
+
+軸によるねじれに注意: SWE-bench Pro は Anthropic 優位、Terminal-Bench は OpenAI 優位。単一指標での序列化はしない。
+
+---
+
+## ローカル Claude Code（サブスクリプション）運用 — エージェント使用時のモデル使い分け
+
+**前提**: Claude 系はサブスクリプション（Pro/Max）使用。最適化対象は金額ではなく
+**利用枠の消費速度**と**待ち時間**。枠消費の重み目安: `Haiku 4.5 ≪ Sonnet 5 < Opus 5 < Fable 5`。
+
+### 役割別の使い分け基準
+
+| 役割 | 推奨モデル | 指定方法 | 根拠 |
+|---|---|---|---|
+| メインループ: L0 対話・仕様策定・設計判断 | **Opus 5** | `/model opus`（または `opusplan`） | 認識ズレ解消の精度がプロジェクト全体の品質を決める（ハイブリッド運用原則と同一） |
+| メインループ: L1 実装・構造化手順の遂行 | **Sonnet 5** | `/model sonnet` | 手順遂行は Sonnet で Opus の 95〜99% 品質。枠を温存し長セッションを維持 |
+| 取得・分類・整形・検索系 subagent（leaf worker） | **Haiku 4.5** | frontmatter `model: claude-haiku-4-5`（または `haiku`） | 単発・低推論タスクは Haiku が費用対効果最強（SWE-V 73.3）。DH の review workers（fetch/難度/意図/Evidence）と同型 |
+| 生成・実装系 subagent | メインに追従 | frontmatter `model: inherit`（省略時既定） | メインの文脈水準を維持。個別指定は不要 |
+| 独立レビュー・検証 subagent | **Sonnet 5**、高 stakes のみ Opus 5 | `model: claude-sonnet-5` / 難度昇格時 `claude-opus-5` | 生成と検証の分離＋難度で縦昇格（claude-review の persona_tier と同思想） |
+| 超長時間自律・最難タスク | Fable 5（利用可能プランのみ） | `/model fable` | 枠消費最大・ZDR 組織不可。常用しない |
+
+### 運用ルール
+
+- **迷ったら「判断は上位、leaf 作業は Haiku、実装は Sonnet」**。
+- **Haiku を長いエージェントループに使わない**: 単発パッチ・分類は実用（SWE-V 73.3）だが端末エージェントループは苦手
+  （Terminal-Bench 約 40%）。「見ると宣言したものしか見えない」leaf 役に限定する。
+- **エイリアス解決は CLI バージョン依存**（`opus`→Opus 5 は v2.1.219+、`sonnet`→Sonnet 5 は v2.1.197+）。
+  個人ローカルはエイリアス可。**チーム共有・CI に載せる agents 定義（frontmatter）はフル ID を推奨**。
+- 一括上書きは `CLAUDE_CODE_SUBAGENT_MODEL` 環境変数（解決順: env var → Task 起動時 model パラメータ → frontmatter → メイン）。
+- **枠逼迫時の降格順**: メインを Opus 5 → Sonnet 5 に落とすのが第一手（leaf worker は元々 Haiku なら影響なし）。
+  モデルを下げる前に effort を下げる二軸もある（どちらも枠消費に効く）。
+- 週次上限等の枠の実数値はプラン・時期で変動するため本ドキュメントには固定記載しない（原則のみ規定）。
 
 ---
 
 ## ハイブリッド運用推奨
 
-費用対効果最適化のため、レイヤーごとに異なるモデルを使う構成も有効。
+レイヤーごとに異なるモデルを使う構成。サブスクリプションでは「枠消費の配分」、API では「費用対効果」の最適化として機能する。
 
 | 構成 | Layer 0 | Layer 1 | layer1-independent-reviewer | 適用条件 |
 |---|---|---|---|---|
-| 最高品質 | Opus 4.7 | Opus 4.7 | Opus 4.7 | R=3（本番・金銭絡み）・L2 |
-| **標準推奨** | **Opus 4.7** | **Sonnet 4.6** | **Sonnet 4.6** | M2 デフォルト |
-| 低コスト | Sonnet 4.6 | Sonnet 4.6 | Sonnet 4.6 | R≤1・M1/M2 |
-| 実験 | Sonnet 4.6 | Haiku 4.5 | - | M1・使い捨て |
+| 最高品質 | Opus 5 | Opus 5 | Opus 5 | R=3（本番・金銭絡み）・L2 |
+| **標準推奨** | **Opus 5** | **Sonnet 5** | **Sonnet 5** | M2 デフォルト |
+| 低コスト | Sonnet 5 | Sonnet 5 | Sonnet 5 | R≤1・M1/M2 |
+| 実験 | Sonnet 5 | Haiku 4.5 | - | M1・使い捨て |
 
 ### ハイブリッド運用の根拠
 
 - Layer 0 は**対話と仕様構造化**が本質タスク。認識ズレ解消の精度がプロジェクト全体の品質を決めるため、上位モデルの投資対効果が高い
-- Layer 1 以降は**構造化された手順の遂行**が主。Sonnet 系で Opus の 95〜99% の品質を約3分の1のコストで達成可能
-- layer1-independent-reviewer は**実装コンテキスト隔離**が要求される。Sonnet 4.6 でも実行可能だが、暗黙の検証観点を `sensors/review-checklist.md` に明文化することが前提
+- Layer 1 以降は**構造化された手順の遂行**が主。Sonnet 5 で Opus の 95〜99% の品質を約 3 分の 1 の枠消費/コストで達成可能
+  （Terminal-Bench 2.1 では Sonnet 5 が旧世代 Opus 4.8 を上回る）
+- layer1-independent-reviewer は**実装コンテキスト隔離**が要求される。Sonnet 5 でも実行可能だが、暗黙の検証観点を
+  `sensors/review-checklist.md` に明文化することが前提
 
 ---
 
 ## モデル別の差分と対策
 
-### Opus 4.7（基準モデル）
+### Opus 5（基準モデル）
 
-SK 設計の基準点。全モード・全ステップで想定通り動作する。
+SK 設計の新基準点。Opus 4.8 と同価格（$5/$25）のドロップイン後継。移行時の必須調整:
 
-### Sonnet 4.6 運用時（M2 主戦場）
+- **severity フィルタ問題**: 「重大なもののみ報告」型指示に忠実に従い**測定 recall が低下**する。
+  発見段階は「確信度・重大度付きで全件報告、フィルタは下流（判定段）」に分離する
+- **検証 scaffolding の削除**: 指示なしで自己検証する。「検証せよ」「サブエージェントで確認せよ」型の指示は過剰検証を招くため削除する
+- **サブエージェント委譲過多**（旧世代と逆方向）: 明示的な委譲キャップを置く。委譲 1 階層・役割固定の構造（DH 型）は構造的に緩和済み
+- thinking がデフォルトオン（`max_tokens` は thinking+本文の合算上限になるため見直し）
+- 安全分類器 refusal あり（cyber 系パス検査等で誤発動の可能性 → フォールバック先 Opus 4.8）。レートリミットは 4.x Opus と別バケット
+- プロンプトキャッシュ最小プレフィックス 512 tok（Opus 4.7 の 2048 から 1/4 に改善）
 
-発生しうる劣化：
-- 独立検証が SPEC 明記項目のチェックに偏る（暗黙知を拾いにくい）
-- 仕様レビューの「軽微／重大」判定が楽観側に倒れる
-- 自力修正3回上限まで使い切る傾向（トークン消費 Opus 比 +20〜30%）
-- 体制事後評価の深さが浅い
+### Sonnet 5 運用時（M2 主戦場）
 
-対策：
-- `sensors/review-checklist.md` に暗黙の検証観点を明文化
-- `DONT.md` を厚めに記述（スコープ侵食検出率が向上）
-- Layer 0 を Opus 4.7 で回すハイブリッド運用を推奨
-- 仕様レビューの「軽微」判定ログを残し、後から重大に昇格した事例を蓄積
+- **新トークナイザで同一テキスト約 +30% トークン**。`max_tokens`・compaction 閾値・トークン予算はすべて再基準化する
+  （単価据置でも実効コスト/枠消費は増える）
+- 導入価格 $2/$10 は 2026-08-31 で終了。9 月以降の試算は $3/$15 で行う
+- 旧世代（Sonnet 4.6）向けの劣化対策（review-checklist 明文化・DONT 厚め）は引き続き有効
+- 指示をより字義通りに解釈する。旧世代向けの強調語（CRITICAL/MUST 過多）は過剰トリガーの原因になるため削減
 
-### GPT-5.4 / Gemini 3.1 Pro 運用時
+### Fable 5 運用時（最上位・限定用途）
 
-発生しうる劣化：
-- Claude 系に最適化された SK プロンプトの解釈精度がやや低下
-- ツール使用（bash / view / str_replace 等）の挙動が Claude と微妙に異なる可能性
-- SK description ベースのトリガー判定が Claude ほど精密ではない
+- 超長時間自律・最難タスク専用。thinking 常時オン・生の思考過程は返らない
+- `stop_reason: "refusal"` ハンドリング必須（フォールバック: Opus 系）。30 日データ保持必須（ZDR 組織では利用不可）
+- CI・無人パイプラインへの組込は非推奨。使う場合は人間が監視できるローカルセッション限定を推奨
 
-対策：
-- SK description を明示的なキーワードで補強
-- 最初は M1 単体モードで挙動を確認してから M2 以上に移行
-- layer1-independent-reviewer を跨ぎ検証として併用（Claude + GPT のクロスチェック）
+### Haiku 4.5 運用時
 
-### GPT-5.4 mini / Gemini 3 Flash 運用時
+- **レイヤー主担当としては M1 限定**（従来通り: 仕様レビュー skip・references 動的読込失敗・誤成果物献上のリスク）
+- **leaf worker（単発・定型タスクの subagent）としては全モードで推奨**。取得/分類/整形/Evidence 化など
+  「入力→出力が 1 ホップ」のタスクに限定すれば費用対効果最強。長いエージェントループには使わない
 
-- M1 では実用水準
-- M2 では Layer 1 のみに限定し、Layer 0 と layer1-independent-reviewer はフラッグシップを使う
-- L2 は非推奨
+### GPT-5.6 / Gemini 3.x 運用時
 
-### Haiku 4.5 / GPT-5.4 nano / Flash-Lite 系運用時
-
-発生しうる劣化：
-- 仕様レビューを skip して即実装突入
-- `references/` の動的読込に失敗
-- 「止まるべきところで止まらず誤った成果物を献上」する質的劣化
-
-対策：
-- M1 限定運用
-- 使い捨てツール・実験用途に限る
-- layer1-independent-reviewer は起動しない前提で設計
+- Claude 系に最適化された SK プロンプトの解釈精度がやや低下 / ツール使用挙動の差異 / SK description トリガー精度の差 — 従来同様
+- 対策も従来同様: SK description をキーワード補強、M1 で挙動確認後に昇格、跨ぎ検証としてクロスチェック併用
+- **Gemini はコーディング/エージェント用途なら 3.6 Flash を第一候補**にする（3.1 Pro は科学的推論向き・Preview 長期化中）
+- `gemini-2.5-pro` は 2026-10-16 リタイア予定・新規プロジェクトから利用不可の報告あり。残存参照は即時移行
+- 3 社共通でサンプリングパラメータ（temperature/top_p/top_k）は deprecated 方向。新規 SK/ハーネスで依存しない
 
 ---
 
@@ -108,7 +156,7 @@ Layer 0 が REGIME.md 確定後、以下の4項目骨子で動的に提示文面
 | 項目 | 記載内容 |
 |---|---|
 | モード | 判定モード（M1/M2/L2）と判定根拠の要約 |
-| 推奨 | Layer 0 / Layer 1 / layer1-independent-reviewer の推奨モデル構成（ハイブリッド運用を含む） |
+| 推奨 | Layer 0 / Layer 1 / layer1-independent-reviewer の推奨モデル構成（ハイブリッド運用・サブスクリプション枠配分を含む） |
 | 乖離 | 現使用モデルが推奨と乖離している場合、具体的に何がどう劣化するか |
 | 根拠 | 推奨の根拠（本ドキュメントのどのセクションから引いたか） |
 
@@ -120,21 +168,23 @@ Layer 0 が REGIME.md 確定後、以下の4項目骨子で動的に提示文面
 
 本ドキュメントは**モデル能力バージョンに依存する**ため、以下のタイミングで更新する：
 
-- 新モデルリリース時（Claude 5系、GPT-6、Gemini 4 等）
+- 新モデルリリース時（Claude 6 系、GPT-6（コードネーム Astra）、Gemini 4 等）
 - `regime-assessment.md` の L2 発動閾値が緩和された時
 - 蓄積された体制事後評価から特定モデルの限界が判明した時
+- 参照中のモデルに deprecation/retirement が公示された時（Anthropic は 60 日前通知ポリシー）
 
 更新時は REGIME.md テンプレの「判定時のAI能力バージョン」フィールドとの整合性を保つ。
 
-### 参照モデル情報（2026-04-18 時点）
+### 参照モデル情報（2026-08-05 時点）
 
-| プロバイダー | フラッグシップ | 標準 | バジェット |
+| プロバイダー | 最上位/フラッグシップ | 標準 | バジェット |
 |---|---|---|---|
-| Anthropic | Opus 4.7 ($5/$25) | Sonnet 4.6 ($3/$15) | Haiku 4.5 ($1/$5) |
-| OpenAI | GPT-5.4 ($2.50/$15) | GPT-5.4 mini ($0.75/$4.50) | GPT-5.4 nano ($0.20/$1.25) |
-| Google | Gemini 3.1 Pro ($2/$12) | Gemini 3 Flash ($0.50/$3) | Gemini 3.1 Flash-Lite ($0.25/$1.50) |
+| Anthropic | Fable 5 ($10/$50) / Opus 5 ($5/$25) | Sonnet 5 ($3/$15 ※8/31 まで導入価格 $2/$10) | Haiku 4.5 ($1/$5) |
+| OpenAI | GPT-5.6 Sol ($5/$30) | GPT-5.6 Terra ($2/$12) | GPT-5.6 Luna ($0.20/$1.20) |
+| Google | Gemini 3.1 Pro ($2/$12・Preview) | Gemini 3.6 Flash ($1.50/$7.50) | Gemini 3.5 Flash-Lite ($0.30/$2.50) |
 
-価格は $/M tokens（input/output）。プロンプトキャッシュ・バッチ処理で最大 90% / 50% 削減可能。
+価格は $/M tokens（input/output）の API 従量課金参考値。プロンプトキャッシュ・バッチ処理で最大 90% / 50% 削減可能。
+サブスクリプション運用（Claude Pro/Max）では金額でなく枠消費の重みとして読み替える。
 
 ---
 
@@ -142,9 +192,12 @@ Layer 0 が REGIME.md 確定後、以下の4項目骨子で動的に提示文面
 
 ### この推奨の限界
 
-- **2026年4月時点**の各社最新モデル基準。モデル能力は 6 ヶ月〜1 年単位で更新されるため、本ファイルの記載を絶対視せず定期的な再評価を前提とする
-- 「Sonnet 4.6 が M2 実用水準」という評価は **Layer 0 のドキュメント品質に依存**する。Layer 0 を省略・簡略化する運用では推奨を 1 段階引き上げる必要がある
+- **2026年8月時点**の各社最新モデル基準。モデル能力は 6 ヶ月〜1 年単位で更新されるため、本ファイルの記載を絶対視せず定期的な再評価を前提とする
+- Opus 5 の SWE-bench Pro / Terminal-Bench 公式値は未公表（第三者値・近縁モデル値からの推定を含む）。
+  ベンチスコアは scaffold 差で数〜10 ポイントブレる
+- 「Sonnet 5 が M2 実用水準」という評価は **Layer 0 のドキュメント品質に依存**する。Layer 0 を省略・簡略化する運用では推奨を 1 段階引き上げる必要がある
 - Claude 以外のモデル（GPT / Gemini）での運用実績はベンチマーク値からの推定であり、実挙動は個別検証が必要
+- サブスクリプションの枠実数値（ウィンドウ長・週次上限）はプラン・時期で変動するため原則のみを規定した
 
 ### ハイブリッド運用が難しいケース
 

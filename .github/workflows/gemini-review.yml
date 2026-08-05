@@ -10,20 +10,28 @@
 # https://ai.google.dev/gemini-api/docs/rate-limits
 # (本ファイル記載の数値は as of 2026-05、参考値として扱うこと。Google 側変更で陳腐化し得る)
 #
-# モデルは gemini-2.5-pro を明示指定（v5.5.1 で flash → pro 昇格）:
-# - **昇格理由**: PR #40 run 25269847621 stdout.log で flash の tool-calling
-#   hallucination が確定（"stats.tools.totalCalls": 0、code block 内に
-#   `print(mcp_github_pull_request_read(...))` を text 出力するだけで実 invoke なし）
-#   3 LLM round-trip にわたって narrative で「これから call する」と書き続け終了
-# - PR #38 で flash に pin した「コスト予測性」前提は tool-calling 不安定により崩壊
-#   （tool が呼べないなら quota 余裕も意味をなさない）
-# - Pro 無料 tier RPD: 100 RPD（DH PR 量 < 5 PR/日に対して大幅な余裕、利用率 5%）
-# - Pro は MCP tool 呼び出しが flash より大幅に堅牢（公式 + 観測実績）
+# モデルは gemini-3.6-flash を明示指定（2026-08 世代更新。判断材料:
+# delivery/ANALYSIS-model-selection-2026-08-05.md D3）:
+# - **移行理由**: gemini-2.5-pro は 2026-10-16 リタイア公示済み + 新規 GCP プロジェクト
+#   から 404（"no longer available to new users"）の報告あり + GitHub Copilot では
+#   2026-07-31 廃止済み。期日前の移行が必須
+# - **3.6 Flash 採用理由**: コーディング/エージェント系ベンチで 3.1 Pro に全勝
+#   （Terminal-Bench 2.1: 78.0 vs 73.8 / SWE-bench Pro: 58.7 vs 54.2）、無料 tier あり
+#   （本 workflow の採用前提「無料 tier 併走」と整合。3.1 Pro は無料 tier なしのため不採用）
 # - gemini-cli のデフォルト変動でモデルが勝手に切り替わるのを防ぐ点は維持（明示指定）
+# - **観測ポイント**: v5.5.1 で 2.5 Flash は tool-calling hallucination により棄却された
+#   経緯がある（下記履歴）。3.6 Flash は別世代でエージェント性能が大幅に向上しているが、
+#   導入後の初回 run 群で tool-calling 実 invoke（stats.tools.totalCalls > 0）を確認する
+#   こと。同種の hallucination が再発した場合は gemini-3.1-pro-preview へ切替
+#   （その場合は無料 tier 前提を放棄し課金 tier を受容する判断が必要）
 #
-# 旧 flash 採用根拠（参考、v5.5.1 で否定された）:
-# - flash 1,500 RPD の余裕 → 採用しない（quota 余裕より tool-calling 動作が先）
-# - DH レビュー用途は flash で品質十分 → 否定（tool-calling 不能で品質ゼロ）
+# 履歴（v5.5.1、2.5 世代での flash → pro 昇格。旧世代の教訓として保存）:
+# - PR #40 run 25269847621 stdout.log で 2.5 flash の tool-calling hallucination が確定
+#   （"stats.tools.totalCalls": 0、code block 内に `print(mcp_github_pull_request_read(...))`
+#   を text 出力するだけで実 invoke なし）。3 round-trip 越しに「これから call する」と
+#   書き続け終了 → quota 余裕より tool-calling 動作が先、として 2.5-pro に昇格した
+# - この教訓は「flash 系全否定」ではなく「tool-calling 実動作の検証を quota 論より優先する」
+#   という検証原則として引き継ぐ
 #
 # Generator/Evaluator 同一化アンチパターンへの構造的対処:
 # - DH 本体 PR の多くは Claude (Anthropic) で書かれる
@@ -43,7 +51,7 @@ name: gemini-review
 # モデル名を一元管理（Copilot review #38 line 110、重複定義の乖離リスク回避）
 # action input と settings JSON の両方が同じ値を参照する
 env:
-  GEMINI_MODEL: gemini-2.5-pro
+  GEMINI_MODEL: gemini-3.6-flash
 
 on:
   pull_request:

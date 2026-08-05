@@ -210,6 +210,19 @@ Gemini 4 は未リリース。フラッグシップは 3.1 Pro（**Preview の�
 
 ---
 
+## 8.5. 追記: 人間承認と追加要件（2026-08-05）
+
+- **D1-D7 は AI 推奨案で承認**（人間発話「全体を修正はOK」）。同一 PR で実装を実施。
+- **追加要件**: ローカル開発での Claude Code 使用時、**エージェント（subagent）使用時に適したモデルの使い分け基準を明確化**すること。
+  **Claude 系はサブスクリプション（Pro/Max）使用を前提**とする。
+  → 最適化軸を「トークン単価」から「利用枠の消費速度」に読み替え、`model-recommendations.md` に
+  「ローカル Claude Code（サブスクリプション）運用」セクションを新設して対応。
+- 実装反映先: `model-recommendations.md`（全面改訂）/ `claude-review.yml` + template（OC = Opus 5、persona_tier フル ID、
+  網羅優先レビュー指示）/ `gemini-review.yml` + template（3.6 Flash 移行、2.5 Flash 教訓の履歴保存と観測ポイント明記）/
+  `regime-assessment.md` + `layer2-orchestrator/SKILL.md`（L2 閾値の暫定継続注記）。
+
+---
+
 ## 9. 出典
 
 **一次情報源**: ローカル claude-api リファレンス（2026-06-24 キャッシュ、モデル表・価格・migration guide）/ anthropic.com 公式発表（Fable 5・Opus 5・Sonnet 5）/ platform.claude.com（models overview・deprecations）/ code.claude.com（model-config・sub-agents）/ developers.openai.com（GPT-5.6 各モデル・deprecations）/ learn.chatgpt.com（Codex models・changelog）/ ai.google.dev（models・pricing・changelog・rate-limits）

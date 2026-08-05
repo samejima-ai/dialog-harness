@@ -237,7 +237,11 @@ Layer 0 → **Layer 2統括指揮 → 複数Layer 1並列 → layer2-integration
 
 ---
 
-## L2発動閾値（Claude Opus 4.7 基準）
+## L2発動閾値（Claude Opus 4.7 基準で策定・Claude Opus 5 世代でも暫定継続）
+
+> 2026-08 注記: 本閾値は Opus 4.7 の能力を基準に策定した。現行世代（Opus 5）は能力向上により
+> M2 吸収域がさらに拡大する方向だが、閾値の緩和は実運用データ蓄積後に Council 諮問で判断する
+> （判断材料: `../../../../delivery/ANALYSIS-model-selection-2026-08-05.md` D6）。当面は本閾値を暫定継続する。
 
 いずれか1つでも超えたら L2：
 
