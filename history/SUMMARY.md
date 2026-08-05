@@ -53,6 +53,10 @@
 - [x] **w2qb04/w3qb04 再検証（mtb2fu）**: 正体は「諮問省略＋結論 ship 済み」と判明（沈黙した声ではない）。wave2/wave3 を移送済み。結晶化不要だった。
 - [ ] **発酵層の再問**: `refs-draft/ecc/instincts-design` を次サイクルで「結晶化したか / 枯死か」再判定（緩慢な抹消を防ぐ再訪予約）
 
+## 直近 cycle 振り返り（crosscut-cycle-retrospective・直近 3 件保持、超過分は `archive/` へ）
+
+- 2026-08-05（cycle: モデル選定 2026-08 世代更新〜時限化機構設計材料 / M2 / L0 メタハーネス対話起点）: PR #176-#179 を出荷 — 選定基準の世代更新（Opus 5/Sonnet 5/GPT-5.6/Gemini 3.6）+ サブスク運用基準、leaf worker 機械配線（Haiku 固定 frontmatter）、Council 諮問 f5fc45 → G-MODEL 標準行 + G-AGENT 時限付き凍結、ライフサイクル別「減らす・時限化」設計材料。verify --strict 全 PASS。**うまくいった**: ①一次情報優先（ローカル正本 → 4 並列 web 調査）で二次ソースの価格乖離まで検出できた ②「判断材料 → 人間承認 → 実装」の 2 段分離が全 PR で機能（決定はすべて人間・実装は即日）③Council が表面合意（2 対 1）を jc 0.45 で降ろして人間へ献上し、第 3 の道が recommended の形に統合された = 機構が設計どおり機能した実例。**反省**: ①ローカル verify の exit code をパイプ越しに誤読し PASS と誤認 → CI で FAIL 発覚（検証 exit は直接取得すべき）②DH 展開形態（DH+ハーネスがプロジェクトルートに統合）の前提を誤答し人間指摘 2 回で訂正 = 展開トポロジの正本確認不足 ③#178 の PR タイトルと実 diff の不一致（記録のみの PR に実装を示唆する題）。**体制**: M2 妥当（修正ループ小・未解決なし）。Council 発動 1 回は妥当（人間明示 + confidence 0.55）。**改善提案（人間承認待ち・下記）**。P3 = 時限化機構 D1-D5 の決定 / gemini 3.6 Flash の実 invoke 確認 / council-weights ΣW=11 是正（F1 棚卸し・既存）/ meta_diagnosis フィールドの正式スキーマ化検討。
+
 ## 関連
 
 - Dry-run レポート: `../delivery/REINDEX-DRYRUN-2026-06-06.md`（最新）/ `2026-05-31.md`
