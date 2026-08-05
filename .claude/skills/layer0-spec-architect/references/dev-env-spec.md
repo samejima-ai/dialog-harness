@@ -943,6 +943,19 @@ UI を伴うプロジェクトでは、`common/ui-baseline.rules.md`（相互作
 
 ---
 
+## templates/agents/ 配布雛形（ローカル leaf worker、2026-08 追加）
+
+ローカル Claude Code 開発でモデル使い分け基準（`model-recommendations.md`
+§ローカル Claude Code（サブスクリプション）運用）を機械的に適用するための
+subagent 定義雛形（`explore-worker` / `digest-worker`、いずれも `model: claude-haiku-4-5` 固定）。
+
+- scaffold 時に `.claude/agents/` へコピーして配布する（M1 以上の全モードで推奨。コスト中立・枠消費削減のみ）
+- CLAUDE.md のルーティング表に leaf 作業の委譲行を 1 行置く（補助。行例は `templates/agents/README.md`）
+- frontmatter の `model:` はフル ID で固定し、モデル世代更新（`model-recommendations.md` 改訂）に追従して更新する
+- 採用後は当該プロジェクトの所有物（templates/ の一般規約どおり）
+
+---
+
 ## origin/version frontmatter 規格（Wave 2 候補 2、PR #78）
 
 **origin**: ECC-derived（everything-claude-code v2.0.0-rc.1 `agents/*.md` / `skills/**/SKILL.md` の frontmatter 慣例）

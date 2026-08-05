@@ -70,6 +70,20 @@ Haiku 4.5 に後継（Haiku 5）は存在せず、バジェット層の現行正
 | 独立レビュー・検証 subagent | **Sonnet 5**、高 stakes のみ Opus 5 | `model: claude-sonnet-5` / 難度昇格時 `claude-opus-5` | 生成と検証の分離＋難度で縦昇格（claude-review の persona_tier と同思想） |
 | 超長時間自律・最難タスク | Fable 5（利用可能プランのみ） | `/model fable` | 枠消費最大・ZDR 組織不可。常用しない |
 
+### 基準を機械的に効かせる配線（重要）
+
+本節の基準は**宣言だけでは適用されない**。subagent のモデル解決順は
+`CLAUDE_CODE_SUBAGENT_MODEL` env → Task 起動時 model パラメータ → **agent 定義 frontmatter** → `inherit`（=メインモデル）であり、
+frontmatter が無ければ委譲されてもメインモデル（例: Opus 5）のまま実行される。配線は 3 段:
+
+1. **frontmatter 方式（推奨・決定論）**: `templates/agents/`（explore-worker / digest-worker、Haiku 4.5 固定）を
+   プロジェクトの `.claude/agents/` にコピーする。L0 scaffold 時は M1 以上の全モードで配布を推奨
+2. **CLAUDE.md ルーティング行（補助）**: 委譲判断そのものを促す 1 行をルーティング表に置く
+   （例:「探索・検索・分類・整形など単発の leaf 作業は explore-worker / digest-worker へ Task 委譲。実装・設計判断は委譲しない」）
+3. **都度指定・env var（臨時手段）**: 発話での明示指定や `CLAUDE_CODE_SUBAGENT_MODEL` は一時的な上書きに限る
+
+導入手順・注意（長ループ禁止・フル ID 固定・世代更新の追従）は `templates/agents/README.md` を正本とする。
+
 ### 運用ルール
 
 - **迷ったら「判断は上位、leaf 作業は Haiku、実装は Sonnet」**。
