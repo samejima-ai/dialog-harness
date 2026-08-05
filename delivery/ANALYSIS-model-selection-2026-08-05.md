@@ -33,12 +33,12 @@
 | 2 | `.github/workflows/claude-review.yml:146` + `templates/github-workflows/claude-review.yml.template:163` | OC = `claude-opus-4-7` ハードピン | 中（Opus 4.7 は Active、retirement 下限 2027-04-16） |
 | 3 | `.claude/agents/review-{fetch,difficulty,intent-gate,evidence}.md` frontmatter | `model: claude-haiku-4-5` | **低**（後継不在、現状維持が妥当） |
 | 4 | `claude-review.yml` persona_tier 規則（tier2→sonnet / tier3→opus） | 抽象エイリアス指定 | 中（エイリアス解決先が CLI バージョン依存） |
-| 5 | `.github/workflows/gemini-review.yml:46` + template | `GEMINI_MODEL: gemini-2.5-pro` | **高**（2026-10-16 リタイア・新規 404 報告） |
+| 5 | `.github/workflows/gemini-review.yml:46` + `templates/github-workflows/gemini-review.yml.template:65` | `GEMINI_MODEL: gemini-2.5-pro` | **高**（2026-10-16 リタイア・新規 404 報告） |
 | 6 | `.github/workflows/issue-pickup.yml` | triage = gemini-cli（デフォルトルーティング） | 低〜中（CLI 側の Auto ルーティングに追従） |
-| 7 | `regime-assessment.md:240`「L2発動閾値（Claude Opus 4.7 基準）」/ `layer2-orchestrator/SKILL.md`「Opus 4.7 の能力では M2 で吸収可能」 | AI 能力バージョン依存の閾値 | 中（能力向上で M2 吸収域がさらに拡大する方向） |
-| 8 | `layer1-autonomous-dev/references/delivery-format.md:339` 等のテンプレ例示値 | Sonnet 4.6 / Opus 4.7 例示 | 低（例示のみ） |
+| 7 | `.claude/skills/layer0-spec-architect/references/regime-assessment.md:240`「L2発動閾値（Claude Opus 4.7 基準）」/ `.claude/skills/layer2-orchestrator/SKILL.md`「Opus 4.7 の能力では M2 で吸収可能」 | AI 能力バージョン依存の閾値 | 中（能力向上で M2 吸収域がさらに拡大する方向） |
+| 8 | `.claude/skills/layer1-autonomous-dev/references/delivery-format.md:339` 等のテンプレ例示値 | Sonnet 4.6 / Opus 4.7 例示 | 低（例示のみ） |
 
-**影響なしを確認済み**: 本日退役の Opus 4.1（`claude-opus-4-1`）への参照は DH 内にゼロ。
+**影響なしを確認済み**: 本日退役の Opus 4.1（`claude-opus-4-1`）への参照は、DH の設定・実装・スキル定義（workflow / agents / skills / templates）にはゼロ（本ドキュメント等の記録類での言及を除く）。
 
 ---
 
@@ -216,4 +216,4 @@ Gemini 4 は未リリース。フラッグシップは 3.1 Pro（**Preview の�
 
 **第三者**: vals.ai / BenchLM / llm-stats（リーダーボード）、Vellum / The Agent Report / codingfleet / emergent.sh（分析）、GitHub Changelog（Copilot の Gemini 廃止）、Google AI Developers Forum（2.5-pro 404 報告）
 
-詳細 URL は各調査エージェントの出力に記録（本ドキュメントの各節に主要 URL を記載済み）。
+本ドキュメントは出典を媒体名で示す方針とし、詳細 URL は調査エージェントの出力（セッション記録）に記録している。実装 PR では、採用する数値（価格・リタイア期日・ベンチスコア）ごとに原本 URL を再確認のうえ引用すること。
