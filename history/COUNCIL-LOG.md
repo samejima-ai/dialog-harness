@@ -2755,6 +2755,6 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   meta_diagnosis_summary: "3 軸一致: 短期スループットは高いが、規範追加ごとに随伴機構（verify/lock-step/sensor）が複利で増える構造は中期の固定費。対処: 効果不確実な規範は『追加せず実測待ち』を既定動作化、減らす/時限化する機構を足す機構と同格に構造化、定期棚卸しのルーティン化"
   consensus_mode: "escalate_to_human"
   human_escalated: true
-  implementer_consent: null
+  implementer_consent: "agreed"  # 2026-08-05 人間合意「council推奨に合意する」。G-MODEL のみ規格追加・G-AGENT 凍結（再評価条件付き）で実装
   final_decision: null
   note: "PR1 制約: persona 温度は未制御（subagent 実行）。meta_diagnosis は §3 スキーマへの追加フィールドとして収集（本発動限り）。既知の ΣW=11（conception）で実行"

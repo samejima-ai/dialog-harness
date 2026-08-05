@@ -35,10 +35,14 @@ cp templates/agents/explore-worker.md templates/agents/digest-worker.md .claude/
 L0（spec-architect）scaffold 時は M1 以上の全モードで配布を推奨（コスト中立・枠消費削減のみ）。
 採用後は当該プロジェクトの所有物（`templates/` の一般規約どおり。雛形本体の改修は L0 案件）。
 
-## CLAUDE.md ルーティング行（補助・任意）
+## CLAUDE.md ルーティング行（任意 — 生成規格の標準行ではない）
 
-frontmatter 配線だけでも委譲時には効くが、**委譲判断そのもの**を促すには
-CLAUDE.md のルーティング表に 1 行置く:
+frontmatter 配線だけでも委譲時には効くが、**委譲判断そのもの**を促したい場合は
+CLAUDE.md のルーティング表に 1 行置ける。ただしこの行（G-AGENT）は
+**L0 生成規格には含めない**（Council `council-2026-08-05T14:34:36Z-f5fc45` で凍結。
+失敗モードが事故でなく枠浪費で、description マッチングが大半をカバー済みのため。
+再評価条件: 委譲漏れの実測が顕著 or モデル世代交代時に L0 振り返り儀式で再諮問）。
+採用はプロジェクト裁量:
 
 ```
 | 探索・検索・分類・整形など単発の leaf 作業 | explore-worker / digest-worker へ Task 委譲（Haiku 固定）。実装・設計判断は委譲しない | G-xx |
