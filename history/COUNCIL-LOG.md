@@ -2766,10 +2766,13 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   council_type: "business"
   category: "judgment"
   category_fallback: false
-  options: ["案A: 実行してよかった（内容・手続きとも妥当、維持）", "案B: 内容は妥当だが手続きに瑕疵（維持しつつプロセス改善）", "案C: 実行すべきでなかった（revert して L0 対話からやり直し）"]
   decision_category: "C1"
   phase_reached: "phase_3"
   conflict_type: "reason_divergence"
+  options:
+    - "案A: 実行してよかった（内容・手続きとも妥当、維持）"
+    - "案B: 内容は妥当だが手続きに瑕疵（維持しつつプロセス改善）"
+    - "案C: 実行すべきでなかった（revert して L0 対話からやり直し）"
   final_weights:
     経営者: 4
     開発者: 4
@@ -2801,4 +2804,5 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: true
   final_decision: null
-  note: "PR1 制約: persona 温度は未制御（subagent 実行）。事後評価型の発動（対象は実行済み・マージ済みの改修）。implementer_consent は人間（ひでさん）の応答を待って後追記"
+  implementer_consent: null  # 人間（ひでさん）の応答を待って単方向埋め込み（append-only 例外条項）
+  note: "PR1 制約: persona 温度は未制御（subagent 実行）。事後評価型の発動（対象は実行済み・マージ済みの改修）"
