@@ -391,6 +391,17 @@ layer1-independent-reviewer が生成するレポート。L1からの起動結�
 - 主要操作パス: PASS / FAIL
 - エラーハンドリング: PASS / FAIL
 
+### 反証記録
+
+| 対象 | 類型 (A挙動/Bテスト/C Oracle) | 試行内容 | 結果 |
+|---|---|---|---|
+| [critical 機能] | A / B / C | [試行] | 反証不成立 / 反証成立 / 提起 |
+
+#### この PASS が保証しない範囲（必須・省略はセンサー FAIL 扱い）
+
+[試行しなかった反証・観測していない状態・実行していない経路を 1-3 行。
+詳細規約: layer1-independent-reviewer/references/falsification-protocol.md]
+
 ### 発見事項
 
 [独立視点で発見した問題・懸念]

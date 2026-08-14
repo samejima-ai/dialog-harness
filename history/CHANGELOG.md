@@ -2,6 +2,26 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 独立検証への Falsification（反証）指示の明示化（v6.9.0、minor 昇格、in progress, target 2026-08-14、PR #TBD）
+
+外部記事考察（Qiita @y0us91「AIが実装し、AIがテストし、AIが『問題ありません』と言う時代の品質保証」、
+2026-08-11）で特定された gap — DH の独立検証は確証（SPEC⇔成果物照合）寄りで、反証探索を明示的に
+課していない — を埋める minor リリース。ひでさん依頼（2026-08-14）。
+
+- **`layer1-independent-reviewer/references/falsification-protocol.md` 新設**: 反証 3 類型
+  （A 挙動反証 = counterexample 構築 / B テスト反証 = test-the-tests・ミューテーション・スポットチェック /
+  C Oracle 反証 = 観測点の十分性）、リスクベース選定（critical 必須・各 1 件以上・上限目安 3 件の
+  打ち切り基準）、認識論的注意（反証不成立 ≠ 正しさの証明）、B 類型の安全規約（原状復帰確認必須・
+  preserve 領域ではミューテーション禁止）
+- **`layer1-independent-reviewer/SKILL.md`**: 処理フロー 5.10「反証チェック」追加、設計原則に
+  「確証と反証の両輪」追加、判定ルールに反証成立 → FAIL / critical 反証試行 0 件禁止 /
+  「この PASS が保証しない範囲」欄省略のセンサー FAIL 扱いを追加、トリガー語彙に
+  「反証して」「Falsification」等を追加
+- **`delivery-format.md`**: VERIFICATION.md テンプレに「反証記録」セクション＋「この PASS が
+  保証しない範囲」必須欄を追加
+- 既存 5.5.2（E2E テスト妥当性検証 = 罠 C2 の E2E 限定隔離）との関係を整理: 5.10-B/C は
+  同検査の全テスト層への一般化。E2E は 5.5.2 の結果を引用し重複実行しない
+
 ## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.8.0、minor 昇格、in progress, target 2026-08-05、PR #175）
 
 kakuman-platform CLAUDE.md のメタ診断（2026-08-04）を起点に、L0 メタハーネス対話（ひでさん）で確定した
