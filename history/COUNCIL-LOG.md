@@ -2758,3 +2758,53 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   implementer_consent: "agreed"  # 2026-08-05 人間合意「council推奨に合意する」。G-MODEL のみ規格追加・G-AGENT 凍結（再評価条件付き）で実装
   final_decision: null
   note: "PR1 制約: persona 温度は未制御（subagent 実行）。meta_diagnosis は §3 スキーマへの追加フィールドとして収集（本発動限り）。既知の ΣW=11（conception）で実行"
+
+- invocation_id: "council-2026-08-14T14:22:00Z-f9b2c4"
+  timestamp: "2026-08-14T14:22:00Z"
+  source_skill: "human-direct"
+  question_to_answer: "v6.9.0「独立検証への Falsification（反証）指示の明示化」（PR #182、マージ済み）の実行（内容と手続き）は妥当だったか、是正が必要か"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  decision_category: "C1"
+  phase_reached: "phase_3"
+  conflict_type: "reason_divergence"
+  options:
+    - "案A: 実行してよかった（内容・手続きとも妥当、維持）"
+    - "案B: 内容は妥当だが手続きに瑕疵（維持しつつプロセス改善）"
+    - "案C: 実行すべきでなかった（revert して L0 対話からやり直し）"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "案B", confidence: 0.75, dimension: "リスク / ガバナンス / ROI" }
+    開発者: { stance: "案B", confidence: 0.80, dimension: "保守性 / 可逆性" }
+    哲学者: { stance: "案B", confidence: 0.65, dimension: "前提への問い / 長期影響" }
+  judgment_confidence: 0.82
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "案B"
+    scores:
+      - stance: "案B"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.15
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.75 }
+          - { persona: "開発者", weight: 4, confidence: 0.80 }
+          - { persona: "哲学者", weight: 3, confidence: 0.65 }
+    third_way_excluded: []
+    tie_break_applied: false
+  confidence_band: { lo: 0.60, hi: 0.90, basis: "reason_divergence" }
+  recommended: "案B — 成果物（反証機構）は維持し revert しない。ただし手続きの瑕疵を是正する: (1) 規範文書（.claude/skills/** / VERSION / philosophy 等）への変更を auto-merge のパスベース停止条件に加える (2) 一文依頼を規範変更の承認と数える際の承認スコープを明文化する (3) 反証記録の実効性（埋め草化・恒常コスト）の観測を次サイクルで儀式に接続する"
+  minority_opinion: "案A/案C を推す軸はなし。最鋭の緊張は哲学者の遂行的矛盾指摘 —『Green を疑え』と制度化する変更自体が反証も人間レビューも経ず 25 秒で自動マージされた。revert は過剰（形式上 L-FULL 枠内・追加のみ・可逆）だが、承認概念の空洞化への自己適用が未済"
+  weight_note: "category=judgment（経営者 3+1 / 開発者 4+0 / 哲学者 3+0）。既知の ΣW=11 宣言違反（council-weights.md 注記）のまま実行"
+  reasoning: "3 軸が完全に分離した次元（ガバナンス/可逆性/前提への問い）から同一結論に収束（dimension Jaccard 0.00）= 真の多様性。共通懸念も 3 軸独立に一致: auto-merge の規範パス無防備・一文承認のスコープ非決定性・反証チェックの恒常コスト未測定・ループ分離≠バイアス分離の未解決"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  final_decision: null
+  implementer_consent: "agreed_with_modification"  # 2026-08-14 人間（ひでさん）決定を単方向埋め込み（append-only 例外条項）
+  modification_note: "人間決定:「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については Council 機構で緩和とする」。推奨 (2) 承認スコープ明文化を『ポジション×段階の判定促し表』（escalation-matrix.md）として実装、AI 判定矛盾の Council 緩和経路を追加（v6.10.0）。推奨 (1) auto-merge パスガードは判定促し機構が先行（機械ガードの実装是非は観測駆動で継続判断）、推奨 (3) 反証実効性観測は次サイクル振り返り儀式で継続"
+  agreed_at: "2026-08-14T15:00:00Z"
+  note: "PR1 制約: persona 温度は未制御（subagent 実行）。事後評価型の発動（対象は実行済み・マージ済みの改修）"

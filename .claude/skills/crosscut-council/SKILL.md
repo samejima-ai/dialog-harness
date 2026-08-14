@@ -82,6 +82,13 @@ Dialog Harness 本体から**独立**した構造で設計され、将来切り�
 - 複数の実装案が拮抗している（≥ 2 案が viable）
 - 不可逆操作（削除・マイグレーション・データ破壊）の直前
 - 実装者自身が confidence < 0.6 と自己評価した時
+- **AI 判定矛盾の検出時**（v6.10.0 追加）: 独立した AI 判定主体同士の判定が食い違った時
+  （L1 自己検証 vs 独立検証の割れ、verifier 間矛盾等）。矛盾を一律 FAIL で握り潰さず
+  Council で構造化して緩和する。類型と経路は `references/escalation-matrix.md` §2
+- **規範文書改変の実装前**（v6.10.0 追加）: `.claude/skills/**` / `VERSION` / `templates/**` の
+  規格・ルールを改変する時は実装前に Council 諮問を促し、献上時に人間判定を促す
+  （auto-merge の通過に判定を代行させない）。ポジション×段階の全体表は
+  `references/escalation-matrix.md` §1
 
 ### 実装者の裁量で進める場面（Council 発動しない）
 
@@ -425,6 +432,7 @@ L0 の仕様トレードオフ、L2 の跨ぎドメイン方針対立にも使�
 - [references/conflict-typology.md](references/conflict-typology.md) — 対立類型（PR1 はスタブ）
 - [references/ctl-calculation.md](references/ctl-calculation.md) — Council Trust Level 算出規格（v4.2 新規、stats.json スキーマ・invocations/・user-scope 初期化）
 - [references/design-history.md](references/design-history.md) — ブリーフ要約（v4.2 で 7 公理拡張・改訂履歴追記）
+- [references/escalation-matrix.md](references/escalation-matrix.md) — 開発ポジション×段階の判定促し表 + AI 判定矛盾の Council 緩和プロトコル（v6.10.0 新設、Council f9b2c4 の人間決定実装）
 - [references/personas/business/](references/personas/business/) — 事業 Council 3 ペルソナ
 
 ### 起動時に参照する設定

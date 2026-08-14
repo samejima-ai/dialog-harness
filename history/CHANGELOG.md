@@ -2,7 +2,27 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 独立検証への Falsification（反証）指示の明示化（v6.9.0、minor 昇格、in progress, target 2026-08-14、PR #TBD）
+## 判定エスカレーション・マトリクス + AI 判定矛盾の Council 緩和（v6.10.0、minor 昇格、in progress, target 2026-08-14、PR #183）
+
+Council `f9b2c4`（v6.9.0 事後評価、reason_divergence 案B、jc 0.82）への人間決定
+「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については
+Council 機構で緩和とする」（ひでさん、2026-08-14）の実装。
+
+- **`crosscut-council/references/escalation-matrix.md` 新設**: 開発ポジション（L0 / L1 /
+  L1-reviewer / L2 / crosscut）× 段階（仕様策定 / 実装 / 検証 / 献上 / 規範改変）→
+  判定先（人間 / Council / 自律）の配線表。既存規範（philosophy 第6条 H/C・第9条委譲境界）の
+  配線であり新カテゴリは発明しない。「規範文書改変の実装前は Council 諮問・献上時は人間判定を促す」
+  行が v6.9.0 の瑕疵（一文依頼 → 実装 → auto-merge 素通し）の直接是正
+- **AI 判定矛盾の緩和プロトコル**（同 §2）: 類型 (i) 自己検証 vs 独立検証 / (ii) verifier 間 /
+  (iii) Council 内部（既存機構扱い）/ (iv) 反証 vs 確証（反証優先・FAIL 確定、Council 不要）。
+  jc ≥ 0.5 で judgment 添付続行、jc < 0.5 で人間、Council 自体が当事者なら直接人間（再帰遮断）
+- **`crosscut-council/SKILL.md`**: 自動発動場面に「AI 判定矛盾の検出時」「規範文書改変の実装前」を追加
+- **`layer1-independent-reviewer/SKILL.md`**: 判定が割れた場合の一律 FAIL 差戻しを
+  Council 経由の緩和（C4 起動 → judgment 添付で差戻し/献上）に変更
+- COUNCIL-LOG `f9b2c4` に implementer_consent: agreed_with_modification を後追記
+  （推奨 (1) auto-merge 機械ガードは観測駆動で継続判断、(3) 反証実効性観測は次サイクル）
+
+## 独立検証への Falsification（反証）指示の明示化（v6.9.0、minor 昇格、released 2026-08-14、PR #182 merged）
 
 外部記事考察（Qiita @y0us91「AIが実装し、AIがテストし、AIが『問題ありません』と言う時代の品質保証」、
 2026-08-11）で特定された gap — DH の独立検証は確証（SPEC⇔成果物照合）寄りで、反証探索を明示的に

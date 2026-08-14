@@ -132,7 +132,11 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 
 - 全機能PASS かつ 動作確認・使用確認すべてPASS（**`refactor-intent-map.md` 存在時は意図合致チェックも全 Island PASS**）→ **PASS**
 - 1項目でもFAIL → **FAIL** として差戻し
-- 判定が割れる（L1の自己検証とagentの判定が一致しない）場合は FAIL 扱いにして L1 に原因調査を要求
+- 判定が割れる（L1の自己検証とagentの判定が一致しない）場合は **AI 判定矛盾として Council を起動して緩和する**（v6.10.0 変更、`crosscut-council/references/escalation-matrix.md` §2 類型 (i)）:
+  - 両判定の内容・観測点・根拠を context に列挙して Council 起動（decision_category: C4）
+  - `judgment_confidence ≥ 0.5` → Council の judgment を VERIFICATION.md に添えて FAIL 差戻し（L1 に原因調査を要求）または献上進行
+  - `judgment_confidence < 0.5` → 人間エスカレーション
+  - 反証成立との「矛盾」は本経路の対象外 — 反証が優先し FAIL 確定（escalation-matrix §2 類型 (iv)）
 
 ### 反証チェックの判定（処理フロー 5.10、v6.9.0 追加）
 
