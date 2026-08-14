@@ -2804,5 +2804,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: true
   final_decision: null
-  implementer_consent: null  # 人間（ひでさん）の応答を待って単方向埋め込み（append-only 例外条項）
+  implementer_consent: "agreed_with_modification"  # 2026-08-14 人間（ひでさん）決定を単方向埋め込み（append-only 例外条項）
+  modification_note: "人間決定:「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については Council 機構で緩和とする」。推奨 (2) 承認スコープ明文化を『ポジション×段階の判定促し表』（escalation-matrix.md）として実装、AI 判定矛盾の Council 緩和経路を追加（v6.10.0）。推奨 (1) auto-merge パスガードは判定促し機構が先行（機械ガードの実装是非は観測駆動で継続判断）、推奨 (3) 反証実効性観測は次サイクル振り返り儀式で継続"
+  agreed_at: "2026-08-14T15:00:00Z"
   note: "PR1 制約: persona 温度は未制御（subagent 実行）。事後評価型の発動（対象は実行済み・マージ済みの改修）"
