@@ -105,7 +105,9 @@ const malformedCount = PERSONAS.length - valid.length
 if (valid.length === 0) return { status: 'workflow_failed', reason: '全ペルソナが失敗。従来経路へ degrade せよ' }
 
 // ---- 対立度判定（決定論・v6.7.0 3 値） ----
-const tokenize = (s) => new Set(String(s).toLowerCase().split(/[\s/・、,\-]+/).filter(Boolean))
+// 正典と同値契約: conflict-typology.md / scripts/council-axis-audit.py `_dimension_tokens`
+// （`/` `／` 区切り・完全一致・lowercase しない）。片方だけ変えると監査と分類器が食い違う
+const tokenize = (s) => new Set(String(s).split(/[/／]/).map(t => t.trim()).filter(Boolean))
 const jaccard = (a, b) => {
   const A = tokenize(a), B = tokenize(b)
   const inter = [...A].filter(x => B.has(x)).length
@@ -129,28 +131,43 @@ const inOptions = valid.filter(v => args.options.includes(v.stance_normalized))
 const thirdWay = valid.filter(v => !args.options.includes(v.stance_normalized))
 const scoreMap = {}
 for (const v of inOptions) {
-  scoreMap[v.stance_normalized] ||= { stance: v.stance_normalized, supporters: [], weight_sum: 0, weighted_score: 0, components: [] }
+  scoreMap[v.stance_normalized] ||= { stance: v.stance_normalized, supporters: [], weight_sum: 0, _raw: 0, components: [] }
   const e = scoreMap[v.stance_normalized]
   e.supporters.push(v.persona)
   e.weight_sum += finalWeights[v.persona]
-  e.weighted_score = round2(e.weighted_score + finalWeights[v.persona] * v.confidence)
+  e._raw += finalWeights[v.persona] * v.confidence   // 総和後に丸める（正典: 逐次丸めは誤差を生む）
   e.components.push({ persona: v.persona, weight: finalWeights[v.persona], confidence: v.confidence })
 }
-const scores = Object.values(scoreMap).sort((a, b) => b.weighted_score - a.weighted_score)
-const tieBreak = scores.length >= 2 && scores[0].weighted_score === scores[1].weighted_score
+const scores = Object.values(scoreMap)
+  .map(e => ({ stance: e.stance, supporters: e.supporters, weight_sum: e.weight_sum, weighted_score: round2(e._raw), _raw: e._raw, components: e.components }))
+  .sort((a, b) => b._raw - a._raw)
+// tie 判定は丸め前の生値で「差 < 0.01」（正典）。丸め後の厳密等値だと境界で取り逃す
+const tieBreak = scores.length >= 2 && Math.abs(scores[0]._raw - scores[1]._raw) < 0.01
 const maxScoreStance = scores.length === 0 ? null : (tieBreak ? null : scores[0].stance)
 
 // ---- 帯計算（judgment-agent.md §confidence 帯・決定論） ----
+// 全 persona が options 外（保留・第3の道のみ）→ 選択形式では吸収不能。判定を降りて人間へ
+if (scores.length === 0) return {
+  status: 'escalate_to_human',
+  reason: '全 persona の stance が options 外（scores 空）。選択肢では吸収できないシグナルのため判定を降りる',
+  personas: valid, conflict_type: conflictType, final_weights: finalWeights,
+  third_way_excluded: thirdWay.map(v => ({ persona: v.persona, stance: v.stance, weight: finalWeights[v.persona], confidence: v.confidence })),
+}
 let band
 if (malformedCount > 0) band = { lo: 0.00, hi: 0.30, basis: 'malformed' }
 else if (tieBreak) band = { lo: 0.00, hi: 0.39, basis: 'tie_break' }
 else if (allSame) band = conflictType === 'reason_divergence' ? { lo: 0.60, hi: 0.90, basis: 'reason_divergence' } : { lo: 0.45, hi: 0.70, basis: 'unanimous' }
 else {
-  const gapRatio = scores.length >= 2 ? (scores[0].weighted_score - scores[1].weighted_score) / sigmaW : scores[0].weighted_score / sigmaW
+  const gapRatio = scores.length >= 2 ? (scores[0]._raw - scores[1]._raw) / sigmaW : scores[0]._raw / sigmaW
   band = gapRatio < 0.10 ? { lo: 0.30, hi: 0.50, basis: 'gap_ratio' } : gapRatio < 0.25 ? { lo: 0.45, hi: 0.70, basis: 'gap_ratio' } : { lo: 0.60, hi: 0.90, basis: 'gap_ratio' }
 }
 const thirdWayWeight = thirdWay.reduce((s, v) => s + finalWeights[v.persona], 0)
-if (thirdWayWeight >= sigmaW * 0.30 && band.hi > 0.50) band = { lo: band.lo, hi: 0.50, basis: 'third_way_ratio' }
+// 正典 compute_confidence_band: hi を 0.50 に切り下げたら lo も min(lo, hi - 0.10) に補正する。
+// この 1 行がないと [0.60, 0.50] の空帯が生まれ、jc が論理的に帯内に収まらず恒常 judgment_failed になる
+if (thirdWayWeight / sigmaW >= 0.30 && band.hi > 0.50) {
+  const hi = 0.50
+  band = { lo: round2(Math.min(band.lo, hi - 0.10)), hi, basis: 'third_way_ratio' }
+}
 
 // ---- Phase 3: Judgment（帯だけ渡す — gap 生値は渡さない） ----
 phase('Phase3')
@@ -182,9 +199,10 @@ persona 出力（reason / concerns / notes 含む）: ${JSON.stringify(valid)}
 - final_decision は常に null（あなたは決定しない）
 ${retryNote || ''}`
 
+// リトライ上限は正典 output-format.md §バリデーション「最大 1 回リトライ、2 回目も不一致なら judgment_failed」に一致させる
 let judgment = null
 let retries = 0
-for (; retries <= 2; retries++) {
+for (; retries <= 1; retries++) {
   const j = await agent(judgmentPrompt(retries ? `- 前回出力の judgment_confidence が帯外だった。帯 [${band.lo}, ${band.hi}] の内側で再評価せよ` : ''),
     { label: `judgment${retries ? `:retry${retries}` : ''}`, phase: 'Phase3', schema: JUDGMENT_SCHEMA })
   if (j && j.judgment_confidence >= band.lo && j.judgment_confidence <= band.hi) { judgment = j; break }
@@ -195,7 +213,9 @@ if (!judgment) return {
 }
 
 // ---- §8 ログブロック生成（output-format.md §8・フィールド欠落の構造的排除） ----
-const y = (s) => String(s).replace(/"/g, '\\"')
+// YAML ダブルクォート文字列のエスケープ: バックスラッシュ → クォート → 改行/タブの順（順序が逆だと二重エスケープ）。
+// 改行を残すと行ベースパーサ（council-log-sync.py / council-axis-audit.py）がエントリを読めず CTL から脱落する
+const y = (s) => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n').replace(/\t/g, '\\t')
 const logBlock = [
   `- invocation_id: "${y(args.invocation_id)}"`,
   `  timestamp: "${y(args.timestamp)}"`,
@@ -248,7 +268,7 @@ return {
   final_weights: finalWeights,
   personas: valid,
   conflict_type: conflictType,
-  weight_calculation: { method: 'weight_times_confidence', scores, third_way_excluded: thirdWay.map(v => ({ persona: v.persona, stance: v.stance, weight: finalWeights[v.persona], confidence: v.confidence })), max_score_stance: maxScoreStance, tie_break_applied: tieBreak },
+  weight_calculation: { method: 'weight_times_confidence', scores: scores.map(({ _raw, ...rest }) => rest), third_way_excluded: thirdWay.map(v => ({ persona: v.persona, stance: v.stance, weight: finalWeights[v.persona], confidence: v.confidence })), max_score_stance: maxScoreStance, tie_break_applied: tieBreak },
   confidence_band: band,
   judgment: { ...judgment, final_decision: null },
   log_block: logBlock,

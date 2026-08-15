@@ -15,8 +15,9 @@ jc 0.80、条件 4 件を仕様追補）を経た実装。正典は `dh-upgrades
   相互参照経路が存在しない 3 並列。persona 出力 schema 強制（stance_normalized / dimension 必須 / notes 自由記述 =
   schema 外異見の受け皿）。§8 ログブロックをスクリプト生成（記録 teeth: 正規化ギャップ・dimension 欠落の構造的封じ）。
   帯外 retry 2 → judgment_failed → 従来経路 degrade
-- **F7**: escalation-matrix §3 に「実行基盤は判定を持たない」明文化、並列度既定上限
-  （Council 3+1 / review ≤ 8 / 反証 critical×3 / teammate ≤ 3、超過 ADR）
+- **F7**: escalation-matrix §3 に「実行基盤は判定を持たない」明文化（F7-1）。並列度既定上限
+  （Council 3+1 / review ≤ 8 / 反証 critical×3 / teammate ≤ 3、超過 ADR）は upgrade-spec §F7-2 が正典で、
+  各実行基盤の構造（スクリプトの fan-out 幅・agent-teams.context.md の teammate 行）が従う
 - **F2**: `crosscut-council/references/workflows/review-pipeline.workflow.mjs` 新設 — 既存 review-* agent を
   agentType 再利用、fetch → 評価 3 種並列 → 3 ペルソナ独立 → 決定論 conflict_type → judgment。ローカル実行可能
 - **F3**: `layer1-independent-reviewer/references/workflows/falsification-fanout.workflow.mjs` 新設 —
