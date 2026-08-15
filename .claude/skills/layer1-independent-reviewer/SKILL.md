@@ -102,6 +102,9 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
        見ていない等）。不足は提起として記録
      - E2E テストは 5.5.2 の結果を引用し B/C 類型を重複実行しない
      - VERIFICATION.md「反証記録」セクションに試行を全件記録し、「この PASS が保証しない範囲」を必ず明記
+     - **実行基盤**（v6.11.0 追加）: 反証試行の並列実行は `references/workflows/falsification-fanout.workflow.mjs` が既定
+       （critical 機能×3 類型を fan-out、B 類型は worktree 隔離 + 原状復帰の構造保証、反証記録は schema 強制）。
+       Workflow tool 非対応環境では本フローを従来どおり直列の手動試行で完遂する（degrade 経路、upgrade-spec v6.11.0 C-2）
 6. 発見事項の整理（独立視点で気付いた懸念を記録）
    訂正すべき箇所を発見しても**自分で取り消し線を書かない**。提起のみ行い合議フローに委ねる
 7. VERIFICATION.md 出力 → L1 に差戻しまたは献上進行の判定を返す

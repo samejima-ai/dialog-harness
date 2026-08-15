@@ -2808,3 +2808,51 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   modification_note: "人間決定:「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については Council 機構で緩和とする」。推奨 (2) 承認スコープ明文化を『ポジション×段階の判定促し表』（escalation-matrix.md）として実装、AI 判定矛盾の Council 緩和経路を追加（v6.10.0）。推奨 (1) auto-merge パスガードは判定促し機構が先行（機械ガードの実装是非は観測駆動で継続判断）、推奨 (3) 反証実効性観測は次サイクル振り返り儀式で継続"
   agreed_at: "2026-08-14T15:00:00Z"
   note: "PR1 制約: persona 温度は未制御（subagent 実行）。事後評価型の発動（対象は実行済み・マージ済みの改修）"
+
+- invocation_id: "council-2026-08-15T10:32:00Z-v6110c"
+  timestamp: "2026-08-15T10:32:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "upgrade-spec v6.11.0（エージェントオーケストレーション実行基盤）の実装に進んでよいか。進む場合の条件は何か"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C1"
+  phase_reached: "phase_3"
+  conflict_type: "reason_divergence"
+  options:
+    - "案A: 仕様のまま実装 GO"
+    - "案B: 条件付き GO（実装順序・受け入れ基準・追加の安全条件を明記した上で進む）"
+    - "案C: NO-GO（仕様を L0 に差し戻す）"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案B", confidence: 0.72, dimension: "リスク" }
+    開発者: { stance: "案B", confidence: 0.78, dimension: "技術的実現性 / 可逆性" }
+    哲学者: { stance: "案B", confidence: 0.65, dimension: "長期影響" }
+  judgment_confidence: 0.80
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "案B"
+    scores:
+      - stance: "案B"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.75
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 3, confidence: 0.78 }
+          - { persona: "哲学者", weight: 5, confidence: 0.65 }
+    third_way_excluded: []
+    tie_break_applied: false
+  confidence_band: { lo: 0.60, hi: 0.90, basis: "reason_divergence" }
+  recommended: "案B — 条件付き GO。統合条件 4 件: (1) F1+F7 完了と F1-6 受け入れ基準 PASS を後続 F 着手のハードゲートとし、不通過は即 revert + L0 差し戻し (2) degrade 経路を全 Workflow に一般化（Workflow tool 非対応環境・judgment_failed 時は従来 subagent 経路で完遂 + 人間 warn） (3) 器外の観測点 — 機械化が判定の多様性・独立性に与える影響を軸監査・振り返り儀式で定点観測し、persona schema に自由記述 notes を設けて schema 外の異見の受け皿を残す (4) F6 時限メタデータに期限超過 WARN の teeth を付す"
+  minority_opinion: "案A/案C を推す軸はなし。最鋭は哲学者の自己言及指摘 — Council 自身の器を Council 判定で GO するため器の劣化を器の内側から検出できない。器外の観測点（人間の定点評価）が条件 (3) として統合された"
+  weight_note: "category=conception（経営者 3+0 / 開発者 4-1 / 哲学者 3+2）。既知の ΣW=11 宣言違反のまま実行"
+  reasoning: "3 軸が分離した次元（リスク / 実現性・可逆性 / 長期影響）から同一結論に収束 = 真の多様性。共通懸念: 判定機構自体を触るため実行基盤の欠陥が判定記録に波及する / 全層同時 1 リリースの blast radius / 受け入れ基準が最初の 3 発動のみ。いずれも条件 (1)(2) のハードゲートと degrade 一般化で吸収"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: "agreed_recommended"  # 人間は仕様マージで「Council 諮問 → L1 実装」の経路を事前承認済み（07oknv と同型）。条件 4 件は仕様追補として実装に反映し、最終批准は献上時人間判定（実装 PR マージ）に残る
+  note: "escalation-matrix「規範文書改変」行の実装前ゲートとしての発動。PR1 制約: persona 温度は未制御（subagent 実行）"

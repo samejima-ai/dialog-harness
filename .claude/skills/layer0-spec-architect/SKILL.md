@@ -613,6 +613,7 @@ project-root/
 - `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）
 - `assets/design-md-template.md` — DESIGN.md 実践テンプレート（v5.15.0 追加、YAML トークン + Markdown 本体 + Components 拡張ガイド）
 - `references/test-oracle-dialog.md` — C5 テスト oracle 言語化プロトコル（v5.23.0 追加、§2.6 から起動。critical journey or UI プロジェクトのみ。TQ1-3 で人間の暗黙の関心を言語化し相 B E2E 母集団を SPEC へ確定）
+- `references/brainstorm-orchestration.md` — L0 ブレスト・対話支援の実行基盤（v6.11.0 F5 追加。多角調査 fan-out の標準形 3 段・議論型協調層の使用判断 3 条件・degrade 経路。成果は判断材料であり判定を含まない）
 - `../../../templates/rules/common/ui-baseline.rules.md` — UI Baseline RL（v5.23.0 追加、UI プロジェクトの相互作用層・常時適用。B-01〜B-25 + レビューチェックリスト。適用経路は `references/design-system-spec.md`「UI 相互作用層」）
 - `../../../templates/rules/common/ui-specialization.context.md` — UI Specialization Context（v5.23.0 追加、目的特化 S-01〜S-06 + 衝突解決。S-xx 選択は §3.6 / UX 3問 / NFR と連動、`.dh/rules/` で override 可）
 

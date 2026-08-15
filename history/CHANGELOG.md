@@ -2,7 +2,37 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## 判定エスカレーション・マトリクス + AI 判定矛盾の Council 緩和（v6.10.0、minor 昇格、in progress, target 2026-08-14、PR #183）
+## エージェントオーケストレーション実行基盤 — Workflow 背骨 + 議論型協調層（v6.11.0、minor 昇格、in progress, target 2026-08-15、PR #TBD）
+
+L0 前ブレスト（PR #184）→ L0 対話（全層同時 1 リリース / Teams 抽象契約 + 時限付き随時層 / 記録 teeth、
+ひでさん決定）→ 仕様起草（PR #185 merged）→ 実装前 Council 諮問 `v6110c`（reason_divergence 案B 条件付き GO、
+jc 0.80、条件 4 件を仕様追補）を経た実装。正典は `dh-upgrades/upgrade-spec-v6.11.0.md`。
+新機構の追加ではなく、既存設計図（Council フェーズプロトコル / review OC+workers / 反証 fan-out / L2 雛形）への
+**決定論実行基盤の置換**。
+
+- **F1**: `crosscut-council/references/workflows/council-fanout.workflow.mjs` 新設 — Phase 0 検証・重み計算・
+  対立度判定・weighted_score・confidence 帯を全てスクリプト内決定論 JS 化（LLM 不使用の構造化）。Phase 1 は
+  相互参照経路が存在しない 3 並列。persona 出力 schema 強制（stance_normalized / dimension 必須 / notes 自由記述 =
+  schema 外異見の受け皿）。§8 ログブロックをスクリプト生成（記録 teeth: 正規化ギャップ・dimension 欠落の構造的封じ）。
+  帯外 retry 2 → judgment_failed → 従来経路 degrade
+- **F7**: escalation-matrix §3 に「実行基盤は判定を持たない」明文化、並列度既定上限
+  （Council 3+1 / review ≤ 8 / 反証 critical×3 / teammate ≤ 3、超過 ADR）
+- **F2**: `crosscut-council/references/workflows/review-pipeline.workflow.mjs` 新設 — 既存 review-* agent を
+  agentType 再利用、fetch → 評価 3 種並列 → 3 ペルソナ独立 → 決定論 conflict_type → judgment。ローカル実行可能
+- **F3**: `layer1-independent-reviewer/references/workflows/falsification-fanout.workflow.mjs` 新設 —
+  反証 3 類型×critical 機能の fan-out、B 類型は worktree 隔離、反証記録 schema 強制 +「保証しない範囲」必須出力
+- **F4**: layer2-orchestrator に「実行基盤」節（Workflow 駆動・議論型協調層は議論を要する場面のみ・判定しない）
+- **F5**: `layer0-spec-architect/references/brainstorm-orchestration.md` 新設（多角調査 fan-out 3 段・
+  協調層の使用判断 3 条件・成果は判断材料）
+- **F6**: `templates/experimental/agent-teams.context.md` 新設 — 抽象契約のみ規範化し、Agent Teams 固有情報
+  （env / 制約 / 有効化手順）を時限メタデータ付き随時層へ隔離（review_by: GA 化 or 2026-11-30、期限超過 WARN = C-4 teeth）
+- **Council 条件の反映（C-1〜C-4）**: F1+F7 完了と F1-6 受け入れ基準をハードゲート化 / degrade 経路を
+  全 Workflow に一般化（非対応環境・judgment_failed は従来 subagent 経路で完遂 + warn）/ 器外の観測点
+  （機械化の判定品質影響を軸監査・儀式で定点観測、notes フィールド）/ 時限 teeth
+- 温存: 並列 L1 worktree / 外部オーケストレーター / CLAUDE.md ルーティング行（G-AGENT 凍結）/
+  council-weights 数値是正（D5 専管）
+
+## 判定エスカレーション・マトリクス + AI 判定矛盾の Council 緩和（v6.10.0、minor 昇格、released 2026-08-14、PR #183 merged）
 
 Council `f9b2c4`（v6.9.0 事後評価、reason_divergence 案B、jc 0.82）への人間決定
 「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については
