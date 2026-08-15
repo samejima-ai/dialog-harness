@@ -91,6 +91,16 @@ L2判定時のマルチエージェント調整を担う統括指揮スキル。
 - **Level A所属**: 本skillは dialog-harness-layers 本体のもの。プロジェクトごとに生成しない
 - **職種軸分業は採用しない**: 分割軸は抽象度軸・責務軸・機能軸のみ
 
+## 実行基盤（v6.11.0 追加）
+
+L2 発動時の複数 L1 起動・統合検証手配は、決定論オーケストレーション基盤（Workflow tool）で駆動するのが既定である（upgrade-spec v6.11.0 F4）。
+
+- **F4-1**: サブドメイン分割後の L1 群起動と layer2-integration-verifier の手配は Workflow スクリプト（`pipeline()` / `parallel()`）で駆動する。スクリプトは L2 発動プロジェクトの成果物として配置する（DH 規範側にはパターンのみ）
+- **F4-2**: 跨ぎドメインの協調・調整が**議論を要する**場面のみ議論型協調層を使う — 抽象契約: 「独立コンテキストの複数エージェントが、直接メッセージ可能・人間割込可能・ローカル観測可能な協調層」。実装固有情報は `../../../templates/experimental/agent-teams.context.md`（時限付き随時層）参照。使用不能時は subagent 直列に degrade して完遂する
+- **F4-3**: L2 発動条件は不変（REGIME 判定経由のみ・M1/M2 では起動しない）
+- **F4-4**: orchestrator は**判定しない**。跨ぎドメインの方針対立は Council へ、解消不能は人間へ（escalation-matrix 準拠・I-1）
+- degrade 経路（upgrade-spec v6.11.0 C-2）: Workflow tool 非対応環境では従来どおり subagent の直接起動で同一フローを完遂する
+
 ## 参照ドキュメント
 
 - `references/sub-agent-protocol.md` — サブエージェント統括の情報純度プロトコル（L2 の原則書）

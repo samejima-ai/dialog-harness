@@ -183,6 +183,19 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
 [合意プロセス] 実装者が理解→質問→方針決定（references/consensus-protocol.md）
 ```
 
+### 実行基盤（v6.11.0 追加・Workflow 化）
+
+処理フローの Phase 0〜3 + ログブロック生成は、決定論オーケストレーション基盤
+`references/workflows/council-fanout.workflow.mjs` で実行するのが**既定**である
+（Workflow tool に scriptPath で渡す。invocation_id / timestamp は呼び出し側が採番して args で渡す）。
+
+- 決定論部（Pre-Check 検証 / 重み計算 / 対立度判定 / weighted_score / confidence 帯）は全てスクリプト内 JS（LLM 不使用の現行規約を構造化）
+- Phase 1 の情報純度はスクリプト構造が強制する（他ペルソナ出力を渡す経路が存在しない）
+- persona 出力は schema 強制: `stance_normalized`（options への正規化）・`dimension` 必須・`confidence` 0-1。**`notes` 自由記述フィールド**が schema に収まらない異見の受け皿（仕様 C-3）
+- 出力の `log_block` を COUNCIL-LOG へ追記 → 同期、が §クロージング手順の実行形
+- **degrade 経路（仕様 C-2）**: Workflow tool 非対応環境、および `judgment_failed`（帯外 retry 2 超過）時は、本 SKILL の処理フローを**従来どおり subagent 手動フローで完遂**し、人間に warn を残す。実行基盤の不在・失敗は機能停止ではなく従来動作への回帰である
+- 実行基盤は**判定を持たない**（escalation-matrix §3、I-1）。judgment の内容・final_decision null・合意プロセスは本 SKILL の規約のまま
+
 ### クロージング手順（CTL 自動同期・毎回必須）
 
 **COUNCIL-LOG への追記を終えたら、同じターン内で必ず以下を実行する**。これが CTL 記録の主経路
@@ -433,6 +446,7 @@ L0 の仕様トレードオフ、L2 の跨ぎドメイン方針対立にも使�
 - [references/ctl-calculation.md](references/ctl-calculation.md) — Council Trust Level 算出規格（v4.2 新規、stats.json スキーマ・invocations/・user-scope 初期化）
 - [references/design-history.md](references/design-history.md) — ブリーフ要約（v4.2 で 7 公理拡張・改訂履歴追記）
 - [references/escalation-matrix.md](references/escalation-matrix.md) — 開発ポジション×段階の判定促し表 + AI 判定矛盾の Council 緩和プロトコル（v6.10.0 新設、Council f9b2c4 の人間決定実装）
+- [references/workflows/council-fanout.workflow.mjs](references/workflows/council-fanout.workflow.mjs) — Council fan-out の決定論実行基盤（v6.11.0 F1。§実行基盤参照、degrade 経路は従来 subagent フロー）
 - [references/personas/business/](references/personas/business/) — 事業 Council 3 ペルソナ
 
 ### 起動時に参照する設定
