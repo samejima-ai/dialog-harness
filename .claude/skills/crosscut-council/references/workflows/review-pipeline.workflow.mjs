@@ -25,7 +25,10 @@ const REQUIRED = ['pr_number', 'repo_root']
 const missing = REQUIRED.filter(k => !args || args[k] == null || args[k] === '')
 if (missing.length) return { status: 'pre_check_failed', reason: `required field(s) missing: ${missing.join(', ')}` }
 const R = String(args.repo_root).replace(/\/$/, '')
-const OBJ = { type: 'object' } // 構造化のみ強制。フィールド規格は .github/reviews の output-format が正典
+// 既知の限界（独立検証 v6.11.0 P-6 / upgrade-spec §既知の限界）: 本スクリプトは JSON 構造化のみを強制し、
+// フィールド単位の schema 強制（output-format §3/§4 準拠）は次サイクル。既存 review-* agent が
+// output-format を自ら参照するため実害は限定的だが、F1 のような構造強制には至っていない
+const OBJ = { type: 'object' }
 
 phase('Fetch')
 const bundle = await agent(
@@ -57,7 +60,8 @@ const personas = (await parallel(Object.entries(PERSONA_AGENTS).map(([name, at])
 if (personas.length < 3) return { status: 'workflow_failed', reason: `persona 出力 ${personas.length}/3。従来経路へ degrade せよ`, partial: { bundle, difficulty, intentGate, evidence, personas } }
 
 // conflict_type は決定論（v6.7.0 3 値・council-fanout と同一契約）
-const tokenize = (s) => new Set(String(s || '').toLowerCase().split(/[\s/・、,\-]+/).filter(Boolean))
+// 正典と同値契約: council-axis-audit.py `_dimension_tokens`（`/` `／` 区切り・完全一致）
+const tokenize = (s) => new Set(String(s || '').split(/[/／]/).map(t => t.trim()).filter(Boolean))
 const jaccard = (a, b) => { const A = tokenize(a), B = tokenize(b); const i = [...A].filter(x => B.has(x)).length; const u = new Set([...A, ...B]).size; return u === 0 ? 0 : i / u }
 const stances = personas.map(p => p.stance)
 const allSame = stances.every(s => s === stances[0])
@@ -69,8 +73,14 @@ if (allSame) {
 }
 
 phase('Judgment')
+// final_weights は council-weights.md 由来（ハードコードは単一情報源バイパス。独立検証 P-7）
+const WEIGHTS_SCHEMA = { type: 'object', properties: { 経営者: { type: 'number' }, 開発者: { type: 'number' }, 哲学者: { type: 'number' } }, required: ['経営者', '開発者', '哲学者'], additionalProperties: false }
+const finalWeights = await agent(
+  `${R}/.claude/skills/crosscut-council/council-weights.md の fenced YAML から business Council の final_weight を計算して JSON で返せ: base_weights × ethos_multiplier + situational_modifier["maintenance"]（PR レビューは保守判断）。値の解釈・改変はせず計算のみ。`,
+  { label: 'read:weights', phase: 'Judgment', schema: WEIGHTS_SCHEMA, effort: 'low' },
+) || { 経営者: 3, 開発者: 5, 哲学者: 2 }  // 読取失敗時の degrade（maintenance 補正の既定値）
 const judgment = await agent(
-  `以下の 3 ペルソナ出力 + final_weights + conflict_type を受け取り、weighted_score = Σ(weight×confidence) で recommended を決定し、output-format §4 の判定 JSON のみ返せ。final_decision は常に null。\n${JSON.stringify({ personas, final_weights: { 経営者: 3, 開発者: 4, 哲学者: 3 }, conflict_type: conflictType, difficulty })}`,
+  `以下の 3 ペルソナ出力 + final_weights + conflict_type を受け取り、weighted_score = Σ(weight×confidence) で recommended を決定し、output-format §4 の判定 JSON のみ返せ。final_decision は常に null。\n${JSON.stringify({ personas, final_weights: finalWeights, conflict_type: conflictType, difficulty })}`,
   { label: 'judgment', phase: 'Judgment', agentType: 'review-judgment', schema: OBJ },
 )
 if (!judgment) return { status: 'judgment_failed', reason: 'judgment 失敗。従来経路へ degrade し人間に warn を残せ', partial: { bundle, difficulty, intentGate, evidence, personas, conflict_type: conflictType } }
@@ -80,6 +90,6 @@ return {
   status: 'ok',
   pr_number: args.pr_number,
   difficulty, intent_gate: intentGate, evidence,
-  personas, conflict_type: conflictType,
+  personas, conflict_type: conflictType, final_weights: finalWeights,
   judgment: { ...judgment, final_decision: null },
 }
