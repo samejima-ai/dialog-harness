@@ -23,7 +23,7 @@ DH が既に規範として持つオーケストレーションの設計図（Co
 
 ## F1. Council fan-out の Workflow 化（priority: critical）
 
-`crosscut-council/references/workflows/council-fanout.workflow.mjs` を新設し、SKILL.md 処理フローの実行基盤として配線する。
+`crosscut-council/references/workflows/council-fanout.workflow.mjs` を新設し、`crosscut-council/SKILL.md` §処理フロー（Phase 0 → 重み計算 → Phase 1 → 対立度判定 → Phase 3 → ログ/CTL）の実行基盤として配線する。
 
 | 条件 | 内容 |
 |---|---|
