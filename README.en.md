@@ -262,6 +262,12 @@ DH is an experimental project that **seriously chases the goal of "development w
 
 ---
 
+## Sibling metaskill
+
+- [**venture-os**](https://github.com/samejima-ai/venture-os) — DH's sibling metaskill. If DH is the OS for "intent → autonomous software development," venture-os is the OS for "intent → autonomous venture design / validation / operation." It inherits DH's constitution and layers venture-specific articles (V1–V6) on top, centered on a **credit (trust) economy**. When a venture needs software, venture-os hands its `THESIS` to DH's `SPEC` and commissions DH to build the product (nested handoff).
+
+---
+
 ## References
 
 - Philosophy source: [`.claude/skills/layer0-spec-architect/references/philosophy.md`](.claude/skills/layer0-spec-architect/references/philosophy.md)
