@@ -316,6 +316,7 @@ def cmd_sync(args) -> None:
     evaluated = 0
     null_dc = 0
     preserved = 0
+    mismatched: list[tuple[str, str | None]] = []
     for entry in entries:
         inv = entry_to_invocation(entry)
         if inv["actual_outcome"]["status"]:
@@ -333,11 +334,22 @@ def cmd_sync(args) -> None:
         # 下した評価が「COUNCIL-LOG 側の古い implementer_consent」で消される。
         # 規則: COUNCIL-LOG 由来が非 null ならそれを採る（単一情報源原則）。
         #       null のときだけ既存の非 null を保存する（評価の消失を防ぐ）。
+        #
+        # invocation_id ガード（Copilot review #190）: ファイル名は invocation_id から
+        # 導出されるが、本体の invocation_id が一致する保証は無い。council-data は
+        # SKILL.md §CTL 記録 2. で「スクリプトが無いプロジェクトは invocation JSON を
+        # 直接書く」手書き経路が明示的に認められている領域であり、名前と中身の不一致は
+        # 現実に起こりうる。**別 invocation の評価を誤って取り込む**のは、本修正が防ごうと
+        # している「評価の消失」と同じかそれ以上に悪い（偽の agreement が CTL に混入する）。
+        # よって中身の invocation_id が一致する場合のみ保存する。
         if inv["actual_outcome"]["status"] is None and dest.exists():
             with contextlib.suppress(OSError, json.JSONDecodeError):
                 prev = json.loads(dest.read_text(encoding="utf-8"))
                 prev_outcome = prev.get("actual_outcome") or {}
-                if prev_outcome.get("status"):
+                if prev.get("invocation_id") != inv["invocation_id"]:
+                    if prev_outcome.get("status"):
+                        mismatched.append((dest.name, prev.get("invocation_id")))
+                elif prev_outcome.get("status"):
                     inv["actual_outcome"] = prev_outcome
                     preserved += 1
                     evaluated += 1
@@ -380,6 +392,12 @@ def cmd_sync(args) -> None:
     if preserved:
         print(f"  事後評価を保存: {preserved} 件（COUNCIL-LOG 側が未評価のため "
               f"council-ctl.py evaluate 由来の既存 status を維持）")
+    if mismatched:
+        print(f"  警告: ファイル名と中身の invocation_id が不一致な既存ファイルが "
+              f"{len(mismatched)} 件あります。評価を取り込まず破棄しました"
+              f"（別 invocation の評価の誤混入を防ぐため）:")
+        for name, got in mismatched:
+            print(f"    - {name}（中身の invocation_id: {got}）")
     if args.prune:
         print(f"  prune: COUNCIL-LOG 非対応の孤児 {pruned} 件を掃除"
               f"（手動 record の二重計上を解消・案A）")

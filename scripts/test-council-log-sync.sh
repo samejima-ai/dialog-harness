@@ -280,5 +280,31 @@ PYEOF
 [ "$got2" = "agreed" ] || fail "COUNCIL-LOG 非 null が上書きされない: $got2 (expected agreed)"
 ok "事後評価の保存: 再同期で evaluate 由来の status が消えない"
 
+# 8b. invocation_id ガード（Copilot review #190）: ファイル名と中身が不一致なら取り込まない
+#     council-data は「スクリプトが無いプロジェクトは invocation JSON を直接書く」手書き経路が
+#     認められている領域（SKILL.md §CTL 記録 2.）ゆえ、名前と中身の不一致は現実に起こりうる。
+#     別 invocation の評価を誤って取り込むと、偽の agreement が CTL に混入する。
+$PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*ddd444.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    rec["invocation_id"] = "council-2099-01-01T00:00:00Z-zzz999"   # 中身だけ別 invocation に差し替え
+    rec["actual_outcome"] = {"status": "agreed", "evaluated_at": None, "modifier_note": None}
+    f.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PYEOF
+out="$($SYNC sync --log "$LOG")"
+echo "$out" | grep -q "invocation_id が不一致" || fail "不一致の warn が出ない: $out"
+echo "$out" | grep -q "zzz999" || fail "不一致の中身 id が列挙されない: $out"
+got3="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*ddd444.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    print(rec["actual_outcome"]["status"] or "<none>"); break
+PYEOF
+)"
+[ "$got3" = "<none>" ] || fail "不一致ファイルから評価を誤って取り込んだ: $got3"
+ok "invocation_id ガード: 名前と中身が不一致なら取り込まず warn"
+
+
 echo ""
 echo "PASS: council-log-sync 全テスト通過"
