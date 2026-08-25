@@ -315,6 +315,7 @@ def cmd_sync(args) -> None:
     written = unchanged = 0
     evaluated = 0
     null_dc = 0
+    preserved = 0
     for entry in entries:
         inv = entry_to_invocation(entry)
         if inv["actual_outcome"]["status"]:
@@ -323,6 +324,24 @@ def cmd_sync(args) -> None:
             null_dc += 1
 
         dest = INVOCATIONS_DIR / _filename_for(inv["invocation_id"])
+
+        # 事後評価の保存（2026-08-25 修正）: actual_outcome は COUNCIL-LOG の
+        # implementer_consent とは別軸の情報である。SKILL.md §CTL 記録 が
+        # 「事後評価（actual_outcome）は record とは分離する / 合意プロセス完了時または
+        # 振り返り儀式で埋める」と定めるとおり、評価は council-ctl.py evaluate で
+        # council-data 側に書かれる。ここで無条件に上書きすると、儀式 F2.5 で人間が
+        # 下した評価が「COUNCIL-LOG 側の古い implementer_consent」で消される。
+        # 規則: COUNCIL-LOG 由来が非 null ならそれを採る（単一情報源原則）。
+        #       null のときだけ既存の非 null を保存する（評価の消失を防ぐ）。
+        if inv["actual_outcome"]["status"] is None and dest.exists():
+            with contextlib.suppress(OSError, json.JSONDecodeError):
+                prev = json.loads(dest.read_text(encoding="utf-8"))
+                prev_outcome = prev.get("actual_outcome") or {}
+                if prev_outcome.get("status"):
+                    inv["actual_outcome"] = prev_outcome
+                    preserved += 1
+                    evaluated += 1
+
         payload = json.dumps(inv, ensure_ascii=False, indent=2) + "\n"
 
         # 冪等: 内容が同一なら書かない（mtime を無駄に更新しない）。
@@ -358,6 +377,9 @@ def cmd_sync(args) -> None:
           f"{written} 件 {verb} / {unchanged} 件 変更なし")
     print(f"  うち事後評価済み(status非null): {evaluated} 件 / "
           f"decision_category=null: {null_dc} 件（明示なしは導出せず null 保持）")
+    if preserved:
+        print(f"  事後評価を保存: {preserved} 件（COUNCIL-LOG 側が未評価のため "
+              f"council-ctl.py evaluate 由来の既存 status を維持）")
     if args.prune:
         print(f"  prune: COUNCIL-LOG 非対応の孤児 {pruned} 件を掃除"
               f"（手動 record の二重計上を解消・案A）")
