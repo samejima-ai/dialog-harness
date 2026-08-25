@@ -1,0 +1,433 @@
+# GRAPH.yml — dialog-harness 実行グラフの単一情報源
+#
+# upgrade-spec-v6.12.0（AD-032 本実装 第 1 段 / Council 66e3d9 案B）の F1。
+#
+# 目的: DH の実行グラフ（ノード = skill / 確定的 script / human gate、エッジ = 起動関係・
+# 条件分岐・ループ）の定義が README の mermaid / escalation-matrix の表 / 各 SKILL.md /
+# *.workflow.mjs / .github/workflows の 5 箇所に分散している状態を、1 ファイルへ集約する。
+# philosophy 第 1 条 §依存トポロジーの追跡可能性 が要求する DAG に実体を与える。
+#
+# 不変条件（upgrade-spec §不変条件）:
+#   I-1 本ファイルは**判定を持たない**。「どこで誰に諮るか」の宣言であって、判定は
+#       escalation-matrix の定めに従う。グラフが判定を代行し始めたら drift として検出対象。
+#   I-2 本ファイルは**実装の上位ではない**。実装が正・宣言が従。乖離検出時に自動で実装を
+#       書き換えない（検出のみ・是正は L0/人間）。
+#   I-3 粒度は **skill / gate 単位**に固定する。SKILL.md 内部の処理ステップをノード化しない
+#       （二重管理による本ファイル自身の陳腐化を構造的に排除）。
+#
+# 規範メタデータ（dev-env-spec.md §規範メタデータ / f5fc45 の自己適用）:
+#   stage: 全段階
+#   review_trigger:
+#     - cycles: 6
+#     - measured: G-5 の誤検出が 6 cycle 連続 0 件なら FAIL 昇格を検討
+#
+# 検査: harness-verifier/checks/execution_graph.py（G-1〜G-4 は FAIL / G-5 は WARN）
+
+graph_schema: 1
+version: "6.12.0"
+
+# ---------------------------------------------------------------------------
+# nodes — kind はグラフ三分類（agent / tool / human）、role は philosophy 第 7 条の
+# 4 役割属性（L0 / L1 / L2 / council / support）。新分類は発明しない。
+# ---------------------------------------------------------------------------
+nodes:
+  # --- L0 設計 ---
+  - id: layer0-spec-architect
+    kind: agent
+    role: L0
+    impl: .claude/skills/layer0-spec-architect/SKILL.md
+  - id: layer0-onboarding
+    kind: agent
+    role: L0
+    impl: .claude/skills/layer0-onboarding/SKILL.md
+  - id: layer0-archeo-architect
+    kind: agent
+    role: L0
+    impl: .claude/skills/layer0-archeo-architect/SKILL.md
+  - id: layer0-reindex-librarian
+    kind: agent
+    role: L0
+    impl: .claude/skills/layer0-reindex-librarian/SKILL.md
+
+  # --- L1 実装 ---
+  - id: layer1-autonomous-dev
+    kind: agent
+    role: L1
+    impl: .claude/skills/layer1-autonomous-dev/SKILL.md
+  - id: layer1-independent-reviewer
+    kind: agent
+    role: L1
+    impl: .claude/skills/layer1-independent-reviewer/SKILL.md
+
+  # --- L2 統括（REGIME 判定経由でのみ起動） ---
+  - id: layer2-orchestrator
+    kind: agent
+    role: L2
+    impl: .claude/skills/layer2-orchestrator/SKILL.md
+  - id: layer2-integration-verifier
+    kind: agent
+    role: L2
+    impl: .claude/skills/layer2-integration-verifier/SKILL.md
+
+  # --- Council 判断 ---
+  - id: crosscut-council
+    kind: agent
+    role: council
+    impl: .claude/skills/crosscut-council/SKILL.md
+
+  # --- support skill（4 役割のいずれかから呼ばれる。単独で完結しない） ---
+  - id: crosscut-feedback-loop
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-feedback-loop/SKILL.md
+  - id: crosscut-issue-dispatcher
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-issue-dispatcher/SKILL.md
+  - id: crosscut-issue-quality-gate
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-issue-quality-gate/SKILL.md
+  - id: crosscut-issue-implementer
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-issue-implementer/SKILL.md
+  - id: crosscut-verifier-drift
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-verifier-drift/SKILL.md
+  - id: crosscut-autonomous-drive
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-autonomous-drive/SKILL.md
+  - id: crosscut-cycle-retrospective
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-cycle-retrospective/SKILL.md
+
+  # --- tool（確定的・LLM 不使用。philosophy 第 2 条「計算的解決を最優先」） ---
+  - id: harness-verify
+    kind: tool
+    role: support
+    impl: harness-verifier/verify.py
+  - id: council-log-sync
+    kind: tool
+    role: support
+    impl: scripts/council-log-sync.py
+  - id: council-ctl
+    kind: tool
+    role: support
+    impl: scripts/council-ctl.py
+  - id: council-axis-audit
+    kind: tool
+    role: support
+    impl: scripts/council-axis-audit.py
+  - id: auto-merge
+    kind: tool
+    role: support
+    impl: .github/workflows/auto-merge.yml
+
+  # --- human gate（第 7 条 P1-P4 / 第 6 条 H1-H4 / 第 9 条 委譲レベル） ---
+  - id: human-P1-発案
+    kind: human
+    role: L0
+    gate: P1
+    delegation: L-FULL
+    impl: .claude/skills/layer0-spec-architect/references/philosophy.md
+  - id: human-P2-ブレスト
+    kind: human
+    role: L0
+    gate: P2
+    delegation: L-FULL
+    impl: .claude/skills/layer0-spec-architect/references/philosophy.md
+  - id: human-P3-事後評価
+    kind: human
+    role: L0
+    gate: P3
+    delegation: L-FULL
+    impl: .claude/skills/layer0-spec-architect/references/philosophy.md
+  - id: human-P4-停止介入
+    kind: human
+    role: L0
+    gate: P4
+    delegation: L-GATE
+    impl: .claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md
+  - id: human-H-専管判断
+    kind: human
+    role: L0
+    gate: H1
+    delegation: L-FROZEN-PHIL
+    impl: .claude/skills/layer0-spec-architect/references/philosophy.md
+  - id: human-境界SPEC
+    kind: human
+    role: L0
+    gate: H2
+    delegation: L-FROZEN-META
+    impl: .claude/skills/crosscut-autonomous-drive/references/delegation-boundary.md
+
+# ---------------------------------------------------------------------------
+# edges — type は standard / conditional / loop。
+#   conditional は condition 必須（G-3）。loop は max_iterations 必須（G-1）。
+#   source は宣言の出典（G-2 で実在検査）。
+#
+# F1-7（Council 66e3d9 哲学者少数意見の吸収）に従い、**escalation-matrix / auto-merge の
+# 配線を最初に描く**。本仕様の PR 自身が「人間レビュー待ち」と宣言しながらどの停止条件にも
+# 掛からず無関係なガードに偶然救われた ── これがまさに G-5 級の乖離であり、仕様の必要性を
+# 仕様自身の PR が実演した。ゆえにここを最初の実測対象にする。
+# ---------------------------------------------------------------------------
+edges:
+  # === escalation-matrix の配線（F1-7・最優先で描く） ===
+  - from: layer0-spec-architect
+    to: human-H-専管判断
+    type: conditional
+    condition: "dev_mode 昇降格 / モード判定 / L2 発動（H4・ADR 込み）"
+    source: .claude/skills/crosscut-council/references/escalation-matrix.md#1-マトリクス
+  - from: layer1-autonomous-dev
+    to: crosscut-council
+    type: conditional
+    condition: "C1-C4 検出（案の拮抗 / confidence < 0.6 / 不可逆操作前 / 仕様曖昧）"
+    source: .claude/skills/layer1-autonomous-dev/SKILL.md#45-council-発動判断点検出時のみ
+  - from: layer1-autonomous-dev
+    to: human-H-専管判断
+    type: conditional
+    condition: "H カテゴリ抵触の検知（即時献上・中断）"
+    source: .claude/skills/crosscut-council/references/escalation-matrix.md#1-マトリクス
+  - from: layer1-independent-reviewer
+    to: crosscut-council
+    type: conditional
+    condition: "AI 判定矛盾の検出（C4 判定衝突 / C1 抵触）"
+    source: .claude/skills/crosscut-council/references/escalation-matrix.md#2-ai-判定矛盾の-council-緩和
+  - from: crosscut-council
+    to: human-P3-事後評価
+    type: conditional
+    condition: "judgment_confidence < 0.5、または CTL-0（C カテゴリも全件献上）"
+    source: .claude/skills/crosscut-council/references/consensus-protocol.md
+  - from: crosscut-verifier-drift
+    to: crosscut-feedback-loop
+    type: standard
+    source: .claude/skills/crosscut-council/references/escalation-matrix.md#1-マトリクス
+  - from: layer2-orchestrator
+    to: crosscut-council
+    type: conditional
+    condition: "跨ぎドメイン方針対立（解消不能は人間）"
+    source: .claude/skills/crosscut-council/references/escalation-matrix.md#1-マトリクス
+
+  # === auto-merge の配線（F1-7・停止条件を明示的にノード化する） ===
+  - from: layer1-autonomous-dev
+    to: auto-merge
+    type: conditional
+    condition: "dev_mode = autonomous かつ PR 作成済み（opt-out 既定・v5.9.0）"
+    source: .claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md
+  - from: auto-merge
+    to: human-P4-停止介入
+    type: conditional
+    condition: "stop ラベル（do-not-merge / human-review-needed / pickup-failed）で skip"
+    source: .github/workflows/auto-merge.yml
+  - from: auto-merge
+    to: human-P4-停止介入
+    type: conditional
+    condition: "opt-in 領域に該当（philosophy 改修 / harness-verifier 自己改修 / 3 ファイル以上の SKILL 横断 / 不可逆操作 / DONT 抵触 / Council jc < 0.5 / workflow 自身 / 境界 SPEC 自身）"
+    source: .claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md#opt-in-領域stop-ラベル付与確認が必須
+  - from: harness-verify
+    to: auto-merge
+    type: conditional
+    condition: "paths filter（.claude/skills/** / harness-verifier/**）に該当した場合のみ発火し SUCCESS 必須"
+    source: .github/workflows/harness-verify.yml
+  - from: auto-merge
+    to: human-P3-事後評価
+    type: standard
+    source: .claude/skills/layer0-spec-architect/references/philosophy.md
+
+  # === 主パイプライン ===
+  - from: human-P1-発案
+    to: layer0-spec-architect
+    type: standard
+    source: .claude/skills/layer0-spec-architect/SKILL.md#処理フロー
+  - from: human-P2-ブレスト
+    to: layer0-spec-architect
+    type: standard
+    source: .claude/skills/layer0-spec-architect/SKILL.md#処理フロー
+  - from: layer0-spec-architect
+    to: layer1-autonomous-dev
+    type: conditional
+    condition: "REGIME.mode in (M1, M2)"
+    source: .claude/skills/layer0-spec-architect/SKILL.md#モード判定
+  - from: layer0-spec-architect
+    to: layer2-orchestrator
+    type: conditional
+    condition: "REGIME.mode == L2（発動閾値のいずれか超過）"
+    source: .claude/skills/layer0-spec-architect/references/regime-assessment.md#l2発動閾値
+  - from: layer1-autonomous-dev
+    to: layer1-independent-reviewer
+    type: conditional
+    condition: "REGIME.mode >= M2（常時必須起動）"
+    source: .claude/skills/layer1-autonomous-dev/SKILL.md#7-独立検証m2以上で必須
+  - from: layer2-orchestrator
+    to: layer1-autonomous-dev
+    type: standard
+    source: .claude/skills/layer2-orchestrator/SKILL.md
+  - from: layer2-orchestrator
+    to: layer2-integration-verifier
+    type: standard
+    source: .claude/skills/layer2-integration-verifier/SKILL.md
+  - from: layer0-spec-architect
+    to: crosscut-autonomous-drive
+    type: conditional
+    condition: "dev_mode == autonomous（workflow deploy）"
+    source: .claude/skills/crosscut-autonomous-drive/SKILL.md
+
+  # === Issue パイプライン（dev_mode >= github_assisted） ===
+  - from: crosscut-issue-dispatcher
+    to: crosscut-issue-quality-gate
+    type: standard
+    source: .claude/skills/crosscut-issue-quality-gate/SKILL.md
+  - from: crosscut-issue-quality-gate
+    to: crosscut-issue-implementer
+    type: conditional
+    condition: "12 軸ゲート通過かつ ready-for-ai ラベル付与（＝人間最終承認）"
+    source: .claude/skills/crosscut-issue-implementer/SKILL.md
+  - from: crosscut-issue-implementer
+    to: layer1-autonomous-dev
+    type: standard
+    source: .claude/skills/crosscut-issue-implementer/SKILL.md
+
+  # === 確定的ツールの配線 ===
+  - from: crosscut-council
+    to: council-log-sync
+    type: standard
+    source: .claude/skills/crosscut-council/SKILL.md#クロージング手順ctl-自動同期毎回必須
+  - from: council-log-sync
+    to: council-ctl
+    type: standard
+    source: scripts/council-log-sync.py
+  - from: layer0-spec-architect
+    to: council-axis-audit
+    type: conditional
+    condition: "振り返り儀式 F1（スクリプト不在なら skip）"
+    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
+  - from: layer0-spec-architect
+    to: council-log-sync
+    type: conditional
+    condition: "振り返り儀式 F1 の CTL 同期（取りこぼし回収）"
+    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
+
+  # === ループエッジ（max_iterations 必須・G-1） ===
+  # F3-2: 既存値の転記のみ。値の新規決定は行わない。
+  - from: layer1-independent-reviewer
+    to: layer1-autonomous-dev
+    type: loop
+    condition: "独立検証 FAIL（差戻し）"
+    max_iterations: 3
+    source: .claude/skills/layer1-autonomous-dev/SKILL.md#自力修正の上限
+  - from: layer1-autonomous-dev
+    to: layer1-autonomous-dev
+    type: loop
+    condition: "同一エラーに対する自力修正"
+    max_iterations: 3
+    source: .claude/skills/layer1-autonomous-dev/SKILL.md#自力修正の上限
+  - from: crosscut-feedback-loop
+    to: layer1-autonomous-dev
+    type: loop
+    condition: "同一 drift の還流（超過時は人間献上へ切替）"
+    max_iterations: 3
+    source: .claude/skills/crosscut-feedback-loop/SKILL.md#還流回数の上限
+  - from: auto-merge
+    to: layer1-autonomous-dev
+    type: loop
+    condition: "レビュー指摘への応答（軽微指摘は 1 回修正で終了・churn 防止）"
+    max_iterations: 1
+    source: .claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md#終端規則churn-防止
+  - from: crosscut-issue-implementer
+    to: crosscut-issue-implementer
+    type: loop
+    condition: "Issue 自動 pickup（circuit-breaker の日次上限）"
+    max_iterations: 10
+    source: .claude/skills/crosscut-issue-implementer/references/circuit-breaker-spec.md
+  # 【v1 で宣言しないもの — Type C 献上として L0 へ差し戻す】
+  #
+  # 人間駆動ループ 2 本を本版では宣言しない:
+  #   (a) layer0-spec-architect ⇄ human（認識ズレゼロ化ループ・philosophy 第 1 条の最小単位）
+  #   (b) human-P3-事後評価 → human-P1-発案（L0 ループ・ハーネス自体が育つ戻り）
+  #
+  # 理由: どちらも `type: loop` に該当するが、既存規範のどこにも上限値が宣言されていない。
+  # F3-2 は「値の新規決定は行わない（既存値の転記のみ）」と定め、F1-4 は max_iterations を
+  # 例外なく必須とする。両者を同時に守る唯一の道は**書かないこと**であり、F3-3 が
+  # 「上限が見つからないループは発見であって仕様漏れ。L0 に差し戻して上限を決める」と
+  # 定めるとおり本件を献上する。**F1-4 が漏れを可視化する仕掛けが、初回実行で作動した**。
+  #
+  # 論点（L0 判断を要する）: 人間駆動ループは AI 暴走の risk を持たない（人間がいつでも
+  # 止められる）。max_iterations で表すのが正しいのか、`terminator: human` のような別の
+  # 表現を導入すべきか。前者なら値の根拠が要り、後者なら F1-4 の「例外なし」を緩める。
+
+  # === G-5 が初回実行で検出した実在の未宣言経路（本版で宣言に取り込む） ===
+  - from: crosscut-feedback-loop
+    to: crosscut-council
+    type: conditional
+    condition: "思想 FAIL の還流先（philosophy_violation → Council 経由）"
+    source: .claude/skills/crosscut-feedback-loop/SKILL.md
+  - from: crosscut-issue-dispatcher
+    to: crosscut-council
+    type: conditional
+    condition: "CTL >= 2（Issue 生成前の事前検証）"
+    source: .claude/skills/crosscut-issue-dispatcher/SKILL.md
+  # implementer → quality-gate は pickup フローの 3.5「最終確認」であり、既に dispatcher 段で
+  # 通過したノードへの**戻り**にあたる（発動契機 (d)）。1 pickup につき 1 回。
+  # ノード上の 2-cycle は quality-gate を「前段検査」と「最終確認」で共有していることの
+  # collapse であって、無限反復ではない。max_iterations: 1 は SKILL.md の手順番号からの転記。
+  - from: crosscut-issue-implementer
+    to: crosscut-issue-quality-gate
+    type: loop
+    condition: "pickup フロー 3.5 の最終確認（発動契機 (d)・1 pickup につき 1 回）"
+    max_iterations: 1
+    source: .claude/skills/crosscut-issue-implementer/SKILL.md
+  # L1 → L2 は「委譲してここで終了」= 1 回限りの受け渡しであり、L1 へ戻ってこない。
+  # L2 → L1（配下ドメインの起動）と合わせるとノード上は循環に見えるが、委譲した L1 は
+  # 終了し、L2 が起動するのは別ドメインの新しい L1 である（I-3 により instance を
+  # ノード化しないため、collapse の結果として循環に見える）。max_iterations: 1 は
+  # 発明値ではなく SKILL.md の「委譲してここで終了」の転記である（F3-2 準拠）。
+  - from: layer1-autonomous-dev
+    to: layer2-orchestrator
+    type: loop
+    condition: "REGIME.mode == L2（本体実装に進まず委譲してここで終了・戻りなし）"
+    max_iterations: 1
+    source: .claude/skills/layer1-autonomous-dev/SKILL.md#2-regimemd-読み込みとモード分岐
+  - from: layer2-orchestrator
+    to: layer1-independent-reviewer
+    type: standard
+    source: .claude/skills/layer2-orchestrator/SKILL.md
+  - from: layer0-reindex-librarian
+    to: layer0-spec-architect
+    type: conditional
+    condition: "Scaffold（対話起点の spec 新規設計）は実体を spec-architect に委譲"
+    source: .claude/skills/layer0-reindex-librarian/SKILL.md
+  - from: layer0-onboarding
+    to: layer0-spec-architect
+    type: standard
+    source: .claude/skills/layer0-onboarding/SKILL.md
+
+# ---------------------------------------------------------------------------
+# g5_false_positives — G-5 の検出のうち**人間 / 実装者が誤検出と判定したもの**。
+#
+# 判定は人間に残し（I-1: 本ファイルは判定を持たない）、検査器はここに載った件数を
+# 数えるだけ（F2-5）。FAIL 昇格条件「6 cycle 連続で検出 0 件」は、この除外後の値で測る。
+#
+# 本版の内訳: 逆方向の記述（「〜から起動される」）／参照リスト（関連スキル節）／
+# 起動と無関係な同名言及（persona 節・handoff 契約への参照等）。
+# ---------------------------------------------------------------------------
+g5_false_positives:
+  - crosscut-council->layer1-autonomous-dev
+  - crosscut-council->layer1-independent-reviewer
+  - crosscut-council->layer0-spec-architect
+  - crosscut-council->layer0-archeo-architect
+  - crosscut-council->crosscut-issue-implementer
+  - crosscut-council->crosscut-issue-quality-gate
+  - crosscut-issue-quality-gate->crosscut-issue-dispatcher
+  - crosscut-issue-quality-gate->layer0-spec-architect
+  - crosscut-issue-quality-gate->crosscut-council
+  - layer0-archeo-architect->layer0-spec-architect
+  - layer0-spec-architect->crosscut-issue-quality-gate
+  - layer1-autonomous-dev->layer0-archeo-architect
+  - layer1-autonomous-dev->layer2-integration-verifier
+  - layer1-autonomous-dev->crosscut-issue-implementer
+  - layer1-independent-reviewer->layer2-integration-verifier
+  - layer2-integration-verifier->layer2-orchestrator

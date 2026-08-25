@@ -4,7 +4,7 @@ DH 本体の設計判断の記録（ADR 軽量版）。
 
 ## v5.x 温存項目
 
-### AD-032: Hard Gate（PreToolUse 守備）⇄ 整合性検証（DAG verify 攻撃）の対称化検討 [候補]
+### AD-032: Hard Gate（PreToolUse 守備）⇄ 整合性検証（DAG verify 攻撃）の対称化検討 [部分実装・v6.12.0 で第 1 段]
 
 | 項目 | 内容 |
 |---|---|
@@ -12,6 +12,8 @@ DH 本体の設計判断の記録（ADR 軽量版）。
 | 判断 | **候補ステータス**: 本件は philosophy 第 2 条 Shift Left 基盤（30%）+ 5 層エラー検出スタック（70%）の対称化検討案件として温存。次の振り返り儀式 F1-F3 または別 Council 諮問で取り扱う。具体実装（DAG verify 機構の autonomous-dev / independent-reviewer / harness-verifier への配置設計、5 層エラー検出スタックへの組込み、対称化の境界線確定）は本 AD の本実装 PR で扱う。本 AD 候補登録時点では実装変更ゼロ |
 | 根拠 | (a) Council `coddag` の判定過程で開発者 persona が指摘（concerns 内「Hard Gate（守備）と DAG verify（攻撃）の対称化は ARCH-DECISIONS 案件」）、(b) philosophy.md 第 1 条 派生節「依存トポロジーの追跡可能性」（本 PR で同時追加）との論理的接続点を持つ、(c) Council 起動条件（複数案拮抗・confidence < 0.6・不可逆操作・SPEC 矛盾）のいずれにも該当しないため候補温存で十分、(d) 業界先行事例 CoDD の DAG verify が参照事例として観測リスト（`.claude/skills/layer0-spec-architect/references/observed-peers.md`、本 PR で同時新設）に登録済 |
 | 影響 | **本 AD 候補登録時点では実装変更ゼロ**。philosophy.md / 既存 6+1 条 / 4 役割組織論への影響なし。harness-verifier 全 PASS 維持。**温存項目**: 本 AD の本実装（DAG verify 機構設計、5 層スタックへの組込み、対称化の境界線確定）、philosophy 第 2 条 Shift Left 基盤の章立て再構成（もし対称化が major 案件と判定された場合）、献上フロー（philosophy 第 5 条）への DAG verify 統合（Council `coddag` 問い 2 と同根、別案件） |
+| v6.12.0 追記 | **本 AD の第 1 段を実装した**（2026-08-25）。`GRAPH.yml`（実行グラフの単一情報源）+ `harness-verifier/checks/execution_graph.py`（G-1 loop 上限欠落 / G-2 dead path / G-3 condition 欠落 / G-4 DAG 検査を FAIL、G-5 未宣言起動を WARN）を配置し、philosophy 第 1 条 §依存トポロジーの追跡可能性 に実体を与えた。初回実行で**実在の未宣言起動 6 本**と**上限未宣言の人間駆動ループ 2 本**を検出しており、機構は作動している。**残余（次サイクル以降）**: 5 層エラー検出スタックへの組込み / 守備⇄攻撃の対称化の境界線確定 / 利用者プロジェクトへの配布（Council `66e3d9` 案B により延期）|
+| F4 再審ゲート | **2026-11-30、または以下のいずれか早い方**（upgrade-spec v6.12.0 §F4-2・Council 条件 (c)）: (i) 利用者プロジェクト側で execution_graph 検査を走らせる経路が存在する / (ii) `review_trigger:` が機械走査される。**忘却防止のため期限を先に置く** ── 本 AD 自身が 3 ヶ月「候補」のまま放置された前例と同型の失敗を繰り返さない |
 | 連動 | Council `council-2026-05-16T06:00:00Z-coddag`（本 AD の起点）/ Council `council-2026-05-16T07:15:00Z-p1embd`（philosophy 第 1 条 派生節埋込み形式の sub-Council）/ philosophy.md 第 1 条 §依存トポロジーの追跡可能性（本 PR で追加、本 AD と論理的接続点を持つ）/ Council `clrdbl`（人間可読並存規約、本 AD 候補は本実装時に Council 諮問予定） |
 
 ## v5.7.2
