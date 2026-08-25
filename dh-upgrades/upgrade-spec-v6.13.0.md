@@ -87,7 +87,7 @@ f5fc45「減らす・時限化」原則との整合: 規範量は増やさず、
 | F2-2 | 導出結果を auto-merge の停止判定へ接続する。opt-in 領域に該当する PR は、stop ラベルの有無に**よらず** merge しない（ラベル付与は AI の発話に依存するため、依存を断つのが本 F の目的） |
 | F2-3 | 乖離検査: 境界表に行が増えたのに導出が追随していない／導出が表に無い条件で止めている、を検出して FAIL にする |
 | F2-4 | **`auto-merge-boundary.md` を 1 バイトも変更しない**（I-1）。表の書式が機械解釈に耐えない場合、書式変更を人間へ献上し、AI は書かない。**この場合 F2 は着地せず、したがって F1-1 も既定にできない**（I-3 の連鎖） |
-| F2-5 | 本リリースの PR 自身が「autonomous-drive workflow 自身の改修」＝ opt-in 領域に該当するため、**`human-review-needed` を付与**して人間レビューを通す。これは §opt-in 領域の自己適用である |
+| F2-5 | **本仕様の実装 PR** は「autonomous-drive workflow 自身の改修」＝ opt-in 領域に該当するため、**`human-review-needed` を付与**して人間レビューを通す。これは §opt-in 領域の自己適用である |
 
 **paths で表せない条件の扱い**: §opt-in 領域 8 行のうち「不可逆操作」「Council 低 confidence」等は paths で
 表現できない。本リリースは **paths で機械判定可能な行のみ**を配線し、残りは「機械判定不能」として
@@ -121,6 +121,12 @@ CTL 昇格の律速は事後評価であり、その燃料が黙って捨てら�
 `implementer_consent` へ書き戻して永続化した（5v4xqq / vbxdnd = `agreed_with_modification`、
 tmplsync = `agreed_recommended`）。書き戻し後も一致率は 0.875 のまま動かず、F3-1 の silent skip が
 現に効いていることが確認された。
+
+**さらに 3 例目**: その書き戻し自体が、同期経路の読まないフィールド名（`evaluated_at` / `evaluation_note`）を
+使っていた。`entry_to_invocation` が `actual_outcome` へ写すのは `agreed_at` と `modification_note` のみで、
+評価日は保留合意の日付（2026-05-11）のまま、理由は `None` に落ちていた。**記録した本人が気づかず、
+レビュー bot の指摘で発覚した**（PR #193 Copilot review）。同一サイクル内で同じ形の欠陥を 3 回踏んだことになる。
+I-4「検出器は黙って捨てない」が、集計だけでなく**書式の不一致**にも及ぶべきことを示す実測である。
 
 ---
 
@@ -211,8 +217,10 @@ v6.12.0 が F5-3 としてスコープ外に置き、次サイクルへ送った
   F3 を最初に置くのは、本リリースの受け入れ確認そのものが事後評価の集計に依存するため
 - 実装前ゲート: **Council 諮問 必須**（escalation-matrix「規範文書改変」行）
 - 献上時ゲート: **人間判定**（Council の `final_decision` は常に null）
-- **本 PR は opt-in 領域に該当**（`.github/workflows/auto-merge.yml` の改修 + `.claude/skills/` 3 ファイル以上の改修）。
-  `human-review-needed` を付与する（F2-5 の自己適用）
+- **本仕様の実装 PR は opt-in 領域に該当する**（`.github/workflows/auto-merge.yml` の改修 + `.claude/skills/` 3 ファイル以上の改修）。
+  実装 PR に `human-review-needed` を付与する（F2-5 の自己適用）。なお**本起草 PR 自身は形式上 opt-in 領域に該当しない**
+  （`dh-upgrades/` と `history/` のみ）。それでも停止札を付けるのは、採否が人間の決定に属する起草物だからであり、
+  境界の値を動かす要請ではない
 - 検証: harness-verifier 全 PASS + F2-3 乖離検査と F3-1 WARN の FAIL 動作を意図的な壊れ値で確認 +
   反証記録（`falsification-protocol.md` 準拠。「この PASS が保証しない範囲」欄を含む）
 - **独立検証は F1-1 の規格に従い隔離実行する**。v6.12.0 §L-1 で未達だった項目を、本リリース自身で満たす
