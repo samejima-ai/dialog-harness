@@ -264,7 +264,7 @@ const logBlock = [
 log(`council-fanout 完了: ${conflictType} / recommended=${judgment.recommended.slice(0, 40)}... / jc=${judgment.judgment_confidence}`)
 return {
   status: judgment.judgment_confidence < 0.5 ? 'escalate_to_human' : 'ok',
-  pre_check: { council_type: 'business', category, category_fallback, decision_category: args.decision_category, invocation_id: args.invocation_id },
+  pre_check: { council_type: 'business', category, category_fallback: categoryFallback, decision_category: args.decision_category, invocation_id: args.invocation_id },
   final_weights: finalWeights,
   personas: valid,
   conflict_type: conflictType,

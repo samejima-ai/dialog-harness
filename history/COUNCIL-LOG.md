@@ -2856,3 +2856,52 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   final_decision: null
   implementer_consent: "agreed_recommended"  # 人間は仕様マージで「Council 諮問 → L1 実装」の経路を事前承認済み（07oknv と同型）。条件 4 件は仕様追補として実装に反映し、最終批准は献上時人間判定（実装 PR マージ）に残る
   note: "escalation-matrix「規範文書改変」行の実装前ゲートとしての発動。PR1 制約: persona 温度は未制御（subagent 実行）"
+
+- invocation_id: "council-2026-08-25T12:09:17Z-66e3d9"
+  timestamp: "2026-08-25T12:09:17Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "upgrade-spec v6.12.0（実行グラフの実体化）の実装に進んでよいか。進む場合、争点 3 点（配布範囲 / G-5 の判定強度 / ルート配置）をどの形で確定すべきか。"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C1"
+  phase_reached: "phase_3"
+  conflict_type: "reason_divergence"
+  options:
+    - "案A 仕様どおり GO — 配布あり（F4 実施）/ G-5 は初版 WARN / GRAPH.yml をルート配置し配置規則を 1 行改訂。F5 の取り下げ teeth で規範肥大を抑制する"
+    - "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する"
+    - "案C 条件付き GO・teeth を強化 — 配布は行うが G-5 を初版から FAIL にする（誤検出は allowlist で個別に抑制）。宣言と実装の乖離を最初から止める"
+    - "案D 差し戻し — 現仕様のままでは実装に進めない。スコープまたは前提の再設計を L0 に戻す"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する", confidence: 0.78, dimension: "ROI", note: "争点 1 について、人間決定「配布規格にする」の否定として縮退を読むべきでない。決定されたのは「配るか否か」であって「いつ配るか」ではない可能性が高く、案B は決定の否定ではなく順序の入れ替えとして提示するのが正確である。F2-4（GRAPH.yml 不在なら skip）で後方互換が確保されているため、DH 本体先行は利用者を 1 件も壊さない = 縮退の実コストがほぼゼロという点も判断材料に入れてほしい。\n\nもう一つの違和感: G-5 の FAIL 昇格条件「6 cycle 連続で誤検出 0 件」は測定者が未指定であり、条件が満たされないのではなく「判定されない」まま段階導入が段階のまま固着する形になっている。これは WARN/FAIL の強度論争（争点 2）よりも実害が大きい。案C（初版 FAIL + allowlist）を採らない理由も、allowlist が新たな維持対象の規範になり誤検出量が未測定のまま管理コストだけ確定するためであって、FAIL 化の思想が誤りだからではない。測定が入ってから昇格するのが順序として正しい。" }
+    開発者: { stance: "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する", confidence: 0.82, dimension: "保守性 / 技術的実現性", note: "争点 2 は「WARN か FAIL か」の二値として提示されているが、技術的にはこれは誤った変数だと考える。空文化を決めるのは判定強度ではなく**計数されるか否か**である。FAIL でも allowlist に 100 件積めば飾りになるし、WARN でも件数が月次レポートに機械出力されれば飾りにならない。DH が自己診断した「手順書依存の空文化」の本質は severity ではなく「人間の記憶に依存した観測条件」であり、そこを直さずに severity だけ上げる案C は問題の所在を取り違えている。\n\nより一般の規則として提案したい: **「N cycle 連続で X」「実生成 2 件未満なら撤回」の形をとる受け入れ基準・teeth は、それを数えるコードと同一 PR で着地させることを必須とする**。数えるコードのない measured 条件は、宣言した時点で未達が確定している。実測上、DH には現在この形の宣言が review_trigger 系だけで 7 文書分あり、対応する計数器は 0 個である。v6.12.0 は本来この規則の適用対象であり、規則そのものを（新機構ではなく既存 verify.py の 1 検査として）先に置くほうが、GRAPH.yml 本体より投資対効果が高い可能性がある。ここは開発者軸の越境になるので判断は述べず、観測のみ記録する。" }
+    哲学者: { stance: "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する", confidence: 0.68, dimension: "意味", note: "三つ、schema に収まらない違和感を置く。(1) 争点 2 の証拠 (b) は自己証明的である — 本仕様の PR 自身が「人間レビュー待ち」と宣言しながらどの停止条件にも掛からず、無関係なガードに偶然救われた。これはまさに G-5 級の乖離（宣言された経路に実装エッジがない）であり、仕様の必要性を仕様自身の PR が実演している。ゆえに GRAPH.yml が最初に描くべきエッジは escalation-matrix / auto-merge の配線であるべきで、そこで一度乖離が可視化されれば G-5 は WARN でも十分な牙を持つ。逆にそこを描かないなら FAIL にしても意味がない。(2) 本仕様は「鏡（自己認識のための地図）」と「柵（許された経路の列挙）」という二つの異なるものを一つのファイルに同居させている。I-2 は文で鏡だと宣言しているが、FAIL 付きの検査は柵として振る舞う。この二重性は今は無害だが、GRAPH.yml が育つほど柵の側が勝つ。数サイクル後に「宣言にないから実行しない」という運用が自然発生していないか、明示的に見張る価値がある。(3) f5fc45 との衝突を「規範量が増える」という量の問題として立てると本質を外す。問題は量ではなく、フィードバックを持たない規範を他者に負わせること — 検査なき雛形は、受け取った側にとって最初から装飾である。F4 を延期する理由は保守コストではなく、この誠実さの側にある。" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する"
+    scores:
+      - stance: "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.2
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.78 }
+          - { persona: "開発者", weight: 3, confidence: 0.82 }
+          - { persona: "哲学者", weight: 5, confidence: 0.68 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }
+  recommended: "案B 条件付き GO・配布を縮退 — F4（配布規格）を次サイクルへ延期し DH 本体（D4）限定で先行実装。G-5 は WARN、ルート配置は採用。実使用の観測を経てから配布を判断する。付帯条件として 3 軸が独立に要求した点を骨格へ吸収する: (a) G-5 の WARN 件数・誤検出件数を既存 verify.py --report へ機械出力し、FAIL 昇格条件「6 cycle 連続で誤検出 0 件」を実測値にする（測定主体と記録先を仕様に明記し DELIVERY 必須表示項目とする）、(b) F4 の再開条件を「実使用の観測」という人間依存の語ではなく機械的に定義する — 検査を同梱できる状態になるか、review_trigger が機械走査される状態になるか、(c) F4 延期は期限付きの再審エントリを同時に立てて忘却を防ぐ。final_decision は null（決定は実装者の合意プロセスまたは人間が行う）。"
+  minority_opinion: "結論は一致するが観測次元は分離（経営者=ROI／開発者=保守性・技術的実現性／哲学者=意味）。骨格に収まらない差分: (1) 開発者の越境観測 —「N cycle 連続で X」型基準は数えるコードと同一 PR で着地させる一般規則を GRAPH.yml 本体より先に置く案。(2) 哲学者 — 最初に描くべきは escalation-matrix / auto-merge の配線。そこを描かねば G-5 は FAIL でも無意味。鏡と柵の二重性は数サイクル後に柵が勝つ。(3) 経営者 — C-1 未達（正規化ギャップ 11 件）の累積は本判定で未処理。"
+  weight_note: "stance 一致のため重み配分は判定に影響しなかった（哲学者 5 / 経営者 3 / 開発者 3、ΣW=11、単一 stance に weighted_score 8.2）。third_way_excluded は空。conflict_type=reason_divergence ゆえ帯 0.60–0.90 の内側で自己評価した。"
+  reasoning: "conflict_type = reason_divergence。3 軸は独立した次元から同一の骨格に到達した。ROI 軸（経営者）: F1-F3 は 5 箇所分散の置換であり max_iterations 必須化はトークン暴走の直接的コスト弁で回収可能。一方 F4 は需要 0 件観測の在庫であり回収不能コストになりやすい。保守性・技術的実現性軸（開発者）: harness-verifier は D4 専用で利用者側に execution_graph 検査を走らせる経路が F4-3 の決定により存在せず、F1 スキーマは実装実績ゼロ（F3-3 が転記中の変更を明示）ゆえ dogfood 前のインターフェース公開は配布済みテンプレートへの破壊的変更を招く。意味軸（哲学者）: 検査を配らない配布は「検証されない規範」の輸出であり、DH 自身が名指した空文化を他者の repo で再生産する。3 軸が別の物差しで共通に到達した事実は、F5 の取り下げ teeth に機械強制が皆無（review_trigger は宣言側 7 文書に対し検査コード 0 件）という点であり、案A の「teeth で緩和できる」前提は現時点で成立していない。争点 2 は 3 軸とも WARN 維持で一致し、かつ独立に「空文化を決めるのは判定強度ではなく計数されるか否か」へ到達した。争点 3 は 3 軸とも採用（DESIGN.md 前例・1 行改訂・単一情報源宣言との整合）。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
