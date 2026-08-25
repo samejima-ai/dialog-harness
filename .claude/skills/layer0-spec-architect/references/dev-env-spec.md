@@ -214,7 +214,7 @@ dialog-harness-layers は以下を前提に設計される：
 
 #### A領域（AI処理の入出力）
 
-- **ルート直下規格ファイル**: INDEX.md, CLAUDE.md, SPEC.md, DONT.md, REGIME.md, DOMAIN-CONTEXT.md, DESIGN.md（UI プロジェクトのみ、v5.15.0 追加）
+- **ルート直下規格ファイル**: INDEX.md, CLAUDE.md, SPEC.md, DONT.md, REGIME.md, DOMAIN-CONTEXT.md, DESIGN.md（UI プロジェクトのみ、v5.15.0 追加）, GRAPH.yml（実行グラフの単一情報源、v6.12.0 追加。DH 本体のみ ── 利用者プロジェクトへの配布は Council 66e3d9 により次サイクルへ延期）
 - **sensors/**: センサー定義
 - **history/**: 履歴層（LC ≥ 1）
 - **.claude/**: スキル定義
@@ -245,7 +245,7 @@ AI が生成する献上物のみ。規格ファイル以外の混入禁止。
 
 以下のみ許可：
 
-- A領域の規格ファイル（INDEX.md, SPEC.md, ...）
+- A領域の規格ファイル（INDEX.md, SPEC.md, ..., GRAPH.yml）
 - README.md（プロジェクト紹介 + クレジット）
 - LICENSE（任意）
 - 設定ファイル（package.json, tsconfig.json, .env.example 等）

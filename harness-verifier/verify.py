@@ -29,6 +29,7 @@ from typing import Any
 # 検査モジュール群
 from checks import (
     dependency_graph,
+    execution_graph,
     five_layer_structure,
     frontmatter,
     glossary as glossary_check,
@@ -44,6 +45,7 @@ CHECK_REGISTRY: list[tuple[str, Any]] = [
     ("5 層構造保全", five_layer_structure),
     ("用語辞書整合", glossary_check),
     ("hook 観測一貫性", hook_observations),
+    ("実行グラフ整合", execution_graph),
 ]
 
 
@@ -77,11 +79,15 @@ def render_report(results: list[dict[str, Any]], commit_sha: str | None) -> str:
     for idx, result in enumerate(results, start=1):
         lines.append(f"### {idx}. {result['name']}")
         lines.append("")
+        graded = [i for i in result["issues"] if i.get("severity") != "METRIC"]
+        metrics = [i for i in result["issues"] if i.get("severity") == "METRIC"]
         lines.append(f"- 結果: {result['status']}")
-        lines.append(f"- 検出件数: {len(result['issues'])}")
-        if result["issues"]:
+        lines.append(f"- 検出件数: {len(graded)}")
+        for metric in metrics:
+            lines.append(f"- 計数: {metric.get('message', '')}")
+        if graded:
             lines.append("- 詳細:")
-            for issue in result["issues"]:
+            for issue in graded:
                 location = issue.get("location", "<unknown>")
                 message = issue.get("message", "")
                 lines.append(f"  - `{location}`: {message}")

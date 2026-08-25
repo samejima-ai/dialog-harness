@@ -46,6 +46,27 @@ description: >
 
 詳細は `references/feedback-protocol.md`。
 
+## 還流回数の上限
+
+> v6.12.0 F3-1。`auto-merge-boundary.md` §review 応答ループの終端境界 と同型の書き方に揃える
+> （新しい概念を作らない）。GRAPH.yml の loop エッジに `max_iterations: 3` として転記される。
+>
+> 規範メタデータ: `{ stage: 全段階, review_trigger: [measured: 上限到達が 12 cycle 発生しなければ緩和候補] }`
+
+**同一 drift に対する還流は最大 3 回**（既存の L1 自力修正上限と同値。`layer1-autonomous-dev/SKILL.md`
+§自力修正の上限 の値をそのまま採り、新しい閾値を発明しない）。
+
+- 「同一 drift」= 同一の検出種別 × 同一の対象ファイル・機能。別の drift は別カウント
+- 上限到達時は還流を打ち切り、**人間献上に切り替える**（`delivery/UPGRADE-CONFLICT.md` へ記載）
+- 打ち切りは失敗ではなく設計どおりの終端である。3 回還流して直らない drift は、実装の問題ではなく
+  **設計（SPEC 側）の問題**である蓋然性が高く、L0 に上げるのが正しい経路
+
+**なぜ上限が要るか**: 上限のない還流は、検出 → 修正 → 再検出 の自己目的化したループ（churn）に
+なりうる。philosophy 第 7 条 P4 が抑止する暴走の一種であり、`auto-merge-boundary.md` が review 応答
+ループに終端を置いたのと同じ理由による。上限のないループを GRAPH.yml に宣言できない（F1-4）ため、
+本節が無いと実行グラフに書けない ── **上限の宣言化は本 skill の欠落を可視化して着地した**。
+
+
 ## CTL 別動作（要約）
 
 | CTL | drift | 思想 |
