@@ -305,6 +305,34 @@ PYEOF
 [ "$got3" = "<none>" ] || fail "不一致ファイルから評価を誤って取り込んだ: $got3"
 ok "invocation_id ガード: 名前と中身が不一致なら取り込まず warn"
 
+# 8c. 行末コメント（COUNCIL-LOG がファイル全体で使う書式）を剥がして値を読むこと。
+#     剥がさないと `implementer_consent: "agreed"  # 人間合意…` が丸ごと値になり、
+#     normalize_consent が None を返して**人間の事後評価が静かに落ちる**。
+LOG_CMT="${LOG}.cmt"
+cat > "$LOG_CMT" <<'MD'
+- invocation_id: "council-2026-02-01T00:00:00Z-cmt111"
+  category: "conception"
+  decision_category: "C2"
+  judgment_confidence: 0.7
+  recommended: "案 C"
+  implementer_consent: "agreed_recommended"  # 2026-02-01 人間決定「推奨で進めて良い」
+  agreed_at: "2026-02-01T01:00:00Z"
+MD
+rm -rf "$COUNCIL_DATA_DIR"
+$SYNC sync --log "$LOG_CMT" >/dev/null
+got4="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*cmt111.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    print(f"{rec['actual_outcome']['status']}|{rec['decision_category']}|{rec['judgment_confidence']}")
+    break
+PYEOF
+)"
+[ "$got4" = "agreed|C2|0.7" ] || fail "行末コメント付きの値が読めない: $got4 (expected agreed|C2|0.7)"
+ok "行末コメント: 値の後ろの注釈を剥がして読む"
+rm -f "$LOG_CMT"
+
+
 
 echo ""
 echo "PASS: council-log-sync 全テスト通過"

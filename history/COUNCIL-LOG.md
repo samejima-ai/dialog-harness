@@ -2904,4 +2904,5 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: false
   final_decision: null
-  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+  implementer_consent: "agreed_recommended"  # 2026-08-25 人間（ひでさん）決定「推奨で進めて良い」。案B を条件 (a)(b)(c) 込みで採用。append-only 例外条項（null 宣言済みフィールドへの単方向埋め込み）
+  agreed_at: "2026-08-25T13:05:00Z"

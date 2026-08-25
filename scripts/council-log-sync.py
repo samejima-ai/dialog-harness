@@ -145,8 +145,26 @@ _ENTRY_START = re.compile(r'^- invocation_id:\s*"?([^"\n]+)"?\s*$')
 _FIELD = re.compile(r'^  ([a-z_]+):\s*(.*)$')
 
 
+# 行末コメント（` # ...`）。COUNCIL-LOG は `implementer_consent: null  # 合意プロセス完了時に…`
+# のように**値の後ろへ注釈を書く書式をファイル全体で常用している**。剥がさずに読むと
+# `"agreed_recommended"  # 2026-08-25 …` が丸ごと値になり、normalize_consent が None を返して
+# **人間の事後評価が静かに落ちる**（実測: f5fc45 の人間合意が未評価として扱われていた）。
+_TRAILING_COMMENT = re.compile(r"\s+#.*$")
+
+
 def _unquote(v: str) -> str:
+    """値から引用符と行末コメントを剥がす。
+
+    引用符付きの値は**閉じ引用符までを値とする**（値の内部に # があっても壊さない）。
+    引用符なしの値は最初の ` #` 以降を注釈として捨てる。
+    """
     v = v.strip()
+    if len(v) >= 2 and v[0] in ("'", '"'):
+        quote = v[0]
+        end = v.find(quote, 1)
+        if end != -1:
+            return v[1:end]
+    v = _TRAILING_COMMENT.sub("", v).strip()
     if len(v) >= 2 and v[0] == v[-1] and v[0] in ("'", '"'):
         return v[1:-1]
     return v
