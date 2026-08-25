@@ -948,9 +948,11 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: true
   # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
-  implementer_consent: "deferred_pending_dependent"
+  # 後追記（2026-08-25 振り返り儀式 F2.5・人間事後評価）: 上記 deferred は当時の保留理由。その後の実績で確定したため単方向に埋める（未定 → 確定）。deferred_reason は当時の記録として保持する。
+  implementer_consent: "agreed_with_modification"
+  modification_note: "保留は勧めどおり。ただし配置先は勧めの industry/ecc/ ではなく history/refs-draft/ecc/（発酵層）となったため modified。"
   deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程"
-  agreed_at: "2026-05-11T04:14:26Z"
+  agreed_at: "2026-08-25T22:45:57Z"   # 事後評価の確定日。保留合意そのものは 2026-05-11T04:14:26Z
   follow_up_questions_count: 0
 
 - invocation_id: "council-2026-05-11T03:14:18Z-5v4xqq"
@@ -997,9 +999,11 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: true
   # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
-  implementer_consent: "deferred_pending_dependent"
+  # 後追記（2026-08-25 振り返り儀式 F2.5・人間事後評価）: 上記 deferred は当時の保留理由。その後の実績で確定したため単方向に埋める（未定 → 確定）。deferred_reason は当時の記録として保持する。
+  implementer_consent: "agreed_with_modification"
+  modification_note: "保留は勧めどおり。その後 philosophy.md は L-FROZEN-PHIL（人間専管・提案 PR も不可）へ進み勧めより先へ行ったため modified。"
   deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程（特に P1「同等以上を生成できる方法論」の経験的根拠が必要）"
-  agreed_at: "2026-05-11T04:14:26Z"
+  agreed_at: "2026-08-25T22:45:57Z"   # 事後評価の確定日。保留合意そのものは 2026-05-11T04:14:26Z
   follow_up_questions_count: 0
 
 - invocation_id: "council-2026-05-11T03:49:01Z-4go7g1"
@@ -2493,7 +2497,10 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   final_decision: null
   follow_up_questions_count: 0
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
+  # 後追記（2026-08-25 振り返り儀式 F2.5・人間事後評価）— null 宣言済みフィールドへの単方向埋め込み
+  modification_note: "A 案系を推奨どおり採用。drift#1（配布ひな型のポーリング欠落）は templates/github-workflows/auto-merge.yml.template に伝搬済みを実物で確認。"
+  agreed_at: "2026-08-25T22:45:57Z"
 
 - invocation_id: "council-2026-06-18T11:50:01Z-cw0rld"
   timestamp: "2026-06-18T11:50:01Z"
