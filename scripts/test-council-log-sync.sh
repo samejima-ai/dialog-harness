@@ -13,6 +13,7 @@
 #   5. COUNCIL-LOG 対応ファイルは常に上書き + 孤児を --prune で掃除（単一ソース化 §2.4b）
 #   6. council-ctl.py が同期由来 invocation を壊さず recompute できる
 #   7. 可逆性（council-data を消して再同期すると同一結果）
+#   8. 事後評価の保存（council-ctl.py evaluate 由来の status を同期が壊さない）
 #
 # 使い方: bash scripts/test-council-log-sync.sh
 set -euo pipefail
@@ -235,6 +236,103 @@ ok "見出し形式センサー: warn + id 列挙 + 同期対象外"
 out="$($SYNC sync --log "$LOG" --dry-run)"
 echo "$out" | grep -q "見出し形式記録" && fail "見出しが無いのに warn が出た: $out"
 ok "見出しなしログでは warn なし"
+
+# --- 8. 事後評価の保存（回帰テスト・2026-08-25 追加） ---------------------------
+#
+# 背景（実測された欠陥）: actual_outcome は COUNCIL-LOG の implementer_consent とは
+# 別軸の情報で、振り返り儀式 F2.5 が `council-ctl.py evaluate` で council-data 側に
+# 書く（SKILL.md §CTL 記録「事後評価は record とは分離する」）。しかし同期が
+# COUNCIL-LOG 由来の値で無条件に上書きしていたため、人間が下した評価が
+# 「COUNCIL-LOG 側の古い implementer_consent（deferred_* 等 → null）」で消えていた。
+# 実損害: DH 本体で評価済み 55 → 52 件。消えるのは rejected/modified（一致率を下げる
+# 負例）が主なので rate は 0.8545 → 0.8846 と**上がって見える** = CTL が実態より高く
+# 出る方向に壊れる。
+#
+# 規則: COUNCIL-LOG 由来が非 null ならそれを採る（単一情報源原則）。null のときだけ
+#       既存の非 null を保存する。
+$SYNC sync --log "$LOG" >/dev/null
+# ddd444 は implementer_consent: deferred_pending_dependent = 導出すると status null。
+# これを人間が振り返り儀式で「rejected」と事後評価した状況を作る。
+$CTL evaluate "ddd444" --status rejected >/dev/null
+# 再同期しても評価が消えないこと（消えていたのが本欠陥）
+out="$($SYNC sync --log "$LOG")"
+echo "$out" | grep -q "事後評価を保存: 1 件" || fail "保存件数が報告されない: $out"
+got="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    if rec["invocation_id"].endswith("ddd444"):
+        print(rec["actual_outcome"]["status"] or "<wiped>"); break
+PYEOF
+)"
+[ "$got" = "rejected" ] || fail "再同期で事後評価が壊れた: $got (expected rejected)"
+# COUNCIL-LOG 側が非 null のエントリは従来どおり COUNCIL-LOG が勝つ（単一情報源原則）
+$CTL evaluate "aaa111" --status rejected >/dev/null
+$SYNC sync --log "$LOG" >/dev/null
+got2="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    if rec["invocation_id"].endswith("aaa111"):
+        print(rec["actual_outcome"]["status"]); break
+PYEOF
+)"
+[ "$got2" = "agreed" ] || fail "COUNCIL-LOG 非 null が上書きされない: $got2 (expected agreed)"
+ok "事後評価の保存: 再同期で evaluate 由来の status が消えない"
+
+# 8b. invocation_id ガード（Copilot review #190）: ファイル名と中身が不一致なら取り込まない
+#     council-data は「スクリプトが無いプロジェクトは invocation JSON を直接書く」手書き経路が
+#     認められている領域（SKILL.md §CTL 記録 2.）ゆえ、名前と中身の不一致は現実に起こりうる。
+#     別 invocation の評価を誤って取り込むと、偽の agreement が CTL に混入する。
+$PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*ddd444.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    rec["invocation_id"] = "council-2099-01-01T00:00:00Z-zzz999"   # 中身だけ別 invocation に差し替え
+    rec["actual_outcome"] = {"status": "agreed", "evaluated_at": None, "modifier_note": None}
+    f.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PYEOF
+out="$($SYNC sync --log "$LOG")"
+echo "$out" | grep -q "invocation_id が不一致" || fail "不一致の warn が出ない: $out"
+echo "$out" | grep -q "zzz999" || fail "不一致の中身 id が列挙されない: $out"
+got3="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*ddd444.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    print(rec["actual_outcome"]["status"] or "<none>"); break
+PYEOF
+)"
+[ "$got3" = "<none>" ] || fail "不一致ファイルから評価を誤って取り込んだ: $got3"
+ok "invocation_id ガード: 名前と中身が不一致なら取り込まず warn"
+
+# 8c. 行末コメント（COUNCIL-LOG がファイル全体で使う書式）を剥がして値を読むこと。
+#     剥がさないと `implementer_consent: "agreed"  # 人間合意…` が丸ごと値になり、
+#     normalize_consent が None を返して**人間の事後評価が静かに落ちる**。
+LOG_CMT="${LOG}.cmt"
+cat > "$LOG_CMT" <<'MD'
+- invocation_id: "council-2026-02-01T00:00:00Z-cmt111"
+  category: "conception"
+  decision_category: "C2"
+  judgment_confidence: 0.7
+  recommended: "案 C"
+  implementer_consent: "agreed_recommended"  # 2026-02-01 人間決定「推奨で進めて良い」
+  agreed_at: "2026-02-01T01:00:00Z"
+MD
+rm -rf "$COUNCIL_DATA_DIR"
+$SYNC sync --log "$LOG_CMT" >/dev/null
+got4="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
+import json, pathlib, sys
+for f in pathlib.Path(sys.argv[1], "invocations").glob("*cmt111.json"):
+    rec = json.loads(f.read_text(encoding="utf-8"))
+    print(f"{rec['actual_outcome']['status']}|{rec['decision_category']}|{rec['judgment_confidence']}")
+    break
+PYEOF
+)"
+[ "$got4" = "agreed|C2|0.7" ] || fail "行末コメント付きの値が読めない: $got4 (expected agreed|C2|0.7)"
+ok "行末コメント: 値の後ろの注釈を剥がして読む"
+rm -f "$LOG_CMT"
+
+
 
 echo ""
 echo "PASS: council-log-sync 全テスト通過"

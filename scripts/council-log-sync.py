@@ -145,8 +145,26 @@ _ENTRY_START = re.compile(r'^- invocation_id:\s*"?([^"\n]+)"?\s*$')
 _FIELD = re.compile(r'^  ([a-z_]+):\s*(.*)$')
 
 
+# 行末コメント（` # ...`）。COUNCIL-LOG は `implementer_consent: null  # 合意プロセス完了時に…`
+# のように**値の後ろへ注釈を書く書式をファイル全体で常用している**。剥がさずに読むと
+# `"agreed_recommended"  # 2026-08-25 …` が丸ごと値になり、normalize_consent が None を返して
+# **人間の事後評価が静かに落ちる**（実測: f5fc45 の人間合意が未評価として扱われていた）。
+_TRAILING_COMMENT = re.compile(r"\s+#.*$")
+
+
 def _unquote(v: str) -> str:
+    """値から引用符と行末コメントを剥がす。
+
+    引用符付きの値は**閉じ引用符までを値とする**（値の内部に # があっても壊さない）。
+    引用符なしの値は最初の ` #` 以降を注釈として捨てる。
+    """
     v = v.strip()
+    if len(v) >= 2 and v[0] in ("'", '"'):
+        quote = v[0]
+        end = v.find(quote, 1)
+        if end != -1:
+            return v[1:end]
+    v = _TRAILING_COMMENT.sub("", v).strip()
     if len(v) >= 2 and v[0] == v[-1] and v[0] in ("'", '"'):
         return v[1:-1]
     return v
@@ -315,6 +333,8 @@ def cmd_sync(args) -> None:
     written = unchanged = 0
     evaluated = 0
     null_dc = 0
+    preserved = 0
+    mismatched: list[tuple[str, str | None]] = []
     for entry in entries:
         inv = entry_to_invocation(entry)
         if inv["actual_outcome"]["status"]:
@@ -323,6 +343,35 @@ def cmd_sync(args) -> None:
             null_dc += 1
 
         dest = INVOCATIONS_DIR / _filename_for(inv["invocation_id"])
+
+        # 事後評価の保存（2026-08-25 修正）: actual_outcome は COUNCIL-LOG の
+        # implementer_consent とは別軸の情報である。SKILL.md §CTL 記録 が
+        # 「事後評価（actual_outcome）は record とは分離する / 合意プロセス完了時または
+        # 振り返り儀式で埋める」と定めるとおり、評価は council-ctl.py evaluate で
+        # council-data 側に書かれる。ここで無条件に上書きすると、儀式 F2.5 で人間が
+        # 下した評価が「COUNCIL-LOG 側の古い implementer_consent」で消される。
+        # 規則: COUNCIL-LOG 由来が非 null ならそれを採る（単一情報源原則）。
+        #       null のときだけ既存の非 null を保存する（評価の消失を防ぐ）。
+        #
+        # invocation_id ガード（Copilot review #190）: ファイル名は invocation_id から
+        # 導出されるが、本体の invocation_id が一致する保証は無い。council-data は
+        # SKILL.md §CTL 記録 2. で「スクリプトが無いプロジェクトは invocation JSON を
+        # 直接書く」手書き経路が明示的に認められている領域であり、名前と中身の不一致は
+        # 現実に起こりうる。**別 invocation の評価を誤って取り込む**のは、本修正が防ごうと
+        # している「評価の消失」と同じかそれ以上に悪い（偽の agreement が CTL に混入する）。
+        # よって中身の invocation_id が一致する場合のみ保存する。
+        if inv["actual_outcome"]["status"] is None and dest.exists():
+            with contextlib.suppress(OSError, json.JSONDecodeError):
+                prev = json.loads(dest.read_text(encoding="utf-8"))
+                prev_outcome = prev.get("actual_outcome") or {}
+                if prev.get("invocation_id") != inv["invocation_id"]:
+                    if prev_outcome.get("status"):
+                        mismatched.append((dest.name, prev.get("invocation_id")))
+                elif prev_outcome.get("status"):
+                    inv["actual_outcome"] = prev_outcome
+                    preserved += 1
+                    evaluated += 1
+
         payload = json.dumps(inv, ensure_ascii=False, indent=2) + "\n"
 
         # 冪等: 内容が同一なら書かない（mtime を無駄に更新しない）。
@@ -358,6 +407,15 @@ def cmd_sync(args) -> None:
           f"{written} 件 {verb} / {unchanged} 件 変更なし")
     print(f"  うち事後評価済み(status非null): {evaluated} 件 / "
           f"decision_category=null: {null_dc} 件（明示なしは導出せず null 保持）")
+    if preserved:
+        print(f"  事後評価を保存: {preserved} 件（COUNCIL-LOG 側が未評価のため "
+              f"council-ctl.py evaluate 由来の既存 status を維持）")
+    if mismatched:
+        print(f"  警告: ファイル名と中身の invocation_id が不一致な既存ファイルが "
+              f"{len(mismatched)} 件あります。評価を取り込まず破棄しました"
+              f"（別 invocation の評価の誤混入を防ぐため）:")
+        for name, got in mismatched:
+            print(f"    - {name}（中身の invocation_id: {got}）")
     if args.prune:
         print(f"  prune: COUNCIL-LOG 非対応の孤児 {pruned} 件を掃除"
               f"（手動 record の二重計上を解消・案A）")
