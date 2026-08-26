@@ -37,7 +37,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "哲学者: 純化論は現行の常駐購読モデル（CLAUDE.md 毎ターン全文 load / SPEC・DONT は grep 部分読み）を前提とした条件付きの正しさ。将来 AI harness が『CLAUDE.md も随時読み』に進化し常駐/随時の非対称が消えれば、購読コスト差を根拠にした純化論は土台を失い素朴な『薄くせよ』が再び正しくなる。この条件性を消さず、その時は再諮問する（claude-md-purity.rules.md §6 に明記済）"
   weight_note: "conception ゆえ哲学者 5 が最重。3 者が見直し支持で unanimous、差は『置換 vs 包摂』と扱いの重さ（D4 vs D2/D3）。哲学者の『D2/D3 で立てれば否決先例と非衝突』が扱いを適切に軽くし、開発者の『常駐/随時の購読階層差』が技術的骨格を、経営者の『機械判定できる線引き + sensor』が運用可能性を与えた止揚形"
   human_escalated: false
-  implementer_consent: "agreed_recommended（ひでさん合意 = D2/D3 rule として新設を進める、2026-07-23。成果物 = templates/rules/common/claude-md-purity.rules.md）"
+  implementer_consent: "agreed_recommended（ユーザー合意 = D2/D3 rule として新設を進める、2026-07-23。成果物 = templates/rules/common/claude-md-purity.rules.md）"
   follow_up_questions_count: 0
   agreed_at: "2026-07-23T00:00:00Z"
 
@@ -2590,7 +2590,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  escalation_reason: "judgment_confidence 0.67 かつ CTL-0 のため compute_consensus_mode は escalate_to_human。人間（ひでさん）は recommended（修正後案A）を採用で合意。記録は escalate 経路だが合意成立、判定は人間が引き受け"
+  escalation_reason: "judgment_confidence 0.67 かつ CTL-0 のため compute_consensus_mode は escalate_to_human。人間は recommended（修正後案A）を採用で合意。記録は escalate 経路だが合意成立、判定は人間が引き受け"
   agreed_at: "2026-07-01T13:04:40Z"
 
 - invocation_id: "council-2026-07-01T13:30:57Z-ctldedup"
@@ -2635,7 +2635,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: true
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  escalation_reason: "judgment_confidence 0.77 かつ CTL-0 で escalate_to_human。人間（ひでさん）が recommended（案A + 3条件）を採用で合意。判定は人間が引き受け"
+  escalation_reason: "judgment_confidence 0.77 かつ CTL-0 で escalate_to_human。人間が recommended（案A + 3条件）を採用で合意。判定は人間が引き受け"
   agreed_at: "2026-07-01T13:30:57Z"
 
 - invocation_id: "council-2026-07-05T10:37:44Z-pony01"
@@ -2681,7 +2681,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
   implementer_consent: "agreed_with_modification"
   follow_up_questions_count: 0
-  escalation_reason: "judgment_confidence 0.60（最重量の哲学者が option 集合外へ退避したため中庸）+ category=conception + D4 template 追加は DIMENSIONS §4 で council+人間承認。人間（ひでさん）が『実装してください』で B′（止揚案）採用を合意。actual_outcome=modified（原案 B に哲学者条件を織り込み）"
+  escalation_reason: "judgment_confidence 0.60（最重量の哲学者が option 集合外へ退避したため中庸）+ category=conception + D4 template 追加は DIMENSIONS §4 で council+人間承認。人間が『実装してください』で B′（止揚案）採用を合意。actual_outcome=modified（原案 B に哲学者条件を織り込み）"
   agreed_at: "2026-07-05T10:37:44Z"
 
 - invocation_id: "council-2026-07-12T11:10:45Z-07oknv"
@@ -2727,7 +2727,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   # 後追記（合意プロセス完了時）— append-only 例外条項により null 宣言済みフィールドへ単方向埋め込み
   implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  escalation_reason: "CTL-0 運用のため全件人間献上。ただし人間（ひでさん）は本諮問に先立ち解析レポート §3.4（REGIME.md 軸新設の提案 = 案A と同形）を踏まえ『L0 起動 1を進める』と明示指示済みであり、導入形態の事前承認が存在する。judgment（unanimous 案A + 4 制約）は当該指示の範囲内のため recommended をそのまま採用"
+  escalation_reason: "CTL-0 運用のため全件人間献上。ただし人間は本諮問に先立ち解析レポート §3.4（REGIME.md 軸新設の提案 = 案A と同形）を踏まえ『L0 起動 1を進める』と明示指示済みであり、導入形態の事前承認が存在する。judgment（unanimous 案A + 4 制約）は当該指示の範囲内のため recommended をそのまま採用"
   agreed_at: "2026-07-12T11:10:45Z"
 
 - invocation_id: "council-2026-08-05T14:34:36Z-f5fc45"
@@ -2811,7 +2811,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: true
   final_decision: null
-  implementer_consent: "agreed_with_modification"  # 2026-08-14 人間（ひでさん）決定を単方向埋め込み（append-only 例外条項）
+  implementer_consent: "agreed_with_modification"  # 2026-08-14 人間決定を単方向埋め込み（append-only 例外条項）
   modification_note: "人間決定:「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については Council 機構で緩和とする」。推奨 (2) 承認スコープ明文化を『ポジション×段階の判定促し表』（escalation-matrix.md）として実装、AI 判定矛盾の Council 緩和経路を追加（v6.10.0）。推奨 (1) auto-merge パスガードは判定促し機構が先行（機械ガードの実装是非は観測駆動で継続判断）、推奨 (3) 反証実効性観測は次サイクル振り返り儀式で継続"
   agreed_at: "2026-08-14T15:00:00Z"
   note: "PR1 制約: persona 温度は未制御（subagent 実行）。事後評価型の発動（対象は実行済み・マージ済みの改修）"
@@ -2911,7 +2911,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "escalate_to_human"
   human_escalated: false
   final_decision: null
-  implementer_consent: "agreed_recommended"  # 2026-08-25 人間（ひでさん）決定「推奨で進めて良い」。案B を条件 (a)(b)(c) 込みで採用。append-only 例外条項（null 宣言済みフィールドへの単方向埋め込み）
+  implementer_consent: "agreed_recommended"  # 2026-08-25 人間決定「推奨で進めて良い」。案B を条件 (a)(b)(c) 込みで採用。append-only 例外条項（null 宣言済みフィールドへの単方向埋め込み）
   agreed_at: "2026-08-25T13:05:00Z"
 
 - invocation_id: "council-2026-08-26T01:53:40Z-v7ord1"

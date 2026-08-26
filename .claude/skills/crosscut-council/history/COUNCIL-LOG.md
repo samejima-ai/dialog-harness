@@ -961,7 +961,7 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 
 ### 合意プロセス記録
 
-ひでさん直接起動の議題として諮問。category は conception（新規構想取込判断）で哲学者重み 5 が支配的。3 Persona の意見は simple_conflict（B / A / 第 4 の道）。Judgment Agent が哲学者の第 4 の道を採用し、開発者の A 推奨と部分一致する『縮小版 A + Phase γ 伏線』として再構成。confidence 0.7 で人間エスカレーション閾値（0.5）を超え自律判断成立。ひでさん即時 `agreed_recommended` 確定。本 PR #30 に追加実装する形で完結。Phase γ 伏線追加は『承認テスト・自動照合ループ・L1 評価軸への意図合致軸追加』を v5.5.0 候補として明示記録する目的で、archeo 哲学（P-Arch-1 忘却の制度化）と業界知見（フェザーズ「テストなし = レガシー」）の関係性を後続の Phase γ 実装時に参照可能な形で残す。
+ユーザー直接起動の議題として諮問。category は conception（新規構想取込判断）で哲学者重み 5 が支配的。3 Persona の意見は simple_conflict（B / A / 第 4 の道）。Judgment Agent が哲学者の第 4 の道を採用し、開発者の A 推奨と部分一致する『縮小版 A + Phase γ 伏線』として再構成。confidence 0.7 で人間エスカレーション閾値（0.5）を超え自律判断成立。ユーザー即時 `agreed_recommended` 確定。本 PR #30 に追加実装する形で完結。Phase γ 伏線追加は『承認テスト・自動照合ループ・L1 評価軸への意図合致軸追加』を v5.5.0 候補として明示記録する目的で、archeo 哲学（P-Arch-1 忘却の制度化）と業界知見（フェザーズ「テストなし = レガシー」）の関係性を後続の Phase γ 実装時に参照可能な形で残す。
 
 ## council-2026-05-01T11:00:00Z-archeo02
 
@@ -973,7 +973,7 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
   "council_type": "business",
   "category": "conception",
   "category_fallback": false,
-  "question_to_answer": "L1-refactor スキルを新設すべきか？ ひでさん提案、CC 機械的検査で 5 原則違反指摘 (wf-baseline-rationale.md / philosophy.md §1 / philosophy.md §3 / Phase γ 重複 / 観測駆動閾値未達) のため Council 諮問。選択肢 A: 新設、B: 不採用 + Phase γ 予定通り、C: archeo Phase α 観測後に再判断",
+  "question_to_answer": "L1-refactor スキルを新設すべきか？ ユーザー提案、CC 機械的検査で 5 原則違反指摘 (wf-baseline-rationale.md / philosophy.md §1 / philosophy.md §3 / Phase γ 重複 / 観測駆動閾値未達) のため Council 諮問。選択肢 A: 新設、B: 不採用 + Phase γ 予定通り、C: archeo Phase α 観測後に再判断",
   "phase_reached": "phase_3",
   "conflict_type": "unanimous",
   "final_weights": {
@@ -1008,7 +1008,7 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
   "weight_calculation_retry_count": 0,
   "judgment_confidence": 0.85,
   "recommended": "選択肢 B: L1-refactor スキル新設は不採用。Phase γ (v5.5.0 候補) で layer1-autonomous-dev / layer1-independent-reviewer の評価軸を 3 軸（仕様適合・動作・使える）→ 4 軸（+ 意図合致）に拡張する予定通りの計画を進める。3 ペルソナ全員が独立に B を支持する unanimous。経営者の ROI 観点（重複投資回避、v5.3.0 確定方針覆しコスト）、開発者の Shift Left 原則（計算的解決最優先、可逆性確保）、哲学者の philosophy.md §1 違反指摘（双対 vs 内部分割の哲学的差異、INTENT.md v5.3.0 警告のタイプ N+1 罠）が同じ結論に収束。CC の機械的検査結果（5 原則違反）と完全整合",
-  "minority_opinion": "なし（全会一致）。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化する』は minority ではなく『B の長期拡張提案』として保持。v5.x 帯では minor 改修が複数積まれており（archeo Phase β / γ / δ、crosscut-verifier-philosophy 本実装等）、v6.0.0 候補温存は最小記録（INTENT.md に 1-2 行）に留める方針でひでさん合意。本拡張提案は v6.0.0 議論時に再提起する候補",
+  "minority_opinion": "なし（全会一致）。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK によるリファクタ支援を明文化する』は minority ではなく『B の長期拡張提案』として保持。v5.x 帯では minor 改修が複数積まれており（archeo Phase β / γ / δ、crosscut-verifier-philosophy 本実装等）、v6.0.0 候補温存は最小記録（INTENT.md に 1-2 行）に留める方針でユーザー合意。本拡張提案は v6.0.0 議論時に再提起する候補",
   "weight_note": "category: conception → 経営者 3 / 開発者 3 / 哲学者 5（合計 11）。哲学者の重み 5 が支配的だが、本議題では 3 ペルソナが独立に B を支持したため重み配分の影響は限定的。3 ペルソナが異なる dimension（ROI / 保守性 / 前提への問い）から同一結論に到達したことが結論の堅牢性を示す",
   "human_escalated": false,
   "consensus_mode": "auto_agree",
@@ -1022,7 +1022,7 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 
 ### 合意プロセス記録
 
-ひでさん直接起動の議題として諮問。CC が機械的検査で「作らない」結論（5 原則違反）を提示済み、ひでさんが Council 諮問を選択し再評価。3 Persona 全員が独立に B（L1-refactor 不採用）を支持し unanimous 成立。weighted_score 8.85（11 点満点中）、judgment_confidence 0.85 の高判定。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK 許容を明文化』は minority ではなく長期拡張提案として保持。ひでさんから「v6.0.0 まではまだ v5.x 帯 minor 改修が複数あり、v6.0.0 候補を膨らませると圧力になる」との指摘を受け、最小記録方針（INTENT.md に 1-2 行追加、handoff-to-evaluator.md への追記なし）で agreed_recommended 確定。Council 諮問の結果、CC の機械的検査と Council 判断が完全整合し、L1-refactor 新設は v5.x 帯で実施しないことが堅牢に決定された。
+ユーザー直接起動の議題として諮問。CC が機械的検査で「作らない」結論（5 原則違反）を提示済み、ユーザーが Council 諮問を選択し再評価。3 Persona 全員が独立に B（L1-refactor 不採用）を支持し unanimous 成立。weighted_score 8.85（11 点満点中）、judgment_confidence 0.85 の高判定。哲学者の拡張提案『v6.0.0 で Level B プロジェクト固有 SK 許容を明文化』は minority ではなく長期拡張提案として保持。ユーザーから「v6.0.0 まではまだ v5.x 帯 minor 改修が複数あり、v6.0.0 候補を膨らませると圧力になる」との指摘を受け、最小記録方針（INTENT.md に 1-2 行追加、handoff-to-evaluator.md への追記なし）で agreed_recommended 確定。Council 諮問の結果、CC の機械的検査と Council 判断が完全整合し、L1-refactor 新設は v5.x 帯で実施しないことが堅牢に決定された。
 
 ---
 
@@ -1109,7 +1109,7 @@ L0 議題 D として諮問。3 Persona 全員が案 D-2 (共通ライブラリ)
 
 ### 合意プロセス記録
 
-L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml.template の project-specific 化ギャップ解消）を諮問。事前に L0 対話で「前倒し v5.11.0」「philosophy 不改変」「opt-in 領域該当」「prior なし」の 4 軸を確定済み。3 ペルソナは独立に案 1 を v5.11.0 採用する点で全会一致 (unanimous core)、ただし開発者・哲学者は付帯条件として段階分割 / 既知ギャップ表記録 / 案 2 ADR 予約 を提示。PR1 暫定運用 (third_way_excluded) により weight 加算上は経営者単独支持で max_score 2.88、第 3 の道合計重み 5.35 は recommended の reasoning に統合提案として明示。judgment_confidence 0.62 で auto_agree 区分。L0 合意プロセスにて L0 が付帯 3 要素の採否を整理し、実装者（ひでさん）から `agreed_recommended` を確定 (2026-05-09T15:30:00Z)。v5.11.0 実装範囲は案 1 (placeholder 拡張) + (b) 既知ギャップ表記録 + (c) 案 2 ADR 予約 + (d) forward-compat placeholder 命名 の 4 要素を含む。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録（output-format.md §`follow_up_questions_count` 定義「本 invocation で実施された follow-up の総数」に基づく schema 厳密解釈）。実装者→ユーザー間で multiSelect 選択肢の整合確認が 1 回行われたが、これは Council protocol の `follow_up_question`（Judgment Agent 起点）に該当しないため count 対象外。
+L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml.template の project-specific 化ギャップ解消）を諮問。事前に L0 対話で「前倒し v5.11.0」「philosophy 不改変」「opt-in 領域該当」「prior なし」の 4 軸を確定済み。3 ペルソナは独立に案 1 を v5.11.0 採用する点で全会一致 (unanimous core)、ただし開発者・哲学者は付帯条件として段階分割 / 既知ギャップ表記録 / 案 2 ADR 予約 を提示。PR1 暫定運用 (third_way_excluded) により weight 加算上は経営者単独支持で max_score 2.88、第 3 の道合計重み 5.35 は recommended の reasoning に統合提案として明示。judgment_confidence 0.62 で auto_agree 区分。L0 合意プロセスにて L0 が付帯 3 要素の採否を整理し、実装者から `agreed_recommended` を確定 (2026-05-09T15:30:00Z)。v5.11.0 実装範囲は案 1 (placeholder 拡張) + (b) 既知ギャップ表記録 + (c) 案 2 ADR 予約 + (d) forward-compat placeholder 命名 の 4 要素を含む。Judgment Agent からの follow-up 質問は発生せず、`follow_up_questions_count: 0` で記録（output-format.md §`follow_up_questions_count` 定義「本 invocation で実施された follow-up の総数」に基づく schema 厳密解釈）。実装者→ユーザー間で multiSelect 選択肢の整合確認が 1 回行われたが、これは Council protocol の `follow_up_question`（Judgment Agent 起点）に該当しないため count 対象外。
 
 ## council-2026-05-29T08:15:00Z-ux4mcp
 
@@ -1179,7 +1179,7 @@ L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml
 
 ### 合意プロセス記録
 
-ユーザー（ひでさん）から `claude mcp add ux -- npx -y @elsahafy/ux-mcp-server` の導入価値を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebSearch で本 MCP の機能（28 UX 知識リソース + 23 解析ツール + 4 ワークフロープロンプト、WCAG / Nielsen heuristics / generate_color_palette / generate_wireframe / suggest_microcopy / complete_ux_audit 等の creative UX 生成ツールを含む、個人 maintainer @elsahafy による v4.x 継続更新中の npm パッケージ）を確認。dialog-harness 側の決定的 context として philosophy.md §4「UX は計算可能代理指標まで」「創造的 UX 設計は dialog-harness の射程外（DONT.md）」、harness 本体が UI を持たない meta-harness 構造であること、§5 サブエージェント追加 4 基準を判断材料に確定。
+ユーザーから `claude mcp add ux -- npx -y @elsahafy/ux-mcp-server` の導入価値を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebSearch で本 MCP の機能（28 UX 知識リソース + 23 解析ツール + 4 ワークフロープロンプト、WCAG / Nielsen heuristics / generate_color_palette / generate_wireframe / suggest_microcopy / complete_ux_audit 等の creative UX 生成ツールを含む、個人 maintainer @elsahafy による v4.x 継続更新中の npm パッケージ）を確認。dialog-harness 側の決定的 context として philosophy.md §4「UX は計算可能代理指標まで」「創造的 UX 設計は dialog-harness の射程外（DONT.md）」、harness 本体が UI を持たない meta-harness 構造であること、§5 サブエージェント追加 4 基準を判断材料に確定。
 
 3 ペルソナ独立評価結果: 経営者は案C（downstream opt-in、confidence 0.70）、開発者は案B（philosophy §4 違反と context window 圧迫を理由に非採用、confidence 0.88）、哲学者は案B 寄りの保留（『harness の責務境界を UX まで拡張する意図なら DONT.md 改訂議論が先』というメタ問い、confidence 0.55）。weighted_score では 案B 4.62 vs 案C 2.80 で 案B が明確優位。第 3 の道（哲学者の stance）は options 内 案B の解釈拡張として包摂し third_way_excluded は空に保持（grtmpl 事例と異なり付帯条件が options 内に収まるため）。judgment_confidence 0.72 で auto_agree 区分。
 
@@ -1245,10 +1245,10 @@ L0 spec-architect 対話中に発生した実装手法判断（gemini-review.yml
 
 ### 合意プロセス記録
 
-ユーザー（ひでさん）から henteko 氏 Zenn 記事「Loop エンジニアリングと Harness エンジニアリング」(https://zenn.dev/henteko/articles/f65485dac55599) の observed-peers.md 吸収可否を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebFetch で記事内容（Loop エンジニアリング=人が Why/What とジャッジ・AI が開発サイクルを回す / Harness エンジニアリング=新職種が安全・高速 loop の環境構築と継続運用 / 両者協調 / 既存技術の延長線と自己規定）を確認。決定的 context として observed-peers.md の既存 2 事例（CoDD coddag / claude-world cw0rld）、claude-world 前例の案A 採択・案B 却下（思想の二重定義 drift）、philosophy 第1条フラクタル原則の Layer 3 観測自己適用要請を提示。
+ユーザーから henteko 氏 Zenn 記事「Loop エンジニアリングと Harness エンジニアリング」(https://zenn.dev/henteko/articles/f65485dac55599) の observed-peers.md 吸収可否を Council に直接諮問（source_skill: human_direct_invocation）。事前に WebFetch で記事内容（Loop エンジニアリング=人が Why/What とジャッジ・AI が開発サイクルを回す / Harness エンジニアリング=新職種が安全・高速 loop の環境構築と継続運用 / 両者協調 / 既存技術の延長線と自己規定）を確認。決定的 context として observed-peers.md の既存 2 事例（CoDD coddag / claude-world cw0rld）、claude-world 前例の案A 採択・案B 却下（思想の二重定義 drift）、philosophy 第1条フラクタル原則の Layer 3 観測自己適用要請を提示。
 
 3 ペルソナ独立並列評価（Phase 1、情報純度担保のため他ペルソナ出力非共有の独立 call で生成）はいずれも案A を選択し全会一致（unanimous）。Council 出力として確定した事実は: conflict_type=unanimous / weighted_score=7.89（案A 単一 stance）/ judgment_confidence=0.85 で auto_agree 区分。決定は Council ではなく後段の人間合意プロセスに委ねられる（Council の Judgment 出力規約では決定値は設計上常に空で返り、本エントリ §8 スキーマも判断結果のみを保持する）。
 
 実行品質条件（少数意見の統合）: (1) 開発者付帯=「Harness エンジニアリング」の語が原典定義（環境構築職）と DH 定義（Layer 3 方法論全体）でズレる点を差異点に明記、(2) 哲学者温存=「Loop を誰が回すか＝人間の当事者性の置き場所」の差異を未問の前提として温存項目に記録。
 
-**後埋め（合意成立）**: ひでさんの合意により判定（案A）が成立し、`implementer_consent: agreed_recommended` / `agreed_at` を後埋めした（null 宣言済みフィールドへの append-only 後埋め）。これを受けて後続作業として実 `observed-peers.md` に当該エントリを追記し、上記実行品質条件 (1)(2) を共鳴点/差異点/温存項目へ反映した。CTL 事後評価は `de8276 → agreed` で記録済み。
+**後埋め（合意成立）**: ユーザーの合意により判定（案A）が成立し、`implementer_consent: agreed_recommended` / `agreed_at` を後埋めした（null 宣言済みフィールドへの append-only 後埋め）。これを受けて後続作業として実 `observed-peers.md` に当該エントリを追記し、上記実行品質条件 (1)(2) を共鳴点/差異点/温存項目へ反映した。CTL 事後評価は `de8276 → agreed` で記録済み。

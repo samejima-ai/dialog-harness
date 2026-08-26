@@ -11,7 +11,7 @@ DH 本体のモード判定・major/minor 昇格の記録。
 
 - **対象**: PR #196（`ci(harness-verify): scripts/** を検査対象に含め、test-* を CI で実行する`）
 - **区分**: AI 判定漏れ 1 件
-- **人間判定**: 2026-08-26、ひでさん。「1 件として記録だけ。判断は 2026-11-06 の既定再評価に渡す」
+- **人間判定**: 2026-08-26、ユーザー。「1 件として記録だけ。判断は 2026-11-06 の既定再評価に渡す」
   （§roll-back プロトコルの即時起動はしない）
 
 ### 事実（一次証拠: Actions job ログ）
@@ -78,7 +78,7 @@ Council `council-2026-08-26T04:04:34Z-amrace` の哲学者軸（少数意見）:
   矛盾・復活・再提案に非該当 ②dh-manifest boundary との潜在衝突 → 質問で「規格のみ改訂・boundary 維持」に確定）
 - 設計上の重要判定: 先行 Council 採択（`claude-md-purity` 0.80）の「量でなく配置」と byte 上限の緊張を
   「byte = 配置 drift の代理センサー（規範でない）」の序列付けで解消。新ドクトリン並立を避け純化 RL v0.2.0 拡張として実装
-- ローカル自律実行ファースト原則: ひでさん 2 段階宣言（2026-08-05）を regime-assessment §dev_mode 二軸注記として制度化
+- ローカル自律実行ファースト原則: ユーザー 2 段階宣言（2026-08-05）を regime-assessment §dev_mode 二軸注記として制度化
 
 ## v6.0.0（major 昇格、権限委譲境界の確立・可逆性ベース）
 
@@ -278,7 +278,7 @@ REGIME.md の `dev_mode` は `github_assisted` のまま据え置き。本 minor
 - 判定日: 2026-05-03
 - AI 能力バージョン: claude-opus-4-7（1M context）
 - 改修主体: layer0-spec-architect（本セッションで起動）→ layer1-autonomous-dev で実装
-- 起源: ユーザー（ひでさん）の明示要請「Bを考えよう」+ 「Issue 選択は開発品質を決める」観点。v5.6.0 INTENT 温存項目の本格仕様化
+- 起源: ユーザーの明示要請「Bを考えよう」+ 「Issue 選択は開発品質を決める」観点。v5.6.0 INTENT 温存項目の本格仕様化
 - L0 譲渡: `delivery/HANDOFF-v5.7.0-issue-pickup.md`
 - 自己検証: `harness-verifier/verify.py` 全項目 PASS、`delivery/SELF-VERIFICATION-v5.7.0.md`
 - Council 諮問: なし（11 論点全て対話で合意）
@@ -311,7 +311,7 @@ dialog-harness 本体: `dev_mode: github_assisted` のまま据え置き（auton
 - 判定日: 2026-05-03
 - AI 能力バージョン: claude-opus-4-7（1M context）
 - 改修主体: layer0-spec-architect（本セッションで起動）→ crosscut-council 諮問（`council-2026-05-03T08:30:00Z-adrv02`、β 止揚で `agreed_with_modification`）→ layer1-autonomous-dev で実装
-- 起源: ユーザー（ひでさん）の明示要請「自律駆動を L0 に記録、メタスキル開発」+ DH AI 組織論の宣言（4 役割属性 + サポート構造）
+- 起源: ユーザーの明示要請「自律駆動を L0 に記録、メタスキル開発」+ DH AI 組織論の宣言（4 役割属性 + サポート構造）
 - L0 譲渡: `delivery/HANDOFF-v5.6.0-autonomous-drive.md`
 - 自己検証: `harness-verifier/verify.py` 全項目 PASS、`delivery/SELF-VERIFICATION-v5.6.0.md`
 
@@ -343,7 +343,7 @@ REGIME.md の `dev_mode` は `github_assisted` のまま据え置き（dialog-ha
 
 - 判定日: 2026-05-03
 - AI 能力バージョン: claude-opus-4-7（1M context）
-- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間指示で起動）
 - 起源: ユーザー要請「自律駆動できるようにしたい、issue の自動取得で GO サインがある issue だけを対象に」を起点に、autonomous-drive 機構の出口側（auto-merge）を実装するパス A 採用判断
 - 自己検証: `harness-verifier/verify.py` 全項目 PASS
 - 後方互換: 完全維持（label opt-in、label なき PR は従来通り手動 merge）
@@ -371,7 +371,7 @@ REGIME.md の `dev_mode` は `github_assisted` のまま。本 patch は出口�
 
 - 判定日: 2026-05-03
 - AI 能力バージョン: claude-opus-4-7（1M context）
-- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間指示で起動）
 - 起源: v5.5.1 PR #40 で gemini-review 動作確立に伴い導入された診断機構（`continue-on-error: true` / `GEMINI_DEBUG: "true"` / Diagnostics 2 step）の縮退。並行して `continue-on-error` 削除の副作用として PAT 未設定環境で job hard-fail する事象を防ぐため `GH_REVIEW_PAT` availability check を新設
 - 自己検証: `harness-verifier/verify.py` 全項目 PASS
 - 後方互換: 機能ロジックは不変。**ただし `continue-on-error: true` 削除は observable な operational behavior 変更**（transient Gemini/MCP failure が silent success → hard-fail (red CI) に変わる、Copilot review #41 line 12 で指摘 → 意図的設計判断として明文化）
@@ -400,7 +400,7 @@ REGIME.md の `dev_mode` は `github_assisted` のまま。本 patch は出口�
 
 - 判定日: 2026-05-02
 - AI 能力バージョン: claude-opus-4-7（1M context）
-- 改修主体: layer1-autonomous-dev（M2 体制、人間ひでさん指示で起動）
+- 改修主体: layer1-autonomous-dev（M2 体制、人間指示で起動）
 - 起源: v5.5.0 で温存された Phase γ 残 2 件のうち先行宣言 4 を本実装する patch（v5.5.0 CHANGELOG / INTENT.md に v5.5.x patch 候補として明記済みの項目を消化）。副次目的として gemini-review GitHub Action（PR #37/#38 で導入）の独立レビュー機能を実運用で初めてテストする
 - 自己検証: `harness-verifier/verify.py` 全項目 PASS（実行記録は本 patch CHANGELOG Step 3 に簡記）
 - 後方互換: 機能変更ゼロ（明文化のみ）。SKILL.md セクション番号・既存 references 本文（追記のみ）・crosscut-* / templates/ / harness-verifier/ は機能不変。`refactor-intent-map.md` の I/O 契約も不変
@@ -424,7 +424,7 @@ REGIME.md の `dev_mode` は `github_assisted` のまま。本 patch は出口�
 
 - 判定日: 2026-05-01
 - AI 能力バージョン: claude-opus-4-7
-- 改修主体: layer0-spec-architect → crosscut-council 諮問 → layer1-autonomous-dev（人間ひでさん指示で起動）
+- 改修主体: layer0-spec-architect → crosscut-council 諮問 → layer1-autonomous-dev（人間指示で起動）
 - 起源: PR #31 (CI/CD 強化計画 merge 済) で記録された保留計画「Lifecycle → LC 命名変更計画」の発動。本来の発動条件 (a)「PR #30 merge かつ PR #31 merge 両方」のうち PR #30 が未 merge（draft）のまま発動したため、`crosscut-council` で並列実行の妥当性を諮問
 - Council 判定: 経営者（条件付き進行）/ 開発者（段階的進行）/ 哲学者（条件記述更新後に進行）→ 重み付き「進行可、3 条件付き」（`history/COUNCIL-LOG.md` 参照）
 - 自己検証: `harness-verifier/verify.py` 全項目 PASS（実行記録は INTENT.md 実施記録に簡記）

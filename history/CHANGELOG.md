@@ -5,7 +5,7 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 ## エージェントオーケストレーション実行基盤 — Workflow 背骨 + 議論型協調層（v6.11.0、minor 昇格、in progress, target 2026-08-15、PR #TBD）
 
 L0 前ブレスト（PR #184）→ L0 対話（全層同時 1 リリース / Teams 抽象契約 + 時限付き随時層 / 記録 teeth、
-ひでさん決定）→ 仕様起草（PR #185 merged）→ 実装前 Council 諮問 `v6110c`（reason_divergence 案B 条件付き GO、
+ユーザー決定）→ 仕様起草（PR #185 merged）→ 実装前 Council 諮問 `v6110c`（reason_divergence 案B 条件付き GO、
 jc 0.80、条件 4 件を仕様追補）を経た実装。正典は `dh-upgrades/upgrade-spec-v6.11.0.md`。
 新機構の追加ではなく、既存設計図（Council フェーズプロトコル / review OC+workers / 反証 fan-out / L2 雛形）への
 **決定論実行基盤の置換**。
@@ -37,7 +37,7 @@ jc 0.80、条件 4 件を仕様追補）を経た実装。正典は `dh-upgrades
 
 Council `f9b2c4`（v6.9.0 事後評価、reason_divergence 案B、jc 0.82）への人間決定
 「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については
-Council 機構で緩和とする」（ひでさん、2026-08-14）の実装。
+Council 機構で緩和とする」（2026-08-14）の実装。
 
 - **`crosscut-council/references/escalation-matrix.md` 新設**: 開発ポジション（L0 / L1 /
   L1-reviewer / L2 / crosscut）× 段階（仕様策定 / 実装 / 検証 / 献上 / 規範改変）→
@@ -57,7 +57,7 @@ Council 機構で緩和とする」（ひでさん、2026-08-14）の実装。
 
 外部記事考察（Qiita @y0us91「AIが実装し、AIがテストし、AIが『問題ありません』と言う時代の品質保証」、
 2026-08-11）で特定された gap — DH の独立検証は確証（SPEC⇔成果物照合）寄りで、反証探索を明示的に
-課していない — を埋める minor リリース。ひでさん依頼（2026-08-14）。
+課していない — を埋める minor リリース。ユーザー依頼（2026-08-14）。
 
 - **`layer1-independent-reviewer/references/falsification-protocol.md` 新設**: 反証 3 類型
   （A 挙動反証 = counterexample 構築 / B テスト反証 = test-the-tests・ミューテーション・スポットチェック /
@@ -75,7 +75,7 @@ Council 機構で緩和とする」（ひでさん、2026-08-14）の実装。
 
 ## CLAUDE.md 統括者モデル + ローカル自律実行ファースト（v6.8.0、minor 昇格、in progress, target 2026-08-05、PR #175）
 
-kakuman-platform CLAUDE.md のメタ診断（2026-08-04）を起点に、L0 メタハーネス対話（ひでさん）で確定した
+kakuman-platform CLAUDE.md のメタ診断（2026-08-04）を起点に、L0 メタハーネス対話で確定した
 minor リリース。純化 RL（Council `claude-md-purity`、feat/claude-md-purity-and-retrospective ブランチ先行分）を
 v0.2.0 へ拡張し、dev-env-spec の CLAUDE.md 規格を「エージェント RL」から「プロジェクト統括者」へ再定義した。
 
@@ -90,7 +90,7 @@ v0.2.0 へ拡張し、dev-env-spec の CLAUDE.md 規格を「エージェント 
 - **`delivery-format.md`**: DELIVERY.md テンプレに「通過ゲート記録」セクション追加（ルーティング表型のみ・M2 以上必須、
   省略はセンサー FAIL 扱い）
 - **`regime-assessment.md` §dev_mode 二軸注記**: GitHub 利用を保管庫軸 / 実行環境軸に分離。保管庫利用は Actions を
-  要求しない。CI にしか存在しない検査を作らない（2026-08-05 ひでさん宣言）。`github_assisted` の「Actions 任意」を
+  要求しない。CI にしか存在しない検査を作らない（2026-08-05 ユーザー宣言）。`github_assisted` の「Actions 任意」を
   「Actions 不要」へ読み替え
 - **`docs/migration-guide-v6.8.0.md` 新設**: 既存プロジェクト移行 6 手順（診断に機械依存洗い出しを必須化・
   atomic 1 PR・段階適用オプション・移行しない選択の正当性）
@@ -366,7 +366,7 @@ v6.4.0 の実地適用の続報。利用者プロジェクトの COUNCIL-LOG に
 
 ## CTL 収集経路の実地適用と発動時自動同期（v6.4.0、minor 昇格、PR #TBD）
 
-利用者（ひでさん）の要請「kakuman-platform の CTL を蓄積していきたい」を起点に、利用者プロジェクトの
+利用者の要請「kakuman-platform の CTL を蓄積していきたい」を起点に、利用者プロジェクトの
 Council 資産を CTL へ載せる実作業を行い、**CTL-0 → CTL-1 到達**（評価済み 3 件 → 89 件、C1 が
 count=20 / rate=0.90 で委譲対象カテゴリ化）。作業中に判明した 5 つの欠落のうち 3 件を本版で実装した。
 
@@ -422,7 +422,7 @@ C2 count=55 rate=0.87 / C3 count=5 rate=1.0 / C4 count=9 rate=0.89。CTL-2 の�
 ## runtime_profile 軸新設 + GAS を 11 番目の正規 stack として追加（v6.3.0、minor 昇格、Council `07oknv`、PR #TBD）
 
 解析レポート `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md`（PR #165）の提案 2 件を、人間
-（ひでさん）の明示承認「L0 起動、runtime_profile 軸を進める / GAS は正規 Stack に追加する」を受けて
+の明示承認「L0 起動、runtime_profile 軸を進める / GAS は正規 Stack に追加する」を受けて
 L0 spec-architect セッションで実装。GAS / Google エコシステム / Android / MacroDroid 等の特殊環境が破る
 暗黙前提「ローカル CLI で決定論 smoke が回る・CI が実行環境に届く」を軸として明示化した。
 
@@ -450,7 +450,7 @@ L0 spec-architect セッションで実装。GAS / Google エコシステム / A
 
 ## 外部 OSS「Ponytail」の最小主義ラダーを D2/D3 scaffold rule として吸収（v6.2.0、minor 昇格、Council `pony01`、PR #TBD）
 
-利用者（ひでさん）の問い「GitHub の Ponytail は DH に導入する価値があるか」を起点に、外部 OSS スキル
+利用者の問い「GitHub の Ponytail は DH に導入する価値があるか」を起点に、外部 OSS スキル
 [Ponytail](https://github.com/DietrichGebert/ponytail)（MIT、〜44k stars、「最良のコードは書かないコード」の
 最小主義決定ラダー）の吸収可否を評価。DH の philosophy（9 条）は統治・責務・可逆性・合議に重心があり
 「実装時にコードを少なく書く」という**実装工芸レベルの規範がほぼ空白**だった点を、Ponytail が突くと確認。
@@ -458,7 +458,7 @@ L0 spec-architect セッションで実装。GAS / Google エコシステム / A
 - **Council 諮問** `council-2026-07-05T10:37:44Z-pony01`（business / category=conception / 経営者3・開発者3・
   哲学者5）: recommended **B**（D4=philosophy 昇格でなく D2/D3 scaffold rule 化）。最重量の哲学者が
   options 外の第 3 の道へ分岐（output-format §third_way_excluded で重み除外・minority 転載）。判定を
-  人間（ひでさん）が『実装してください』で引き受け、哲学者の第 3 の道を織り込んだ止揚案 **B′** で合意
+  人間が『実装してください』で引き受け、哲学者の第 3 の道を織り込んだ止揚案 **B′** で合意
   （implementer_consent=agreed_with_modification）。
 - **新設** `templates/rules/common/minimalism-ladder.rules.md`: 決定ラダー（YAGNI → 既存再利用 → 標準lib →
   ネイティブ → 既存依存 → ワンライナー → 最小コード）+ 要求されない抽象化の禁止を DH 形式に再構成。
@@ -483,7 +483,7 @@ L0 spec-architect セッションで実装。GAS / Google エコシステム / A
 
 ## CTL 記録経路の再設計（分断解消・単一ソース化・v6.1.0、minor 昇格、released 2026-07-01、PR #161 merged）
 
-利用者（ひでさん）の指摘「多くの council 判定をしてきたのに CTL のデータがない＝機能していない」を
+利用者の指摘「多くの council 判定をしてきたのに CTL のデータがない＝機能していない」を
 起点に、CTL（Council Trust Level）記録経路の分断を解消。調査で根本原因を確定：`record` を強制する
 実行主体が無く手順書依存で空文化（発動 53 回に対し CTL 用記録 1 件）、`decision_category`（CTL 必須キー）
 が COUNCIL-LOG 53 件中 2 件のみ、`category`（重み軸）と `decision_category`（委譲軸）の二重管理。
@@ -519,7 +519,7 @@ L0 spec-architect セッションで実装。GAS / Google エコシステム / A
 
 ## 2026-06-14 権限委譲境界の確立（可逆性ベース・v6.0.0、major 昇格、released 2026-06-14、PR #147/#148 merged + #153 で配布機構実体化完了）
 
-利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は出力後修正／
+利用者の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は出力後修正／
 重大事象のみ人間判断／Harness 形成後は明示 L0 起動以外フルアクセス権限委譲／local と github を明確分離／
 github は CI 削除し sub_agent_review に転換」を起点に、DH 自身の権限構造を反転。Council 諮問
 `council-2026-06-14T-delgbd`（unanimous 案C / weighted_score 7.80 / judgment_confidence 0.72）採択。
@@ -698,7 +698,7 @@ E2E 運用データが貯まってから再判定。minority opinion として�
 
 **(2) UI Baseline RL の取り込み（利用者提供 UIUX 研究 → DH 統合）**
 
-利用者（ひでさん）提供の 2 ファイル（`ui-baseline.rules.md` / `ui-specialization.context.md`）を DH に統合。
+利用者提供の 2 ファイル（`ui-baseline.rules.md` / `ui-specialization.context.md`）を DH に統合。
 DESIGN.md は「視覚トークン層（どう見えるか）」を担うが「相互作用層（どう知覚・操作されるか）」が空白
 だった（token 静的検査の限界・DONT「創造的 UX を AI に任せない」）。枯れた UX 法則（Norman/Fitts/Hick/
 Miller/Jakob/Doherty/Gestalt/WCAG）に立脚した機械可読 RL でこの空白を埋める。
@@ -1404,7 +1404,7 @@ Issue #46（v5.8.0 候補 `crosscut-issue-quality-gate` 設計）を実装トリ
 
 **minor 昇格**。**autonomous-drive 入口側（Issue → AI pickup → 実装開始）本格稼働 + Issue 選別機構**。
 
-ユーザー（ひでさん）の根源要請「Bを考えよう（自前 workflow 実装）」+ 「Issue 選択は開発品質を決めると言って過言ではない」を起源として、L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.0-issue-pickup.md`) に基づく実装。
+ユーザーの根源要請「Bを考えよう（自前 workflow 実装）」+ 「Issue 選択は開発品質を決めると言って過言ではない」を起源として、L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.0-issue-pickup.md`) に基づく実装。
 
 **実装方式**: gemini-cli 流用（既存 GEMINI_API_KEY、追加コスト 0、Anthropic API 回避）。
 **Council 諮問**: なし（11 論点全て対話で合意、起動条件未満）。
@@ -1460,7 +1460,7 @@ Issue #46（v5.8.0 候補 `crosscut-issue-quality-gate` 設計）を実装トリ
 
 **minor 昇格**。**autonomous-drive 標準化 + DH AI 組織論明文化**。
 
-L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に基づく実装。ユーザー（ひでさん）の根源要請「自律駆動を L0 に記録、メタスキル開発」と「DH AI 組織は 4 役割 + サポートのみで完遂可能」の宣言を制度化する。
+L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に基づく実装。ユーザーの根源要請「自律駆動を L0 に記録、メタスキル開発」と「DH AI 組織は 4 役割 + サポートのみで完遂可能」の宣言を制度化する。
 
 Council 諮問 `council-2026-05-03T08:30:00Z-adrv02` で β 止揚採用：deployment skill 1 つのみ新設、guardian は v5.6.x patch 温存。
 
@@ -1733,7 +1733,7 @@ Phase γ（L1 自己検証/独立検証への意図合致軸追加、起点問�
 
 ### Step 0: HANDOFF 受領と最終ブレスト
 
-ひでさんから Claude.ai 上の archeo-architect ブレスト結晶 HANDOFF を受領。CC 側で Phase 1〜3（探索・設計・確認）を実行：
+ユーザーから Claude.ai 上の archeo-architect ブレスト結晶 HANDOFF を受領。CC 側で Phase 1〜3（探索・設計・確認）を実行：
 
 - 既存 spec-architect / onboarding の内部構造を Explore で把握
 - DH 哲学ドキュメント群（DH-PHILOSOPHY-INSIGHTS / INTENT.md / DIMENSIONS.md / philosophy.md / council-philosophy.md）の参照箇所整合性検証
@@ -1776,9 +1776,9 @@ Phase γ（L1 自己検証/独立検証への意図合致軸追加、起点問�
 
 ### Step 6: 業界知見統合（Council 諮問経由の追加実装）
 
-ひでさんから AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ / ファウラー / ヘルマンズ / ストラングラー・フィグ / Branch by Abstraction / 承認テスト / 自動照合ループ / Git ホットスポット / DDD Bounded Context / AAR / 失敗アンチパターン）が共有され、選択肢 A/B/C の拮抗のため Council 諮問。
+ユーザーから AI を活用したレガシーコード・リファクタリング業界知見（フェザーズ / ファウラー / ヘルマンズ / ストラングラー・フィグ / Branch by Abstraction / 承認テスト / 自動照合ループ / Git ホットスポット / DDD Bounded Context / AAR / 失敗アンチパターン）が共有され、選択肢 A/B/C の拮抗のため Council 諮問。
 
-`crosscut-council` を直接起動（`council-2026-05-01T10:30:00Z-archeo01`、category: conception、哲学者重み 5 で支配的）。3 Persona で simple_conflict（経営者 B / 開発者 A / 哲学者 第 4 の道）。Judgment Agent confidence 0.7 で「**第 4 の道: A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。ひでさん即時合意。
+`crosscut-council` を直接起動（`council-2026-05-01T10:30:00Z-archeo01`、category: conception、哲学者重み 5 で支配的）。3 Persona で simple_conflict（経営者 B / 開発者 A / 哲学者 第 4 の道）。Judgment Agent confidence 0.7 で「**第 4 の道: A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。ユーザー即時合意。
 
 追加実装：
 
@@ -1798,7 +1798,7 @@ Phase γ（L1 自己検証/独立検証への意図合致軸追加、起点問�
 
 ### Step 8: L1-refactor 新設提案の Council 諮問（archeo02、最小記録）
 
-ひでさんから L1-refactor スキル新設の提案。CC が D4 原則で機械的検査し 5 原則違反（wf-baseline-rationale.md / philosophy.md §1 / §3 / Phase γ 重複 / 観測駆動閾値未達）を指摘、不採用結論を提示。ひでさんが Council 諮問を選択。
+ユーザーから L1-refactor スキル新設の提案。CC が D4 原則で機械的検査し 5 原則違反（wf-baseline-rationale.md / philosophy.md §1 / §3 / Phase γ 重複 / 観測駆動閾値未達）を指摘、不採用結論を提示。ユーザーが Council 諮問を選択。
 
 `crosscut-council` 直接起動（`council-2026-05-01T11:00:00Z-archeo02`、conception カテゴリ）。3 Persona unanimous で **B（L1-refactor 不採用、Phase γ 予定通り）** を支持、weighted_score 8.85、judgment_confidence 0.85 で agreed_recommended 確定。CC 機械的検査と Council 判断が完全整合し堅牢な決定。
 

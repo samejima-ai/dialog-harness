@@ -6,7 +6,7 @@ Council System の設計に至るブレスト経緯と、確定事項・未確�
 
 ## ブレスト概要
 
-**実施**: 2026-04（ひで × Claude）
+**実施**: 2026-04（ユーザー × Claude）
 **目的**: 「判断時にのみ発動する合議制判定機構」を Dialog Harness の sub-skill として設計する
 **背景**: 既存 MAGI 系実装（深津貴之 2022-12 / ROROSUKE / matsu_vr / Microsoft Zenn）との差別化を意識しつつ、AI自律駆動開発における判断モジュールとして再設計
 
@@ -157,7 +157,7 @@ PR1 実装後の Walking Skeleton 検証（Test A/B）で、subagent が 3 件�
 
 ## 参照
 
-- 設計時の構成資料: ブリーフ（dialog-harness 本体外、ひで保管）
+- 設計時の構成資料: ブリーフ（dialog-harness 本体外、ユーザー保管）
 - 実装後の参照: 本ファイル + `council-philosophy.md` + 各 references/*.md
 
 ---

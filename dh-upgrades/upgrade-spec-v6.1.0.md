@@ -2,7 +2,7 @@
 
 **リリース予定**: TBD（本文書は設計方針の結晶化。実装は別 PR）
 **バージョン昇格**: minor（v6.0.1 → v6.1.0、後方互換維持）
-**起点**: ユーザー（ひでさん）指摘「今まで多くの council 判定をしてきてデータがないということはこの CTL が機能していない」→ 調査で記録経路の分断が判明 →「DH をアップデートして他のプロジェクトでも CTL が機能するように再設計・修正する」
+**起点**: ユーザー指摘「今まで多くの council 判定をしてきてデータがないということはこの CTL が機能していない」→ 調査で記録経路の分断が判明 →「DH をアップデートして他のプロジェクトでも CTL が機能するように再設計・修正する」
 **境界**: 本改修は **L-FULL / C カテゴリ**（記録経路の話であり、委譲境界 SPEC = `delegation-boundary.md` / `philosophy.md` / `auto-merge-boundary.md` には一切触れない）。ガバナンス検証済み（§5）。
 **Council 諮問**: `council-2026-07-01T13:04:40Z-ctlrec1`（business / conception / unanimous / 案A修正 / weighted_score 7.37 / judgment_confidence 0.67、agreed_recommended）
 
