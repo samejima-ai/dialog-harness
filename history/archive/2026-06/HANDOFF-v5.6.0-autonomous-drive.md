@@ -3,7 +3,7 @@
 **作成日**: 2026-05-03
 **作成元**: layer0-spec-architect（本セッションで起動）
 **譲渡先**: layer1-autonomous-dev
-**起源**: ユーザー（ひでさん）からの明示要請「自律駆動を L0 に記録して他の開発でも容易に展開できるようにしたい、これはメタスキル開発」
+**起源**: ユーザーからの明示要請「自律駆動を L0 に記録して他の開発でも容易に展開できるようにしたい、これはメタスキル開発」
 **Council 諮問**: `council-2026-05-03T08:30:00Z-adrv02`（β 止揚 = deployment skill のみ新設、guardian は patch 温存、`agreed_with_modification`）
 
 ---

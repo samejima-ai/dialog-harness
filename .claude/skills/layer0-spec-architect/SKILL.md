@@ -637,7 +637,7 @@ project-root/
 
 ### v6.3.0 追加（runtime_profile 軸新設 + GAS stack 追加・11 stack 化、minor 昇格）
 
-後方互換維持の追加のみ。Council `council-2026-07-12T11:10:45Z-07oknv`（business / category=conception / 経営者3・開発者3・哲学者5 / **unanimous 案A** / weighted_score 8.06）に基づく。起点は `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md` §3（特殊環境拡張解析）+ 人間（ひでさん）の明示承認（runtime_profile 軸 SPEC 化 / GAS 正規 stack 追加）。
+後方互換維持の追加のみ。Council `council-2026-07-12T11:10:45Z-07oknv`（business / category=conception / 経営者3・開発者3・哲学者5 / **unanimous 案A** / weighted_score 8.06）に基づく。起点は `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md` §3（特殊環境拡張解析）+ 人間の明示承認（runtime_profile 軸 SPEC 化 / GAS 正規 stack 追加）。
 
 - **runtime_profile 軸新設**: 全 stack が暗黙に前提してきた「ローカル CLI で決定論 smoke が回る」「CI が実行環境に届く」を明示化し、`local-reproducible`（既定）/ `cloud-managed` / `device-bound`（定義のみ・観測温存）の 3 値で smoke / E2E / CI 到達性の要求水準を読み替える。`references/regime-assessment.md` §runtime_profile 判定（stack から AI 自動推定・新規質問ゼロ・不明時 local-reproducible fallback・訂正は手動 override + ADR）、`references/scaffold-checklist.md` §runtime_profile 別要求水準（正本）、`assets/meta-spec-template.md` REGIME テンプレ欄を新設。既存プロジェクトは REGIME.md 未記載 = `local-reproducible` と等価（後方互換・遡及追記不要）
 - **Stack 11: GAS (Google Apps Script) + clasp + TypeScript** を追加 stack カタログに追加（10 → 11 stack 化）。`cloud-managed` の第一適用例として要求水準表を同一リリースで実参照（Council 制約 C-a: 実行経路未接続の死蔵機構＝v6.1.0 CTL 分断と同型の反復欠陥を防止）。純粋ロジック層 / GAS API 接触層の**層分離規約を最低要件化**し、ローカルランタイム不在下でも 5 層検出スタック第 1 層の検出力を確保。罠 G1〜G6（6 分制限 / quota / simple trigger / Script Properties / trigger 冪等性 / ES modules 非対応）を明記。観測元は Google 公式ドキュメント（2026-07 観測）

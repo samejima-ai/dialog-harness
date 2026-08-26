@@ -4,7 +4,7 @@ DH 本体の設計意図・新規概念の記録。
 
 ## v6.11.0：エージェントオーケストレーション実行基盤（Workflow 背骨 + 議論型協調層）(in progress)
 
-利用者（ひでさん）の「DH にエージェントチームによるオーケストレーションを導入する。SNS で最新情報を
+利用者の「DH にエージェントチームによるオーケストレーションを導入する。SNS で最新情報を
 キャッチアップして DH に合う、私好みの物を選びたい」（2026-08-14、L0 前ブレスト起点）を、
 ブレスト（delivery/ANALYSIS-agent-orchestration-2026-08-14.md）→ L0 対話 → 仕様（upgrade-spec-v6.11.0.md）→
 Council 諮問 `v6110c` の 4 段で確定した minor リリース。
@@ -39,7 +39,7 @@ Council 諮問 `v6110c` の 4 段で確定した minor リリース。
 ## v6.10.0：判定エスカレーション・マトリクス + AI 判定矛盾の Council 緩和 (released 2026-08-14, PR #183)
 
 Council `f9b2c4`（v6.9.0 事後評価）が特定した手続きの瑕疵 — 規範文書改変が「一文依頼 → 実装 →
-auto-merge」を判定の促しなしに通過した — への人間決定（ひでさん、2026-08-14）
+auto-merge」を判定の促しなしに通過した — への人間決定（2026-08-14）
 「開発のポジションや段階で人間または Council への判定を促すようにする。AI 判定矛盾については
 Council 機構で緩和とする」を実装する minor リリース。
 
@@ -66,7 +66,7 @@ Council 機構で緩和とする」を実装する minor リリース。
 
 ## v6.9.0：独立検証への Falsification（反証）指示の明示化 (released 2026-08-14, PR #182)
 
-利用者（ひでさん）の依頼「independent-reviewer への Falsification 指示の明示化、やってみて」
+利用者の依頼「independent-reviewer への Falsification 指示の明示化、やってみて」
 （2026-08-14）を起点とする minor リリース。直接の契機は外部記事考察（Qiita @y0us91、2026-08-11）で、
 「AI が実装とテストの両方を生成する体制ではテストの Green 自体が攻略対象になる（Reward Hacking 同型）」
 という論点を DH の既存独立検証機構に突き合わせた結果、次の gap を特定した：
@@ -97,7 +97,7 @@ DH はコンテキスト隔離（ループ分離）で検証の独立性を担�
 
 ## v6.8.0：CLAUDE.md 統括者モデル + ローカル自律実行ファースト (in progress)
 
-利用者（ひでさん）の「L0 メタハーネス開発起動 — CLAUDE.md をプロジェクト統括者として再構築する。
+利用者の「L0 メタハーネス開発起動 — CLAUDE.md をプロジェクト統括者として再構築する。
 DH 全体で開発を担保するために CLAUDE.md は薄くプロジェクト全体を管理できるようにする」（2026-08-04/05）を起点とする
 minor リリース。直接の契機は kakuman-platform CLAUDE.md のメタ診断（2026-08-04: 53KB 常駐・行数規定の
 1 行肥大による迂回・surface マトリクス追記漏れ = 規律ゲートの実効性欠如、の実測）。
@@ -112,7 +112,7 @@ minor リリース。直接の契機は kakuman-platform CLAUDE.md のメタ診�
 - **byte は規範でなくセンサー**: 「量でなく配置」（Council 採択済み）と byte 上限の緊張は、byte を配置 drift の
   安価な代理指標（20KB warn / 32KB fail / 1 行 400 byte、発火時の対処は移送であって削減ではない）と
   位置づけることで解消。行数規定（旧 200 行 / 300 行）は迂回実績により廃止
-- **ローカル自律実行ファースト原則（2026-08-05 ひでさん宣言・2 段階で研磨）**: ① AI エージェントの自律実行は
+- **ローカル自律実行ファースト原則（2026-08-05 ユーザー宣言・2 段階で研磨）**: ① AI エージェントの自律実行は
   ローカルがメイン、Actions 依存設計は GitHub 連携開発を除いて排除 → ② GitHub を保管庫にする場合も Actions は不要。
   最終形 = GitHub 利用を保管庫軸（push / PR 履歴 / レビュー記録）と実行環境軸（Actions）に二軸分離し、
   保管庫利用は Actions を要求しない。検証は常に実行主体のローカル（リモート実行型では runner 内 = その実行主体の
@@ -133,7 +133,7 @@ minor リリース。直接の契機は kakuman-platform CLAUDE.md のメタ診�
 
 ## v6.3.0：runtime_profile 軸新設 + GAS 正規 stack 化 (in progress)
 
-利用者（ひでさん）の要請「GAS や Google エコシステム、Android 端末や MacroDroid などを使用する開発環境も
+利用者の要請「GAS や Google エコシステム、Android 端末や MacroDroid などを使用する開発環境も
 想定したい」を起点に、解析レポート（`delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md`、PR #165）が
 特定した**暗黙前提の破れ**を軸として明示化する minor リリース。Council 諮問
 `council-2026-07-12T11:10:45Z-07oknv`（business / conception / unanimous 案A / weighted_score 8.06）。
@@ -179,7 +179,7 @@ REGIME.md に記録するが、判定は stack からの AI 自動推定で**人
 
 ## v6.0.0：権限委譲境界の確立（可逆性ベース・major）(in progress)
 
-利用者（ひでさん）の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は成果物
+利用者の根源要請「L0 自己適用の自動化を大幅に進める／9 割は推奨でいい・残り 1 割は成果物
 出力後修正にする／DH は重大な事象にのみ人間が判断／哲学・設計・UIUX を L0 で決めて Harness 形成後は
 明示 L0 起動以外フルアクセス権限委譲オートドライブ／ローカルと github を明確に分けて再設定／github では
 CI 削除し sub_agent_review に転換」を起点に、DH 自身の権限構造を反転する major リリース。Council 諮問
@@ -291,7 +291,7 @@ circuit-breaker / Quarantine→設計層）。v5.23.0「接続地図のみ」の
 
 ## v5.23.0：E2E 構築 BP の体系化・AI 駆動 E2E の在り方 (in progress)
 
-L0 起動（メタスキル開発）。「E2E を DH の文脈で体系化して取り入れたい」を起点に、人間（ひでさん）との
+L0 起動（メタスキル開発）。「E2E を DH の文脈で体系化して取り入れたい」を起点に、人間との
 ブレストで **AI 駆動開発における E2E の真の在り方**を言語化した。人間開発の BP（テストピラミッド等）は
 「書く=高 / 回す=安」という人間前提に立つが、AI 駆動ではこの前提が崩れる。
 
@@ -326,7 +326,7 @@ vs CI）は AI の知覚器官そのもののばらつき＝ flaky 源・観測�
 
 ## v5.23.0：UI Baseline RL（相互作用層）の取り込み (in progress)
 
-利用者（ひでさん）提供の UIUX 研究 2 ファイルを DH に統合。同一 PR の E2E/C5 と「B-ID = oracle」で接続する。
+利用者提供の UIUX 研究 2 ファイルを DH に統合。同一 PR の E2E/C5 と「B-ID = oracle」で接続する。
 
 ### 設計意図の核
 
@@ -368,7 +368,7 @@ PR #33 が 4 日間放置されている事例を起点に、auto-merge の人�
 
 ### 設計意図の核
 
-**(a) opt-out 反転の根拠**: 人間（ひでさん）の発言「人間は多少のことは無関心なので基本オートでよい。対話の中でタグ付けするかどうかを重要度によって聞くようにして、基本は暗黙的にオートである」を起点とする流速最適化。opt-in モデルでは PR #33 のように人間が `auto-merge` ラベル付与を忘れて PR が滞留する事例を構造的に許容していた。opt-out モデルでは沈黙が暗黙承認となり流速が劇的改善する。
+**(a) opt-out 反転の根拠**: 人間の発言「人間は多少のことは無関心なので基本オートでよい。対話の中でタグ付けするかどうかを重要度によって聞くようにして、基本は暗黙的にオートである」を起点とする流速最適化。opt-in モデルでは PR #33 のように人間が `auto-merge` ラベル付与を忘れて PR が滞留する事例を構造的に許容していた。opt-out モデルでは沈黙が暗黙承認となり流速が劇的改善する。
 
 **(b) C ハイブリッド採用（A 全面 opt-out でも B 維持でもない）**: philosophy/harness-verifier/cross-cutting/不可逆領域は opt-in 維持（人間の能動的同意が必要）、定型領域のみ opt-out。哲学者の懸念「opt-in が体現していた『同意の能動性』が opt-out で失われる」「5 年スパンで『無関心 = 委譲』が『無関心 = 思考停止』に滑落する重力」を「境界を SPEC で不変化することで止揚」する。
 
@@ -551,7 +551,7 @@ v5.7.1 で `gemini-cli` → `Claude Code CLI` に実装エージェントを切�
 
 ### autonomous-drive 入口側本格稼働 + Issue 選別機構
 
-ユーザー（ひでさん）の根源要請「Bを考えよう」+ 「Issue 選択は開発品質を決めると言って過言ではない」を起源として、v5.6.0 で温存された「パス B（crosscut-issue-implementer workflow 実装）」を本格仕様化する minor リリース。L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.0-issue-pickup.md`) に従い L1 autonomous-dev で実装。
+ユーザーの根源要請「Bを考えよう」+ 「Issue 選択は開発品質を決めると言って過言ではない」を起源として、v5.6.0 で温存された「パス B（crosscut-issue-implementer workflow 実装）」を本格仕様化する minor リリース。L0 spec-architect セッションで策定された HANDOFF (`delivery/HANDOFF-v5.7.0-issue-pickup.md`) に従い L1 autonomous-dev で実装。
 
 #### 設計意図の核
 
@@ -608,7 +608,7 @@ philosophy 第 3 条情報純度 + 第 7 条 P2 ブレスト責務との整合�
 
 ### autonomous-drive 標準化 + DH AI 組織論明文化（メタスキル開発）
 
-ユーザー（ひでさん）の根源要請「自律駆動を L0 に記録、メタスキル開発」と「DH AI 組織は L0 設計 / L1 実装 / L2 統括 / Council 判断 の 4 役割属性 + サポート だけで、あらゆる開発に対応できる」の宣言を制度化する minor リリース。L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に従い L1 autonomous-dev で実装。
+ユーザーの根源要請「自律駆動を L0 に記録、メタスキル開発」と「DH AI 組織は L0 設計 / L1 実装 / L2 統括 / Council 判断 の 4 役割属性 + サポート だけで、あらゆる開発に対応できる」の宣言を制度化する minor リリース。L0 spec-architect セッションで策定された HANDOFF（`delivery/HANDOFF-v5.6.0-autonomous-drive.md`）に従い L1 autonomous-dev で実装。
 
 #### 設計意図の核
 
@@ -708,7 +708,7 @@ philosophy 第 3 条情報純度 + 第 7 条 P2 ブレスト責務との整合�
 
 #### 実施記録（2026-05-01）
 
-- **発動契機**: ひでさんからの「LC 命名変更に進む」指示。本来の発動条件 (a)「PR #30 merge **かつ** PR #31 merge の両方完了」のうち PR #30 が未 merge のため、`crosscut-council` を諮問した
+- **発動契機**: ユーザーからの「LC 命名変更に進む」指示。本来の発動条件 (a)「PR #30 merge **かつ** PR #31 merge の両方完了」のうち PR #30 が未 merge のため、`crosscut-council` を諮問した
 - **Council 判定**: 経営者（条件付き進行）/ 開発者（段階的進行）/ 哲学者（条件記述更新後に進行）の 3 ペルソナで重み付き総合「進行可」判定。前提 3 条件を提示
   1. INTENT.md の発動条件記述を「並列実行・衝突は rebase で解消」に更新（**本節がこれに該当**）
   2. 衝突 4 ファイル（spec-architect SKILL / dev-env-spec / INTENT / CHANGELOG）は PR #30 で追加された新規行に触れず、既存 Lifecycle 言及行のみ置換
@@ -904,9 +904,9 @@ PR push
 
 ### 外部 CI/CD 知見との整合分析（2026-05-01 調査、保留中）
 
-CI/CD 強化計画 (1)〜(5) の延長として、ひでさんが集めた **AI 主導型 CI/CD アーキテクチャに関する 2026 年時点の業界知見**を DH 既存原則と突き合わせた整合分析。本節は調査結果のスナップショットであり、採用判断は行わない。
+CI/CD 強化計画 (1)〜(5) の延長として、ユーザーが集めた **AI 主導型 CI/CD アーキテクチャに関する 2026 年時点の業界知見**を DH 既存原則と突き合わせた整合分析。本節は調査結果のスナップショットであり、採用判断は行わない。
 
-#### 入力源と要点（ひでさん経由）
+#### 入力源と要点（ユーザー経由）
 
 提供された AI 主導型 CI/CD ガイドの要点を 5 領域に整理：
 
@@ -1120,7 +1120,7 @@ v5.4.0 archeo-architect Phase α でリリースされた `handoff-to-evaluator.
 
 #### 設計意図の核
 
-**(a) 起点問題の構造解決**: ひでさんの起点問題「自分で書いたコードのリファクタを依頼すると意図通りにならない、10 個の修正点を依頼して 3〜4 個取りこぼす」を構造的に解決する。L1 (`layer1-autonomous-dev`) の自己検証/独立検証は v5.4.0 まで「仕様適合・動作・ユーザビリティ」の 3 軸評価で「意図合致軸」が不在だった。archeo の `delivery/refactor-intent-map.md` を L1 評価軸の **第 4 軸**として注入する。
+**(a) 起点問題の構造解決**: ユーザーの起点問題「自分で書いたコードのリファクタを依頼すると意図通りにならない、10 個の修正点を依頼して 3〜4 個取りこぼす」を構造的に解決する。L1 (`layer1-autonomous-dev`) の自己検証/独立検証は v5.4.0 まで「仕様適合・動作・ユーザビリティ」の 3 軸評価で「意図合致軸」が不在だった。archeo の `delivery/refactor-intent-map.md` を L1 評価軸の **第 4 軸**として注入する。
 
 ```
 [v5.4.0 まで] L1 評価軸 = (仕様適合 ∩ 動作 ∩ ユーザビリティ)
@@ -1165,7 +1165,7 @@ PR #33 adrv01 の「段階的組み込みで止揚」パターンを本リリー
 
 ### archeo-architect の追加（spec-architect の双対、L0 兄弟）
 
-ひでさん起点問題「自分で書いたコードのリファクタを依頼すると意図通りにならない。10 個の修正点を依頼して Evaluator ループを回しても 3〜4 個取りこぼす」の構造解決として、リファクタ前 Layer 0 を担う `layer0-archeo-architect` を新設した。HANDOFF「archeo-architect ブレスト → 実装」 2026-05-01 を起源とする。
+ユーザー起点問題「自分で書いたコードのリファクタを依頼すると意図通りにならない。10 個の修正点を依頼して Evaluator ループを回しても 3〜4 個取りこぼす」の構造解決として、リファクタ前 Layer 0 を担う `layer0-archeo-architect` を新設した。HANDOFF「archeo-architect ブレスト → 実装」 2026-05-01 を起源とする。
 
 #### 設計意図の核
 
@@ -1202,7 +1202,7 @@ L0 は v5.0.0 までは spec-architect 単独、v5.0.0 で onboarding を「使�
 
 ### Council 諮問による業界知見統合（追加実装、Council 経由）
 
-PR #30 draft 期間中にひでさんから AI を活用したレガシーコード・リファクタリング業界知見が共有され、Council 諮問 (`council-2026-05-01T10:30:00Z-archeo01`, conception カテゴリ、哲学者重み 5) で「**第 4 の道: 選択肢 A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。本 PR に追加実装：
+PR #30 draft 期間中にユーザーから AI を活用したレガシーコード・リファクタリング業界知見が共有され、Council 諮問 (`council-2026-05-01T10:30:00Z-archeo01`, conception カテゴリ、哲学者重み 5) で「**第 4 の道: 選択肢 A 縮小版 + Phase γ 伏線追加**」が agreed_recommended 確定。本 PR に追加実装：
 
 - **`intent-hypothesis-protocol.md` に Code Smells カノン対応表追加** — ファウラー / ヘルマンズの 12 種 Smells（Long Method / Duplicate Code / Large Class / Feature Envy / Shotgun Surgery / Divergent Change / Dead Code / Magic Number / Comments / Speculative Generality / Temporary Field / Refused Bequest）と本プロトコルの既存 8 ヒントのマッピング。仮説生成の信頼性向上と人間との対話精度向上に資する
 - **Git ホットスポット分析の S 軸統合** — Adam Tornhill「Your Code as a Crime Scene」に基づき `hotspot_score = log(修正頻度) × 複雑性指標` を S 軸に補正。アンチパターン「90 日の法則」（92% 失敗率）への対応として、上位 10% を archeo セッションの初期対話対象に優先する戦略
@@ -1222,7 +1222,7 @@ Council で経営者は選択肢 B（PR スコープ厳守、観測駆動を 1�
 
 ストラングラー・フィグ / Branch by Abstraction を L1 / L2 のリファクタ実行プロトコルとして体系化する案、および DDD Bounded Context との Boundaries 統合（`subphase-l02-domain.md` との連携）も v6.0.0 候補（業界知見の本格的吸収を minor 範囲外とする判断、Council 哲学者の射程区分判定）。
 
-**L1-refactor スキル新設の v6.0.0 拡張提案** — Council 諮問 `council-2026-05-01T11:00:00Z-archeo02`（ひでさん提案、CC 機械的検査で 5 原則違反指摘、Council 諮問で 3 ペルソナ unanimous B 採用）の哲学者拡張提案として、「v6.0.0 で **Level B プロジェクト固有 SK によるリファクタ支援** を明文化する」を温存。DH 本体（Level A、D4）は形状単一を保ち、機能タイプ特化はプロジェクト側（Level B）で吸収する設計。v5.x 帯で実装しない（archeo Phase β / γ / δ 他の minor 改修を圧迫しないため）。
+**L1-refactor スキル新設の v6.0.0 拡張提案** — Council 諮問 `council-2026-05-01T11:00:00Z-archeo02`（ユーザー提案、CC 機械的検査で 5 原則違反指摘、Council 諮問で 3 ペルソナ unanimous B 採用）の哲学者拡張提案として、「v6.0.0 で **Level B プロジェクト固有 SK によるリファクタ支援** を明文化する」を温存。DH 本体（Level A、D4）は形状単一を保ち、機能タイプ特化はプロジェクト側（Level B）で吸収する設計。v5.x 帯で実装しない（archeo Phase β / γ / δ 他の minor 改修を圧迫しないため）。
 
 ## v5.3.0 で追加された概念
 

@@ -82,7 +82,7 @@ design_md_impact: <none | tokens_only | dos_and_donts | both>
 
 notes: |
   <自由記述。human_confirmation: absent の場合は人間の明示宣言を引用すること>
-  <例: 「ひでさん発話: 思い出せない、当時から意図がなかった (2026-05-01)」>
+  <例: 「ユーザー発話: 思い出せない、当時から意図がなかった (2026-05-01)」>
   # visual Island の場合は DESIGN.md 該当セクションへの言及を含めると後続 L1 が
   # 意図合致検証時に参照しやすい
 ```
@@ -137,7 +137,7 @@ scope_paths:
 
 human_declaration: |
   <人間の明示宣言を引用、発話日時付き>
-  <例: 「特に考えてなかった、意図なし (ひでさん発話, 2026-05-01)」>
+  <例: 「特に考えてなかった、意図なし (ユーザー発話, 2026-05-01)」>
 
 redesign_directive: <required | optional | deferred>
   # required: 新規設計が必須（discard_and_redesign）
