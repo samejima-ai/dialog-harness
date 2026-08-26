@@ -1,0 +1,724 @@
+<title>ループ／グラフ診断書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+:root{
+  --paper:#E9EDEC; --surface:#F6F8F7; --sunk:#DFE5E3;
+  --ink:#131F1E; --ink2:#4C5C5A; --ink3:#758482;
+  --rule:#C4CFCC; --rule-soft:#D8E0DE;
+  --accent:#0C6C6E; --accent-soft:#0C6C6E1A;
+  --crit:#9C2A14; --warn:#8E6403; --ok:#3D6931; --info:#2E5A75;
+  --crit-bg:#9C2A1414; --warn-bg:#8E640314; --ok-bg:#3D693114;
+  --shadow:0 1px 2px rgba(19,31,30,.06),0 8px 24px -16px rgba(19,31,30,.28);
+  --f-disp:"Zen Old Mincho",'Hiragino Mincho ProN','Yu Mincho',serif;
+  --f-body:"Zen Kaku Gothic New",'Hiragino Sans','Yu Gothic',system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1414; --surface:#16201F; --sunk:#111A19;
+    --ink:#E0E8E6; --ink2:#98ABA8; --ink3:#758886;
+    --rule:#2A3937; --rule-soft:#21302F;
+    --accent:#4FC2BE; --accent-soft:#4FC2BE1F;
+    --crit:#EC7B5F; --warn:#D9A63C; --ok:#82BC6C; --info:#79AECF;
+    --crit-bg:#EC7B5F1A; --warn-bg:#D9A63C1A; --ok-bg:#82BC6C1A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1414; --surface:#16201F; --sunk:#111A19;
+  --ink:#E0E8E6; --ink2:#98ABA8; --ink3:#758886;
+  --rule:#2A3937; --rule-soft:#21302F;
+  --accent:#4FC2BE; --accent-soft:#4FC2BE1F;
+  --crit:#EC7B5F; --warn:#D9A63C; --ok:#82BC6C; --info:#79AECF;
+  --crit-bg:#EC7B5F1A; --warn-bg:#D9A63C1A; --ok-bg:#82BC6C1A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -18px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:1.85;
+  font-feature-settings:"palt" 1;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:clamp(1.5rem,4vw,4rem) clamp(1.1rem,4vw,2.5rem) 6rem}
+
+/* ── 見出し ── */
+h1,h2,h3,h4{font-family:var(--f-disp);text-wrap:balance;line-height:1.35;margin:0}
+h1{font-size:clamp(2rem,5.2vw,3.4rem);font-weight:900;letter-spacing:.01em}
+h2{font-size:clamp(1.35rem,3vw,1.85rem);font-weight:700}
+h3{font-size:clamp(1.05rem,2.2vw,1.22rem);font-weight:700}
+h4{font-size:1rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+.eyebrow{
+  font-family:var(--f-mono);font-size:.68rem;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--accent);
+}
+.lede{font-size:clamp(1.02rem,2.1vw,1.15rem);color:var(--ink2);line-height:1.95}
+.small{font-size:.86rem;color:var(--ink2);line-height:1.8}
+.mono{font-family:var(--f-mono);font-size:.82em;color:var(--ink2);word-break:break-all}
+strong{font-weight:700;color:var(--ink)}
+
+/* ── ヘッダ ── */
+header.masthead{border-bottom:2px solid var(--ink);padding-bottom:2rem;margin-bottom:3.5rem}
+.mast-meta{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin-top:1.6rem;
+  font-family:var(--f-mono);font-size:.72rem;color:var(--ink3);letter-spacing:.04em}
+.mast-meta span{white-space:nowrap}
+
+/* ── 配線レール ── */
+.rail{display:grid;grid-template-columns:2.75rem minmax(0,1fr);gap:0}
+.rail>.node{position:relative}
+.rail>.node::before{
+  content:"";position:absolute;left:.55rem;top:0;bottom:-3.5rem;width:1px;background:var(--rule);
+}
+.rail>.node::after{
+  content:"";position:absolute;left:.2rem;top:.62rem;width:.72rem;height:.72rem;
+  border-radius:50%;background:var(--paper);border:2px solid var(--accent);
+}
+section.blk:last-of-type .rail>.node::before{display:none}
+.rail-idx{font-family:var(--f-mono);font-size:.64rem;color:var(--ink3);
+  position:absolute;left:0;top:2rem;writing-mode:vertical-rl;letter-spacing:.14em}
+@media (max-width:640px){
+  .rail{grid-template-columns:1.4rem minmax(0,1fr)}
+  .rail>.node::before{left:.3rem}
+  .rail>.node::after{left:0}
+  .rail-idx{display:none}
+}
+
+section.blk{margin-bottom:3.5rem}
+.blk-body{display:flex;flex-direction:column;gap:1.15rem;padding-top:.1rem}
+.blk-body>h2{margin-bottom:.2rem}
+
+/* ── 総評パネル ── */
+.verdict{
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  box-shadow:var(--shadow);padding:clamp(1.4rem,3.5vw,2.2rem);
+  display:grid;gap:1.6rem;grid-template-columns:minmax(0,1fr);
+}
+@media(min-width:760px){.verdict{grid-template-columns:15rem minmax(0,1fr);align-items:start}}
+.grade-stack{display:flex;flex-direction:column;gap:1rem;border-right:0}
+@media(min-width:760px){.grade-stack{border-right:1px solid var(--rule-soft);padding-right:1.6rem}}
+.grade-big{display:flex;align-items:baseline;gap:.7rem}
+.grade-big .g{font-family:var(--f-disp);font-size:3.9rem;font-weight:900;line-height:.85;letter-spacing:-.02em}
+.grade-big .lbl{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase}
+.subgrade{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  padding-top:.55rem;border-top:1px dotted var(--rule);font-size:.9rem}
+.subgrade b{font-family:var(--f-mono);font-size:1rem;font-weight:600}
+
+/* ── 評点チップ ── */
+.chip{display:inline-flex;align-items:center;gap:.35rem;font-family:var(--f-mono);
+  font-size:.7rem;font-weight:600;letter-spacing:.08em;padding:.18rem .5rem;
+  border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+.c-crit{color:var(--crit);background:var(--crit-bg)}
+.c-warn{color:var(--warn);background:var(--warn-bg)}
+.c-ok{color:var(--ok);background:var(--ok-bg)}
+.c-info{color:var(--info);background:var(--accent-soft)}
+
+/* ── 表 ── */
+.tbl-scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.9rem}
+th,td{text-align:left;padding:.72rem .85rem;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+thead th{background:var(--sunk);font-family:var(--f-mono);font-size:.68rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;
+  border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:0}
+td.g{font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.axis{font-weight:700;white-space:nowrap}
+.meter{display:block;width:100%;min-width:72px;height:5px;background:var(--sunk);border-radius:3px;overflow:hidden;margin-top:.45rem}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.meter.m-crit i{background:var(--crit)} .meter.m-warn i{background:var(--warn)} .meter.m-ok i{background:var(--ok)}
+
+/* ── 所見カード ── */
+.findings{display:flex;flex-direction:column;gap:1rem;counter-reset:f}
+.find{
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:1.15rem 1.25rem 1.25rem;display:flex;flex-direction:column;gap:.7rem;
+  border-left:3px solid var(--ink3);
+}
+.find.sev-crit{border-left-color:var(--crit)}
+.find.sev-warn{border-left-color:var(--warn)}
+.find.sev-mid{border-left-color:var(--info)}
+.find-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem}
+.find-no{counter-increment:f;font-family:var(--f-mono);font-size:.78rem;font-weight:600;color:var(--ink3)}
+.find-no::before{content:"F-" counter(f,decimal-leading-zero)}
+.find h3{flex:1 1 16rem}
+.ev{background:var(--sunk);border-radius:2px;padding:.6rem .75rem;
+  font-family:var(--f-mono);font-size:.74rem;line-height:1.75;color:var(--ink2);
+  overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.ev b{color:var(--ink);font-weight:600}
+
+/* ── 成熟度ラダー ── */
+.ladder{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--surface)}
+.rung{display:grid;grid-template-columns:2.4rem 1fr auto;gap:.9rem;align-items:center;
+  padding:.7rem .9rem;border-bottom:1px solid var(--rule-soft)}
+.rung:last-child{border-bottom:0}
+.rung .n{font-family:var(--f-mono);font-size:.9rem;font-weight:600;color:var(--ink3);font-variant-numeric:tabular-nums}
+.rung.done{background:var(--ok-bg)} .rung.done .n{color:var(--ok)}
+.rung.part{background:var(--warn-bg)} .rung.part .n{color:var(--warn)}
+.rung.none .n{color:var(--ink3)}
+.rung .t{font-size:.9rem;line-height:1.6}
+.rung .t em{font-style:normal;color:var(--ink2);font-size:.84rem}
+
+/* ── 処方箋 ── */
+.rx{display:flex;flex-direction:column;gap:.9rem}
+.rx-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.9rem;
+  padding:1rem 1.1rem;background:var(--surface);border:1px solid var(--rule);border-radius:3px}
+.rx-tag{font-family:var(--f-mono);font-size:.72rem;font-weight:600;letter-spacing:.06em;
+  color:var(--paper);background:var(--ink);padding:.22rem .5rem;border-radius:2px;height:fit-content;white-space:nowrap}
+.rx-item.p0 .rx-tag{background:var(--crit)}
+.rx-item.p1 .rx-tag{background:var(--warn)}
+.rx-item.p2 .rx-tag{background:var(--accent)}
+.rx-body{display:flex;flex-direction:column;gap:.45rem}
+.rx-body h4{margin-bottom:.1rem}
+
+/* ── 引用・注記 ── */
+blockquote{margin:0;padding:.9rem 1.1rem;border-left:2px solid var(--accent);
+  background:var(--accent-soft);border-radius:0 3px 3px 0;font-size:.92rem;color:var(--ink2)}
+blockquote p+p{margin-top:.5rem}
+ul{margin:0;padding-left:1.25rem;display:flex;flex-direction:column;gap:.4rem}
+li::marker{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--rule);margin:0}
+
+/* ── 二段組 ── */
+.two{display:grid;gap:1rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:720px){.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pane{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:1.1rem 1.2rem;
+  display:flex;flex-direction:column;gap:.6rem}
+.pane h4{color:var(--accent)}
+.pane.neg h4{color:var(--crit)}
+
+footer{margin-top:4rem;padding-top:1.6rem;border-top:1px solid var(--rule);
+  font-family:var(--f-mono);font-size:.72rem;color:var(--ink3);line-height:2}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Loop / Graph Engineering — 独立診断</p>
+  <h1>お前のグラフは、<br>実行されていない。</h1>
+  <p class="lede" style="margin-top:1.4rem;max-width:62ch">
+    <span class="mono">dialog-harness</span> v6.11.0（起草中 v6.13.0）を、ループエンジニアリングの 6 モジュール／4 原則と、
+    グラフエンジニアリングの 10 特徴／8 段階成熟度に照らして採点した。
+    忖度はしない。結論から言えば <strong>設計思想は世界水準の上位数％、実行機構はその半分の高さで止まっている</strong>。
+    その落差そのものが、このリポジトリの唯一かつ最大の欠陥である。
+  </p>
+  <div class="mast-meta">
+    <span>診断日 2026-08-26</span>
+    <span>対象 samejima-ai/dialog-harness</span>
+    <span>HEAD 879d0b7</span>
+    <span>skills 20 / nodes 27 / edges 39</span>
+    <span>verify.py 総合 PASS</span>
+  </div>
+</header>
+
+<!-- ══════════ 1 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">VERDICT</span></div><div class="blk-body">
+  <p class="eyebrow">所見</p>
+  <h2>総合判定</h2>
+
+  <div class="verdict">
+    <div class="grade-stack">
+      <div class="grade-big">
+        <span class="g">B−</span>
+        <span class="lbl">総合<br>世界基準</span>
+      </div>
+      <div class="subgrade"><span>ループエンジニアリング</span><b>B−</b></div>
+      <div class="subgrade"><span>グラフエンジニアリング</span><b>C+</b></div>
+      <div class="subgrade"><span>グラフ成熟度</span><b>3 / 8 段階</b></div>
+      <div class="subgrade"><span>思想・設計</span><b>A</b></div>
+      <div class="subgrade"><span>実行・配線</span><b>C</b></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1rem">
+      <p><strong>あなたは「人間をグラフのノードとして一級市民に据えた」数少ない実装者である。</strong>
+      P1〜P4 の介入点と H1〜H4 の専管判断を <span class="mono">GRAPH.yml</span> の <span class="mono">kind: human</span> として宣言し、
+      委譲レベル（L-FULL / L-GATE / L-FROZEN）まで型付けしている。グラフエンジニアリングの第 8 特徴
+      「人間を例外処理ではなく実行主体として扱う」を、ここまで正面から実装した例を私は他に知らない。
+      決定論ツール（LLM 非使用の Python 検査器）と AI ノードを同一グラフに置く第 2 特徴も達成済み。</p>
+
+      <p><strong>だが、そのグラフは一度も実行されていない。</strong>
+      <span class="mono">GRAPH.yml</span> は冒頭の不変条件 I-2 で自ら宣言する ——
+      「本ファイルは実装の上位ではない。<b>実装が正・宣言が従</b>」。
+      つまりこれは実行グラフではなく<strong>実行の影絵</strong>である。
+      39 本の edge が持つ <span class="mono">condition:</span> はすべて自然言語の散文で、実行時にこれを評価する主体は存在しない。
+      グラフエンジニアリングの定義の核心は「edge を<strong>契約として実行時に</strong>評価する」ことなので、
+      現在地は<strong>段階 1（境界と契約の抽出）を極めて高精度で達成した状態</strong>であり、段階 4 以降には入っていない。
+      しかも I-2 は、そこへ進むことを構造的に禁じている。</p>
+
+      <p><strong>そして仕事は、まだ一件も自動発見されていない。</strong>
+      <span class="mono">cron</span> は月次の構造検査 1 本のみ。実装パイプラインの起点は例外なく人間の <span class="mono">ready-for-ai</span> ラベルである。
+      ループエンジニアリングが Automations を中核に据えるのは、それが唯一「スループットを人間 1 サイクルから切り離す」機構だからだ。
+      ここが欠けている限り、どれだけ下流を磨いても<strong>ボトルネックは設計上あなた自身であり続ける</strong>。</p>
+    </div>
+  </div>
+
+  <blockquote>
+    <p><strong>一文で言うと：</strong> 憲法と配線図は世界最高水準、電気は通っていない。</p>
+  </blockquote>
+</div></div>
+</section>
+
+<!-- ══════════ 2 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">METHOD</span></div><div class="blk-body">
+  <p class="eyebrow">採点方法</p>
+  <h2>何を物差しにしたか</h2>
+
+  <p>採点は 3 つの外部規格に照らして行い、主張はすべてリポジトリ内の実在ファイルまたはコマンド実行結果で裏づけた。
+  AI の自己申告（「〜のはずです」）は一切根拠に採用していない ——
+  それは記事自身が第一の学びとして挙げた禁じ手だからである。</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>物差し</th><th>内容</th><th>この診断での用途</th></tr></thead>
+    <tbody>
+      <tr><td class="axis">ループエンジニアリング 6 モジュール</td>
+        <td>Automations / Worktrees / Skills / Connectors / Sub-agents / Memory</td>
+        <td>各軸を A〜F で採点</td></tr>
+      <tr><td class="axis">ループ 4 原則</td>
+        <td>Automations 中核性・実装者≠評価者・状態は会話外・完了の客観証明</td>
+        <td>◎○△✕ で充足判定</td></tr>
+      <tr><td class="axis">グラフエンジニアリング 10 特徴</td>
+        <td>typed edge・state 分離・並列明示・budget/authority・static/dynamic 選択ほか</td>
+        <td>特徴ごとの実装有無</td></tr>
+      <tr><td class="axis">グラフ成熟度 8 段階</td>
+        <td>境界抽出 → typed state → 決定論ノード → conditional edge → fan-out → evaluator → checkpoint → budget/stop</td>
+        <td>到達段階の判定</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="small">実行した検証：<span class="mono">python3 harness-verifier/verify.py</span>（総合 PASS・7 検査項目）／
+  <span class="mono">python3 scripts/test-execution-graph.py</span>（G-1〜G-5 全通過）／
+  <span class="mono">python3 scripts/council-ctl.py status</span>／
+  workflow・skill・philosophy・COUNCIL-LOG・delivery 配下の実読。</p>
+</div></div>
+</section>
+
+<!-- ══════════ 3 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">LOOP</span></div><div class="blk-body">
+  <p class="eyebrow">採点 I</p>
+  <h2>ループエンジニアリング 6 軸</h2>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>軸</th><th style="width:4.5rem">評点</th><th>実装されているもの</th><th>欠けているもの</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="axis">Automations<br><span class="mono" style="font-size:.7rem">仕事の自動発見</span></td>
+        <td class="g" style="color:var(--warn)">C+<span class="meter m-warn"><i style="width:45%"></i></span></td>
+        <td><span class="mono">issue-pickup.yml</span> がラベル起点で Claude Code CLI を起動し PR まで自動生成。
+          <span class="mono">auto-merge.yml</span> は v5.9.0 で opt-in→opt-out 反転済み（沈黙＝承認）。
+          circuit breaker 日次 5／月次 50。</td>
+        <td><strong>シグナル検知が皆無</strong>。<span class="mono">cron</span> は <span class="mono">harness-verify.yml</span> の月次のみ。
+          誰も起こさなければ何も始まらない。稼働監視・台帳・ダッシュボードも不在。</td>
+      </tr>
+      <tr>
+        <td class="axis">Worktrees<br><span class="mono" style="font-size:.7rem">並列隔離</span></td>
+        <td class="g" style="color:var(--crit)">D+<span class="meter m-crit"><i style="width:22%"></i></span></td>
+        <td>Issue 単位の <span class="mono">concurrency group</span>。
+          issue-quality-gate が scope / mutex / depends-on / 影響範囲衝突の 4 段階フィルタを持つ。</td>
+        <td><strong>worktree の運用実体がゼロ</strong>（言及は分析文書のみ）。
+          並列安全性は LLM 判定であって機械強制ではない。fan-out の join / reducer 定義なし。</td>
+      </tr>
+      <tr>
+        <td class="axis">Skills<br><span class="mono" style="font-size:.7rem">知識の外部化</span></td>
+        <td class="g" style="color:var(--ok)">A−<span class="meter m-ok"><i style="width:88%"></i></span></td>
+        <td>20 skill。frontmatter・参照 path・SK 間参照・5 層構造・用語辞書を<strong>決定論 Python が機械検査</strong>。
+          <span class="mono">check_template_sync.py</span> で配布同期まで検査。ここは世界水準の上位。</td>
+        <td>philosophy 594 行＋history 17k 行の購読圧。代謝機構（HOT/WARM/COLD）で対処しているが、
+          COLD 除外は自認どおり「convention レベル・glob 強制ではない」。</td>
+      </tr>
+      <tr>
+        <td class="axis">Connectors<br><span class="mono" style="font-size:.7rem">外部連携</span></td>
+        <td class="g" style="color:var(--warn)">C−<span class="meter m-warn"><i style="width:32%"></i></span></td>
+        <td>GitHub（Actions / PR / Issue / label）と Gemini CLI・Claude Code CLI。
+          異質モデル併走という点では実質的な連携がある。</td>
+        <td>グラフ上に<strong>外部系ノードが 1 つも無い</strong>。エラー監視・チケット・通知・実行ログのいずれとも繋がっていない。
+          MCP は skill 文書での言及に留まる。</td>
+      </tr>
+      <tr>
+        <td class="axis">Sub-agents<br><span class="mono" style="font-size:.7rem">実装者≠評価者</span></td>
+        <td class="g" style="color:var(--warn)">B<span class="meter"><i style="width:70%"></i></span></td>
+        <td>independent-reviewer＋Council 3 ペルソナ＋judgment agent＋gemini-review＋copilot review＋
+          <strong>LLM 非使用の harness-verifier</strong>。役割分離の設計は明確に世界水準。</td>
+        <td><strong>時間軸の分離が無い</strong>。単一セッションが L0→L1→独立検証を連続して演じ、実際に隔離が崩れた
+          （2026-08-25、自己記録済み）。ペルソナは結論層で 70.7% 一致＝実効約 2 軸。</td>
+      </tr>
+      <tr>
+        <td class="axis">Memory / State<br><span class="mono" style="font-size:.7rem">状態は会話外</span></td>
+        <td class="g" style="color:var(--ok)">A−<span class="meter m-ok"><i style="width:84%"></i></span></td>
+        <td>COUNCIL-LOG（append-only・64 件）／INTENT／ARCH-DECISIONS／CHANGELOG がすべてリポジトリ内。
+          <span class="mono">council-log-sync.py</span> が「リポジトリを単一情報源、派生ストアは再生成可能」を実装。<strong>最強の軸</strong>。</td>
+        <td>実行時状態が存在しない。走行中の run を表す型付き state も checkpoint も無く、
+          失敗すれば人間からやり直し。</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 style="margin-top:1.2rem">4 原則の充足</h3>
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>原則</th><th style="width:4rem">判定</th><th>根拠</th></tr></thead>
+    <tbody>
+      <tr><td class="axis">Automations 中核性</td><td class="g" style="color:var(--crit)">△</td>
+        <td>起動は常に人間。「人間が起動しなくても仕事を発見し、起動する」は未達。</td></tr>
+      <tr><td class="axis">実装者 ≠ 評価者</td><td class="g" style="color:var(--warn)">○*</td>
+        <td>CI 上では空間分離が効く。対話セッション内では 2026-08-25 に実際に崩壊した。</td></tr>
+      <tr><td class="axis">状態は会話外</td><td class="g" style="color:var(--ok)">◎</td>
+        <td>「エージェントは忘れる、リポジトリは忘れない」を最も忠実に実装している軸。</td></tr>
+      <tr><td class="axis">完了の客観証明</td><td class="g" style="color:var(--warn)">○*</td>
+        <td>決定論ゲートは実在。ただし paths filter 依存の穴があり、実際に 1 件すり抜けた。</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div></div>
+</section>
+
+<!-- ══════════ 4 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">GRAPH</span></div><div class="blk-body">
+  <p class="eyebrow">採点 II</p>
+  <h2>グラフエンジニアリング 10 特徴</h2>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>特徴</th><th style="width:4rem">判定</th><th>診断</th></tr></thead>
+    <tbody>
+      <tr><td class="axis">1. loop を node 内へ保存</td><td class="g" style="color:var(--ok)">○</td>
+        <td>ループ 6 本を <span class="mono">type: loop</span> ＋ <span class="mono">max_iterations</span>（3/3/3/1/10/1）で宣言。上限のないループは G-1 が FAIL にする。良い。</td></tr>
+      <tr><td class="axis">2. 異質 node を同一実行モデルで</td><td class="g" style="color:var(--ok)">◎</td>
+        <td><span class="mono">agent / tool / human</span> の三分類が同一ファイルに同居。<strong>本診断で最も評価できる 1 点</strong>。</td></tr>
+      <tr><td class="axis">3. state を transcript から分離</td><td class="g" style="color:var(--ok)">○</td>
+        <td>リポジトリが state。ただし「永続記録」であって「走行中 state」ではない。</td></tr>
+      <tr><td class="axis">4. edge を判断と契約として扱う</td><td class="g" style="color:var(--crit)">✕</td>
+        <td><strong>致命。</strong> condition が自然言語散文で、評価器が存在しない。typed edge の要件を満たさない。</td></tr>
+      <tr><td class="axis">5. 並列性を明示</td><td class="g" style="color:var(--crit)">✕</td>
+        <td>実在する fan-out（Council 3 ペルソナ・review 8 観点）は不変条件 I-3 により<strong>グラフの外</strong>。join/reducer 未定義。</td></tr>
+      <tr><td class="axis">6. 評価を出力から trajectory へ</td><td class="g" style="color:var(--warn)">△</td>
+        <td>hook 観測（6 event）で軌跡は取れている。だが検査は「一貫性」のみ、continuous-learning は CTL-0 で inactive。</td></tr>
+      <tr><td class="axis">7. failure domain を node 境界へ</td><td class="g" style="color:var(--warn)">△</td>
+        <td>Issue 単位の concurrency と circuit breaker はある。ノード単位の補償・冪等キーは無い。</td></tr>
+      <tr><td class="axis">8. 人間を実行主体として扱う</td><td class="g" style="color:var(--ok)">◎</td>
+        <td>P1-P4 / H1-H4 をノード化し委譲レベルまで型付け。<strong>世界水準を超えている</strong>。</td></tr>
+      <tr><td class="axis">9. budget と authority を状態へ</td><td class="g" style="color:var(--warn)">△</td>
+        <td>stop はある（timeout・日次/月次上限）。token/cost budget は代謝用のみ。<strong>authority（CTL）が実行時状態に無い</strong>。</td></tr>
+      <tr><td class="axis">10. static / dynamic を選択可能に</td><td class="g" style="color:var(--crit)">✕</td>
+        <td>宣言は static、実行は dynamic、しかも I-2 が「実装が正」と定める。<strong>両方の短所だけを取った状態</strong>。</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 style="margin-top:1.2rem">成熟度 8 段階 — 到達点は 3</h3>
+  <div class="ladder">
+    <div class="rung done"><span class="n">1</span><span class="t">境界と契約の抽出　<em>loop の入出力・副作用・停止条件が列挙可能</em></span><span class="chip c-ok">達成</span></div>
+    <div class="rung part"><span class="n">2</span><span class="t">typed state　<em>Council 入出力 JSON は型付き。グラフ全体の StateSchema は無い</em></span><span class="chip c-warn">部分</span></div>
+    <div class="rung done"><span class="n">3</span><span class="t">決定論ノード　<em>LLM 非使用の Python 検査器・同期器が 5 本、テスト付き</em></span><span class="chip c-ok">達成</span></div>
+    <div class="rung part"><span class="n">4</span><span class="t">conditional edge　<em>宣言のみ。enumerated route も評価器も無い</em></span><span class="chip c-warn">宣言止</span></div>
+    <div class="rung none"><span class="n">5</span><span class="t">fan-out / reducer　<em>グラフ上に並列表現が存在しない</em></span><span class="chip c-crit">未達</span></div>
+    <div class="rung part"><span class="n">6</span><span class="t">evaluator　<em>決定論ゲートは強い。ただし paths filter 依存の穴あり</em></span><span class="chip c-warn">部分</span></div>
+    <div class="rung none"><span class="n">7</span><span class="t">checkpoint / interrupt　<em>スナップショットも再開も無い</em></span><span class="chip c-crit">未達</span></div>
+    <div class="rung part"><span class="n">8</span><span class="t">budget / stop　<em>stop のみ。cost / token 上限が実行経路に無い</em></span><span class="chip c-warn">部分</span></div>
+  </div>
+</div></div>
+</section>
+
+<!-- ══════════ 5 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">FINDINGS</span></div><div class="blk-body">
+  <p class="eyebrow">重大所見</p>
+  <h2>直すべき順に、8 件</h2>
+  <p class="small">重大度順。各件に再現可能な根拠を添える。</p>
+
+  <div class="findings">
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="find-no"></span><h3>宣言グラフが実行を一切拘束しない</h3><span class="chip c-crit">致命</span></div>
+      <p><span class="mono">GRAPH.yml</span> は自らの不変条件 I-2 で「実装が正・宣言が従。乖離検出時に自動で実装を書き換えない」と定める。
+      結果として 39 本の edge はすべて<strong>事後の記述</strong>であり、実行を止める力を持たない。
+      グラフエンジニアリングが Loop Engineering の上位層たりうる理由は「edge が契約として実行時に効く」ことにあるので、
+      この一条が存在する限り<strong>段階 4 以降には原理的に到達できない</strong>。</p>
+      <p>典型例：<span class="mono">condition: "C1-C4 検出（案の拮抗 / confidence &lt; 0.6 / 不可逆操作前 / 仕様曖昧）"</span>。
+      これは人間が読む文章であって、機械が評価できる述語ではない。</p>
+      <div class="ev"><b>根拠</b>  GRAPH.yml L24-26（不変条件 I-2）／全 edge の condition フィールド</div>
+    </div>
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="find-no"></span><h3>検査の合否条件を、被検査側が編集できる</h3><span class="chip c-crit">致命</span></div>
+      <p>G-5（実装に在るが宣言に無い起動経路）は WARN 止まりで、しかも計数から
+      <span class="mono">g5_false_positives</span> の 16 件が除外される。edge 総数 39 に対し除外 16 は少なくない。
+      その上で FAIL 昇格条件は「<strong>誤検出除外後に 6 cycle 連続で検出 0 件</strong>」——
+      つまり<strong>除外リストへ追記すれば昇格条件を満たせる</strong>。
+      検査を強化するか否かを決める指標を、検査される側が書き換えられる。古典的な Goodhart の罠である。</p>
+      <p>v6.13.0 の不変条件 I-4「検出器は黙って捨てない」は正しい方向だが、可視化を義務づけるだけで
+      <strong>除外リスト自体には期限も署名も無い</strong>。</p>
+      <div class="ev"><b>根拠</b>  GRAPH.yml <span style="color:inherit">g5_false_positives</span>（16 件）／harness-verifier/checks/execution_graph.py L227-320
+<b>実測</b>  verify.py 実行結果 → 「G-5 計数 — 検出 0 件 / 人間が誤検出と判定済み 16 件 / nodes 27 / edges 39」</div>
+    </div>
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="find-no"></span><h3>仕事の自動発見が、一件も実装されていない</h3><span class="chip c-crit">重大</span></div>
+      <p>ワークフロー全 5 本のうち <span class="mono">schedule:</span> を持つのは <span class="mono">harness-verify.yml</span> の
+      月次 1 本（<span class="mono">cron: "0 0 1 * *"</span>）だけ。実装パイプラインの入口
+      <span class="mono">issue-pickup.yml</span> は <span class="mono">on: issues: types: [labeled]</span>、
+      すなわち<strong>人間が <span class="mono">ready-for-ai</span> を貼るまで永遠に起動しない</strong>。</p>
+      <p>記事が示す 6 ステップの ① シグナル検知 が丸ごと欠落している。
+      赤い CI、滞留 PR、期限切れの <span class="mono">review_trigger</span>、繰り返される WARN ——
+      材料はリポジトリ内に既にあるのに、それを見て起票する主体が居ない。
+      <strong>人間が「発見」を担い続ける限り、スループットの上限は人間の 1 サイクルに固定される。</strong></p>
+      <div class="ev"><b>実測</b>  grep -rn "schedule:|cron:" .github/workflows/ → harness-verify.yml のみ 1 件
+<b>根拠</b>  .github/workflows/issue-pickup.yml L27-29, L57</div>
+    </div>
+
+    <div class="find sev-crit">
+      <div class="find-head"><span class="find-no"></span><h3>権限（CTL）が自動パイプラインから見えない</h3><span class="chip c-crit">重大</span></div>
+      <p>CTL は「委譲範囲を動的に決める」機構であり、この harness における<strong>authority の本体</strong>である。
+      ところがその実体は <span class="mono">~/.claude/council-data/</span> ——
+      ユーザーホーム配下にあり、リポジトリにも CI にも存在しない。
+      ワークフロー 5 本を横断して <span class="mono">CTL</span> を参照する行は<strong>コメント 1 行を除いてゼロ</strong>。</p>
+      <p>結果、<span class="mono">issue-pickup</span> も <span class="mono">auto-merge</span> も、
+      CTL-0（全件献上）だろうと CTL-3（全面自律）だろうと<strong>まったく同じ挙動をする</strong>。
+      グラフエンジニアリング第 9 特徴「authority を状態へ含める」の未達であり、
+      同時にループ 4 原則「状態は会話外」の唯一の綻びでもある。
+      <span class="mono">council-log-sync.py</span> が COUNCIL-LOG を単一情報源にした設計判断は正しい ——
+      あと一歩、<strong>導出結果もリポジトリに置いて CI に読ませればよい</strong>。</p>
+      <div class="ev"><b>実測</b>  python3 scripts/council-ctl.py status → 「未初期化（/root/.claude/council-data）→ CTL-0」
+       ※本診断環境は新規クローンのため。ホーム配下＝リポジトリ外という構造自体が論点
+<b>実測</b>  grep -rn "CTL" .github/workflows/ → issue-pickup.yml L19 のコメント 1 件のみ
+<b>根拠</b>  scripts/council-ctl.py L44 / scripts/council-log-sync.py L1-25</div>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="find-no"></span><h3>実装者≠評価者が、本番で実際に崩れた</h3><span class="chip c-warn">重大</span></div>
+      <p>これは私の推測ではない。<strong>あなた自身が 1 日前に記録している。</strong>
+      <span class="mono">delivery/ANALYSIS-role-boundary-2026-08-25.md</span> が挙げる 4 件のうち #4 ——
+      「PR #191 が <span class="mono">harness-verifier/**</span> を触る＝opt-in 領域なのに
+      <span class="mono">human-review-needed</span> が付かず<strong>自動マージされ、人間のレビューゲートが飛んだ</strong>」。
+      #2 では別の PR が「人間レビュー待ち」と自称しながらどの停止条件にも掛からず、
+      無関係なガードに<strong>偶然</strong>救われている。</p>
+      <p>診断も正しい ——「philosophy 第 3 条の独立コンテキスト必然性は<strong>空間的分離</strong>（別エージェント）を例に挙げるが、
+      <strong>時間的分離</strong>（同じエージェントが L0 を演じたあと L1 を演じる）は射程に入っていない」。
+      問題は診断ではなく、<strong>この 4 件が全部 F-01 の同じ根から出ている</strong>と繋がっていないことだ。
+      「宣言はある。配線がない」は役割境界だけの話ではない。<strong>グラフ全体の症状名</strong>である。</p>
+      <div class="ev"><b>根拠</b>  delivery/ANALYSIS-role-boundary-2026-08-25.md §1（観測 4 件）§2-2（根の診断）
+<b>対応中</b>  dh-upgrades/upgrade-spec-v6.13.0.md F1/F2（L0 起草・人間レビュー待ち）</div>
+    </div>
+
+    <div class="find sev-warn">
+      <div class="find-head"><span class="find-no"></span><h3>完了ゲートに paths filter の穴がある</h3><span class="chip c-warn">中</span></div>
+      <p><span class="mono">auto-merge.yml</span> の条件 4.5 は「<span class="mono">harness-verify</span> と
+      <span class="mono">gemini-review</span> の<strong>最低どちらか 1 つ</strong>が SUCCESS」と定める。
+      そして <span class="mono">harness-verify</span> は paths filter
+      （<span class="mono">.claude/skills/**</span> / <span class="mono">harness-verifier/**</span>）に該当した時のみ発火する。
+      つまり<strong>それ以外のパスだけを触る PR は、LLM レビュー 1 本だけを根拠に自動マージされうる</strong>。</p>
+      <p>「完了の客観証明」を掲げる harness において、最終ゲートの片翼が LLM の自己申告に委ねられている。
+      決定論検査器を持っているのだから、<strong>常時実行に切り替えない理由がない</strong>（構造検査は 5 分以内で終わる）。</p>
+      <div class="ev"><b>根拠</b>  .github/workflows/auto-merge.yml L40-46（条件 4.5・5）／harness-verify.yml（paths filter, timeout-minutes: 5）</div>
+    </div>
+
+    <div class="find sev-mid">
+      <div class="find-head"><span class="find-no"></span><h3>思想検証器が 6 マイナー版にわたり placeholder のまま</h3><span class="chip c-info">中</span></div>
+      <p><span class="mono">crosscut-verifier-philosophy</span> は「v5.0.0 では発動禁止、判定ロジックは v5.1.0 で本実装」と宣言している。
+      現在 <span class="mono">VERSION</span> は <strong>6.11.0</strong>、起草中は 6.13.0。約束から 6 マイナー版が経過した。
+      加えて本文は「philosophy.md の<strong>6 条</strong>憲法と照合」と書くが、philosophy は既に<strong>9 条</strong>である。
+      <span class="mono">GRAPH.yml</span> のノードにも含まれていない。</p>
+      <p>未配線の skill は他に 3 件（<span class="mono">crosscut-continuous-learning</span> /
+      <span class="mono">crosscut-hook-observer</span> / <span class="mono">rtk-integration</span>）。
+      <strong>20 skill 中 4 件がグラフの外に居る</strong>。実装するか消すかを決めないまま置いておくのが最悪の選択で、
+      「宣言はあるが配線がない」を harness 自身が量産している状態にあたる。</p>
+      <div class="ev"><b>実測</b>  GRAPH.yml に id を持たない skill → continuous-learning / hook-observer / verifier-philosophy / rtk-integration
+<b>根拠</b>  .claude/skills/crosscut-verifier-philosophy/SKILL.md L1-20 ／ VERSION（6.11.0）／ philosophy.md（第 1〜9 条）</div>
+    </div>
+
+    <div class="find sev-mid">
+      <div class="find-head"><span class="find-no"></span><h3>checkpoint も稼働監視も無い</h3><span class="chip c-info">中</span></div>
+      <p>走行中の run を表す state が存在しないため、途中で落ちた仕事は<strong>人間が最初から回し直す</strong>しかない。
+      グラフ成熟度 段階 7（checkpoint / interrupt）未達。</p>
+      <p>そして稼働監視が無い。参照記事の筆者が自らの Automations を A ではなく B に留めた理由がまさにこれである。
+      <span class="mono">harness-verifier/reports/</span> は月次の<strong>構造</strong>検査であって runtime observability ではない。
+      「いま何がどのノードに居るか」を答えられる場所が、この harness には一箇所も無い。</p>
+      <div class="ev"><b>根拠</b>  harness-verifier/reports/2026-0{5,6,7,8}.md（月次構造レポート）／台帳・ダッシュボード相当の成果物なし</div>
+    </div>
+
+  </div>
+</div></div>
+</section>
+
+<!-- ══════════ 6 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">POSITION</span></div><div class="blk-body">
+  <p class="eyebrow">世界基準での立ち位置</p>
+  <h2>突出している点と、遅れている点</h2>
+
+  <div class="two">
+    <div class="pane">
+      <h4>世界水準を超えている</h4>
+      <ul>
+        <li><strong>人間のノード化</strong> — P1-P4 / H1-H4 を委譲レベル付きでグラフに置いた。LangGraph の human-in-the-loop は「割り込み点」だが、ここでは<strong>役割と権限を持つ実行主体</strong>として型付けされている。</li>
+        <li><strong>決定論ノードと AI ノードの同居</strong> — <span class="mono">kind: agent / tool / human</span> の三分類。LLM を使わない検査器を一級ノードに据えた設計は正しい。</li>
+        <li><strong>異種モデル併走</strong> — Claude / Gemini / Copilot が同一 PR を独立に見る。相関誤差の低減として理論的にも正しい。</li>
+        <li><strong>状態のリポジトリ化</strong> — append-only の COUNCIL-LOG を単一情報源とし派生ストアを再生成可能にした設計は、多くの商用エージェント基盤より厳格。</li>
+        <li><strong>自己観測の質</strong> — ペルソナ相関を実測し「結論層のみ従属・観測層は Jaccard 0.000 で完全分離」まで分解した分析は、査読論文と同じ土俵に乗っている。</li>
+      </ul>
+    </div>
+    <div class="pane neg">
+      <h4>明確に遅れている</h4>
+      <ul>
+        <li><strong>実行時グラフの不在</strong> — LangGraph / Temporal 級の基準では、typed edge・reducer・checkpointer が揃って初めて「グラフで実行している」と言う。現状は配線図の段階。</li>
+        <li><strong>仕事の自動発見ゼロ</strong> — 起点が常に人間。ここが最大の律速。</li>
+        <li><strong>並列隔離の不在</strong> — worktree 運用ゼロ。fan-out はグラフの外。</li>
+        <li><strong>observability ゼロ</strong> — trace も台帳もダッシュボードも無い。</li>
+        <li><strong>authority が実行経路に無い</strong> — CTL がリポジトリ外・CI 不可視。</li>
+        <li><strong>規範量の自己増殖</strong> — philosophy 9 条・594 行、history 17k 行。代謝機構を作らねばならない時点で規範側が既に重い。「減らす・時限化」原則は正しいが、まだ勝ててはいない。</li>
+      </ul>
+    </div>
+  </div>
+
+  <blockquote>
+    <p><strong>構図はこうだ。</strong>世界の主流は「まず実行基盤を作り、統治を後付けする」ため、
+    グラフは動くが誰も責任を持たない。あなたは逆順を選んだ ——
+    <strong>統治を先に完成させ、実行基盤を後回しにした</strong>。
+    順序としてはむしろ正しい。ただし後半に着手しない限り、統治は誰も従わない憲法のままである。</p>
+  </blockquote>
+</div></div>
+</section>
+
+<!-- ══════════ 7 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">RX</span></div><div class="blk-body">
+  <p class="eyebrow">処方箋</p>
+  <h2>着手順に 6 手</h2>
+  <p class="small">既存の設計思想（規範を増やさず既存宣言の実効性のみ上げる）と整合する範囲で書いた。新機構の追加は 1 件も含まない。</p>
+
+  <div class="rx">
+
+    <div class="rx-item p0">
+      <span class="rx-tag">P0</span>
+      <div class="rx-body">
+        <h4>edge に機械評価可能な述語を持たせ、I-2 を部分反転する</h4>
+        <p>全 edge をいきなり型付けする必要はない。まず<strong>停止条件に関わる edge だけ</strong>
+        （opt-in 領域判定・stop ラベル・H カテゴリ抵触）に、散文の <span class="mono">condition:</span> と並べて
+        <span class="mono">predicate:</span> を追加する ——
+        中身は検査器の関数名でよい（例 <span class="mono">predicate: opt_in_area(changed_paths)</span>）。
+        そして<strong>この部分集合についてのみ I-2 を反転</strong>し「宣言が正・実装が従」とする。
+        v6.13.0 F2「opt-in 境界の導出型配線」は既にこの方向だが、対象が opt-in 境界に閉じている。
+        <strong>同じ形を edge の型として一般化すれば、F-01 と F-05 が同時に根から消える。</strong></p>
+      </div>
+    </div>
+
+    <div class="rx-item p0">
+      <span class="rx-tag">P0</span>
+      <div class="rx-body">
+        <h4>G-5 を FAIL 化し、除外リストに期限と署名を付ける</h4>
+        <p>除外エントリを文字列から
+        <span class="mono">{edge, judged_by, judged_at, expires_at, reason}</span> に変える。
+        期限切れの除外は自動的に再検出される。
+        これは新機構ではなく、既に <span class="mono">GRAPH.yml</span> 冒頭が自分に課している
+        <span class="mono">review_trigger:</span>（時限メタデータ）を<strong>除外リストへ自己適用するだけ</strong>である。
+        v6.13.0 F5 の走査器がそのまま使える。</p>
+      </div>
+    </div>
+
+    <div class="rx-item p1">
+      <span class="rx-tag">P1</span>
+      <div class="rx-body">
+        <h4>仕事の自動発見を 1 本の cron で始める</h4>
+        <p>日次 cron で 4 種のシグナルを走査し、Issue 起票<strong>提案</strong>まで自動化する ——
+        (a) 期限切れの <span class="mono">review_trigger</span>、(b) 2 cycle 以上続く WARN、
+        (c) 滞留 PR / 赤い CI、(d) 未配線 skill と未解決の申し送り。
+        既存の <span class="mono">issue-dispatcher → quality-gate</span> にそのまま流し込み、
+        <strong><span class="mono">ready-for-ai</span> の付与は人間のまま残す</strong>。
+        philosophy 第 6 条の人間最終承認を一切崩さずに、人間の役割を「発見」から「承認」へ移せる。
+        <strong>これがスループットを人間 1 サイクルから外す唯一の手であり、投資対効果が最も高い。</strong></p>
+      </div>
+    </div>
+
+    <div class="rx-item p1">
+      <span class="rx-tag">P1</span>
+      <div class="rx-body">
+        <h4>CTL をリポジトリ内 state にし、CI に読ませる</h4>
+        <p><span class="mono">council-log-sync.py</span> の導出結果（stats）を
+        <span class="mono">history/</span> 配下に commit し、workflow が読む。
+        <span class="mono">issue-pickup</span> と <span class="mono">auto-merge</span> の挙動を CTL で分岐させれば、
+        <strong>設計済みで一度も作動していない委譲グラデーションが初めて実行される</strong>。
+        プライバシー配慮でホーム配下に置いた判断は理解できるが、DH 本体の CTL は<strong>公開リポジトリの統治データ</strong>であって個人データではない。</p>
+      </div>
+    </div>
+
+    <div class="rx-item p2">
+      <span class="rx-tag">P2</span>
+      <div class="rx-body">
+        <h4>fan-out をグラフに載せ、worktree で隔離する</h4>
+        <p>不変条件 I-3（skill 内部ステップをノード化しない）は原則としては正しいが、
+        <strong>並列分岐は「内部ステップ」ではなく実行モデルそのもの</strong>である。
+        Council 3 ペルソナと review 8 観点を <span class="mono">fan_out</span> / <span class="mono">join</span> として宣言し、
+        reducer（＝judgment agent の重み付き集約）を明示する。
+        併せて実装エージェントを worktree に隔離すれば、F-05 の「時間的分離の欠如」も機械的に解消する
+        ——別 worktree・別プロセスは、そのまま別コンテキストだからである。</p>
+      </div>
+    </div>
+
+    <div class="rx-item p2">
+      <span class="rx-tag">P2</span>
+      <div class="rx-body">
+        <h4>台帳を 1 枚出す（稼働監視の最小形）</h4>
+        <p><span class="mono">GRAPH.yml</span> ＋ GitHub API から
+        「いまどの Issue / PR がどのノードに居るか」を生成する静的 HTML を 1 枚。
+        新しい state を作る必要はなく、<strong>既にある state の投影で足りる</strong>。
+        これが出た時点で Automations の評点は B 帯に乗り、
+        同時にグラフが実行と一致しているかを<strong>人間が目視で検算できる</strong>ようになる。</p>
+      </div>
+    </div>
+
+  </div>
+</div></div>
+</section>
+
+<!-- ══════════ 8 ══════════ -->
+<section class="blk">
+<div class="rail"><div class="node"><span class="rail-idx">CLOSE</span></div><div class="blk-body">
+  <p class="eyebrow">結び</p>
+  <h2>辛口の総括</h2>
+
+  <p>ループエンジニアリングの記事は「ボトルネックは設計上あなた自身」と書いた。
+  この harness にその言葉を当てると、少し違う形で刺さる。
+  あなたは<strong>ボトルネックを人間に置くべきかを、正面から考え抜いた側の人間</strong>だ。
+  P1-P4 の設計も、CTL による委譲の段階化も、可逆性ベースの委譲境界も、
+  「人間確認を 0 にするのがゴールではない」という記事の第二の学びに、独立に到達している。</p>
+
+  <p>問題は<strong>考え抜いた結論が、コードに触れていないこと</strong>だ。
+  CTL は算出式まで書かれて CI から見えない。opt-in 領域は明文化されて自動マージを止めなかった。
+  独立検証は必須と宣言されて同一コンテキストが兼任した。
+  思想検証器は 6 版にわたり placeholder のまま置かれている。
+  4 件はどれも同じ形をしていて、あなたはそれを 1 日前に自力で言い当てている ——
+  <strong>「宣言はある。配線がない」</strong>。</p>
+
+  <p>私が付け加えられるのは 1 点だけだ。
+  <strong>それは役割境界の症状ではなく、グラフ全体の症状である。</strong>
+  v6.13.0 は根に一撃を入れる正しい設計だが、狙いが役割境界に絞られている。
+  同じ一撃を <span class="mono">GRAPH.yml</span> の edge そのものに入れれば、
+  この診断書の F-01・F-02・F-05・F-06 は<strong>一手でまとめて消える</strong>。</p>
+
+  <p class="lede" style="margin-top:.6rem">
+  グラフを描いた者はもう十分に多い。<strong>グラフに従わせた者だけが、次の段階に居る。</strong>
+  あなたは前者の中では最上位に居る。後者になるのに必要なのは、新しい思想ではなく、
+  <span class="mono">condition:</span> の隣に <span class="mono">predicate:</span> を 1 行足すことだ。</p>
+</div></div>
+</section>
+
+<footer>
+  診断対象 samejima-ai/dialog-harness @ 879d0b7 ・ VERSION 6.11.0 ・ 起草中 v6.13.0<br>
+  検証コマンド harness-verifier/verify.py（総合 PASS）／ scripts/test-execution-graph.py（全通過）／ scripts/council-ctl.py status<br>
+  外部規格 ループエンジニアリング 6 モジュール・4 原則 ／ グラフエンジニアリング 10 特徴・8 段階成熟度<br>
+  作成 2026-08-26 ・ 本診断は判断材料であり判定ではない（採否は L0 対話と人間決定に委ねる）
+</footer>
+
+</div>
