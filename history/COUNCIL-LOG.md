@@ -2913,3 +2913,52 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   final_decision: null
   implementer_consent: "agreed_recommended"  # 2026-08-25 人間（ひでさん）決定「推奨で進めて良い」。案B を条件 (a)(b)(c) 込みで採用。append-only 例外条項（null 宣言済みフィールドへの単方向埋め込み）
   agreed_at: "2026-08-25T13:05:00Z"
+
+- invocation_id: "council-2026-08-26T04:04:34Z-amrace"
+  timestamp: "2026-08-26T04:04:34Z"
+  source_skill: "crosscut-council"
+  question_to_answer: "stop ラベルが後付けでは効かない構造的欠陥を、どの射程で直すべきか"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "simple_conflict"
+  options:
+    - "マージ直前に条件 1-3 を再評価する（最小修正。ポーリングで取得済みの最新 PR_JSON を使い、gh pr merge の直前に stop ラベル / draft / author を再判定して skip する）"
+    - "ポーリングループの毎反復で stop ラベルを検査し、検出した時点で即 exit する（人間が止めた瞬間に止まる。最大 15 秒で反応）"
+    - "ラベル方式を停止機構の主経路から降ろし、GitHub 標準の branch protection / required review へ寄せる（opt-in 領域は required review を要求し、ラベルは補助表示に格下げ）"
+    - "workflow は変更せず、AI 側の運用規律で閉じる（opt-in 領域に該当する PR は gh pr create --label human-review-needed で作成と同時にラベルを付け、後付け付与に依存しない）"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "マージ直前に条件 1-3 を再評価する（最小修正。ポーリングで取得済みの最新 PR_JSON を使い、gh pr merge の直前に stop ラベル / draft / author を再判定して skip する）", confidence: 0.82, dimension: "ROI", note: "択一の困難は、射程を時間軸で分ければ解ける。実装者は「最小修正 vs 機構置換」を同一時点の二択と見ているが、経営判断としては「今の出血を止める」と「機構を選び直す」は別の予算・別の意思決定タイミングであり、前者を後者の結論待ちにする理由がない。\n\noption 3 の射程を実測した所感: opt-in 領域 8 分類のうち CODEOWNERS/branch protection で path 表現できるのは philosophy 改修 / harness-verifier 自己改修 / workflow 自身 / 境界 SPEC 自身の 4 つで、不可逆操作・DONT 抵触・Council jc<0.5・3 ファイル以上の SKILL 横断は意味的判定でありパスに落ちない。つまり option 3 を採ってもラベル経路は半分残る＝L-FROZEN-META のラベル語彙とは衝突せず「格下げ」も完遂しない。機構置換の効果は実装者の想定より小さいと見る。\n\nもう一点、context に無い事実を workflow から観測した: 人間のラベル付与は labeled event を確かに発火させており、停止信号は GitHub 側には届いている。それが効かないのは cancel-in-progress: false で当該 run の後ろに queue されるためで、これは条件 1-3 の再評価漏れとは独立した第二の配線欠落である。option 1 を入れても、この 2 本目を見ないと「なぜ止まらなかったか」の説明が半分しか埋まらない。ANALYSIS-role-boundary の診断「宣言はある。配線がない」は、本件では配線が 2 本切れていた、と読むのが正確だと考える。\n\n事業側の警告として: opt-out モデルは Council amrev1（jc 0.80）で「tail-risk は opt-in 領域の人間ゲートで担保する」という明示前提のもとに承認されている。その前提が実測で偽と判明した以上、修正が入るまでの間、本 repo の自動マージは承認された条件下では稼働していない。最小修正の投入までは auto-merge を一時停止する（workflow disable）判断も、コストは流速低下のみで検討に値する。" }
+    開発者: { stance: "マージ直前に条件 1-3 を再評価する（最小修正。ポーリングで取得済みの最新 PR_JSON を使い、gh pr merge の直前に stop ラベル / draft / author を再判定して skip する）", confidence: 0.82, dimension: "可逆性 / 技術的実現性", note: "設問は「最小修正 vs 機構置換のどちらの射程か」の二項に見えるが、実測された欠陥（TOCTOU）に対する必要十分な手当ては最小修正側にある。機構選択の議論（ラベルが停止機構として妥当か）は独立した問いであり、別 Issue に分離すべきで、本件の緊急修正を人質にすべきでない。\n\n技術的には根因は 1 つでなく 2 つある。(a) 条件 1-3 がループ前 1 回評価（L178-195）、(b) concurrency.cancel-in-progress: false によりラベル event の run が in-flight run を preempt できない。(a) だけ直せば機能的には塞がるが、(b) は「ラベルを付けたのに動かない」体験の半分を説明しており、診断記述に含めるべき。\n\n選択肢 2 は「安全性の追加」ではなく「25 分の runner 占有を最大 15 秒で解放する運用最適化」である。実装コストがほぼゼロ（ループ内に 5 行）なので 1+2 の同時採用を推すが、2 単独は誤り。\n\n選択肢 3 は排他ではない。ラベル語彙を据え置いたまま、後日 path 表現可能な opt-in 領域（philosophy/**、harness-verifier/**、.github/workflows/**、境界 SPEC）に CODEOWNERS + required review を defense-in-depth として重ねられる。L-FROZEN-META と衝突するのは「ラベルを主経路から降ろす」部分だけであり、「ラベルを残したまま第二の壁を足す」なら衝突しない。ただし今やる必要はない。\n\n先行事例（PR #191）の再解釈について 1 点留保。#191 が「付け忘れ」だったのか「付けても間に合わなかった」のかは、当時の job ログでポーリング反復の有無とラベル付与時刻を突合すれば決定論的に判定できる。推論で上書きせず、ログで確定させることを推奨する。" }
+    哲学者: { stance: "第3の道", confidence: 0.8, dimension: "前提への問い", note: "1) 実装者の「機構置換は L-FROZEN-META のラベル語彙と衝突しうる」という恐れは、おそらく幻である。SPEC は既に opt-in / opt-out を二分しており、単一機構で両領域を扱ってきたことの方が SPEC の二分を実装側で潰していた。機構を領域ごとに分けるのは SPEC への回帰であって逸脱ではない。この誤認が self_reported_confidence 0.5 の一因なら、恐れの解除だけで択一は容易になる。\n\n2) 案 4（運用規律で閉じる）は、先行 doc の診断「宣言はある、配線がない」に対して**宣言を一つ増やす**案である。同型の失敗の再生産であり、射程の候補として数えるべきではない。\n\n3) 最大の違和感: 本件を「バグ」と呼ぶか「暗黙 merge 事故」と呼ぶかで、auto-merge-boundary.md §roll-back プロトコルの「暗黙 merge 事故 1 件以上で要再評価」ゲートが起動するか否かが分かれる。#196 は人間の停止意思が実在し、それが機構に無視されて merge された事例であり、事故の定義に素直に当てはまる。にもかかわらず、この判定を誰も行わないまま options 1-4 の技術選択に議論が移っている。**規定されたゲートが誰の担当でもないため起動しない** — これは観測 #1〜#4 と同じ形の 5 件目であり、本議題より上位に置かれるべき問いだと考える。2026-11-06 を待つ根拠は、事故 0 件という前提が生きている間だけである。" }
+  judgment_confidence: 0.7
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "マージ直前に条件 1-3 を再評価する（最小修正。ポーリングで取得済みの最新 PR_JSON を使い、gh pr merge の直前に stop ラベル / draft / author を再判定して skip する）"
+    scores:
+      - stance: "マージ直前に条件 1-3 を再評価する（最小修正。ポーリングで取得済みの最新 PR_JSON を使い、gh pr merge の直前に stop ラベル / draft / author を再判定して skip する）"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 8
+        weighted_score: 6.56
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.82 }
+          - { persona: "開発者", weight: 4, confidence: 0.82 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第3の道: opt-in 領域は boundary SPEC の「該当パス」列由来の**既定停止**（人間の能動的 GO があるまで merge しない）へ極性を反転し、stop ラベルは opt-out 領域の補助手段に格下げする。案 2 の毎反復検査は競合の応急として同時に入れるが、それ単独を答えとしない", weight: 3, confidence: 0.8, reason: "options 外の自由記述。weight 非加算・minority_opinion へ転載" }
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "gap_ratio" }
+  recommended: "マージ直前に条件 1-3 を再評価する（最小修正。ポーリングで取得済みの最新 PR_JSON を使い、gh pr merge の直前に stop ラベル / draft / author を再判定して skip する）。ただし両支持軸が同一の実装上の留保を付しているため、骨格に以下を組み込むこと: (a)「取得済み PR_JSON を使う」ではなく gh pr merge 直前に gh pr view を再実行し、取得失敗時は fail-closed で skip する（初回反復で全 check 完了すると再取得が一度も走らない fast path 欠陥、および L245 の stale スナップショット継続を塞ぐため）、(b) 再取得〜merge 間に数秒の残余 TOCTOU が原理的に残るため「塞いだ」と記述せず受容リスクとして明記する、(c) concurrency.cancel-in-progress: false による第二の配線欠落（labeled event の run が in-flight run を preempt できない）を診断記述に含め、条件 1-3 再評価とは別に検証する、(d) 選択肢 2（毎反復検査）は runner 解放＝応答性改善として同梱可だが単独では代替にならない、(e) 選択肢 3（機構置換）は不採用ではなく「今やらない」として別 Issue / 別予算に明示計上する。射程は最小修正側であり、機構選択の議論に本件の緊急修正を人質に取らせない。"
+  minority_opinion: "哲学者（weight 3, conf 0.80）は第3の道として、opt-in 領域を boundary SPEC の「該当パス」列由来の既定停止（人間の能動的 GO まで merge しない）へ極性反転し、stop ラベルを opt-out 領域の補助手段へ格下げする案を主張。options 外のため加算対象外。未消化の問いとして「本件は §roll-back の『暗黙 merge 事故』に該当しうるが、その判定が誰の担当でもないため規定ゲートが起動していない」を提示（経営者も同旨の懸念を計上）。この判定は最小修正の採否と独立に行うべき。経営者はさらに、修正投入までの auto-merge 一時停止を検討値と述べている。"
+  weight_note: "final_weights（経営者4/開発者4/哲学者3、ΣW=11）を機械適用。options 内 stance は 1 件で weight_sum 8・weighted_score 6.56。哲学者の第3の道 weight 3 は third_way_excluded（27.3%、30% 閾値未達のため上限切り下げなし）。"
+  reasoning: "simple_conflict。options 内 stance は 1 つのみで、経営者（ROI）と開発者（可逆性/技術的実現性）が weight 4+4=8、conf 各 0.82、weighted_score 6.56。哲学者の第3の道は options 外につき加算対象外（weight 3）。両支持軸は独立次元から同一結論に到達: ROI 軸は「修正コストほぼゼロ、待機窓 25 分→数秒」、技術軸は「不可逆操作の直前にガードを置くのが決定論的に正しく、選択肢 2 は安全性では選択肢 1 の部分集合」。選択肢 3 は path 述語に落ちない opt-in 分類（jc<0.5、DONT 抵触、SKILL 横断、不可逆操作）を覆えず両軸が一致して部分解と評価。選択肢 4 は「宣言を一つ増やす」だけとして 3 軸全てが排除。よって射程は最小修正側に収束する。ただし収束は stance に対してであり stance の文言に対してではない: 開発者は文言どおり実装すると fast path で欠陥が残ると指摘し、両支持軸が cancel-in-progress: false という第二の配線欠落を独立に観測している。この 2 点を recommended に統合した。judgment_confidence は帯 [0.60, 0.90] の下寄り 0.70 — 支持は一致するが、第3の道の weight が 30% 閾値の直下（3/11=27.3%）にあり、かつ採用案は「なぜ止まらなかったか」の半分しか説明しない残余を抱えるため。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: "agreed_with_modification（実装者合意 2026-08-26。射程は最小修正で合意。ただし 2 主張を実測で検証した結果 recommended を強化: (1) 開発者の fast path 指摘は事実 — ループは既存 PR_JSON から PENDING を算出して break するため初回反復で全 check 完了なら再取得が走らない。ゆえに merge 直前の gh pr view 再実行と fail-closed を必須とする。(2) concurrency の第二の配線欠落も事実 — labeled event の run 507 は job created_at 03:45:58 で run 506 の job 完了 03:45:57 の 1 秒後、完全に後ろで queue されていた（マージは 03:45:56 済）。よって外部 event は in-flight run を止められず、選択肢 2 の毎反復検査は応答性ではなく **人間の停止意思が in-flight run に届く唯一の経路** として同梱する。(3) 哲学者の §roll-back 起動判定は人間に献上（AI が判定しない）"
