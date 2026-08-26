@@ -21,7 +21,10 @@ on:
       # template sync 検証（G-003）: 本体 workflow / 配布 template の変更時に drift を検知
       - ".github/workflows/**"
       - "templates/github-workflows/**"
-      - "scripts/check_template_sync.py"
+      # 決定論スクリプトとそのテスト全体（旧: check_template_sync.py のみ）。
+      # scripts/ 配下の検査器・同期器は harness を守る機構そのものであり、
+      # 変更が CI に掛からないまま merge される状態を塞ぐ。
+      - "scripts/**"
   pull_request:
     branches: [master, main]
     paths:
@@ -30,7 +33,7 @@ on:
       - ".github/workflows/harness-verify.yml"
       - ".github/workflows/**"
       - "templates/github-workflows/**"
-      - "scripts/check_template_sync.py"
+      - "scripts/**"
   workflow_dispatch: {}
 
 permissions:
@@ -64,6 +67,31 @@ jobs:
         if: steps.mode.outputs.monthly != 'true'
         run: |
           python harness-verifier/verify.py --strict --commit-sha "${{ github.sha }}"
+
+      - name: Run script test suites
+        if: steps.mode.outputs.monthly != 'true'
+        run: |
+          set -euo pipefail
+          # scripts/test-*.py / test-*.sh を全件実行する。
+          # 各テストは mktemp + COUNCIL_DATA_DIR で隔離済み（実ストアも作業ツリーも汚さない）。
+          # 検出漏れを防ぐため、テストが 1 本も見つからない場合は失敗させる
+          # （glob 崩れでスイートが静かに空振りする状態を作らない）。
+          found=0
+          for f in scripts/test-*.py scripts/test-*.sh; do
+            [ -e "$f" ] || continue
+            found=$((found + 1))
+            echo "::group::$f"
+            case "$f" in
+              *.py) python "$f" ;;
+              *.sh) bash "$f" ;;
+            esac
+            echo "::endgroup::"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "FAIL: scripts/test-* が 1 本も見つからない（glob 崩れの疑い）" >&2
+            exit 1
+          fi
+          echo "テストスイート $found 本 全通過"
 
       # template sync 検証（G-003、#150）: 本体 workflow と配布 template の二真実源 drift を
       # 決定論で gate する。drift があれば exit 1 でジョブ失敗（検知器に強制力を持たせる）。
