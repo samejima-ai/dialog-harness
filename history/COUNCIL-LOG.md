@@ -2913,3 +2913,52 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   final_decision: null
   implementer_consent: "agreed_recommended"  # 2026-08-25 人間（ひでさん）決定「推奨で進めて良い」。案B を条件 (a)(b)(c) 込みで採用。append-only 例外条項（null 宣言済みフィールドへの単方向埋め込み）
   agreed_at: "2026-08-25T13:05:00Z"
+
+- invocation_id: "council-2026-08-26T01:53:40Z-v7ord1"
+  timestamp: "2026-08-26T01:53:40Z"
+  source_skill: "crosscut-council"
+  question_to_answer: "v7 構想の 4 構造変更のうち、どれを最初の実装サイクルに置くべきか（あるいは着手を待つべきか）"
+  council_type: "business"
+  category: "judgment"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  conflict_type: "reason_divergence"
+  options:
+    - "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く"
+    - "Phase 2 述語層（GRAPH.yml の停止条件 edge に predicate 付与 + 当該部分集合のみ I-2 反転）を最初の実装サイクルに置く"
+    - "Phase 3 分割不変条件（g5_false_positives 廃止・未分類 0 件を FAIL 条件化・G-5 昇格）を最初の実装サイクルに置く"
+    - "v6.13.0 の人間レビューと merge の完了を待ち、本サイクルでは v7 構想の人間レビューのみに留めて実装着手しない"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 3
+  persona_summary:
+    経営者: { stance: "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く", confidence: 0.78, dimension: "ROI（既払いコストの回収効率と律速資源の配分）", note: "3 点、schema に収まらない違和感を記す。\n\n(1) 4 つの options はいずれも「v7 を実施する」ことを暗黙の前提にしており、「Phase 1 のみ実施し、Phase 2〜5 は候補 md の中身を見てから改めて採否を決める（＝v7 全体には今コミットしない）」という縮小案が選択肢に立っていない。経営的にはこれが最も安い。Phase 1 は本来「安価な情報取得によって、高価で不可逆な意思決定を延期するオプション購入」であって、6 段階プログラムへの初回投資ではない。実装者の confidence 0.55 の一因は着手順の材料不足だが、その材料そのものを Phase 1 が生む。順序の議論を Phase 1 が解消する側面がある。\n\n(2) 構想は「DH は製品を持たないから運用圧を受けない」を根因に置きながら、対処は「子から借りる」に閉じている。もう一つの経路——DH 自身に薄い自己適用（DH が DH を harness する）を運用圧の代替として持たせる——が検討された形跡がない。今サイクルの択一には影響しないが、逆流路は供給元が kakuman 1 件に依存する単一障害点であり、kakuman が止まれば DH の学習も止まる。中期のリスクとして記録しておくべき。\n\n(3) 構想の「最大のリスクは Phase 2」という自己申告は正しいが、リスクの中身が過小に書かれている。Phase 2 の失敗は「開発が止まる」だけでなく、v6.13.0 F2 と実装が食い違った場合に「どちらの導出結果が正か」を判定する人間が必要になることであり、これは単なる手戻りではなく律速資源の二重消費になる。v6.13.0 が merge されるまで Phase 2 に触れないことは、順序の好みではなく資源制約上の必須条件だと考える。" }
+    開発者: { stance: "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く", confidence: 0.82, dimension: "保守性 / 可逆性（依存順・衝突回避を含む）", note: "schema 外の違和感を 2 点。第 1 に、構想が Phase 2 を「宣言が正・実装が従」への反転として書いている点は、I-2（実装が正）を部分的に捨てる操作であり、GRAPH.yml 冒頭の I-1（本ファイルは判定を持たない）とも緊張する。停止条件に predicate を持たせた瞬間、GRAPH.yml は「どこで諮るか」の宣言から「止めるか否かの判定」へ役割が動く。この役割変化は Phase 順の問題ではなく設計の問題であり、着手順を決める前に人間が明示的に承認すべき境界だと見る。第 2 に、self_reported_confidence 0.55 の理由に挙がった「依存順」は仮説ではなく事実として確認できた（Phase 3 の母集合は Phase 2 の述語に依存する）。よって拮抗の本体は 1 対 2 対 3 ではなく、「Phase 2 の権威問題が未決のまま順序を決めてよいか」であり、Phase 1 はその未決を待てる唯一の選択肢という位置づけになる。option 4（全面待機）を採らないのは、Phase 1 が v6.13.0 と 1 ファイルも交わらず、待機によって得られる衝突回避の利得がゼロだからである。" }
+    哲学者: { stance: "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く", confidence: 0.78, dimension: "意味", note: "schema に収まらない違和感を 3 点。(1) 構想は「7 機構はどれも事故の日付を持っている」と正しく書きながら、upstream-scan の出力仕様には事故の日付欄が無い。還流すべきは機構ではなく、機構を必要とした出来事である。日付と痛みを剥いだ機構だけが親に積めば、それは f5fc45 が禁じた『事故を経ていない規範の自己増殖』そのものになる。逆流路は機構の輸送路ではなく、痛みの伝導路として設計されねばならない。(2) option 4（v6.13.0 の merge を待つ）は、Phase 1 が DH に 1 バイトも書かない以上、過剰な慎重である。書き込まない観測を、無関係な PR のレビュー完了に人質に取るのは、まさに診断書が指弾した「宣言はあるが電気が通っていない」状態の延命に等しい。ただし Phase 2 に対しては option 4 の警戒は正当である——Phase 2 は進行中の v6.13.0 F2（opt-in 境界の導出型配線）と同一領域を触るため、未 merge の PR の上に一般化を積むことになる。着手順の判断は Phase ごとに分けるべきで、「待つか進むか」を全 Phase 一律に問う立て方自体が粗い。(3) 最も深い問いを残す。DH が子から学ぶ形になったとき、DH はまだ『親』なのか。逆流路は上下関係を残したまま情報だけ双方向にする設計だが、5 年の時間軸では「配る側と配られる側」という語彙自体が保たなくなる可能性がある。upstream という分類名は、その日が来たとき最初に陳腐化する語である。" }
+  judgment_confidence: 0.82
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く"
+    scores:
+      - stance: "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.74
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.78 }
+          - { persona: "開発者", weight: 4, confidence: 0.82 }
+          - { persona: "哲学者", weight: 3, confidence: 0.78 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }
+  recommended: "Phase 1 逆流路（dh-manifest に upstream 新設 + upstream-scan.py で候補 md 出力のみ）を最初の実装サイクルに置く。ただし 3 軸が独立に付した条件を実装仕様として同時に入れる —— (a) 配布先に対して読み取り専用・候補 md 出力のみ・採択は人間ゲート、(b) 完了条件を「候補 md に 7 機構が列挙される」ではなく「各候補に人間の採否記入が入り、その結果が Phase 2/3 のスコープを確定させる」とし、候補件数と採択件数を初回から追跡対象に計数する、(c) 候補 md の必須欄に provenance・プロジェクト固有依存の有無に加え「その機構を生んだ事故の日付とそれが解いた問題」を置く。工数上限は 1 サイクル / スクリプト 1 本 / セマンティック判定を持ち込まない（存在差分の列挙に閉じる）。Phase 2・3 は v6.13.0 merge 後に、Phase 1 の候補 md を見てから改めて採否を決める。"
+  minority_opinion: "結論は一致するが観測次元は分離（ROI / 保守性・可逆性 / 意味）。未吸収の主張: (a) 経営者「Phase 1 は v7 6 段階への初回投資ではなく、高価で不可逆な判断を延期するオプション購入。v7 全体には今コミットしない」という縮小案が options に立っていない。(b) 開発者「拮抗の本体は Phase 番号ではなく、v6.13.0 F2 との停止条件の権威二重化が未決の点。GRAPH.yml が『どこで諮るか』から『止めるか否かの判定』へ役割を移すことは人間が明示承認すべき境界」。(c) 哲学者「安さで順序を決める慣習の定着」「観測元 kakuman n=1 の単一障害点」「upstream という語彙自体が最初に陳腐化する」。3 軸が独立に「計数されない観測層への退化」を指摘した点は共通の警告として残る。"
+  weight_note: "stance 一致のため重み配分は判定に影響しなかった（経営者4/開発者4/哲学者3、単一 stance で weighted_score 8.74）。third_way_excluded は空。付帯条件の差分は weight ではなく実装仕様への追加として吸収した。"
+  reasoning: "conflict_type = reason_divergence。3 軸が独立した次元から同一結論に到達した。ROI 軸: Phase 1 は manifest 1 分類 + スクリプト 1 本に対し回収対象（kakuman の 7 機構・現地 skill 6 本、還流実績 0）が既に存在する既払いコストの回収であり、律速資源＝人間レビュー枠の消費がほぼ 0。保守性/可逆性 軸: Phase 1 のみが v6.13.0（F2 の auto-merge-boundary 単一情報源、F4-3/execution_graph.py）と触れるファイルが 1 つも交わらず、revert がスクリプト削除に等しい。加えて Phase 3 の母集合が Phase 2 の述語に依存する依存順が実測で確認された。意味 軸: Phase 2 は強制の付与、Phase 3 は責任の付与であり、認識（外部の事実を受け取る器官）の拡張を先に置くのが順序として正しい。Phase 3 の署名が使う語彙は Phase 2 が定義するため、語彙以前の署名要求は倒錯である。3 軸は付帯条件で分岐する（成果指標化 / 計数 / 事故の日付欄）が、いずれも Phase 1 の実装仕様への追加であって順序判断を覆さないため recommended に統合した。option 4（全面待機）は Phase 2/3 には妥当だが、Phase 1 には衝突回避の利得がゼロで 3 軸とも棄却した。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: "agreed_recommended（実装者合意 2026-08-26。3 軸が独立に付した条件を実装仕様として全て採る: (a) 配布先は読み取り専用・候補 md 出力のみ・採択は人間ゲート / (b) 完了条件は採否記入までとし候補件数と採択件数を計数する / (c) 候補 md の必須欄に事故の日付とそれが解いた問題を置く。工数上限 1 サイクル・スクリプト 1 本・セマンティック判定なしも遵守）"

@@ -48,6 +48,48 @@ paths:
     - ".claude/disabled/"  # モード判定で退避された要素（プロジェクト状態）
     # 上記以外のプロジェクト固有コード・資産はすべて never_touch（明示列挙しない＝既定で不可侵）
 
+# ---------------------------------------------------------------------------
+# upstream — 逆流路（v7 Phase 1・Council council-2026-08-26T01:53:40Z-v7ord1）
+#
+# 上記 paths: の 4 分類はすべて DH → 配布先の「下り」である。DH 本体は製品を持たず
+# 運用圧を受ける面を持たないため、配布先が本番事故の代償で育てた機構が根に還流しない
+# （delivery/PLAN-v7-reconstruction-2026-08-26.html §構造診断）。本ブロックはその上りを定義する。
+#
+# paths: の中に置かない理由: paths: は「DH が配布先へ書き込む権限」の分類であり、
+# upstream は逆向きの読み取りである。同一ツリーに混ぜると UPDATE.md 経路の読み手が
+# 書き込み対象と誤解しうる（Council 開発者軸の懸念）。
+#
+# 不変条件:
+#   U-1 配布先に対して**読み取り専用**。upstream-scan は配布先へ 1 バイトも書かない。
+#   U-2 出力は**候補提示のみ**。DH のファイルを書き換えない（出力先の候補 md を除く）。
+#   U-3 採択は**人間ゲート**。自動 merge しない（philosophy 第 6 条 人間最終承認）。
+#   U-4 判定を持ち込まない。**存在差分の列挙に閉じる**（同名要素の内容比較・優劣判定はしない）。
+#   U-5 還流するのは機構ではなく**それを必要とした出来事**。候補 md は事故の日付と
+#       解いた問題を必須欄に持つ（Council 哲学者軸の指摘。事故を経ていない規範の自己増殖を防ぐ）。
+upstream:
+  # 走査対象。配布先に在って DH に無い要素を列挙する（存在差分のみ・U-4）。
+  # 末尾に glob を書くと直下要素を名前で絞れる。**絞りは宣言側の責務**であり、
+  # スクリプトに判定を持たせない（kakuman check-routing-gates.mjs の GATE_PATTERNS と同規律）。
+  # 絞る理由: 製品リポジトリの scripts/ を丸ごと走査すると業務スクリプトが大量に混じり、
+  # 「常時発火する検査は形骸化する」（kakuman が実地で得た知見）を再演する。
+  scan:
+    - ".claude/skills/"       # 全件（現地で育った skill は全て人間に見せる）
+    - "scripts/check-*"       # 決定論センサーの命名規約のみ
+    - "scripts/lint-*"        # 同上
+    - ".github/workflows/"    # 全件（workflow は本数が少なく形式が要点）
+
+  # 逆流を禁じる領域。子の規範が親の憲法を書き換える経路を作らない。
+  # 候補として列挙することすらしない（P4 介入権の事後発動化を防ぐ）。
+  never_upstream:
+    - ".claude/skills/layer0-spec-architect/references/philosophy.md"
+    - ".claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md"
+    - ".claude/skills/crosscut-autonomous-drive/references/delegation-boundary.md"
+    - "dh-manifest.yml"
+    - "VERSION"
+
+  # 採択の決定権。human 固定（U-3）。この値を AI が変更してはならない。
+  gate: human
+
 # 検証: 更新後、harness-verifier と振り返り儀式で health check すること（UPDATE.md §5）。
 # never_touch を侵していないかのガードは harness-verifier 側で実装余地（v5.22.0 申し送り）。
 verify_after_update: true
