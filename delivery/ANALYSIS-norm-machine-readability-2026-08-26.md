@@ -1,6 +1,6 @@
 # 設計材料 — 規範の機械可読化はどこまでか（憲法・常識・ローカルルール・思想の 4 層）
 
-> **本文書は判断材料であり判定を含まない**（`ANALYSIS-role-boundary-2026-08-25.md` と同型）。
+> **本文書は判断材料であり判定を含まない**（`delivery/ANALYSIS-role-boundary-2026-08-25.md` と同型）。
 > 対策の採否は次の L0 対話と人間決定に委ねる。
 > 起点: v6.13.0 マージ直後の L0 対話（2026-08-26、ひでさん）における問い ──
 > 「文書生成に機械可読のブロック（Frontmatter など）を設けて機械管理可能なルールで考えるか。
@@ -13,15 +13,18 @@
 
 | 層 | 現在の実体 | 機械可読の度合い |
 |---|---|---|
-| 憲法 | `philosophy.md`（第 1〜9 条・L-FROZEN-PHIL） | **なし**（散文・ID なし・機械が触れる経路ゼロ） |
-| 境界 | `auto-merge-boundary.md` §opt-in 領域（L-FROZEN-META） | 表形式。v6.13.0 F2 で**読み取り導出**の対象になる予定 |
+| 憲法 | `.claude/skills/layer0-spec-architect/references/philosophy.md`（第 1〜9 条・L-FROZEN-PHIL） | **なし**（散文・ID なし・機械が触れる経路ゼロ） |
+| 境界 | `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` §opt-in 領域（L-FROZEN-META） | 表形式。v6.13.0 F2 で**読み取り導出**の対象になる予定 |
 | ローカルルール | `templates/rules/common/ui-baseline.rules.md` | **高い**。`B-01 MUST … ∵根拠` の形で ID・強度・根拠の 3 点セットを持つ |
-| 規範メタデータ | `stage:` / `review_trigger:`（`dev-env-spec.md` §規範メタデータ） | frontmatter 相当。走査器は v6.13.0 F5 で着地予定 |
+| 規範メタデータ | `stage:` / `review_trigger:`（`.claude/skills/layer0-spec-architect/references/dev-env-spec.md` §規範メタデータ） | frontmatter 相当。走査器は v6.13.0 F5 で着地予定 |
 | 委譲レベル | L-FULL / L-GATE / L-FROZEN-META / L-FROZEN-PHIL | 語彙としては確立。機械判定への接続は未 |
 | 常識 | **書かれていない** | ─ |
 | 思想 | `history/INTENT.md`（WHY 層） | なし（判定に使っていない） |
 
 つまり **ローカルルールは既に機械可読の形になっており、憲法だけが取り残されている**。
+
+> **表記について**: バッククォート付きの参照はリポジトリルートからの**実在パス**で統一する（上表と §7）。
+> 散文中の philosophy.md のような裸のファイル名は、上表で示したパスの短縮呼称であり参照パスではない。
 問いは「機械可読にするか否か」ではなく「**層ごとにどこまでの深さで機械可読にするか**」である。
 
 ## 2. 機械可読の深さは 3 段ある（混同しない）
@@ -29,7 +32,7 @@
 | 段 | 意味 | 既存の例 |
 |---|---|---|
 | ① **参照可能** | ID があり、違反を名指しできる | `B-01` / `AD-032` / Council `f9b2c4` |
-| ② **判定可能** | 違反を機械が検出できる | `harness-verifier` 7 検査 / `execution_graph.py` G-1〜G-5 |
+| ② **判定可能** | 違反を機械が検出できる | `harness-verifier/verify.py` 7 検査 / `harness-verifier/checks/execution_graph.py` G-1〜G-5 |
 | ③ **執行可能** | 違反したら止まる | v6.13.0 F2（opt-in 境界 → auto-merge 停止） |
 
 **この 3 段を混同すると事故が起きる。** 本サイクルで踏んだ「`decision_category` が空欄だから
@@ -83,7 +86,7 @@ philosophy 違反を機械が検出し、停止条件に接続する。
 - さらに**有害でありうる**: 「AI コーディングエージェントが指示を完全に守る割合は 3 割未満」
   「会話が長くなるほど学習済みの既定挙動が明示的な要求に勝つ」という観測が報告されている。
   逆に読めば、規範が長いほどその中の重要な一行が薄まる
-- したがって規範に書くべきは **AI の既定挙動と食い違う部分だけ**。`DONT.md` が既にこの形
+- したがって規範に書くべきは **AI の既定挙動と食い違う部分だけ**。DONT.md が既にこの形
 
 ### 4-B-2. 反論・未確認
 
@@ -137,10 +140,10 @@ philosophy 違反を機械が検出し、停止条件に接続する。
 
 | 対象 | 委譲レベル | AI の可否 |
 |---|---|---|
-| `philosophy.md` への ID 付与（候補 2） | **L-FROZEN-PHIL** | **提案 PR も不可**（2026-11-06 まで） |
-| `auto-merge-boundary.md` の書式変更 | **L-FROZEN-META** | **提案 PR も不可** |
+| `.claude/skills/layer0-spec-architect/references/philosophy.md` への ID 付与（候補 2） | **L-FROZEN-PHIL** | **提案 PR も不可**（2026-11-06 まで） |
+| `.claude/skills/crosscut-autonomous-drive/references/auto-merge-boundary.md` の書式変更 | **L-FROZEN-META** | **提案 PR も不可** |
 | `.claude/skills/crosscut-council/council-weights.md` の数値是正（論点 C の前提） | L0/D5 専管 | 提案のみ |
-| `judgeable:` メタデータの規格追加（候補 1） | L-FULL 相当（`dev-env-spec.md`） | AI 可 |
+| `judgeable:` メタデータの規格追加（候補 1） | L-FULL 相当（`.claude/skills/layer0-spec-architect/references/dev-env-spec.md`） | AI 可 |
 | 本文書のような設計材料 | L-FULL | AI 可（本文書） |
 
 ## 8. 次サイクルへの申し送り
@@ -152,6 +155,6 @@ philosophy 違反を機械が検出し、停止条件に接続する。
 - 論点 A・B・C は独立ではない。**A の答えが ②③ なら B の「空欄」は維持できない**
   （憲法を機械判定するなら、常識との境界も機械が引く必要が出る）。1 つの判断として扱うことを推奨する
 - 併せて、本サイクルで発見した未処理項目が 1 件ある ──
-  **`harness-verify.yml` の paths フィルタに `dh-upgrades/` と `history/` が含まれておらず、
+  **`.github/workflows/harness-verify.yml` の paths フィルタに `dh-upgrades/` と `history/` が含まれておらず、
   仕様起草 PR には検証が 1 つも走らない**（PR #193 で実測）。停止札を手で付けたため実害は出ていないが、
   「宣言はあるが配線がない」形の一例として本件と根が近い可能性がある
