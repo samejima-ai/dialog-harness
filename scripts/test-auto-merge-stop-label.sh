@@ -57,6 +57,7 @@ check_wf "再取得の失敗が fail-closed になる" 'fail-closed'
 check_wf "最終 stop ラベル判定がある" 'FINAL_STOP='
 check_wf "最終 draft 判定がある" 'FINAL_JSON" | jq -r .\?.isDraft'
 check_wf "最終 author 判定がある" 'FINAL_AUTHOR='
+check_wf "最終 reviewDecision 判定がある" 'FINAL_RD='
 check_wf "merge が最終取得の TITLE を使う" 'TITLE=\$(echo "\$FINAL_JSON"'
 
 # 最終判定が gh pr merge より前にあること（順序が逆なら意味がない）

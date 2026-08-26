@@ -324,6 +324,17 @@ jobs:
             echo "::notice::PR #$PR_NUMBER は OPEN でない（最終確認で検出）。skip。"
             exit 0
           fi
+          FINAL_RD=$(echo "$FINAL_JSON" | jq -r '.reviewDecision // ""')
+          if [ "$FINAL_RD" = "CHANGES_REQUESTED" ]; then
+            echo "::notice::PR #$PR_NUMBER の reviewDecision=$FINAL_RD（最終確認で検出）。skip（指摘解消待ち）。"
+            exit 0
+          fi
+
+          # 条件 4 / 4.5 / 5（harness-verify / gemini-review の結論）を再判定しない理由:
+          #   完了した check の conclusion は後から変わらず、かつ 4/4.5/5 は「ループを抜けた
+          #   スナップショット＝全 check 完了」と同じ rollup から導かれている。人間が後から
+          #   翻せる信号（stop ラベル / draft / CHANGES_REQUESTED）とは性質が異なるため、
+          #   ここでの再判定対象は「人間が待機中に翻せるもの」に限る。
 
           # 残余リスク（塞ぎ切れていない・受容の明示）:
           #   上の gh pr view と下の gh pr merge の間には数秒の TOCTOU が原理的に残る。
