@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DH v7 逆流路構想</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+:root{
+  --paper:#E9EDEC; --surface:#F6F8F7; --sunk:#DFE5E3;
+  --ink:#131F1E; --ink2:#4C5C5A; --ink3:#758482;
+  --rule:#C4CFCC; --rule-soft:#D8E0DE;
+  --accent:#0C6C6E; --accent-soft:#0C6C6E1A;
+  --flow:#A85416; --flow-soft:#A854161A;
+  --crit:#9C2A14; --warn:#8E6403; --ok:#3D6931;
+  --crit-bg:#9C2A1414; --warn-bg:#8E640314; --ok-bg:#3D693114;
+  --shadow:0 1px 2px rgba(19,31,30,.06),0 8px 24px -16px rgba(19,31,30,.28);
+  --f-disp:"Zen Old Mincho",'Hiragino Mincho ProN','Yu Mincho',serif;
+  --f-body:"Zen Kaku Gothic New",'Hiragino Sans','Yu Gothic',system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1414; --surface:#16201F; --sunk:#111A19;
+    --ink:#E0E8E6; --ink2:#98ABA8; --ink3:#758886;
+    --rule:#2A3937; --rule-soft:#21302F;
+    --accent:#4FC2BE; --accent-soft:#4FC2BE1F;
+    --flow:#E0964F; --flow-soft:#E0964F1F;
+    --crit:#EC7B5F; --warn:#D9A63C; --ok:#82BC6C;
+    --crit-bg:#EC7B5F1A; --warn-bg:#D9A63C1A; --ok-bg:#82BC6C1A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1414; --surface:#16201F; --sunk:#111A19;
+  --ink:#E0E8E6; --ink2:#98ABA8; --ink3:#758886;
+  --rule:#2A3937; --rule-soft:#21302F;
+  --accent:#4FC2BE; --accent-soft:#4FC2BE1F;
+  --flow:#E0964F; --flow-soft:#E0964F1F;
+  --crit:#EC7B5F; --warn:#D9A63C; --ok:#82BC6C;
+  --crit-bg:#EC7B5F1A; --warn-bg:#D9A63C1A; --ok-bg:#82BC6C1A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -18px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--f-body);font-size:16px;line-height:1.85;
+  font-feature-settings:"palt" 1;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:clamp(1.5rem,4vw,4rem) clamp(1.1rem,4vw,2.5rem) 6rem}
+
+h1,h2,h3,h4{font-family:var(--f-disp);text-wrap:balance;line-height:1.35;margin:0}
+h1{font-size:clamp(1.95rem,5vw,3.2rem);font-weight:900;letter-spacing:.01em}
+h2{font-size:clamp(1.35rem,3vw,1.85rem);font-weight:700}
+h3{font-size:clamp(1.05rem,2.2vw,1.24rem);font-weight:700}
+h4{font-size:1rem;font-weight:700}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+.eyebrow{font-family:var(--f-mono);font-size:.68rem;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:clamp(1.02rem,2.1vw,1.15rem);color:var(--ink2);line-height:1.95}
+.small{font-size:.86rem;color:var(--ink2);line-height:1.8}
+.mono{font-family:var(--f-mono);font-size:.82em;color:var(--ink2);word-break:break-all}
+strong{font-weight:700;color:var(--ink)}
+em.hl{font-style:normal;color:var(--flow);font-weight:700}
+
+header.masthead{border-bottom:2px solid var(--ink);padding-bottom:2rem;margin-bottom:3rem}
+.mast-meta{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin-top:1.5rem;
+  font-family:var(--f-mono);font-size:.72rem;color:var(--ink3);letter-spacing:.04em}
+
+section.blk{margin-bottom:3.4rem;display:flex;flex-direction:column;gap:1.1rem}
+section.blk>h2{margin-bottom:.1rem}
+
+/* 番号バンド — 実際に順序のある移行フェーズにのみ使う */
+.band{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.1rem;align-items:start;
+  background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:1.15rem 1.25rem}
+.band-n{font-family:var(--f-mono);font-size:.72rem;font-weight:600;letter-spacing:.05em;
+  color:var(--paper);background:var(--accent);padding:.3rem .55rem;border-radius:2px;white-space:nowrap}
+.band.done .band-n{background:var(--ok)}
+.band.now .band-n{background:var(--flow)}
+.band-body{display:flex;flex-direction:column;gap:.55rem;min-width:0}
+.band-body h4{margin-bottom:.05rem}
+
+.tbl-scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:.9rem}
+th,td{text-align:left;padding:.7rem .85rem;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+thead th{background:var(--sunk);font-family:var(--f-mono);font-size:.67rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:0}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.k{font-weight:700;white-space:nowrap}
+
+figure{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:1.3rem 1.2rem 1rem;display:flex;flex-direction:column;gap:.85rem}
+figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+figcaption{font-size:.84rem;color:var(--ink2);line-height:1.75;border-top:1px solid var(--rule-soft);padding-top:.7rem}
+figcaption b{color:var(--ink)}
+
+blockquote{margin:0;padding:.9rem 1.1rem;border-left:2px solid var(--accent);
+  background:var(--accent-soft);border-radius:0 3px 3px 0;font-size:.93rem;color:var(--ink2)}
+blockquote.flow{border-left-color:var(--flow);background:var(--flow-soft)}
+ul{margin:0;padding-left:1.25rem;display:flex;flex-direction:column;gap:.4rem}
+li::marker{color:var(--accent)}
+
+pre{margin:0;background:var(--sunk);border:1px solid var(--rule-soft);border-radius:3px;
+  padding:.85rem 1rem;overflow-x:auto;font-family:var(--f-mono);font-size:.78rem;line-height:1.75}
+pre b{color:var(--flow);font-weight:600}
+pre i{color:var(--ink3);font-style:normal}
+
+.two{display:grid;gap:1rem;grid-template-columns:minmax(0,1fr)}
+@media(min-width:760px){.two{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pane{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:1.05rem 1.15rem;display:flex;flex-direction:column;gap:.55rem}
+.pane h4{color:var(--accent)}
+.pane.neg h4{color:var(--crit)}
+.pane.pos h4{color:var(--ok)}
+
+.chip{display:inline-block;font-family:var(--f-mono);font-size:.68rem;font-weight:600;
+  letter-spacing:.07em;padding:.15rem .45rem;border-radius:2px;border:1px solid currentColor}
+.c-ok{color:var(--ok);background:var(--ok-bg)}
+.c-warn{color:var(--warn);background:var(--warn-bg)}
+.c-crit{color:var(--crit);background:var(--crit-bg)}
+
+.dont{background:var(--crit-bg);border:1px solid var(--crit);border-radius:3px;
+  padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:.6rem}
+.dont h3{color:var(--crit)}
+
+footer{margin-top:4rem;padding-top:1.6rem;border-top:1px solid var(--rule);
+  font-family:var(--f-mono);font-size:.72rem;color:var(--ink3);line-height:2}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">dialog-harness — 構造再構築構想</p>
+  <h1>親は、子から<br>学べない形をしている。</h1>
+  <p class="lede" style="margin-top:1.3rem;max-width:64ch">
+    kakuman-platform v3.0 は、DH が持たない機構を <strong>7 つ</strong>すでに実装している。
+    routing gate の述語化、規範の分割不変条件、購読量の CI 強制、観測層の非ゲート化、
+    武装解除センサーの明示 fail、配置と武装の分離、不可逆操作の deny 強制 ——
+    どれも診断書が「DH に欠けている」と指摘したものへの、<em class="hl">実運用で証明済みの答え</em>である。
+    それが親に一つも戻っていない。原因は怠慢ではなく<strong>配布トポロジーそのもの</strong>にある。
+    本構想は新機構を発明しない。<strong>逆流路を敷く</strong>。
+  </p>
+  <div class="mast-meta">
+    <span>起草 2026-08-26</span>
+    <span>対象 DH v6.11.0 → v7.x</span>
+    <span>観測元 kakuman-platform-v3.0 @ 9bbc642</span>
+    <span>前提文書 DIAGNOSIS-loop-graph-engineering-2026-08-26</span>
+    <span>状態 L0 起草・人間レビュー待ち</span>
+  </div>
+</header>
+
+<!-- ═══════ 1. 観測 ═══════ -->
+<section class="blk">
+  <p class="eyebrow">観測</p>
+  <h2>子が育てた 7 つの機構</h2>
+
+  <p>DH は kakuman に skill と template を配る。kakuman は DH v6.11.0 と <span class="mono">diff -rq</span> で差分ゼロを保っている（同期 #11、2026-08-15）。
+  にもかかわらず、<strong>kakuman にしか無いものが 7 つある</strong>。すべて「本番で事故ってから作られた」ものだ。</p>
+
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>機構</th><th>kakuman の実装</th><th>DH</th><th>診断書の該当所見</th></tr></thead>
+    <tbody>
+      <tr><td class="k">領域ゲートの述語化</td>
+        <td><span class="mono">check-routing-gates.mjs</span> — 変更 path に対する正規表現 18 gate。PR 本文の「通過ゲート記録」と機械突合。<strong>機械検出できない 2 gate は空配列で明示宣言</strong>し、自己申告＋独立レビューへ委譲</td>
+        <td><span class="chip c-crit">無</span> 語彙は templates に配布済み、実装は無い</td>
+        <td>F-01 typed edge 不在</td></tr>
+      <tr><td class="k">規範の分割不変条件</td>
+        <td><span class="mono">check-traps-sync.mjs</span> — 常時索引 ∩ ルーティング被覆 = ∅ かつ ∪ = 全罠。二重被覆も宙吊りも FAIL</td>
+        <td><span class="chip c-crit">無</span> 代わりに無期限・無署名の除外リスト</td>
+        <td>F-02 除外リストの Goodhart</td></tr>
+      <tr><td class="k">購読量の CI 強制</td>
+        <td><span class="mono">check-spec-size.mjs</span> / <span class="mono">check-claude-md-size.mjs</span> — 上限超過で <span class="mono">exit 1</span></td>
+        <td><span class="chip c-warn">宣言のみ</span> 代謝の COLD 除外は自認どおり「convention レベル・glob 強制ではない」</td>
+        <td>規範の自己増殖</td></tr>
+      <tr><td class="k">観測層の非ゲート化</td>
+        <td><span class="mono">observe.yml</span> — required に入れない／赤を作らない／<strong>PR にコメントしない</strong>（罠 X-CI-A：bot コメントは購読セッションの wake event であり自律実行を直接消費する。2026-06 に実際に Actions 無効化へ至った）</td>
+        <td><span class="chip c-crit">無</span> 観測層そのものが無い</td>
+        <td>F-08 稼働監視の不在</td></tr>
+      <tr><td class="k">武装解除の明示 fail</td>
+        <td><span class="mono">rls-drift.yml</span> — 日次 cron。secret 不在なら <strong>fail させる</strong>（「センサーが武装解除されたまま静かに green を装わない」）</td>
+        <td><span class="chip c-warn">逆</span> G-5 は WARN 止まり＋除外で計数から消える</td>
+        <td>F-02 / F-06</td></tr>
+      <tr><td class="k">配置と武装の分離</td>
+        <td><span class="mono">observe.yml</span> — AI がファイルを置き、<strong>schedule の付与は人間が行う</strong>。消費枠に直結する判断を人間側に残す</td>
+        <td><span class="chip c-crit">無</span> cron は月次検査 1 本のみ</td>
+        <td>F-03 仕事の自動発見ゼロ</td></tr>
+      <tr><td class="k">不可逆操作の deny 強制</td>
+        <td><span class="mono">.claude/settings.json</span> — <span class="mono">rm -rf</span> / <span class="mono">db reset</span> / <span class="mono">push --force</span> 等 <strong>14 件を機械 deny</strong>。philosophy 第 9 条 L-GATE の実体</td>
+        <td><span class="chip c-crit">無</span> <span class="mono">.claude/settings.json</span> が存在しない</td>
+        <td>F-04 authority が実行経路に無い</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="two">
+    <div class="pane">
+      <h4>決定論センサーの数</h4>
+      <p class="small">kakuman <strong>14 本</strong>（<span class="mono">verify:sensors</span>）／ DH <strong>7 項目</strong>（<span class="mono">harness-verifier</span>）。
+      配る側より配られる側のほうが、自分を機械検査している。</p>
+    </div>
+    <div class="pane">
+      <h4>skill の数</h4>
+      <p class="small">kakuman <strong>26</strong>（DH 由来 20 ＋ <strong>現地で育った 6</strong>：caaf-wiring / feedback-triage / l0-pre-brainstorm / news-publish / supabase-migration-safe / article-forge）。
+      育った 6 本のうち DH に戻ったものは <strong>0</strong>。</p>
+    </div>
+  </div>
+
+  <blockquote class="flow">
+    <p><strong>最も重い一点。</strong><span class="mono">check-routing-gates.mjs</span> のコメントは、gate に <span class="mono">package.json</span> を含めない理由をこう書く ——
+    「依存追加のたびに常時発火して <strong>gate が形骸化する</strong>ため」。
+    <em class="hl">頻繁に発火しすぎる検査はゴム印になる</em> という洞察は、DH のどの規範にも書かれていない。
+    これは運用でしか手に入らない知恵であり、DH は運用を持たないので永久に手に入らない。</p>
+  </blockquote>
+</section>
+
+<!-- ═══════ 2. 診断 ═══════ -->
+<section class="blk">
+  <p class="eyebrow">構造診断</p>
+  <h2>根因は配布トポロジー</h2>
+
+  <p><span class="mono">dh-manifest.yml</span> は 4 分類を持つ —— <span class="mono">overwrite</span>（丸ごと差し替え）／<span class="mono">merge</span>／<span class="mono">redeploy</span>／<span class="mono">never_touch</span>。
+  <strong>4 つとも DH → プロジェクトの「下り」である</strong>。上りの分類が存在しない。
+  そして DH 本体には SPEC.md も REGIME.md も製品も無い。つまり <strong>DH は運用圧を受ける面を一つも持たない</strong>。</p>
+
+  <figure>
+    <svg viewBox="0 0 760 340" role="img" aria-label="現行は DH から各プロジェクトへの一方向配布で、運用圧は葉でしか発生せず根に届かない。提案は upstream 分類を足して候補提示の上り経路を作る。">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="currentColor"/>
+        </marker>
+        <marker id="arF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="#A85416"/>
+        </marker>
+      </defs>
+
+      <!-- 見出し -->
+      <text x="20" y="24" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity=".65">現行 — 一方向木</text>
+      <text x="420" y="24" font-family="ui-monospace,monospace" font-size="12" fill="#A85416">提案 — upstream 分類の新設</text>
+      <line x1="390" y1="10" x2="390" y2="330" stroke="currentColor" stroke-width="1" opacity=".22" stroke-dasharray="3 4"/>
+
+      <!-- ===== 左：現行 ===== -->
+      <rect x="120" y="46" width="150" height="40" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text x="195" y="66" text-anchor="middle" font-size="13" fill="currentColor" font-weight="600">dialog-harness</text>
+      <text x="195" y="80" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".6">運用圧＝ゼロ</text>
+
+      <line x1="150" y1="86" x2="80" y2="150" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+      <line x1="195" y1="86" x2="195" y2="150" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+      <line x1="240" y1="86" x2="310" y2="150" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+      <text x="203" y="122" font-size="10.5" fill="currentColor" opacity=".7">overwrite</text>
+
+      <rect x="30" y="152" width="100" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="1" opacity=".75"/>
+      <text x="80" y="173" text-anchor="middle" font-size="11" fill="currentColor" opacity=".8">別プロジェクト</text>
+      <rect x="145" y="152" width="100" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="1" opacity=".75"/>
+      <text x="195" y="173" text-anchor="middle" font-size="11" fill="currentColor" opacity=".8">別プロジェクト</text>
+      <rect x="260" y="152" width="105" height="34" rx="2" fill="#A85416" fill-opacity=".1" stroke="#A85416" stroke-width="1.6"/>
+      <text x="312" y="173" text-anchor="middle" font-size="11" fill="#A85416" font-weight="600">kakuman v3</text>
+
+      <!-- 運用圧 -->
+      <text x="312" y="212" text-anchor="middle" font-size="10.5" fill="#A85416">▲ 本番事故・運用圧</text>
+      <rect x="252" y="222" width="120" height="52" rx="2" fill="none" stroke="#A85416" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="312" y="241" text-anchor="middle" font-size="10.5" fill="#A85416">7 機構が育つ</text>
+      <text x="312" y="257" text-anchor="middle" font-size="10.5" fill="#A85416">gate / 不変条件</text>
+      <text x="312" y="270" text-anchor="middle" font-size="10.5" fill="#A85416">観測 / deny</text>
+
+      <path d="M252 248 L200 248" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4" opacity=".5"/>
+      <line x1="196" y1="240" x2="184" y2="256" stroke="currentColor" stroke-width="2" opacity=".75"/>
+      <line x1="184" y1="240" x2="196" y2="256" stroke="currentColor" stroke-width="2" opacity=".75"/>
+      <text x="122" y="252" font-size="10.5" fill="currentColor" opacity=".75">上りの経路が無い</text>
+      <text x="122" y="300" font-size="10.5" fill="currentColor" opacity=".55">→ 親は永久に学ばない</text>
+
+      <!-- ===== 右：提案 ===== -->
+      <rect x="500" y="46" width="150" height="40" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <text x="575" y="66" text-anchor="middle" font-size="13" fill="currentColor" font-weight="600">dialog-harness</text>
+      <text x="575" y="80" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".6">v7</text>
+
+      <line x1="530" y1="86" x2="480" y2="150" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+      <line x1="620" y1="86" x2="672" y2="150" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+      <text x="533" y="122" font-size="10.5" fill="currentColor" opacity=".7">overwrite</text>
+
+      <rect x="430" y="152" width="100" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="1" opacity=".75"/>
+      <text x="480" y="173" text-anchor="middle" font-size="11" fill="currentColor" opacity=".8">別プロジェクト</text>
+      <rect x="622" y="152" width="105" height="34" rx="2" fill="#A85416" fill-opacity=".1" stroke="#A85416" stroke-width="1.6"/>
+      <text x="674" y="173" text-anchor="middle" font-size="11" fill="#A85416" font-weight="600">kakuman v3</text>
+
+      <!-- upstream 経路 -->
+      <path d="M674 152 C 674 118, 640 108, 600 100" fill="none" stroke="#A85416" stroke-width="2" marker-end="url(#arF)"/>
+      <text x="700" y="128" text-anchor="middle" font-size="10.5" fill="#A85416" font-weight="600">upstream</text>
+      <text x="700" y="142" text-anchor="middle" font-size="10.5" fill="#A85416">（候補提示）</text>
+
+      <rect x="470" y="222" width="210" height="60" rx="2" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="575" y="242" text-anchor="middle" font-size="11" fill="currentColor">upstream-scan → 候補 md</text>
+      <text x="575" y="259" text-anchor="middle" font-size="11" fill="currentColor" opacity=".8">→ 人間承認 → DH へ実装</text>
+      <text x="575" y="274" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".55">自動 merge しない</text>
+      <line x1="575" y1="190" x2="575" y2="218" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
+      <text x="575" y="316" text-anchor="middle" font-size="10.5" fill="#A85416">→ 運用圧が根まで届く</text>
+    </svg>
+    <figcaption><b>図 1 — 学習が根に届かない形。</b>
+      <span class="mono">dh-manifest.yml</span> の 4 分類はすべて下り。運用圧は葉（kakuman）でしか発生しないのに、
+      葉で生まれた機構が根へ戻る経路が定義されていない。<span class="mono">upstream</span> 分類は<strong>自動同期ではなく候補提示</strong>に閉じる ——
+      子の規範が親の憲法を書き換える経路を作ってはいけないため。</figcaption>
+  </figure>
+
+  <blockquote>
+    <p>診断書の 8 所見はすべてこの一形から派生する。DH が「宣言はあるが配線がない」状態を脱せないのは、
+    <strong>配線を要求する圧力が DH に届く構造になっていない</strong>から。
+    kakuman は届いたから作った。DH は届かないから作らなかった。それだけの話であり、思想の問題ではない。</p>
+  </blockquote>
+</section>
+
+<!-- ═══════ 3. 構造変更 ═══════ -->
+<section class="blk">
+  <p class="eyebrow">再構築</p>
+  <h2>4 つの構造変更</h2>
+  <p class="small">新機構は発明しない。すべて kakuman に実在する形式を DH の語彙へ移す。移すのは<strong>形式だけ</strong>で、罠 ID や gate 名といった kakuman 固有の内容は持ち込まない（「agent 本体はプロジェクト不変・差異は入力データに閉じる」の逆流への適用）。</p>
+
+  <!-- 変更 A -->
+  <h3 style="margin-top:.8rem">A. edge を述語で武装する</h3>
+  <p><span class="mono">GRAPH.yml</span> の edge に <span class="mono">predicate</span> を足す。指す先は <span class="mono">harness-verifier/predicates/</span> の関数で、
+  <strong>機械検出できない edge は「書かない」のではなく <span class="mono">unmechanizable: true</span> と宣言する</strong>。
+  kakuman の <span class="mono">'G-UX-SNS': []</span>（意味的トリガーゆえ機械検出対象外、段 2 の自己申告へ委譲）の一般化にあたる。</p>
+
+  <pre><i># 現行 — 人間が読む文章しかない</i>
+- from: layer1-autonomous-dev
+  to: human-P4-停止介入
+  type: conditional
+  condition: "opt-in 領域に該当（philosophy 改修 / harness-verifier 自己改修 / …）"
+
+<i># v7 — 読む文章と、評価する述語を分ける</i>
+- from: layer1-autonomous-dev
+  to: human-P4-停止介入
+  type: conditional
+  condition: "opt-in 領域に該当（philosophy 改修 / harness-verifier 自己改修 / …）"
+  <b>predicate: opt_in_area</b>            <i># harness-verifier/predicates/opt_in_area.py</i>
+  <b>unmechanizable: false</b>
+  <b>enforced_by: .github/workflows/auto-merge.yml</b></pre>
+
+  <figure>
+    <svg viewBox="0 0 720 250" role="img" aria-label="現行は宣言から実行へ向かう矢印が無く実装だけが停止条件を決める。v7 では述語が検査器を通じて実行を止める矢印が加わる。">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="currentColor"/>
+        </marker>
+        <marker id="ar2F" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <polygon points="0,0 10,5 0,10" fill="#A85416"/>
+        </marker>
+      </defs>
+      <text x="14" y="22" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity=".65">現行</text>
+      <text x="382" y="22" font-family="ui-monospace,monospace" font-size="12" fill="#A85416">v7</text>
+      <line x1="358" y1="8" x2="358" y2="242" stroke="currentColor" stroke-width="1" opacity=".22" stroke-dasharray="3 4"/>
+
+      <!-- 左 -->
+      <rect x="20" y="44" width="130" height="38" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="85" y="62" text-anchor="middle" font-size="11.5" fill="currentColor">GRAPH.yml</text>
+      <text x="85" y="76" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">condition（散文）</text>
+
+      <rect x="20" y="160" width="130" height="38" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="85" y="178" text-anchor="middle" font-size="11.5" fill="currentColor">実装</text>
+      <text x="85" y="192" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">workflow / SKILL</text>
+
+      <rect x="200" y="160" width="130" height="38" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="265" y="178" text-anchor="middle" font-size="11.5" fill="currentColor">停止するか</text>
+      <text x="265" y="192" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">auto-merge の判断</text>
+
+      <line x1="150" y1="179" x2="196" y2="179" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+      <path d="M85 160 L85 90" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"/>
+      <text x="95" y="128" font-size="10" fill="currentColor" opacity=".7">実装が正（I-2）</text>
+      <line x1="158" y1="52" x2="176" y2="74" stroke="currentColor" stroke-width="2" opacity=".7"/>
+      <line x1="176" y1="52" x2="158" y2="74" stroke="currentColor" stroke-width="2" opacity=".7"/>
+      <text x="186" y="67" font-size="10" fill="currentColor" opacity=".7">宣言は実行を止めない</text>
+
+      <!-- 右 -->
+      <rect x="382" y="44" width="140" height="38" rx="2" fill="none" stroke="#A85416" stroke-width="1.6"/>
+      <text x="452" y="62" text-anchor="middle" font-size="11.5" fill="#A85416" font-weight="600">GRAPH.yml</text>
+      <text x="452" y="76" text-anchor="middle" font-size="10" fill="#A85416">predicate</text>
+
+      <rect x="382" y="112" width="140" height="34" rx="2" fill="none" stroke="#A85416" stroke-width="1.4"/>
+      <text x="452" y="133" text-anchor="middle" font-size="11" fill="#A85416">predicates/*.py</text>
+
+      <rect x="382" y="178" width="140" height="38" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="452" y="196" text-anchor="middle" font-size="11.5" fill="currentColor">停止するか</text>
+      <text x="452" y="210" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">auto-merge の判断</text>
+
+      <rect x="560" y="112" width="140" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="630" y="127" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".8">unmechanizable</text>
+      <text x="630" y="140" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">→ 自己申告＋独立検証</text>
+
+      <line x1="452" y1="82" x2="452" y2="108" stroke="#A85416" stroke-width="1.8" marker-end="url(#ar2F)"/>
+      <line x1="452" y1="146" x2="452" y2="174" stroke="#A85416" stroke-width="1.8" marker-end="url(#ar2F)"/>
+      <text x="462" y="166" font-size="10" fill="#A85416" font-weight="600">宣言が正</text>
+      <path d="M522 61 C 600 61, 630 82, 630 108" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#ar2)" opacity=".7"/>
+      <text x="640" y="60" text-anchor="middle" font-size="10" fill="currentColor" opacity=".65">機械化不能と</text>
+      <text x="640" y="73" text-anchor="middle" font-size="10" fill="currentColor" opacity=".65">明示した edge</text>
+    </svg>
+    <figcaption><b>図 2 — 加わるのは矢印 1 本。</b>
+      現行は宣言から実行へ向かう線が存在せず、不変条件 I-2 がそれを禁じている。
+      v7 では <span class="mono">predicate</span> を持つ edge についてのみ I-2 を反転し、宣言が実行を止める。
+      機械化できない edge は破線側へ<strong>明示的に</strong>逃がす —— 「書き忘れ」と「機械化不能と判断した」を区別できることが要点。</figcaption>
+  </figure>
+
+  <!-- 変更 B -->
+  <h3 style="margin-top:1rem">B. 除外リストを分割不変条件に置き換える</h3>
+  <p><span class="mono">g5_false_positives</span> を廃止する。代わりに kakuman の <span class="mono">check-traps-sync.mjs</span> と同じ不変条件を課す。</p>
+
+  <figure>
+    <svg viewBox="0 0 720 200" role="img" aria-label="現行は実装経路の一部を無期限の除外リストが吸収して残りだけを数える。v7 では全経路が宣言済みか機械化不能宣言済みのどちらかに必ず属し、未分類はゼロでなければ失敗する。">
+      <text x="14" y="22" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity=".65">現行 — 除外（無期限・無署名・無限成長）</text>
+      <text x="400" y="22" font-family="ui-monospace,monospace" font-size="12" fill="#A85416">v7 — 分割（交わり空・和が全体）</text>
+      <line x1="374" y1="8" x2="374" y2="192" stroke="currentColor" stroke-width="1" opacity=".22" stroke-dasharray="3 4"/>
+
+      <!-- 左 -->
+      <rect x="20" y="46" width="330" height="120" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="30" y="66" font-size="10.5" fill="currentColor" opacity=".65">実装に存在する全起動経路</text>
+      <rect x="34" y="78" width="140" height="72" rx="2" fill="currentColor" fill-opacity=".07" stroke="currentColor" stroke-width="1"/>
+      <text x="104" y="108" text-anchor="middle" font-size="11" fill="currentColor">宣言済み edge</text>
+      <text x="104" y="126" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">39</text>
+      <rect x="188" y="78" width="86" height="72" rx="2" fill="currentColor" fill-opacity=".07" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="231" y="103" text-anchor="middle" font-size="10.5" fill="currentColor" opacity=".8">除外</text>
+      <text x="231" y="120" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">16</text>
+      <text x="231" y="137" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".5">計数から消える</text>
+      <rect x="286" y="78" width="50" height="72" rx="2" fill="none" stroke="currentColor" stroke-width="1" opacity=".45"/>
+      <text x="311" y="110" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">残り</text>
+      <text x="311" y="126" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">＝WARN</text>
+      <text x="20" y="184" font-size="10.5" fill="currentColor" opacity=".7">昇格条件「6 cycle 連続 0 件」は除外への追記で満たせる</text>
+
+      <!-- 右 -->
+      <rect x="398" y="46" width="300" height="120" rx="2" fill="none" stroke="#A85416" stroke-width="1.6"/>
+      <text x="408" y="66" font-size="10.5" fill="#A85416">実装に存在する全起動経路</text>
+      <rect x="412" y="78" width="132" height="72" rx="2" fill="#A85416" fill-opacity=".1" stroke="#A85416" stroke-width="1"/>
+      <text x="478" y="105" text-anchor="middle" font-size="11" fill="#A85416">宣言済み edge</text>
+      <text x="478" y="124" text-anchor="middle" font-size="10" fill="#A85416" opacity=".8">predicate あり</text>
+      <rect x="552" y="78" width="132" height="72" rx="2" fill="#A85416" fill-opacity=".1" stroke="#A85416" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="618" y="105" text-anchor="middle" font-size="11" fill="#A85416">機械化不能宣言</text>
+      <text x="618" y="124" text-anchor="middle" font-size="10" fill="#A85416" opacity=".8">署名＋期限つき</text>
+      <text x="398" y="184" font-size="10.5" fill="#A85416">未分類が 1 件でもあれば FAIL。「除外」という概念を消す</text>
+    </svg>
+    <figcaption><b>図 3 — 消すのは検査ではなく「除外」という概念。</b>
+      不変条件は 2 本 ——<span class="mono">宣言済み ∩ 機械化不能宣言 = ∅</span> かつ <span class="mono">宣言済み ∪ 機械化不能宣言 = 実装の全経路</span>。
+      どちらにも属さない経路が 1 件でもあれば FAIL。機械化不能宣言には <span class="mono">judged_by</span> と <span class="mono">expires_at</span> を必須とし、
+      期限切れは自動で未分類に戻る（<span class="mono">GRAPH.yml</span> が既に自分に課している <span class="mono">review_trigger:</span> の自己適用）。</figcaption>
+  </figure>
+
+  <!-- 変更 C -->
+  <h3 style="margin-top:1rem">C. 観測層を門から切り離す</h3>
+  <p>kakuman の 3 層モデル（<strong>床</strong>＝required の型・lint・build・test ／ <strong>観測</strong>＝非ゲート ／ <strong>門</strong>＝停止条件）と罠 X-CI-A / X-CI-B を、DH の規範へ昇格させる。
+  DH に観測層が無いまま F-03（自動発見）を入れると、<strong>発見が wake event を量産して自律実行を食い潰す</strong> ——
+  kakuman が 2026-06 に実際に踏んだ道である。順序を逆にしてはいけない。</p>
+
+  <div class="two">
+    <div class="pane pos">
+      <h4>観測層に課す 4 条</h4>
+      <ul>
+        <li><strong>required に入れない</strong>。観測の失敗で開発を止めない</li>
+        <li><strong>赤いチェックを作らない</strong>。赤＝wake event＝自律実行の消費</li>
+        <li><strong>PR にコメントしない</strong>。結果は job summary と artifact にだけ出す</li>
+        <li><strong>武装解除は黙って緑にしない</strong>。secret 不在・設定欠落は明示 fail（rls-drift の規律）</li>
+      </ul>
+    </div>
+    <div class="pane">
+      <h4>配置と武装の分離</h4>
+      <p class="small">DH に <span class="mono">discover.yml</span> を置く。走査対象は 4 種 ——
+      期限切れの <span class="mono">review_trigger</span> ／ 2 cycle 以上続く WARN ／ 滞留 PR・赤い CI ／ 未配線 skill と未解決の申し送り。</p>
+      <p class="small"><strong><span class="mono">schedule:</span> はコメントアウトしたまま出荷する。</strong>
+      武装は人間が行う。消費枠に直結する判断を AI 側に置かない ——
+      これも発明ではなく <span class="mono">observe.yml</span> がすでに採っている分担である。</p>
+    </div>
+  </div>
+
+  <!-- 変更 D -->
+  <h3 style="margin-top:1rem">D. 逆流路を manifest に定義する</h3>
+  <p><span class="mono">dh-manifest.yml</span> に第 5 の分類 <span class="mono">upstream</span> を新設する。
+  「プロジェクト側で実装され、DH に還流<strong>しうる</strong>もの」を宣言し、<span class="mono">scripts/upstream-scan.py</span> が配布先と DH master を突き合わせて
+  <span class="mono">delivery/UPSTREAM-CANDIDATES-*.md</span> に候補を出す。</p>
+
+  <pre>upstream:                       <i># 新設。上りは「候補提示」に閉じる</i>
+  scan:
+    - ".claude/skills/"          <i># DH に無い skill / 同名 skill の実質的前進</i>
+    - "scripts/"                 <i># DH に無い決定論センサー</i>
+    - ".github/workflows/"       <i># DH に無い workflow の形式</i>
+  <b>never_upstream:                # 逆流を禁じる領域（子が親の憲法を書き換えない）</b>
+    - "philosophy.md"
+    - "dh-manifest.yml"
+    - "auto-merge-boundary.md"
+  <b>gate: human                    # 自動 merge しない。候補 md → 人間承認 → DH 実装</b></pre>
+
+  <p class="small">continuous-learning（観測 → 候補化 → 人間最終承認）と<strong>同じ形</strong>である。
+  あちらは hook 観測ログ起点、こちらは配布先リポジトリ起点。新しい思想は要らない。</p>
+</section>
+
+<!-- ═══════ 4. 移行 ═══════ -->
+<section class="blk">
+  <p class="eyebrow">移行計画</p>
+  <h2>6 段階</h2>
+  <p class="small">各段は独立に revert 可能で、前段の完了を後段の前提にする。順序には根拠がある —— C（観測層）を D（自動発見の器）より先に置くのは、観測層なき発見が wake event を量産するため。</p>
+
+  <div style="display:flex;flex-direction:column;gap:.8rem">
+
+    <div class="band done">
+      <span class="band-n">Phase 0</span>
+      <div class="band-body">
+        <h4>役割境界の機械化 <span class="chip c-ok">起草済</span></h4>
+        <p class="small">v6.13.0（F1 独立検証の隔離実行／F2 opt-in 境界の導出型配線／F3 事後評価の取りこぼし封じ）。
+        <strong>すでに正しい方向を向いている</strong>。本構想はこれを置き換えず、F2 の「導出型の配線」を edge 全体へ一般化した続きとして接続する。</p>
+      </div>
+    </div>
+
+    <div class="band now">
+      <span class="band-n">Phase 1</span>
+      <div class="band-body">
+        <h4>逆流路（変更 D）</h4>
+        <p class="small">manifest に <span class="mono">upstream</span> ＋ <span class="mono">upstream-scan.py</span>。出力は候補 md のみで、DH のファイルを 1 バイトも書き換えない。
+        <strong>最初に置く理由</strong>：以降の全 Phase が「kakuman の実装を移す」作業であり、その供給路を先に通しておくのが最も安く、かつ Phase 1 単体でも即座に元が取れる（現在すでに 7 機構 6 skill が待っている）。</p>
+        <p class="small"><strong>完了条件</strong>：kakuman v3 に対して scan を回し、候補 md に 7 機構が列挙される。人間が採否を記入できる。</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <span class="band-n">Phase 2</span>
+      <div class="band-body">
+        <h4>述語層（変更 A）</h4>
+        <p class="small"><span class="mono">harness-verifier/predicates/</span> を新設し、<strong>停止条件に関わる edge のみ</strong>に <span class="mono">predicate</span> を付ける
+        （opt-in 領域判定／stop ラベル／H カテゴリ抵触／harness-verify SUCCESS／CTL 閾値／独立検証の隔離）。
+        この部分集合についてのみ I-2 を反転する。</p>
+        <p class="small"><strong>完了条件</strong>：PR #191（opt-in 領域なのに自動マージされた事故）を再現データとして流し、<span class="mono">predicate</span> が停止させることを実証する。過去の事故が回帰テストになる。</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <span class="band-n">Phase 3</span>
+      <div class="band-body">
+        <h4>分割不変条件（変更 B）</h4>
+        <p class="small"><span class="mono">g5_false_positives</span> 16 件を <span class="mono">unmechanizable</span> 宣言（<span class="mono">judged_by</span> ＋ <span class="mono">expires_at</span> つき）へ移送し、G-5 を WARN → FAIL 昇格。
+        未分類 0 件を不変条件にする。</p>
+        <p class="small"><strong>完了条件</strong>：16 件それぞれに人間の署名と期限が入り、未分類が 0。以後、経路を足したら分類も足さないと CI が落ちる。</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <span class="band-n">Phase 4</span>
+      <div class="band-body">
+        <h4>観測層（変更 C）</h4>
+        <p class="small"><span class="mono">observe.yml</span> を DH へ移植（非ゲート・非コメント・artifact 出力）。
+        <span class="mono">GRAPH.yml</span> と GitHub API から「いまどの Issue / PR がどのノードに居るか」を出す台帳を job summary に描く。
+        既存の state の投影であり、新しい state は作らない。</p>
+        <p class="small"><strong>完了条件</strong>：観測 job が赤を作らず、PR にコメントせず、台帳が読める。武装解除（token 欠落等）では明示 fail する。</p>
+      </div>
+    </div>
+
+    <div class="band">
+      <span class="band-n">Phase 5</span>
+      <div class="band-body">
+        <h4>自動発見と authority の実行時化</h4>
+        <p class="small"><span class="mono">discover.yml</span> を <span class="mono">schedule:</span> 無効で出荷（武装は人間）。
+        併せて CTL 導出結果を <span class="mono">history/</span> に commit し、<span class="mono">issue-pickup</span> / <span class="mono">auto-merge</span> が読む。
+        <span class="mono">.claude/settings.json</span> の deny を DH 自身にも置き、L-GATE を機械強制にする。</p>
+        <p class="small"><strong>完了条件</strong>：人間が schedule を外した日から、起票<strong>提案</strong>が自動で立つ。<span class="mono">ready-for-ai</span> の付与は人間のまま（philosophy 第 6 条を一切崩さない）。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <h3 style="margin-top:1.2rem">到達予測</h3>
+  <div class="tbl-scroll">
+  <table>
+    <thead><tr><th>グラフ成熟度</th><th class="n">現在</th><th class="n">Phase 3 後</th><th class="n">Phase 5 後</th><th>備考</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1 境界と契約の抽出</td><td class="n">✅</td><td class="n">✅</td><td class="n">✅</td><td>GRAPH.yml で達成済</td></tr>
+      <tr><td class="k">2 typed state</td><td class="n">△</td><td class="n">△</td><td class="n">○</td><td>CTL の repo 化で前進</td></tr>
+      <tr><td class="k">3 決定論ノード</td><td class="n">✅</td><td class="n">✅</td><td class="n">✅</td><td>もともと強い</td></tr>
+      <tr><td class="k">4 conditional edge</td><td class="n">✕</td><td class="n">✅</td><td class="n">✅</td><td><strong>Phase 2 が本丸</strong></td></tr>
+      <tr><td class="k">5 fan-out / reducer</td><td class="n">✕</td><td class="n">✕</td><td class="n">△</td><td>v8 送り（下記 DONT）</td></tr>
+      <tr><td class="k">6 evaluator</td><td class="n">△</td><td class="n">✅</td><td class="n">✅</td><td>分割不変条件で穴が塞がる</td></tr>
+      <tr><td class="k">7 checkpoint</td><td class="n">✕</td><td class="n">✕</td><td class="n">✕</td><td><strong>v7 では扱わない</strong></td></tr>
+      <tr><td class="k">8 budget / stop</td><td class="n">△</td><td class="n">△</td><td class="n">○</td><td>authority が実行時に入る</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small"><strong>3 / 8 → 6 / 8。</strong>「実行・配線」の評点は C → A−、総合は B− → A− 相当。
+  checkpoint（段階 7）は状態機械の新設を要し、規範量を増やさずには実現できないため v7 では触らない。</p>
+</section>
+
+<!-- ═══════ 5. DONT ═══════ -->
+<section class="blk">
+  <p class="eyebrow">スコープ外</p>
+  <h2>やらないこと</h2>
+
+  <div class="dont">
+    <h3>本構想が明示的に禁じる 6 件</h3>
+    <ul>
+      <li><strong><span class="mono">philosophy.md</span> を書き換えない。</strong> L-FROZEN-PHIL は 2026-11-06 の評価ゲートまで凍結。本構想は条文が既に要求している内容に実行経路を与えるだけで、条文には触れない</li>
+      <li><strong>逆流を自動 merge しない。</strong> 子で育った規範が親の憲法へ自動流入する経路は、P4 介入権を事後発動化させる。候補提示に閉じ、<span class="mono">never_upstream</span> で憲法級を明示除外する</li>
+      <li><strong>kakuman 固有の内容を持ち込まない。</strong> 移すのは形式（述語・分割不変条件・非ゲート観測）だけ。罠 ID・gate 名・Supabase 語彙は DH に入れない</li>
+      <li><strong>L3 を新設しない。</strong> 観測層も逆流路も既存 4 役割の support 枠に置く（philosophy 第 1 条 §L3 を新設しない）</li>
+      <li><strong>規範量を増やさない。</strong> 追加するのは検査器とスキーマ欄であって条文ではない。f5fc45「減らす・時限化」に反する追加は Phase から外す</li>
+      <li><strong>fan-out と checkpoint を v7 に入れない。</strong> 段階 5 / 7 は状態機械の新設を伴う。Phase 1-5 が終わるまで着手しない（一度に根を 2 本触らない）</li>
+    </ul>
+  </div>
+
+  <blockquote>
+    <p><strong>最大のリスクは Phase 2 にある。</strong>
+    I-2 の部分反転は「宣言が実行を拘束する」への転換であり、<strong>宣言を間違えると開発が止まる</strong>。
+    だから対象を停止条件の 6 edge に絞り、過去の事故（PR #191）を回帰テストに使う。
+    全 edge を一度に述語化しようとした瞬間、この構想は失敗する ——
+    kakuman の gate も 18 本のうち 2 本を「機械検出対象外」と正直に宣言することで生き延びている。</p>
+  </blockquote>
+</section>
+
+<!-- ═══════ 6. 結び ═══════ -->
+<section class="blk">
+  <p class="eyebrow">結び</p>
+  <h2>親が子に追いつく</h2>
+
+  <p>診断書は「憲法と配線図は世界最高水準、電気は通っていない」と書いた。
+  kakuman v3 を見たあとでは、言い方を変えたほうが正確だ ——
+  <strong>電気は通っている。ただし子の家にだけ通っていて、親の家には配線が来ていない。</strong></p>
+
+  <p>これは失敗ではなく、メタハーネスという形態の構造的帰結である。
+  DH は製品を持たないから本番事故を踏まない。踏まないから機構が要らない。要らないから作られない。
+  一方 kakuman は 2026-06 に本番 RLS ドリフトを踏み、Actions を課金で止められ、bot コメントで自律実行を食い潰した。
+  <strong>そのたびに機構が 1 つ生まれた。</strong>
+  7 機構はどれも、事故の日付を持っている。</p>
+
+  <p>だから v7 でやるべきことは、新しい思想を足すことではない。
+  <em class="hl">親に、子の痛みが届く配線を引くこと</em>だ。
+  <span class="mono">upstream</span> という 1 分類、<span class="mono">predicate</span> という 1 フィールド、
+  そして「除外」を「分割」に置き換える 1 つの不変条件。
+  この 3 つで、診断書の 8 所見のうち 6 つが閉じる。</p>
+
+  <p class="lede" style="margin-top:.5rem">
+  ハーネスを生み出すハーネスが、<strong>ハーネスから学べないままでいる</strong>のは筋が通らない。
+  L0 ループが「対話の蓄積としてハーネスが育つ」ことを核心に据えているなら、
+  その対話相手は人間だけではないはずだ。<strong>稼働している子も、対話相手である。</strong></p>
+</section>
+
+<footer>
+  対象 samejima-ai/dialog-harness v6.11.0（起草中 v6.13.0） ・ 観測元 samejima-ai/kakuman-platform-v3.0 @ 9bbc642<br>
+  主な根拠 check-routing-gates.mjs（18 gate / 2 機械化不能宣言）・check-traps-sync.mjs（分割不変条件）・observe.yml（罠 X-CI-A/B）・rls-drift.yml（日次 cron / 武装検査）・.claude/settings.json（deny 14 件）・verify:sensors（14 本）<br>
+  前提文書 delivery/DIAGNOSIS-loop-graph-engineering-2026-08-26.html<br>
+  起草 2026-08-26 ・ 本構想は判断材料であり判定を含まない（採否は L0 対話と人間決定に委ねる）
+</footer>
+
+</div>
+</body>
+</html>
