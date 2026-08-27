@@ -165,7 +165,7 @@ jobs:
 
           # PR 詳細を一括取得
           # field set は初回と条件 3.5 のポーリング再取得で共用（マジック文字列の二重定義回避・OC review #129 LOW）
-          PR_FIELDS="author,labels,isDraft,state,statusCheckRollup,reviewDecision,title"
+          PR_FIELDS="author,labels,isDraft,state,statusCheckRollup,reviewDecision,title,baseRefName,files"
           PR_JSON=$(gh pr view "$PR_NUMBER" --json "$PR_FIELDS")
 
           # 条件 7: PR state OPEN
@@ -181,6 +181,55 @@ jobs:
           if [ -n "$STOP_LABEL" ]; then
             echo "::notice::PR #$PR_NUMBER に stop ラベル '$STOP_LABEL' あり。skip（人間レビュー or 差し戻し or pickup 失敗）。"
             exit 0
+          fi
+
+          # 条件 1.5（v6.12.0・Council 634df2）: CTL 権限ゲート。
+          #
+          # **単調性制約（哲学者）**: CTL は本 workflow で「止める」方向にのみ効く。
+          # CTL が高いことを理由に merge 条件を**緩めることはしない**（既存条件は全て AND のまま）。
+          # 権限の拡張判断は対話セッション内で人間の面前でのみ発火する。
+          #
+          # **自己昇格の遮断（開発者）**: .council-ctl.json 自身を触る PR は必ず止める。
+          # これが無いと PR が自分の merge 可否を書き換えられる（自己昇格経路）。
+          CTL_FILE=".council-ctl.json"
+          CHANGED=$(echo "$PR_JSON" | jq -r '.files[]?.path // empty')
+          if echo "$CHANGED" | grep -qx "$CTL_FILE"; then
+            echo "::notice::PR #$PR_NUMBER が $CTL_FILE を改変している。skip（権限値の自己昇格を遮断・Council 634df2 開発者制約）。"
+            exit 0
+          fi
+
+          # **鮮度 fail-closed（開発者・経営者）**: 導出結果が古ければ CTL-0 相当に落とす。
+          # 実体（user-scope council-data）は CI から見えないため、鮮度だけが乖離検知の手段。
+          #
+          # 本 job は checkout を持たない（§env の GH_REPO で git context を代替）ため、
+          # ファイルは base ブランチから API で取得する。PR 側の版を読むと、上の
+          # 自己昇格遮断をすり抜けた改変を信じることになるので **base 固定**が必須。
+          BASE_REF=$(echo "$PR_JSON" | jq -r '.baseRefName // "master"')
+          CTL_JSON=$(gh api "repos/{owner}/{repo}/contents/$CTL_FILE?ref=$BASE_REF" \
+            --jq '.content' 2>/dev/null | base64 -d 2>/dev/null || echo "")
+          if [ -n "$CTL_JSON" ]; then
+            CTL_LEVEL=$(echo "$CTL_JSON" | jq -r '.ctl // "CTL-0"' 2>/dev/null || echo "CTL-0")
+            CTL_AT=$(echo "$CTL_JSON" | jq -r '.ctl_calculated_at // ""' 2>/dev/null || echo "")
+            CTL_STALE_DAYS="${CTL_STALE_DAYS:-30}"
+            if [ -n "$CTL_AT" ]; then
+              AGE_SEC=$(( $(date -u +%s) - $(date -u -d "$CTL_AT" +%s 2>/dev/null || echo 0) ))
+              if [ "$AGE_SEC" -gt $(( CTL_STALE_DAYS * 86400 )) ]; then
+                echo "::warning::$CTL_FILE が $CTL_STALE_DAYS 日超（$CTL_AT）。CTL-0 相当として扱う（fail-closed）。"
+                CTL_LEVEL="CTL-0"
+              fi
+            else
+              echo "::warning::$CTL_FILE に ctl_calculated_at が無い。CTL-0 相当として扱う（fail-closed）。"
+              CTL_LEVEL="CTL-0"
+            fi
+            # CTL-0 = 全件人間献上。自動 merge は権限外。
+            if [ "$CTL_LEVEL" = "CTL-0" ]; then
+              echo "::notice::CTL-0（全件献上）のため auto-merge を行わない。skip。"
+              exit 0
+            fi
+            echo "::notice::CTL ゲート通過: $CTL_LEVEL（縮小方向のみ適用）。"
+          else
+            # ファイル不在は「まだ配線していない」状態。既存挙動を変えない（後方互換）。
+            echo "::notice::$CTL_FILE 不在。CTL ゲートを適用せず既存条件のみで判定する。"
           fi
 
           # 条件 2: non-draft

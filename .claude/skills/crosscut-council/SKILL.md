@@ -205,6 +205,8 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
 ```bash
 # 発動したプロジェクトの COUNCIL-LOG を同期する（自プロジェクトのみ・--prune は付けない）
 python3 scripts/council-log-sync.py sync --recompute
+# CTL の導出結果を repo-scope へ投影する（CI が読む・v6.12.0）
+python3 scripts/council-ctl.py export
 ```
 
 - **`scripts/` が無い利用者プロジェクトの場合**: DH 本体の clone から
@@ -214,6 +216,17 @@ python3 scripts/council-log-sync.py sync --recompute
 - **失敗しても Council フローは止めない**（判断 ＞ 記録）。warn として可視化し、次回の同期または
   L0 振り返り儀式で回収する。同期は冪等ゆえ再実行は無害。
 - 実行後、`python3 scripts/council-ctl.py status` で CTL と未評価件数を確認できる（任意）。
+- **`export` は `.council-ctl.json`（repo-scope）を更新する**。CI は user-scope の council-data を
+  読めないため、この投影だけが CTL を自動パイプラインへ届ける経路である（Council `634df2`）。
+  出力は ctl / delegation_scope / escalation_categories / 算出時刻 / データ版の 5 フィールドに
+  固定され、`topic_summary` 等の内容フィールドは含まない（プライバシー配慮・回帰テストで検証済み）。
+  差分が出たら同 PR に含めてコミットする。
+
+> **単調性制約（Council `634df2` 哲学者・必須）**: `.council-ctl.json` は CI で
+> **権限を縮小する方向にのみ**参照する。CTL が高いことを理由に merge 条件を緩めてはならない
+> （既存の stop ラベル・verifier ゲートは AND のまま残す）。権限の拡張判断は
+> 対話セッション内で人間の面前でのみ発火する。この制約が無いと
+> 「同意率が権限を生み、権限が同意率を生む」閉ループが無監視時間帯に成立する。
 
 ## 入出力規格
 

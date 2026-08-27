@@ -3011,3 +3011,34 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: "agreed_with_modification（実装者合意 2026-08-26。射程は最小修正で合意。ただし 2 主張を実測で検証した結果 recommended を強化: (1) 開発者の fast path 指摘は事実 — ループは既存 PR_JSON から PENDING を算出して break するため初回反復で全 check 完了なら再取得が走らない。ゆえに merge 直前の gh pr view 再実行と fail-closed を必須とする。(2) concurrency の第二の配線欠落も事実 — labeled event の run 507 は job created_at 03:45:58 で run 506 の job 完了 03:45:57 の 1 秒後、完全に後ろで queue されていた（マージは 03:45:56 済）。よって外部 event は in-flight run を止められず、選択肢 2 の毎反復検査は応答性ではなく **人間の停止意思が in-flight run に届く唯一の経路** として同梱する。(3) 哲学者の §roll-back 起動判定は人間に献上（AI が判定しない）"
+
+---
+
+- invocation_id: "council-2026-08-27T13:17:55Z-634df2"
+  timestamp: "2026-08-27T13:17:55Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "CTL（Council Trust Level）を CI から参照可能にする実装方針として、どの案を採るべきか"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C2"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  persona_summary:
+    - { persona: "経営者", stance: "案A + CI 側 fail-safe", confidence: 0.78, dimension: "ROI" }
+    - { persona: "開発者", stance: "案A + 鮮度ゲート必須", confidence: 0.78, dimension: "セキュリティ" }
+    - { persona: "哲学者", stance: "第3の道: 案A + 単調性制約（CTL は縮小弁であって拡張弁ではない）", confidence: 0.72, dimension: "前提への問い" }
+  weight_calculation:
+    max_score_stance: "案A（導出結果を repo-scope へ投影）"
+    weighted_score: 8.40
+    weight_sum: 11
+    tie_break_applied: false
+  judgment_confidence: 0.76
+  recommended: "案A（CTL 導出結果を .council-ctl.json として repo-scope に投影し CI が読む）を骨格として採用。ただし 3 軸が独立に付帯した実行条件 4 件を併合する — ①単調性制約（哲学者）: CI では権限を縮小する方向にのみ参照し、CTL が高いことを理由に merge 条件を緩めない。拡張判断は対話セッション内で人間の面前でのみ発火する ②鮮度 fail-closed（開発者・経営者）: ctl_calculated_at が閾値超なら CTL-0 相当に落とす ③自己昇格の遮断（開発者）: .council-ctl.json を改変する PR は auto-merge 対象外にする。参照は base ブランチ版に固定する ④既存ゲートと AND（開発者）: stop ラベル・verifier ゲートを CTL 判定で置換せず重ねる。案B は開発者が council-log-sync.py の実測コメント（単一ログ同期で他プロジェクト由来 43〜57 件が孤児化）を根拠に技術的不成立と判定した — CI 算出値は実体と別値になり、誤った権限値での自動判定はセキュリティ事故にあたる。"
+  minority_opinion: "哲学者は options 外の観点として、.council-ctl.json が『人間の同意履歴の要約』でありながらコミット権限を持つ者（AI を含む）が書き換えうる点を指摘し、L-FROZEN の射程が CTL の実行時投影に届いていないと述べた。また『同意率の分母は信頼ではなく諦めを含みうる』『別プロジェクトでの同意がこのリポジトリの CI 権限に転移する可搬性は自明でない』『可逆な操作でも発見が遅れれば実質不可逆であり、時間は可逆性の一部である』を未消化の問いとして提示。委譲境界 SPEC への L-GATE 登録は人間専管（L-FROZEN-META）のため献上。"
+  weight_note: "final_weights（経営者4/開発者4/哲学者3、ΣW=11）を機械適用。category=judgment の situational_modifier（経営者+1）適用後 base 3/4/3 → final 4/4/3。3 軸とも案A を骨格に採ったため weighted_score 8.40（=4×0.78 + 4×0.78 + 3×0.72）。哲学者の単調性制約は options の否定ではなく骨格への付帯条件のため third_way_excluded に計上せず recommended へ統合した。"
+  reasoning: "reason_divergence。dimension は ROI / セキュリティ / 前提への問いで完全に分離しており、3 軸が異なる次元から観測して同一の骨格（案A）に到達した。特筆すべきは、3 軸すべてが独立に『昇格方向には使うな』という同型の制約に達したこと — 経営者は『用途を issue-pickup / auto-merge の 2 本に限定すべき』、開発者は『昇格方向の用途は当面凍結し抑止方向のみに限定するのが安全』、哲学者は『CTL は縮小弁であって拡張弁ではない』。次元が分離した状態での制約の一致は、その制約が軸固有の懸念ではなく構造的要請であることを示す。judgment_confidence 0.76 は帯の中位 — 骨格の一致は強いが、哲学者が提起した『CTL の実行時投影に凍結の射程が届いていない』が本判定の射程外（委譲境界 SPEC は L-FROZEN-META）に残るため。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  final_decision: null
+  implementer_consent: "agreed_recommended_with_4_conditions（実装者合意 2026-08-27。4 制約すべてを実装に反映: ①単調性は SKILL.md クロージング手順に明文化し、auto-merge.yml は CTL-0 のとき止めるのみで高 CTL による緩和経路を持たない ②鮮度は CTL_STALE_DAYS 既定 30 日で fail-closed、ctl_calculated_at 欠落時も CTL-0 扱い ③自己昇格遮断は PR の files に .council-ctl.json を含む場合 skip、かつ参照は baseRefName 固定 ④既存条件は全て AND のまま。実装中に判明した制約: auto-merge.yml は checkout を持たない設計（GH_REPO で git context を代替）ため、ファイル読取は gh api contents 経由に変更した。ファイル不在時は既存挙動を維持（後方互換）。哲学者 minority の『L-FROZEN の射程』は delegation-boundary.md への L-GATE 登録として人間に献上（人間判断 B を取得済み・AI は追記しない）"
