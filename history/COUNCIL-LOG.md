@@ -3011,3 +3011,34 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: "agreed_with_modification（実装者合意 2026-08-26。射程は最小修正で合意。ただし 2 主張を実測で検証した結果 recommended を強化: (1) 開発者の fast path 指摘は事実 — ループは既存 PR_JSON から PENDING を算出して break するため初回反復で全 check 完了なら再取得が走らない。ゆえに merge 直前の gh pr view 再実行と fail-closed を必須とする。(2) concurrency の第二の配線欠落も事実 — labeled event の run 507 は job created_at 03:45:58 で run 506 の job 完了 03:45:57 の 1 秒後、完全に後ろで queue されていた（マージは 03:45:56 済）。よって外部 event は in-flight run を止められず、選択肢 2 の毎反復検査は応答性ではなく **人間の停止意思が in-flight run に届く唯一の経路** として同梱する。(3) 哲学者の §roll-back 起動判定は人間に献上（AI が判定しない）"
+
+---
+
+- invocation_id: "council-2026-08-28T00:20:00Z-v615im"
+  timestamp: "2026-08-28T00:20:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "upgrade-spec v6.15.0（多起点ループ）の実装を、どの PR 分割・着手順で進めるべきか（spec は PR #202 として人間レビュー待ちの状態で）"
+  council_type: "business"
+  category: "implementation"
+  decision_category: "C2"
+  phase_reached: "1→3"
+  conflict_type: "simple_conflict"
+  final_weights: { 経営者: 2, 開発者: 6, 哲学者: 2 }
+  persona_summary:
+    - { persona: "経営者", stance: "案A（3 PR 分割で今すぐ全実装）", confidence: 0.72, dimension: "ROI" }
+    - { persona: "開発者", stance: "案B（F2 のみ今実装、F1/F4/F5 は spec 承認後）", confidence: 0.82, dimension: "可逆性" }
+    - { persona: "哲学者", stance: "第3の道（案B改: F2 即実装 + F1/F4/F5 は破棄宣言付き draft として並行実装）", confidence: 0.74, dimension: "前提への問い" }
+  weight_calculation:
+    max_score_stance: "案B 骨格（F2 のみ即実装・F1/F4/F5 は spec 承認後）"
+    weighted_score: 6.40
+    weight_sum: 10
+    tie_break_applied: false
+  judgment_confidence: 0.74
+  recommended: "案B 骨格を採用 — F2（pr-audit、scripts のみ・規範非該当・L-FULL）は即実装し auto-merge に載せる。F1/F4/F5（workflow 新設・templates・skill references = 規範文書改変）は spec（PR #202）の人間承認後に、案A の PR-B/PR-C 分割（F1 単独 / F4+F5、いずれも human-review-needed 付与・I-3 宣言と配線同一 PR）で実装する。開発者の根拠: spec レビューで仕様が動いた場合、F1 は workflow+template+GRAPH の三点手戻りになり、cron 稼働は Issue 起票という実データ副作用を残す。哲学者の根拠: 第 9 条の可逆性が守るのはコードであり『実装が spec 承認に先行してよい』という先例は revert できない。完成した PR を前にした No は白紙の spec への No より制度的に重い。"
+  minority_opinion: "経営者（weight 2, conf 0.72）は案A — 人間レビュー帯域が最希少資源であり、#201/#202/B/C の一括レビューで往復を 1 回に圧縮すべきと主張。哲学者の第3の道（破棄宣言付き draft で動くものを判断材料に）は、本人の concern『draft でも閲覧した瞬間にアンカリングは生じる』と開発者 concern『先行実装は三点手戻り』により不採用としたが、『spec 承認と PR マージを同一レビューに圧縮すると 1 回の判断に 2 種の決定が混在し判断の質が下がる』という指摘は将来の spec→実装フローの設計材料として温存する。哲学者はまた『決めれる事を決めて、という指示の解釈自体が争点で、意図確認という最も安いエスカレーションが未実施』と指摘 — 本判定自体がその意図解釈（決めれる事 = C カテゴリ委譲内）の確定である。"
+  weight_note: "category=implementation の situational_modifier（経営者-1/開発者+2/哲学者-1）適用後 base 3/4/3 → final 2/6/2、ΣW=10。B 骨格（開発者 B + 哲学者 B改の骨格一致）weighted_score = 6×0.82 + 2×0.74 = 6.40。案A = 2×0.72 = 1.44。"
+  reasoning: "simple_conflict（3 者 3 様だが B 骨格に 2 軸収束）。implementation カテゴリで開発者軸が最重（6/10）であり、その開発者が最高 confidence（0.82）で B を支持。哲学者は独立次元（先例の不可逆性）から同一骨格に到達 — 『第 9 条の可逆性はコードを守るが、手続きの先例は revert できない』は、規範文書改変に事前諮問を課す escalation-matrix の設計理由そのものと整合する。経営者のレビュー帯域論は実在の制約だが、B 骨格でも人間は #201/#202 を一括レビューでき、承認後の PR-B/C が加わるだけなので往復増は 1 回に留まる。"
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: "agreed_recommended（実装者合意 2026-08-28。B 骨格どおり F2 を実装し PR #203 として提出。spec 判断点 1/3 は提案初期値（滞留 7 日・pending 10 件・cron 日次）で確定、判断点 4 は実データ検証により ALLOWED_AUTHORS 案を棄却し commit 単位 OR 判定（Claude trailer または authors login claude）へ是正 — PR #198/#199 が trailer 無し・claude author 有りの実在反例。判断点 2（F3）は課題 2 の人間判断待ちを維持）"
