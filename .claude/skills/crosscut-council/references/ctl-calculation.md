@@ -187,6 +187,30 @@ philosophy 第 6 条の "≒"（提案 = Council / 承認 = 人間）は、人�
 > **本区分は自己申告ではなく人間の事後評価が入力する**（第 6 条 事後評価）。
 > AI が自らの判定を `agreed_with_synthesis` と称して agreement_rate を押し上げる経路は無い。
 
+### implementer_consent の語尾語彙（v6.12.0 で規約化）
+
+利用者プロジェクトの `COUNCIL-LOG.md` は「同意した上で何かした」ことを
+`implementer_consent` の**語尾**に書いてきた（`_with_3_conditions` /
+`_with_substitution` 等）。この語尾を規約として定義し、機械が骨格の移動を読めるようにする。
+
+| 語尾 | 意味 | status |
+|---|---|---|
+| `_condition` / `_caveat` | 勧告に条件・留保を付けて採る（骨格は保たれる） | `agreed_with_synthesis` |
+| `_minority` / `_modification` / `_follow_up` | 少数意見・第 3 の道を併合する | `agreed_with_synthesis` |
+| `_substitution` / `_override` | 勧告の一部を別のもので置き換える | `modified` |
+| `_revision` / `_revised` / `_instead` | 勧告と別の選択肢を採る／射程を超える | `modified` |
+| （語尾なし） | 勧告をそのまま採る | `agreed` |
+
+**両系統が共存する場合は置換系を優先する**（安全側）。
+例: `agreed_recommended_with_5_conditions_under_purity_caveat` は条件系のみ → 止揚。
+`agreed_recommended_with_human_overrides` は置換系を含む → `modified`。
+
+> **語尾は自己申告であり、単独では検証手段にならない。** 規約はあくまで
+> **note が書かれなかった場合の既定値**を決めるものである。note がある記録では
+> note の内容が優先し、両者が矛盾する場合は語尾の側を是正する
+> （v6.12.0 で実データ 2 件を `_with_revision` へ是正した実例がある）。
+> 語尾だけで足りると考えないこと——`modifier_note` の必須化（次節）が本体の担保である。
+
 ### modifier_note の必須化（v6.12.0）
 
 `status` が `agreed` **以外**の場合、`modifier_note` は **必須**とする（空文字・null を許さない）。

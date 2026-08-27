@@ -144,14 +144,29 @@ spec = importlib.util.spec_from_file_location("s", sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 assert m.normalize_consent("rejected") == "rejected"
 assert m.normalize_consent("rejected_human_override") == "rejected"
-# v6.12.0: 可変接尾辞の条件付き同意は止揚（骨格採用済み）に正規化される
-for v in ("agreed_with_3_conditions", "agreed_with_substitution",
-          "approved_under_purity_caveat", "agreed_with_modification"):
+# v6.12.0 語尾語彙: 条件・留保・併合系は止揚（骨格は保たれる）
+for v in ("agreed_recommended_with_3_conditions",
+          "agreed_recommended_with_6_conditions",
+          "agreed_recommended_with_5_conditions_under_purity_caveat",
+          "approved_under_purity_caveat",
+          "agreed_with_modification",
+          "agreed_minority_opinion"):
     got = m.normalize_consent(v)
     assert got == "agreed_with_synthesis", (v, got)
-# マーカーの無い素直な同意は agreed のまま
-assert m.normalize_consent("agreed_minority_opinion") == "agreed"
+# 置換系は骨格が動いている = modified（同意側に入れない）
+for v in ("agreed_recommended_with_substitution",
+          "agreed_recommended_with_human_overrides",
+          "agreed_recommended_with_revision",
+          "agreed_with_revised_option",
+          "agreed_recommended_instead_of_B"):
+    got = m.normalize_consent(v)
+    assert got == "modified", (v, got)
+# 両系統が共存したら安全側（置換）を優先する
+mixed = "agreed_recommended_with_3_conditions_and_substitution"
+assert m.normalize_consent(mixed) == "modified", m.normalize_consent(mixed)
+# 語尾の無い素直な同意は agreed のまま
 assert m.normalize_consent("approved") == "agreed"
+assert m.normalize_consent("agreed_recommended") == "agreed"
 print("ok")
 PYEOF
 )"

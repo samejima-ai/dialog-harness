@@ -97,7 +97,8 @@ CONSENT_TO_STATUS = {
     # 表記ゆれ（利用プロジェクト側の語彙。同一軸の正規化であって軸間写像ではない）
     "agreed": "agreed",
     "approved": "agreed",
-    "agreed_minority_opinion": "agreed",
+    # 少数意見を取り込んだ同意 = 止揚。実データ（kakuman-v3.0 の「止揚的 E」）で確認済み。
+    "agreed_minority_opinion": "agreed_with_synthesis",
     # Council 推奨が実装者/人間 override で不採用になった場合（council-ctl.py VALID_STATUSES 対応）。
     # rejected は agreement_rate の分母に入り率を下げる = 委譲精度の学習に不可欠な負例
     "rejected": "rejected",
@@ -116,25 +117,47 @@ CONSENT_TO_STATUS = {
 #   却下されたのは category（重み軸）→ decision_category（委譲軸）という**直交する別軸**への
 #   写像。ここは implementer_consent → status の**同一軸内の表記ゆれ正規化**であり、
 #   「同意したが推奨そのままではない」という原文の意味を保存する方向にしか動かさない。
-_CONDITIONAL_MARKERS = ("_with_", "_under_")
+# ---------------------------------------------------------------------------
+# 語尾語彙（v6.12.0・実データ 19 件の全読に基づく）
+#
+# 「同意した上で何かした」記録は語尾に何をしたかを書いている。この語尾を規約化し、
+# **骨格が動いたか否か**の 1 軸で分類する。判定基準は status の定義と同一
+# （ctl-calculation.md §4）——骨格を採ったなら止揚、採っていないなら差し替え。
+#
+# 骨格が保たれる語尾（→ agreed_with_synthesis）: 勧告に条件・留保を付けて採る
+_SYNTHESIS_MARKERS = ("_condition", "_caveat", "_minority", "_modification", "_follow_up")
+# 骨格が動く語尾（→ modified）: 勧告の一部または全部を別のもので置き換える
+_REPLACEMENT_MARKERS = ("_substitution", "_override", "_revision", "_revised", "_instead")
+
+
+def classify_consent_suffix(v: str) -> str | None:
+    """agreed_* / approved_* の語尾から骨格が動いたかを判定する。
+
+    置換系が 1 つでもあれば差し替え（modified）を優先する。
+    `agreed_recommended_with_5_conditions_under_purity_caveat` のように
+    複数マーカーが共存しうるため、**安全側（modified）を先に見る**。
+    どちらのマーカーも無ければ None（呼び出し側が素直な同意として扱う）。
+    """
+    if any(m in v for m in _REPLACEMENT_MARKERS):
+        return "modified"
+    if any(m in v for m in _SYNTHESIS_MARKERS):
+        return "agreed_with_synthesis"
+    return None
 
 
 def normalize_consent(consent: str | None) -> str | None:
     """implementer_consent を actual_outcome.status へ正規化する。
 
-    完全一致 → 条件付き同意（modified）→ 未評価（None）の順で判定する。
+    完全一致 → 語尾語彙による分類 → 素直な同意 → 未評価（None）の順で判定する。
     """
     if not consent:
         return None
     v = consent.strip()
     if v in CONSENT_TO_STATUS:
         return CONSENT_TO_STATUS[v]
-    # agreed_* / approved_* に条件・置換マーカーが付くものは止揚（骨格は採用済み）
-    if v.startswith(("agreed", "approved")) and any(m in v for m in _CONDITIONAL_MARKERS):
-        return "agreed_with_synthesis"
-    # 上記以外の agreed_* 派生は素直な同意として扱う
     if v.startswith(("agreed", "approved")):
-        return "agreed"
+        # 語尾に規約語彙があればそれに従う（骨格が動いたか）。無ければ素直な同意。
+        return classify_consent_suffix(v) or "agreed"
     # rejected_* 派生（human_override 等の接尾辞付き）も不採用として扱う
     if v.startswith("rejected"):
         return "rejected"
