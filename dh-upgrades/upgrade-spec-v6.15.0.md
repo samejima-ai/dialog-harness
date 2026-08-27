@@ -118,12 +118,20 @@ DH = D4（機構の保持・F1/F2/F3 の実装先）、kakuman-v3.0 = D1-D3（�
 - **dev-diary / S/U/R / conflict_type E/G** — 各既存線に従う（重複させない）
 - 予算層停止条件（G4）・保守性遅行指標（G5）・feature list（G6）・EDDOps（G7）— 申し送り（下記）
 
-## 判断点（人間へ）
+## 判断点（Council v615im で確定した分を反映・2026-08-28）
 
-1. F1-1 の閾値（滞留 N 日・pending N 件）— 提案初期値: 7 日 / 10 件
-2. F3-2 は課題 2 の判断待ち — 案 A 採択なら本仕様に含める、案 D なら F3 を落とす
-3. cron 頻度 — 提案: 日次 1 回
-4. F2 の agent 判定基準 — author が ALLOWED_AUTHORS の PR を agent 発とみなす（提案）
+1. F1-1 の閾値 — **確定: 滞留 7 日 / pending 10 件**（提案初期値を採用。C2 委譲内）
+2. F3-2 は**課題 2 の人間判断待ち**（人間専管・未決のまま維持）
+3. cron 頻度 — **確定: 日次 1 回（00:00 UTC）**
+4. F2 の agent 判定基準 — **提案（ALLOWED_AUTHORS）を実データ検証で棄却し是正**:
+   本リポジトリでは人間 PR も agent PR も同一アカウントのため author では分離不能。
+   commit 単位の OR 判定（`Co-Authored-By: Claude` trailer **または** authors login `claude`）
+   に確定（PR #198/#199 が trailer 無し・claude author 有りの実在反例）。実装は PR #203（merged）
+
+> 実装順序（Council `council-2026-08-28T00:20:00Z-v615im`・B 骨格）:
+> **F2 は実装済み（PR #203・auto-merge）**。F1/F4/F5 は規範文書改変に該当するため
+> **本 spec の人間承認後**に PR-B（F1 単独）/ PR-C（F4+F5）として実装し、
+> いずれも `human-review-needed` を付与して献上する。
 
 ## 申し送り
 
