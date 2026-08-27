@@ -20,6 +20,9 @@ repo にはこのツールしか入らない。データファイルは追跡し
         --judgment "選択肢 A を推奨" --confidence 0.85 --consensus auto_agree
     python3 scripts/council-ctl.py pending          # 未評価の判定を一覧（律速段階）
     python3 scripts/council-ctl.py evaluate <id> --status agreed
+    python3 scripts/council-ctl.py evaluate <id> --status agreed_with_synthesis \
+        --note "案 A の骨格を採用し、少数意見の CHECK を同 PR に併合"
+    python3 scripts/council-ctl.py audit            # note 欠落・legacy status を検出
     python3 scripts/council-ctl.py recompute        # stats.json 再計算 + CTL 表示
     python3 scripts/council-ctl.py status           # 現在の CTL と次段階までの不足
     python3 scripts/council-ctl.py regime-block      # REGIME.md 用ブロックを出力
@@ -50,7 +53,13 @@ DATA_VERSION = "0.1"
 HARNESS_VERSION = "v5.x"
 
 VALID_DECISION_CATEGORIES = ("C1", "C2", "C3", "C4")
-VALID_STATUSES = ("agreed", "modified", "rejected")
+# ctl-calculation.md §4 status の 4 値。agreed_with_synthesis は v6.12.0 で追加
+# （止揚 = 骨格を採った上での併合。DH の推奨動作なので同意側に置く）。
+VALID_STATUSES = ("agreed", "agreed_with_synthesis", "modified", "rejected")
+# agreement_rate の分子に算入する status。
+AGREEING_STATUSES = ("agreed", "agreed_with_synthesis")
+# modifier_note を必須とする status（agreed 以外は理由が読めないと検証不能）。
+NOTE_REQUIRED_STATUSES = ("agreed_with_synthesis", "modified", "rejected")
 
 
 def _now() -> str:
@@ -305,6 +314,14 @@ def cmd_evaluate(args) -> None:
     # 再評価で --note 省略時は既存 note を保持（黙って消さない）。
     # 明示的に消したい場合は --note "" を渡す。
     note = prev_outcome.get("modifier_note") if args.note is None else args.note
+    # agreed 以外は --note 必須（ctl-calculation.md §4 modifier_note の必須化）。
+    # status だけ記録して理由を落とすと「なぜ rate が下がったか」が原理的に読めない。
+    if status in NOTE_REQUIRED_STATUSES and not (note or "").strip():
+        sys.exit(
+            f"--note は status={status} では必須です"
+            f"（判定のどこを採り、何を足したか／なぜ採らなかったかを 1 文で）。\n"
+            f"  参照: .claude/skills/crosscut-council/references/ctl-calculation.md §4"
+        )
     rec["actual_outcome"] = {
         "status": status,
         "evaluated_at": _now(),
@@ -334,21 +351,22 @@ def _compute_stats() -> dict:
         dc = rec.get("decision_category")
         if dc not in VALID_DECISION_CATEGORIES:
             continue
-        c = cats.setdefault(dc, {"count": 0, "agreed": 0, "modified": 0, "rejected": 0})
+        c = cats.setdefault(
+            dc,
+            {"count": 0, "agreed": 0, "agreed_with_synthesis": 0, "modified": 0, "rejected": 0},
+        )
         c["count"] += 1
         total += 1
-        if status == "agreed":
-            c["agreed"] += 1
+        c[status] += 1
+        if status in AGREEING_STATUSES:
             total_agreed += 1
-        elif status == "modified":
-            c["modified"] += 1
-        else:
-            c["rejected"] += 1
 
     for c in cats.values():
-        # modified は count（分母）に算入するが agreement_rate の分子には入れない
-        # （部分同意 ≠ 同意）。agreement_rate = agreed / count（ctl-calculation.md §3）。
-        c["agreement_rate"] = round(c["agreed"] / c["count"], 4) if c["count"] else 0.0
+        # agreement_rate = (agreed + agreed_with_synthesis) / count（ctl-calculation.md §2）。
+        # 止揚（骨格を採った上での併合）は DH の推奨動作なので同意側に算入する。
+        # 骨格を採らなかった modified / rejected のみが分子から外れる。
+        agreeing = sum(c[s] for s in AGREEING_STATUSES)
+        c["agreement_rate"] = round(agreeing / c["count"], 4) if c["count"] else 0.0
 
     return {
         "version": DATA_VERSION,
@@ -374,6 +392,73 @@ def _recompute(quiet: bool) -> dict:
 
 def cmd_recompute(args) -> None:
     _recompute(quiet=False)
+
+
+def cmd_audit(args) -> None:
+    """記録の健全性を検査する（決定論・LLM 判定なし）。
+
+    検出するもの:
+      1. modifier_note 欠落 — agreed 以外なのに理由が読めない記録
+      2. 未評価 — actual_outcome.status が空（CTL に未反映）
+      3. decision_category 欠落 — 統計に算入されない記録
+      4. stats.json と invocations/ の件数乖離
+
+    いずれも「なぜ agreement_rate がこの値なのか」を読めなくする要因。
+    """
+    _ensure_initialized()
+    missing_note, unevaluated, no_dc = [], [], []
+    counted = 0
+    for _path, rec in _iter_invocations():
+        outcome = rec.get("actual_outcome", {}) or {}
+        status = outcome.get("status")
+        sid = rec["invocation_id"][-6:]
+        topic = (rec.get("topic_summary") or "")[:56]
+        if not status:
+            unevaluated.append((sid, topic))
+            continue
+        if rec.get("decision_category") not in VALID_DECISION_CATEGORIES:
+            no_dc.append((sid, topic))
+        else:
+            counted += 1
+        if status in NOTE_REQUIRED_STATUSES and not (outcome.get("modifier_note") or "").strip():
+            missing_note.append((sid, status, topic))
+
+    def _dump(title: str, rows: list, fmt) -> None:
+        if not rows:
+            return
+        print(f"\n{title}（{len(rows)} 件）")
+        for r in rows:
+            print(f"  {fmt(r)}")
+
+    print("=== Council 記録の健全性検査 ===")
+    _dump("[1] modifier_note 欠落 — 理由が読めない",
+          missing_note, lambda r: f"[{r[0]}] {r[1]:<22} {r[2]}")
+    _dump("[2] 未評価 — CTL に未反映", unevaluated, lambda r: f"[{r[0]}] {r[1]}")
+    _dump("[3] decision_category 欠落 — 統計に算入されない",
+          no_dc, lambda r: f"[{r[0]}] {r[1]}")
+
+    # [4] stats.json との乖離（CTL は stats.json から算出されるため直撃する）
+    # _load_stats() は破損時に invocations/ から自己修復するため、
+    # 乖離そのものを検出したい本コマンドでは生読みする。
+    recorded = None
+    if STATS_PATH.exists():
+        try:
+            recorded = json.loads(
+                STATS_PATH.read_text(encoding="utf-8")
+            ).get("total_invocations")
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"  warn: stats.json 読込不能: {e}")
+    print(f"\n[4] 件数の整合")
+    print(f"  invocations/ 実体（統計算入対象）: {counted} 件")
+    print(f"  stats.json total_invocations   : {recorded} 件")
+    if recorded is not None and recorded != counted:
+        print(f"  → 乖離 {abs(counted - recorded)} 件。`recompute` で解消する")
+
+    total_issues = len(missing_note) + len(no_dc)
+    if total_issues == 0 and (recorded == counted):
+        print("\n健全。是正対象なし。")
+    else:
+        print(f"\n是正対象 {total_issues} 件（未評価 {len(unevaluated)} 件は別途 pending で処理）。")
 
 
 # 次段階の量的しきい値（ctl-maturity-strategy.md）
@@ -458,12 +543,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("evaluate", help="事後評価して stats を再計算")
     sp.add_argument("id", help="invocation_id 全体 / 末尾 6 文字 / ファイル名")
-    sp.add_argument("--status", required=True, help="agreed|modified|rejected")
-    sp.add_argument("--note", default=None, help="modifier_note（任意）")
+    sp.add_argument("--status", required=True,
+                    help="agreed|agreed_with_synthesis|modified|rejected")
+    sp.add_argument("--note", default=None,
+                    help="modifier_note（agreed 以外は必須）")
     sp.set_defaults(func=cmd_evaluate)
 
     sp = sub.add_parser("recompute", help="invocations/ から stats.json を再計算")
     sp.set_defaults(func=cmd_recompute)
+
+    sp = sub.add_parser("audit", help="note 欠落・未評価・件数乖離を検出（決定論）")
+    sp.set_defaults(func=cmd_audit)
 
     sp = sub.add_parser("status", help="現在の CTL と次段階までの不足を表示")
     sp.set_defaults(func=cmd_status)

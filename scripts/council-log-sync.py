@@ -28,11 +28,17 @@ append-only）には全発動が確実に追記されている。本ツールは
 
 ## actual_outcome.status への写像（implementer_consent 由来）
 
-| implementer_consent           | status  | 根拠 |
-|-------------------------------|---------|------|
-| agreed_recommended            | agreed  | 推奨採用 |
-| agreed_with_modification      | modified| 部分同意（consensus-protocol §119）|
-| escalated / deferred_* / null | (未評価)| 結論未定・agreement を作らない → status=null |
+| implementer_consent           | status                 | 根拠 |
+|-------------------------------|------------------------|------|
+| agreed_recommended            | agreed                 | 推奨採用 |
+| agreed_with_modification      | agreed_with_synthesis  | 骨格を採った上での併合＝止揚（v6.12.0） |
+| agreed_*_with_* / _under_*    | agreed_with_synthesis  | 同上（接頭辞 + マーカーで正規化） |
+| rejected / rejected_*         | rejected               | 不採用（負例として rate を下げる） |
+| escalated / deferred_* / null | (未評価)               | 結論未定・agreement を作らない → status=null |
+
+v6.12.0 で `agreed_with_modification` を modified から agreed_with_synthesis へ移した。
+「同意した上で足した」は判定の骨格が採られており、DH が推奨する止揚にあたる。
+modified に落とすと推奨動作を行うほど agreement_rate が下がる（ctl-calculation.md §4）。
 
 未評価（status=null）は既存 _compute_stats の null-skip に委ねられ、統計に算入されない
 （CTL の「未評価は pending に溜まり燃料にならない」設計と整合）。
@@ -83,7 +89,11 @@ VALID_DECISION_CATEGORIES = ("C1", "C2", "C3", "C4", "H1", "H2", "H3", "H4")
 # implementer_consent → actual_outcome.status（未定義/None は未評価= None）
 CONSENT_TO_STATUS = {
     "agreed_recommended": "agreed",
-    "agreed_with_modification": "modified",
+    # v6.12.0: 「同意した上で条件・少数意見を足した」= 止揚。骨格は採られているので
+    # 同意側（agreed_with_synthesis）に置く。骨格を採らなかった差し替えのみ modified。
+    # 旧仕様はこれを modified に落としており、DH の推奨動作を行うほど
+    # agreement_rate が下がる指標の逆行を生んでいた（ctl-calculation.md §4）。
+    "agreed_with_modification": "agreed_with_synthesis",
     # 表記ゆれ（利用プロジェクト側の語彙。同一軸の正規化であって軸間写像ではない）
     "agreed": "agreed",
     "approved": "agreed",
@@ -94,9 +104,13 @@ CONSENT_TO_STATUS = {
     # escalated / deferred_pending_dependent / null は結論未定 → 未評価（None）
 }
 
-# 条件・置換を伴う同意は「推奨そのままではない」= modified 相当。接尾辞が可変
-# （_with_3_conditions / _with_6_conditions / _with_substitution / _under_purity_caveat 等）
-# のため完全一致テーブルでは網羅できず、接頭辞 + マーカーで正規化する。
+# 条件・置換を伴う同意は「推奨そのままではない」= v6.12.0 以降は agreed_with_synthesis。
+# 接尾辞が可変（_with_3_conditions / _with_6_conditions / _with_substitution /
+# _under_purity_caveat 等）のため完全一致テーブルでは網羅できず、接頭辞 + マーカーで正規化する。
+#
+# v6.12.0 の変更: これらは従来 modified に落ちていたが、いずれも「同意（agreed/approved）」を
+# 接頭辞に持つ = 判定の骨格は採られている。実測（2026-08-27、非同意 15 件の全読）で、
+# この経路に落ちる記録の大半が「案 A 採用 + 少数意見を同 PR に併合」型の止揚だった。
 #
 # なぜ機械導出禁止（council-2026-07-01T-ctlrec1）に抵触しないか:
 #   却下されたのは category（重み軸）→ decision_category（委譲軸）という**直交する別軸**への
@@ -115,9 +129,9 @@ def normalize_consent(consent: str | None) -> str | None:
     v = consent.strip()
     if v in CONSENT_TO_STATUS:
         return CONSENT_TO_STATUS[v]
-    # agreed_* / approved_* に条件・置換マーカーが付くものは modified
+    # agreed_* / approved_* に条件・置換マーカーが付くものは止揚（骨格は採用済み）
     if v.startswith(("agreed", "approved")) and any(m in v for m in _CONDITIONAL_MARKERS):
-        return "modified"
+        return "agreed_with_synthesis"
     # 上記以外の agreed_* 派生は素直な同意として扱う
     if v.startswith(("agreed", "approved")):
         return "agreed"

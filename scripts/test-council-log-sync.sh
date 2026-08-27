@@ -131,8 +131,10 @@ f="$(inv_file council-2026-01-01T00-00-00Z-aaa111)"
 [ "$(field "$f" actual_outcome.status)" = "agreed" ] || fail "agreed_recommended → agreed 失敗"
 ok "agreed_recommended → agreed"
 f="$(inv_file council-2026-01-02T00-00-00Z-bbb222)"
-[ "$(field "$f" actual_outcome.status)" = "modified" ] || fail "agreed_with_modification → modified 失敗"
-ok "agreed_with_modification → modified"
+# v6.12.0: 「同意した上で足した」は骨格採用済み = 止揚。modified ではなく同意側。
+[ "$(field "$f" actual_outcome.status)" = "agreed_with_synthesis" ] \
+  || fail "agreed_with_modification → agreed_with_synthesis 失敗"
+ok "agreed_with_modification → agreed_with_synthesis（止揚）"
 f="$(inv_file council-2026-01-04T00-00-00Z-ddd444)"
 [ "$(field "$f" actual_outcome.status)" = "null" ] || fail "deferred → null(未評価) 失敗"
 # rejected 系（Council 推奨の人間 override 等）は rejected として統計の分母に入る
@@ -142,11 +144,19 @@ spec = importlib.util.spec_from_file_location("s", sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 assert m.normalize_consent("rejected") == "rejected"
 assert m.normalize_consent("rejected_human_override") == "rejected"
+# v6.12.0: 可変接尾辞の条件付き同意は止揚（骨格採用済み）に正規化される
+for v in ("agreed_with_3_conditions", "agreed_with_substitution",
+          "approved_under_purity_caveat", "agreed_with_modification"):
+    got = m.normalize_consent(v)
+    assert got == "agreed_with_synthesis", (v, got)
+# マーカーの無い素直な同意は agreed のまま
+assert m.normalize_consent("agreed_minority_opinion") == "agreed"
+assert m.normalize_consent("approved") == "agreed"
 print("ok")
 PYEOF
 )"
-[ "$out" = "ok" ] || fail "rejected 系の写像失敗: $out"
-ok "rejected / rejected_* → rejected"
+[ "$out" = "ok" ] || fail "rejected / 止揚 系の写像失敗: $out"
+ok "rejected → rejected / 条件付き同意 → agreed_with_synthesis"
 ok "deferred → 未評価(null)"
 echo "== 4b. 同一キー後追記は後勝ち（append-only null→実値の単方向埋め込み）=="
 f="$(inv_file council-2026-01-05T00-00-00Z-eee555)"
@@ -253,7 +263,7 @@ ok "見出しなしログでは warn なし"
 $SYNC sync --log "$LOG" >/dev/null
 # ddd444 は implementer_consent: deferred_pending_dependent = 導出すると status null。
 # これを人間が振り返り儀式で「rejected」と事後評価した状況を作る。
-$CTL evaluate "ddd444" --status rejected >/dev/null
+$CTL evaluate "ddd444" --status rejected --note "test fixture: 儀式で不採用と評価" >/dev/null
 # 再同期しても評価が消えないこと（消えていたのが本欠陥）
 out="$($SYNC sync --log "$LOG")"
 echo "$out" | grep -q "事後評価を保存: 1 件" || fail "保存件数が報告されない: $out"
@@ -267,7 +277,7 @@ PYEOF
 )"
 [ "$got" = "rejected" ] || fail "再同期で事後評価が壊れた: $got (expected rejected)"
 # COUNCIL-LOG 側が非 null のエントリは従来どおり COUNCIL-LOG が勝つ（単一情報源原則）
-$CTL evaluate "aaa111" --status rejected >/dev/null
+$CTL evaluate "aaa111" --status rejected --note "test fixture: COUNCIL-LOG 優先の確認用" >/dev/null
 $SYNC sync --log "$LOG" >/dev/null
 got2="$($PY - "$COUNCIL_DATA_DIR" <<'PYEOF'
 import json, pathlib, sys
