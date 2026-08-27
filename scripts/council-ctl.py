@@ -517,6 +517,44 @@ def cmd_regime_block(args) -> None:
     print(f"- council_data_version: {DATA_VERSION}")
 
 
+def cmd_export(args) -> None:
+    """CTL の導出結果を repo-scope の JSON へ書き出す（v6.12.0・Council 634df2）。
+
+    CI は user-scope の council-data を読めないため、**導出結果のみ**をリポジトリに置く。
+    出力するのは ctl / delegation_scope / escalation_categories / 算出時刻 / データ版の
+    5 フィールドに固定し、`topic_summary` 等の内容フィールドは**一切含めない**
+    （philosophy 第 6 条 プライバシー配慮。ctl-calculation.md §4）。
+
+    単調性（Council 634df2 哲学者制約）: 本ファイルは CI で**権限を縮小する方向にのみ**
+    参照される。拡張（自律範囲を広げる）判断は対話セッション内で人間の面前でのみ発火する。
+    """
+    _ensure_initialized()
+    stats = _load_stats()
+    ctl = calculate_ctl(stats)
+    scope = delegation_scope(stats)
+    esc = [c for c in VALID_DECISION_CATEGORIES if c not in scope]
+    payload = {
+        "schema": 1,
+        "ctl": ctl,
+        "delegation_scope": scope,
+        "escalation_categories": esc,
+        "ctl_calculated_at": _now(),
+        "council_data_version": DATA_VERSION,
+        "_note": (
+            "CTL の導出結果のみ。判定内容・議題は含まない。"
+            "CI は本ファイルを権限の縮小方向にのみ参照する（拡張には使わない）。"
+            "実体は user-scope の council-data で、本ファイルはその投影である。"
+        ),
+    }
+    out = Path(args.out)
+    text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    if args.dry_run:
+        print(text, end="")
+        return
+    _atomic_write(out, text)
+    print(f"書き出し: {out} → {ctl} / delegation_scope={scope}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -554,6 +592,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("audit", help="note 欠落・未評価・件数乖離を検出（決定論）")
     sp.set_defaults(func=cmd_audit)
+
+    sp = sub.add_parser("export", help="CTL 導出結果を repo-scope の JSON へ書き出す（CI 用）")
+    sp.add_argument("--out", default=".council-ctl.json",
+                    help="出力先（既定: リポジトリ直下の .council-ctl.json）")
+    sp.add_argument("--dry-run", action="store_true", help="書かずに標準出力へ表示")
+    sp.set_defaults(func=cmd_export)
 
     sp = sub.add_parser("status", help="現在の CTL と次段階までの不足を表示")
     sp.set_defaults(func=cmd_status)

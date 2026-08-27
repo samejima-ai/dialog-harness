@@ -210,5 +210,29 @@ COUNCIL_DATA_DIR="$SYN2_DIR" $CLI audit | grep -q '是正対象 1 件' \
 rm -rf "$SYN_DIR" "$SYN2_DIR"
 echo "  ok: audit が legacy note 欠落を検出"
 
+echo "== export は導出結果のみを書き、内容フィールドを漏らさない =="
+EXP_DIR="$(mktemp -d)"
+COUNCIL_DATA_DIR="$EXP_DIR" $CLI init >/dev/null
+# 機微語を含む topic/judgment を記録しても export には出ないこと
+out="$(COUNCIL_DATA_DIR="$EXP_DIR" $CLI record --decision-category C2 \
+  --topic "SECRET_TOPIC_MARKER" --judgment "SECRET_JUDGMENT_MARKER" --confidence 0.8)"
+sid="$(echo "$out" | awk -F- '/^記録: council-/{print $NF}' | head -1)"
+COUNCIL_DATA_DIR="$EXP_DIR" $CLI evaluate "$sid" --status agreed >/dev/null
+EXP_OUT="$EXP_DIR/ctl.json"
+COUNCIL_DATA_DIR="$EXP_DIR" $CLI export --out "$EXP_OUT" >/dev/null
+[ -f "$EXP_OUT" ] || fail "export がファイルを作らない"
+grep -q "SECRET_TOPIC_MARKER" "$EXP_OUT" && fail "export に topic_summary が漏れている"
+grep -q "SECRET_JUDGMENT_MARKER" "$EXP_OUT" && fail "export に judgment が漏れている"
+# 必須フィールドが揃っていること
+for k in schema ctl delegation_scope escalation_categories ctl_calculated_at; do
+  grep -q "\"$k\"" "$EXP_OUT" || fail "export に $k が無い"
+done
+# dry-run は書かない
+rm -f "$EXP_OUT"
+COUNCIL_DATA_DIR="$EXP_DIR" $CLI export --out "$EXP_OUT" --dry-run >/dev/null
+[ ! -f "$EXP_OUT" ] || fail "--dry-run がファイルを書いた"
+rm -rf "$EXP_DIR"
+echo "  ok: 導出 5 フィールドのみ / 内容フィールド非漏洩 / dry-run 非書込"
+
 echo
 echo "PASS: council-ctl 回帰テスト 全通過"
