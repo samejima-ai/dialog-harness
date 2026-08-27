@@ -1,0 +1,39 @@
+# signal-scan — テレメトリ逆流の最小実装（v6.15.0 F1・Council v615im）
+#
+# リポジトリ自身が発する信号（赤 CI / 滞留 PR / 期限切れ review_trigger / CTL 未評価滞留）を
+# 決定論で検知し、Issue **候補**として起票する。LLM 判定を含まない（I-2）。
+#
+# 出力は候補のみ — `signal-detected` ラベルを付け、`ready-for-ai` は付けない。
+# 候補の昇格は人間の判断（I-1・philosophy 第 8 条「観測 → 候補化 → 人間最終承認」）。
+# ゆえに本 workflow は GITHUB_TOKEN で足りる（起票した Issue が他 workflow を
+# 起こさないのは仕様どおり — 起こすのは人間のラベル付与である）。
+#
+# 安全弁: 重複起票禁止（open の signal-detected と同一タイトルは skip）/
+#         起票上限 1 run 3 件 / 検知器の個別失敗で全体を止めない（warn 続行）。
+# 閾値: STALE_DAYS=7 / PENDING_MAX=10 / REVIEW_TRIGGER_DAYS=90（Council v615im 確定）。
+
+name: signal-scan
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # 日次（Council v615im 確定）
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # review_trigger 検知器が git log の最終 commit 時刻を読む
+
+      - name: Run signal-scan
+        run: python3 scripts/signal-scan.py
