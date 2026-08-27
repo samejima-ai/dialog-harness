@@ -34,6 +34,14 @@ on:
       - ".github/workflows/**"
       - "templates/github-workflows/**"
       - "scripts/**"
+      # 仕様起草・分析・履歴 PR にも構造検証を走らせる（ANALYSIS-norm-machine-readability
+      # 2026-08-26 の未処理項目 / PR #193 実測「仕様起草 PR には検証が 1 つも走らない」の是正。
+      # verify.py の検査は repo 構造全体が対象であり、docs 系 PR でも参照 path 有効性・
+      # 実行グラフ整合の検査に意味がある。auto-merge の条件 4.5（最低 1 verifier）の
+      # zero-check 状態も同時に解消される）
+      - "dh-upgrades/**"
+      - "delivery/**"
+      - "history/**"
   workflow_dispatch: {}
 
 permissions:
