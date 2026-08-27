@@ -22,7 +22,8 @@ CTL の意図と人間 ≒ Council 原則は philosophy.md 第 6 条を参照。
   "categories": {
     "C1": {
       "count": 45,
-      "agreed": 41,
+      "agreed": 38,
+      "agreed_with_synthesis": 3,
       "modified": 4,
       "agreement_rate": 0.9111
     },
@@ -57,6 +58,15 @@ CTL の意図と人間 ≒ Council 原則は philosophy.md 第 6 条を参照。
 
 H カテゴリ（H1〜H4）は CTL に関わらず常に escalate_to_human のため、
 `stats.json` には含めない（記録不要）。
+
+**`agreement_rate` の定義（v6.12.0 で分子を拡張）**:
+
+```
+agreement_rate = (agreed + agreed_with_synthesis) / count
+```
+
+`count` は評価済み件数（分母）。`modified` / `rejected` は分子に入らない。
+`agreed_with_synthesis` を分子に算入する根拠は §4 の status 4 値表を参照。
 
 ## 3. CTL 判定ロジック
 
@@ -153,6 +163,64 @@ def calculate_ctl(stats):
 
 `category` は重み配分用、`decision_category` は判断委譲用（v4.2）。両者は直交。
 詳細は `consensus-protocol.md` の「category と decision_category の役割分担」節を参照。
+
+### status の 4 値（v6.12.0 で `agreed_with_synthesis` を追加）
+
+| status | 意味 | agreement_rate の分子 |
+|---|---|---|
+| `agreed` | 判定をそのまま採用した | **算入する** |
+| `agreed_with_synthesis` | **判定の骨格を採用した上で、少数意見・第 3 の道を併合した**（止揚） | **算入する** |
+| `modified` | 判定の骨格を採らず、別案に差し替えた | 算入しない |
+| `rejected` | 判定を採用しなかった | 算入しない |
+
+`agreed_with_synthesis` を追加する理由は、**止揚が DH の推奨動作であって不同意ではない**ため。
+philosophy 第 6 条の "≒"（提案 = Council / 承認 = 人間）は、人間が Council 判定に
+**上乗せする**ことを織り込んでいる。それを `modified` に落とすと、
+**推奨動作を行うほど CTL が上がらない**という指標の逆行が生じる。
+
+判別基準は**骨格を採ったか**の一点に置く（実装形・適用範囲・段階の付加は骨格の変更にあたらない）:
+
+- 「案 A 採用 + 少数意見を同 PR に併合」→ `agreed_with_synthesis`
+- 「案 A の骨格を採り、第 3 の道をその実装形として併合」→ `agreed_with_synthesis`
+- 「案 A ではなく案 B を採った」「Council が見落とした前提により案を作り直した」→ `modified`
+
+> **本区分は自己申告ではなく人間の事後評価が入力する**（第 6 条 事後評価）。
+> AI が自らの判定を `agreed_with_synthesis` と称して agreement_rate を押し上げる経路は無い。
+
+### implementer_consent の語尾語彙（v6.12.0 で規約化）
+
+利用者プロジェクトの `COUNCIL-LOG.md` は「同意した上で何かした」ことを
+`implementer_consent` の**語尾**に書いてきた（`_with_3_conditions` /
+`_with_substitution` 等）。この語尾を規約として定義し、機械が骨格の移動を読めるようにする。
+
+| 語尾 | 意味 | status |
+|---|---|---|
+| `_condition` / `_caveat` | 勧告に条件・留保を付けて採る（骨格は保たれる） | `agreed_with_synthesis` |
+| `_minority` / `_modification` / `_follow_up` | 少数意見・第 3 の道を併合する | `agreed_with_synthesis` |
+| `_substitution` / `_override` | 勧告の一部を別のもので置き換える | `modified` |
+| `_revision` / `_revised` / `_instead` | 勧告と別の選択肢を採る／射程を超える | `modified` |
+| （語尾なし） | 勧告をそのまま採る | `agreed` |
+
+**両系統が共存する場合は置換系を優先する**（安全側）。
+例: `agreed_recommended_with_5_conditions_under_purity_caveat` は条件系のみ → 止揚。
+`agreed_recommended_with_human_overrides` は置換系を含む → `modified`。
+
+> **語尾は自己申告であり、単独では検証手段にならない。** 規約はあくまで
+> **note が書かれなかった場合の既定値**を決めるものである。note がある記録では
+> note の内容が優先し、両者が矛盾する場合は語尾の側を是正する
+> （v6.12.0 で実データ 2 件を `_with_revision` へ是正した実例がある）。
+> 語尾だけで足りると考えないこと——`modifier_note` の必須化（次節）が本体の担保である。
+
+### modifier_note の必須化（v6.12.0）
+
+`status` が `agreed` **以外**の場合、`modifier_note` は **必須**とする（空文字・null を許さない）。
+
+理由は検証可能性にある。2026-08-27 の実査で、非同意 15 件のうち **7 件が note 空**であり、
+**なぜ agreement_rate が下がったのかが原理的に読めない**状態だった。
+status だけを記録して理由を落とすと、CTL は「下がった事実」しか持たず、
+**何を直せば上がるのかを永久に示せない**。
+
+note に書く内容は 1 文で足りる — **判定のどこを採り、何を足したか（または、なぜ採らなかったか）**。
 
 ### プライバシー配慮
 

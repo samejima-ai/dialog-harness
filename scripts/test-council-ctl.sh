@@ -32,7 +32,12 @@ record_agreed() {
   # 「記録: council-<ts>-<suffix>」の末尾フィールド（suffix）を取る。
   # ts 自体が '-' を含むため最右マッチではなく最終フィールドで取り堅牢化。
   sid="$(echo "$out" | awk -F- '/^記録: council-/{print $NF}' | head -1)"
-  $CLI evaluate "$sid" --status "$status" >/dev/null
+  # agreed 以外は --note 必須（ctl-calculation.md §4）。テストでは定型文を渡す。
+  if [ "$status" = "agreed" ]; then
+    $CLI evaluate "$sid" --status "$status" >/dev/null
+  else
+    $CLI evaluate "$sid" --status "$status" --note "test fixture: $status" >/dev/null
+  fi
 }
 
 echo "== record は未初期化でも lazy-init して落ちない =="
@@ -61,7 +66,10 @@ COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI status >/dev/null 2>/dev/null || fail "破�
 HEALED="$(COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI status 2>/dev/null | sed -n 's/^現在の CTL: //p' | head -1)"
 [ "$HEALED" = "CTL-1" ] || fail "破損 stats でも自己修復して CTL-1 のはず（実際 $HEALED）"
 COUNCIL_DATA_DIR="$CORRUPT_DIR" $CLI recompute >/dev/null 2>/dev/null || fail "破損 stats.json で recompute が落ちた"
-$PY -c "import json; json.load(open('$CORRUPT_DIR/stats.json'))" || fail "recompute 後も stats.json が不正"
+# パスは環境変数で渡す（-c 内の文字列リテラルだと MSYS が /tmp を Windows パスへ
+# 翻訳せず、Git Bash + native python の組み合わせで FileNotFound になる）。
+COUNCIL_DATA_DIR="$CORRUPT_DIR" $PY -c "import json,os,pathlib; json.load(open(pathlib.Path(os.environ['COUNCIL_DATA_DIR'])/'stats.json'))" \
+  || fail "recompute 後も stats.json が不正"
 rm -rf "$CORRUPT_DIR"
 echo "  ok: 破損 stats を invocations/ から自己修復（CTL-1 維持）＋recompute で永続化"
 
@@ -135,6 +143,72 @@ echo "  ok: reject で CTL-3 から落ちた（現在 $got）"
 echo "== regime-block が出力できる =="
 $CLI regime-block | grep -q '^- ctl: ' || fail "regime-block に ctl 行がない"
 echo "  ok: regime-block"
+
+# ---- v6.12.0: agreed_with_synthesis（止揚）と modifier_note 必須化 ------------
+
+echo "== agreed 以外は --note 必須 =="
+SYN_DIR="$(mktemp -d)"
+syn_record() {
+  local out
+  out="$(COUNCIL_DATA_DIR="$SYN_DIR" $CLI record --decision-category C2 \
+    --topic t --judgment j --confidence 0.8)"
+  echo "$out" | awk -F- '/^記録: council-/{print $NF}' | head -1
+}
+COUNCIL_DATA_DIR="$SYN_DIR" $CLI init >/dev/null
+SID="$(syn_record)"
+for st in agreed_with_synthesis modified rejected; do
+  if COUNCIL_DATA_DIR="$SYN_DIR" $CLI evaluate "$SID" --status "$st" >/dev/null 2>&1; then
+    fail "--note なしで $st が通ってしまった"
+  fi
+done
+# 空白のみの note も拒否する（形だけ埋める抜け道を塞ぐ）
+if COUNCIL_DATA_DIR="$SYN_DIR" $CLI evaluate "$SID" --status modified --note "   " >/dev/null 2>&1; then
+  fail "空白のみの --note が通ってしまった"
+fi
+# agreed だけは --note 省略可
+COUNCIL_DATA_DIR="$SYN_DIR" $CLI evaluate "$SID" --status agreed >/dev/null \
+  || fail "agreed が --note なしで落ちた"
+echo "  ok: agreed 以外は note 必須 / agreed は省略可"
+
+echo "== agreed_with_synthesis は agreement_rate の分子に入る =="
+# C2 を 10 件: agreed 5 + agreed_with_synthesis 5 → rate 1.0 で CTL-1 が成立するはず。
+# 旧仕様（止揚を modified 扱い）なら rate 0.5 に落ち CTL-0 のままになる。
+SYN2_DIR="$(mktemp -d)"
+COUNCIL_DATA_DIR="$SYN2_DIR" $CLI init >/dev/null
+for i in $(seq 1 10); do
+  out="$(COUNCIL_DATA_DIR="$SYN2_DIR" $CLI record --decision-category C2 \
+    --topic t --judgment j --confidence 0.8)"
+  sid="$(echo "$out" | awk -F- '/^記録: council-/{print $NF}' | head -1)"
+  if [ "$((i % 2))" -eq 0 ]; then
+    COUNCIL_DATA_DIR="$SYN2_DIR" $CLI evaluate "$sid" --status agreed_with_synthesis \
+      --note "骨格を採用し少数意見を併合" >/dev/null
+  else
+    COUNCIL_DATA_DIR="$SYN2_DIR" $CLI evaluate "$sid" --status agreed >/dev/null
+  fi
+done
+GOT="$(COUNCIL_DATA_DIR="$SYN2_DIR" $CLI status | sed -n 's/^現在の CTL: //p' | head -1)"
+[ "$GOT" = "CTL-1" ] || fail "止揚 5 件込みで rate 1.0 → CTL-1 のはず（実際 $GOT）"
+COUNCIL_DATA_DIR="$SYN2_DIR" $CLI status | grep -q 'rate=1.0' \
+  || fail "agreed_with_synthesis が分子に算入されていない"
+echo "  ok: 止揚は同意側に算入（rate 1.0 / CTL-1）"
+
+echo "== audit が note 欠落と件数乖離を検出する =="
+# 既存記録の note を直接消して legacy 記録（v6.12.0 以前）を再現する
+COUNCIL_DATA_DIR="$SYN2_DIR" $PY -c "
+import json, os, pathlib
+d = pathlib.Path(os.environ['COUNCIL_DATA_DIR']) / 'invocations'
+p = sorted(d.glob('*.json'))[0]
+rec = json.loads(p.read_text(encoding='utf-8'))
+rec['actual_outcome']['status'] = 'modified'
+rec['actual_outcome']['modifier_note'] = None
+p.write_text(json.dumps(rec, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+"
+COUNCIL_DATA_DIR="$SYN2_DIR" $CLI audit | grep -q 'modifier_note 欠落' \
+  || fail "audit が note 欠落を検出しなかった"
+COUNCIL_DATA_DIR="$SYN2_DIR" $CLI audit | grep -q '是正対象 1 件' \
+  || fail "audit の是正対象件数が 1 でない"
+rm -rf "$SYN_DIR" "$SYN2_DIR"
+echo "  ok: audit が legacy note 欠落を検出"
 
 echo
 echo "PASS: council-ctl 回帰テスト 全通過"

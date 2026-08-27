@@ -1000,7 +1000,7 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: true
   # 後追記（合意プロセス完了時、PR #75 ユーザーコメント 2026-05-11T04:13Z）
   # 後追記（2026-08-25 振り返り儀式 F2.5・人間事後評価）: 上記 deferred は当時の保留理由。その後の実績で確定したため単方向に埋める（未定 → 確定）。deferred_reason は当時の記録として保持する。
-  implementer_consent: "agreed_with_modification"
+  implementer_consent: "agreed_recommended_with_revision"  # v6.12.0: 勧告の射程を超えた判断のため語尾を revision に是正（旧 agreed_with_modification）
   modification_note: "保留は勧めどおり。その後 philosophy.md は L-FROZEN-PHIL（人間専管・提案 PR も不可）へ進み勧めより先へ行ったため modified。"
   deferred_reason: "council-2026-05-11T03:49:01Z-4go7g1 (議題 0) の cascade_effect により保留。咀嚼プロトコル SPEC 確定後に再上程（特に P1「同等以上を生成できる方法論」の経験的根拠が必要）"
   agreed_at: "2026-08-25T22:45:57Z"   # 事後評価の確定日。保留合意そのものは 2026-05-11T04:14:26Z
@@ -1838,8 +1838,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   minority_opinion: "哲学者 (B) は revised judgment で fractal coverage が早期回復するため minority opinion 自体が解消"
   human_escalated: false
   consensus_mode: "auto_agree"  # schema 準拠（auto_agree | escalate_to_human）。ユーザー介入の事実は上記 revision セクション (extension) で表現
-  implementer_consent: "agreed_with_modification"  # 修正点は modification_note 参照
-  modification_note: "initial_recommendation A から user_revised C への変更。詳細は revision セクション参照"
+  implementer_consent: "agreed_recommended_with_revision"  # v6.12.0: 骨格が A→C へ動いたため語尾を revision に是正（旧 agreed_with_modification）
+  modification_note: "initial_recommendation A から user_revised C への変更。詳細は revision セクション参照。骨格（採る選択肢）が入れ替わっており止揚ではない"
   agreed_at: "2026-05-12T14:30:00Z"
   follow_up_questions_count: 1
   cascade_to: "claude/v5.16.0-shared-skills-foundation ブランチで scope_lock 6 項目を実装"
