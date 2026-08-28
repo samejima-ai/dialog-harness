@@ -3070,3 +3070,34 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: "agreed_recommended（実装者合意 2026-08-28。B 骨格どおり F2 を実装し PR #203 として提出。spec 判断点 1/3 は提案初期値（滞留 7 日・pending 10 件・cron 日次）で確定、判断点 4 は実データ検証により ALLOWED_AUTHORS 案を棄却し commit 単位 OR 判定（Claude trailer または authors login claude）へ是正 — PR #198/#199 が trailer 無し・claude author 有りの実在反例。判断点 2（F3）は課題 2 の人間判断待ちを維持）"
+
+---
+
+- invocation_id: "council-2026-08-28T01:00:00Z-hkwire"
+  timestamp: "2026-08-28T01:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "3.5 ヶ月死んでいた hook 観測配線（crosscut-hook-observer）の修理を、どのスコープで実装すべきか"
+  council_type: "business"
+  category: "implementation"
+  decision_category: "C2"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 2, 開発者: 6, 哲学者: 2 }
+  persona_summary:
+    - { persona: "経営者", stance: "案B（修理+生観測のローカル化）", confidence: 0.80, dimension: "ROI" }
+    - { persona: "開発者", stance: "案B（コード実証付き: checker はログ不在で PASS = CI 非破壊 / manifest 差替は案 B のみ根治）", confidence: 0.80, dimension: "保守性" }
+    - { persona: "哲学者", stance: "案B + 第3の道（蒸留ダイジェストをリポジトリに置き監査の柱を生から代謝物へ）", confidence: 0.70, dimension: "長期影響" }
+  weight_calculation:
+    max_score_stance: "案B（修理+生観測のローカル化）"
+    weighted_score: 7.80
+    weight_sum: 10
+    tie_break_applied: false
+  judgment_confidence: 0.78
+  recommended: "案B を採用 — ①登録を .claude/settings.json（厳密スキーマ準拠）へ移設し python3||python fallback ②observe.py をフィールド許可リスト化（内容フリー: 応答本文・tool 入出力を記録しない。配線が死んでいた間、旧全量記録は公開追跡ファイルへの漏出地雷だった）③hook-observations.jsonl を untrack+.gitignore（生 L0 はローカル、リポジトリには蒸留物のみ）④dh-manifest merge 対象と UPDATE.md を hooks.json→settings.json へ差替。開発者の実行条件を併合: .gitignore はファイル単位指定 / local_verify.py の検証層配線をセットで移す / 許可リスト後も checker の REQUIRED_FIELDS 互換を確認。哲学者の可逆性論を根拠に採る: 公開 git 履歴の永続は不可逆、監査手段の追加は可逆 — 可逆な誤りを選ぶ。"
+  minority_opinion: "哲学者の第3の道（最終観測 ts・event 別件数の蒸留ダイジェストをリポジトリ追跡し heartbeat とする）は、毎イベント追跡が開発者の指摘する dirty 化を再演するため本 PR では不採用とし、儀式経由の生存信号として申し送り化。哲学者はまた『3.5 ヶ月の沈黙の根本原因は配線の死ではなく、配線の生存を検証する層の不在』『許可リスト自体の陳腐化の見直し契機が未定義』『生ログを将来セッションが購読する自己言及経路は遮断すべき』を提示 — いずれも SKILL.md 申し送りに刻んだ。"
+  weight_note: "category=implementation（経営者-1/開発者+2/哲学者-1）で base 3/4/3 → 2/6/2、ΣW=10。3 軸とも案B 骨格で weighted_score = 2×0.80 + 6×0.80 + 2×0.70 = 7.80。"
+  reasoning: "reason_divergence。dimension は ROI / 保守性 / 長期影響で分離しつつ 3 軸が案B に収束。特筆: 死因（settings 系しか読まれない）と安全性（checker がログ不在で PASS）は開発者軸がリポジトリ内のコードを実読して確認した実証ベース。また『配線が死んでいたおかげで全量記録の漏出地雷が爆発しなかった』という逆説は、修理 = 地雷起動でもあることを意味し、許可リスト化を全案共通の必須是正へ昇格させた（Council 起動前の実装者判断、3 軸とも追認）。"
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: "agreed_recommended_with_3_conditions（実装者合意 2026-08-28。開発者の実行条件 3 件を実装に反映: .gitignore ファイル単位 / local_verify.py 同時移設 / fields キー互換維持。哲学者申し送り 4 件（heartbeat・許可リスト再審契機・自己購読遮断・性能縮退の可逆手順）を SKILL.md に記録。E2E 検証: 機微 payload 4 種が観測行に漏れないことをテストで固定）"

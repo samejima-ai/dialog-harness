@@ -15,7 +15,7 @@ delegation-boundary.md §4「local / github の分離 — 権限差ではなく�
       DH 本体では harness-verifier/verify.py（構造健全性）。配布先では各自の
       lint / 型チェックに差し替える（DH_LOCAL_VERIFY_CMD で外部化）。
 
-呼び出し（.claude/hooks.json の PostToolUse に追加）:
+呼び出し（.claude/settings.json hooks の PostToolUse に追加）:
     python3 .claude/skills/crosscut-autonomous-drive/scripts/local_verify.py
 
 stdin に Claude Code hook の event payload(JSON) を受け取る。

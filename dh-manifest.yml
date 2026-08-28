@@ -30,7 +30,9 @@ paths:
 
   # merge: DH 提供だがプロジェクトがカスタムしうる。raw 上書き不可。差分を提示して人間がマージ。
   merge:
-    - ".claude/hooks.json"
+    # v6.15.x hook 配線修理: Claude Code が読むのは settings 系のみ（hooks.json は読まれない・公式仕様）。
+    # settings.json は hooks の他に利用者固有設定（permissions 等）を持ちうるため raw 上書き不可の merge 分類
+    - ".claude/settings.json"
 
   # redeploy: placeholder（${ALLOWED_AUTHORS} 等）を含むため raw コピー不可。
   # crosscut-autonomous-drive 経由で placeholder 再展開（冪等でない・衝突は明示確認）。
