@@ -44,3 +44,6 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# 生 hook 観測はローカル L0 蓄積（Council hook 修理・案B）。リポジトリには蒸留物のみ
+harness-verifier/reports/hook-observations.jsonl

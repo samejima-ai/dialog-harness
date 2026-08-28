@@ -8,7 +8,7 @@ chewing_translation: "T1+T3 (構造保持 + サブセット選別)"
 chewing_pr: "samejima-ai/dialog-harness#76"
 chewed_at: "2026-05-11T05:30:00Z"
 description: >
-  Claude Code 公式 hooks.json schema 経由で Claude Code セッションの tool call と
+  Claude Code 公式 hooks（.claude/settings.json の hooks キー）経由でセッションの tool call と
   session lifecycle を観測し、harness-verifier に観測ログを引き渡す bridge skill。
   PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact の 6 event を購読、
   exit code は常に 0 で warn のみ、block しない（philosophy.md 第 6 条「人間最終承認」準拠）。
@@ -16,7 +16,7 @@ description: >
   UserPromptSubmit / Notification / SubagentStop は Wave 4 申し送り。
   「hook 観測機構を有効化」「PreToolUse 観測ログを取得」「Claude Code hook で session
   lifecycle を観測」「harness-verifier に観測ログを渡す bridge」等の発話、または
-  hooks.json bootstrap からの自動起動で発動。
+  settings.json hooks bootstrap からの自動起動で発動。
   本 skill は **観測専用** であり、tool call を block / 改変しない（命令層と観測層の分離）。
   harness-verifier への入力提供のみが責務（DH 独立性原則に従い一方向依存: skill → 出力 →
   harness-verifier 読み取り）。
@@ -25,7 +25,34 @@ description: >
 # crosscut-hook-observer — Claude Code hook 観測機構
 
 ECC `hooks/hooks.json` の event-types / matcher 構文 / Node.js bootstrap 設計から
-**6 event + Python bootstrap + warn-only exit**（Wave 1 で 5 event、Wave 3 で PreCompact 追加）をサブセット選別 + 翻訳して導入した
+**6 event + Python bootstrap + warn-only exit**（Wave 1 で 5 event、Wave 3 で PreCompact 追加）をサブセット選別 + 翻訳して導入した。
+
+## 配線修理の来歴（2026-08-28・Council 諮問済み）
+
+**v5.x〜v6.15 の 3.5 ヶ月間、本 skill の観測は一度も発火していなかった**（実観測 0 件・smoke 2 行のみ）。
+死因は登録先の誤り: 設定を `.claude/hooks.json` に置いていたが、**Claude Code が hooks を読むのは
+settings 系ファイルのみ**（`hooks/hooks.json` は plugin 同梱専用。公式 docs 全文精査で確定）。
+ECC 由来の咀嚼（T1+T3、council w1qb01/w3qb02）はイベント選別・warn-only 設計を正しく持ち込んだが、
+**読み込み経路の検証を欠いた** — 咀嚼の記録があっても配線の実証がなければ動かない、の実例である。
+
+修理（Council 案 B・reason_divergence 収束）:
+- 登録を `.claude/settings.json`（厳密スキーマ準拠・非スキーマキー禁止 — 検証失敗はファイル内
+  全 hook を無言で無効化する）へ移設。コマンドは `python3 ||  python` fallback（Windows 対応）
+- **フィールド許可リスト化**: 旧 observe.py は payload 全量を 512 字 truncate で記録しており、
+  配線が生きると応答本文・tool 入出力が追跡ファイルへ流れる設計だった。以後は内容フリーの
+  計量メタデータのみ（`observe.py ALLOWED_FIELDS` が単一情報源）
+- **生観測のローカル化**: `hook-observations.jsonl` は untrack + .gitignore（生 L0 はローカル蓄積、
+  リポジトリには蒸留物のみ — 情報代謝・公開安全と整合。checker はログ不在でも PASS 仕様で CI 非破壊）
+
+**申し送り**（本修理のスコープ外・次 PR の種）:
+1. **生存信号（heartbeat）**: 「空に PASS」の構造は残っている。観測の最終 ts・event 別件数の
+   蒸留ダイジェストを儀式経由でリポジトリへ置く（哲学者第 3 の道。毎イベント追跡は dirty 化するため不採用）
+2. **許可リストの見直し契機**: 新 tool・新フィールド追加時の ALLOWED_FIELDS 再審（規範メタデータの
+   review_trigger 相当を observe.py コメントに付す）
+3. **自己購読の遮断**: ローカル生ログを将来のセッションが context として読む経路は開かない
+   （購読量上限の思想。読むのは蒸留プロセスのみ）
+4. 性能: PreToolUse/PostToolUse は python 二重起動が毎 tool call 走る。実測で痛ければ
+   settings.json の 2 エントリ削除で 4 event へ縮退可能（可逆）
 DH 独自の hook 観測機構。
 
 ## 設計原則
@@ -54,7 +81,7 @@ session lifecycle 通知（Stop / SessionStart / SessionEnd）、context 圧縮�
 ```
 Claude Code セッション
     ↓ hook 発火
-.claude/hooks.json (event → command)
+.claude/settings.json hooks キー (event → command)
     ↓ subprocess
 crosscut-hook-observer/scripts/bootstrap.py
     ↓ event-type 分岐
@@ -79,14 +106,14 @@ harness-verifier/verify.py（独立検証層、DH 本体に依存しない）
 
 ### 自動起動（hook 経路）
 
-`.claude/hooks.json` 経由で Claude Code が直接起動。
+`.claude/settings.json` の hooks キー経由で Claude Code が直接起動。
 本 skill は **subprocess として起動される**ため、SKILL.md 自体は documentation の役割を担う。
 
 ### 明示起動
 
 「hook 観測機構を有効化」「観測ログを確認」等の発話で発動し、以下を実施:
 
-1. `.claude/hooks.json` の状態確認（6 event 全て登録済か: PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact）
+1. `.claude/settings.json` hooks の状態確認（6 event 全て登録済か: PreToolUse / PostToolUse / Stop / SessionStart / SessionEnd / PreCompact）
 2. `harness-verifier/reports/hook-observations.jsonl` の末尾 N 件を表示
 3. 観測機構が動作していない場合の診断（permission / Python path / 書き込み権限）
 

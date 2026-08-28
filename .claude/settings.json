@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" PreToolUse || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" PreToolUse"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" PostToolUse || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" PostToolUse"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-autonomous-drive/scripts/local_verify.py\" || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-autonomous-drive/scripts/local_verify.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" Stop || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" Stop"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" SessionStart || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" SessionStart"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" SessionEnd || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" SessionEnd"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" PreCompact || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" PreCompact"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -62,7 +62,7 @@ rm -rf templates && cp -r "$DH/templates" ./
 
 # (b) merge: プロジェクトがカスタムしうる → 差分を見て手動マージ（raw 上書き禁止）。
 #     diff は「差分なし=exit0 / 差分あり=exit1」。両分岐を明示:
-diff -u .claude/hooks.json "$DH/.claude/hooks.json" && echo "（差分なし・マージ不要）" || echo "↑ 上記差分を手動マージ（raw 上書き禁止）"
+diff -u .claude/settings.json "$DH/.claude/settings.json" && echo "（差分なし・マージ不要）" || echo "↑ 上記差分を手動マージ（raw 上書き禁止。hooks キーは DH 提供、他キーは利用者固有）"
 
 # (c) redeploy: placeholder を含む → raw コピー不可。crosscut-autonomous-drive で再展開。
 #     CC に「autonomous-drive で workflow を再 deploy（placeholder 再展開・衝突は確認）」と指示。

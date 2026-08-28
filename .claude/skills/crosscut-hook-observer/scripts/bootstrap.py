@@ -5,7 +5,7 @@ Claude Code hook bootstrap (PR #76, Wave 1 Phase C)
 origin: ECC v2.0.0-rc.1 hooks/scripts/plugin-hook-bootstrap.js (Node.js)
 chewing_translation: T2 (Node.js → Python 翻訳)
 
-Invoked by .claude/hooks.json with one positional arg: event-type.
+Invoked by .claude/settings.json hooks with one positional arg: event-type.
 Reads JSON event payload from stdin, dispatches to observe.py for logging.
 Always exits 0 (warn-only, never block) — philosophy.md 第 6 条準拠。
 """

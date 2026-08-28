@@ -28,7 +28,7 @@ local が「commit まで無確認」で走れるのは、commit が **revert / 
 §4 の「local: hook（PostToolUse）+ lint + 型」を担うスクリプト。
 
 - **場所**: `.claude/skills/crosscut-autonomous-drive/scripts/local_verify.py`
-- **接続**: `.claude/hooks.json` の `PostToolUse` に observer と**併記**（観測層と検証層の分離）
+- **接続**: `.claude/settings.json`（hooks キー） の `PostToolUse` に observer と**併記**（観測層と検証層の分離）
 - **契約**: **warn-only**（exit code 常に 0）。tool call を block しない。
   検出結果は stderr の `[local-verify]` 行で AI 自身に通知し、commit 前に直す機会を与える。
   philosophy.md 第 6 条「自動 block は人間最終承認の代替にならない」準拠。
@@ -112,6 +112,6 @@ local hook（決定論）と sub_agent_review（判断）は責務が重なら�
 
 - `delegation-boundary.md` §4 / §6 — 一次方針（憲法・AI 改訂禁止）
 - `.claude/skills/crosscut-autonomous-drive/scripts/local_verify.py` — local 検証層の実体
-- `.claude/hooks.json` — observer（観測層）と local_verify（検証層）の接続
+- `.claude/settings.json`（hooks キー） — observer（観測層）と local_verify（検証層）の接続
 - `.claude/skills/crosscut-hook-observer/SKILL.md` — 観測層（検証しない）との分離設計
 - `scripts/check_template_sync.py` — github 側テンプレ二重管理の同期検証（G-003 解消）
