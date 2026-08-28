@@ -114,6 +114,10 @@ nodes:
     kind: tool
     role: support
     impl: scripts/council-log-sync.py
+  - id: signal-scan
+    kind: tool
+    role: support
+    impl: scripts/signal-scan.py
   - id: council-ctl
     kind: tool
     role: support
@@ -206,6 +210,12 @@ edges:
     to: crosscut-feedback-loop
     type: standard
     source: .claude/skills/crosscut-council/references/escalation-matrix.md#1-マトリクス
+  # v6.15.0 F1: テレメトリ逆流の起点。起票は候補（ready-for-ai を付けない・I-1）で、
+  # 実装パイプラインへの昇格は人間のラベル付与を経る（第 8 条 3 段階）
+  - from: signal-scan
+    to: crosscut-issue-quality-gate
+    type: standard
+    source: dh-upgrades/upgrade-spec-v6.15.0.md#f1-signal-scan--テレメトリ逆流の最小実装priority-critical--g1w3
   - from: layer2-orchestrator
     to: crosscut-council
     type: conditional
