@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Council の二つの実行方式</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#EBEEEC; --surface:#F7F9F8; --sunk:#E0E5E3;
+  --ink:#12201E; --ink2:#4B5C59; --ink3:#7C8A87;
+  --rule:#C7D1CE; --rule-soft:#D9E0DE;
+  --det:#0C6E64;        /* Workflow / 決定論レーン */
+  --det-wash:#DCEDEA;
+  --mod:#4F5F8C;        /* subagent / モデル駆動レーン */
+  --mod-wash:#E1E5F0;
+  --alert:#A9412A;
+  --alert-wash:#F3E1DC;
+  --shadow:0 1px 0 rgba(18,32,30,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1514; --surface:#161D1C; --sunk:#1D2624;
+    --ink:#E6ECEA; --ink2:#A6B4B1; --ink3:#76837F;
+    --rule:#2C3735; --rule-soft:#232C2B;
+    --det:#57C4B6; --det-wash:#122B29;
+    --mod:#9AABD8; --mod-wash:#191E2C;
+    --alert:#DF8168; --alert-wash:#2B1A16;
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1514; --surface:#161D1C; --sunk:#1D2624;
+  --ink:#E6ECEA; --ink2:#A6B4B1; --ink3:#76837F;
+  --rule:#2C3735; --rule-soft:#232C2B;
+  --det:#57C4B6; --det-wash:#122B29;
+  --mod:#9AABD8; --mod-wash:#191E2C;
+  --alert:#DF8168; --alert-wash:#2B1A16;
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px; margin:0 auto; padding:0 24px 96px}
+@media (max-width:600px){ .wrap{padding:0 16px 64px} body{font-size:15px} }
+
+/* ---- masthead ---- */
+.masthead{padding:64px 0 36px; border-bottom:2px solid var(--ink)}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink3); display:flex; flex-wrap:wrap; gap:14px; margin-bottom:22px;
+}
+.eyebrow b{color:var(--det); font-weight:600}
+h1{
+  font-family:var(--display); font-weight:900; letter-spacing:.01em;
+  font-size:clamp(30px,5.6vw,52px); line-height:1.24; margin:0 0 18px; text-wrap:balance;
+}
+.standfirst{
+  font-size:clamp(15px,1.9vw,18px); color:var(--ink2); max-width:64ch; margin:0;
+}
+.standfirst strong{color:var(--ink); font-weight:700}
+
+/* ---- verdict ---- */
+.verdict{
+  margin:36px 0 0; padding:26px 28px; background:var(--surface);
+  border:1px solid var(--rule); border-left:4px solid var(--det); box-shadow:var(--shadow);
+}
+.verdict h2{margin:0 0 14px}
+.verdict ol{margin:0; padding-left:1.3em}
+.verdict li{margin-bottom:10px}
+.verdict li:last-child{margin-bottom:0}
+
+/* ---- sections ---- */
+section{margin-top:64px}
+h2{
+  font-family:var(--display); font-weight:700; font-size:clamp(20px,3vw,27px);
+  line-height:1.4; margin:0 0 8px; text-wrap:balance;
+}
+h2 .num{
+  font-family:var(--mono); font-size:12px; font-weight:600; color:var(--det);
+  letter-spacing:.1em; display:block; margin-bottom:6px;
+}
+h3{font-family:var(--body); font-weight:700; font-size:16px; margin:30px 0 8px; letter-spacing:.01em}
+p{margin:0 0 16px; max-width:68ch}
+.lede{color:var(--ink2); margin-bottom:26px; max-width:68ch}
+a{color:var(--det); text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--det); outline-offset:3px}
+code{font-family:var(--mono); font-size:.86em; background:var(--sunk); padding:1px 5px; border-radius:2px}
+
+/* ---- two lanes ---- */
+.lanes{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:28px 0}
+@media (max-width:760px){ .lanes{grid-template-columns:1fr} }
+.lane{background:var(--surface); border:1px solid var(--rule); padding:22px 22px 24px; box-shadow:var(--shadow)}
+.lane--mod{border-top:3px solid var(--mod)}
+.lane--det{border-top:3px solid var(--det)}
+.lane .tag{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  display:inline-block; padding:3px 8px; margin-bottom:12px; border-radius:2px;
+}
+.lane--mod .tag{background:var(--mod-wash); color:var(--mod)}
+.lane--det .tag{background:var(--det-wash); color:var(--det)}
+.lane h3{margin:0 0 10px; font-size:17px}
+.lane p{font-size:14.5px; line-height:1.8; color:var(--ink2); margin-bottom:12px}
+.lane p:last-child{margin-bottom:0}
+.lane .path{font-family:var(--mono); font-size:11.5px; color:var(--ink3); word-break:break-all; display:block; margin-top:14px; padding-top:12px; border-top:1px dashed var(--rule)}
+
+/* ---- matrix ---- */
+.scroller{overflow-x:auto; margin:26px 0; border:1px solid var(--rule); background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:720px; font-size:14px}
+caption{caption-side:bottom; text-align:left; padding:12px 16px; font-size:12.5px; color:var(--ink3); line-height:1.7}
+th,td{padding:13px 16px; text-align:left; vertical-align:top; border-bottom:1px solid var(--rule-soft)}
+thead th{
+  font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink3); font-weight:600; border-bottom:1px solid var(--rule); background:var(--sunk);
+  position:sticky; top:0;
+}
+thead th.c-mod{color:var(--mod)} thead th.c-det{color:var(--det)}
+tbody th{font-weight:700; font-size:14px; width:20%; color:var(--ink)}
+td.mod{background:color-mix(in srgb,var(--mod-wash) 45%,transparent)}
+td.det{background:color-mix(in srgb,var(--det-wash) 45%,transparent)}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+.axis{font-family:var(--mono); font-size:10.5px; color:var(--ink3); display:block; font-weight:400; letter-spacing:.08em}
+
+/* ---- phase strip ---- */
+.phases{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin:26px 0}
+.phase{display:grid; grid-template-columns:150px 1fr 1fr; background:var(--surface)}
+@media (max-width:760px){ .phase{grid-template-columns:1fr} }
+.phase>div{padding:15px 18px; font-size:14px; line-height:1.75}
+.phase .step{
+  background:var(--sunk); font-family:var(--mono); font-size:12px; letter-spacing:.04em;
+  color:var(--ink2); font-weight:600;
+}
+.phase .a{color:var(--ink2); border-left:3px solid var(--mod)}
+.phase .b{color:var(--ink2); border-left:3px solid var(--det)}
+@media (max-width:760px){
+  .phase .a,.phase .b{border-left:none; border-top:1px dashed var(--rule)}
+  .phase .a::before{content:"手動 "; font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--mod)}
+  .phase .b::before{content:"WF "; font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--det)}
+}
+.phase-head{display:grid; grid-template-columns:150px 1fr 1fr; background:var(--sunk); font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase}
+.phase-head>div{padding:9px 18px}
+.phase-head .m{color:var(--mod)} .phase-head .d{color:var(--det)}
+@media (max-width:760px){ .phase-head{display:none} }
+
+/* ---- evidence ---- */
+.evidence{
+  margin:26px 0; border:1px solid var(--rule); border-left:4px solid var(--alert);
+  background:var(--surface); padding:24px 26px;
+}
+.evidence h3{margin-top:0}
+.log{
+  font-family:var(--mono); font-size:12.5px; line-height:1.9; background:var(--sunk);
+  padding:16px 18px; overflow-x:auto; white-space:pre; margin:14px 0 0; border-radius:2px;
+}
+.log .add{color:var(--det)} .log .del{color:var(--alert)} .log .dim{color:var(--ink3)}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 0; padding:0; list-style:none}
+.chips li{
+  font-family:var(--mono); font-size:11.5px; padding:4px 10px; border:1px solid var(--rule);
+  background:var(--paper); color:var(--ink2); border-radius:2px;
+}
+.chips li.wf{border-color:var(--det); color:var(--det); background:var(--det-wash)}
+.chips li.man{border-color:var(--alert); color:var(--alert); background:var(--alert-wash)}
+
+/* ---- notes list ---- */
+ul.notes{margin:0 0 16px; padding-left:1.25em; max-width:68ch}
+ul.notes li{margin-bottom:11px}
+ul.notes li::marker{color:var(--ink3)}
+.kicker{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink3); margin:0 0 10px;
+}
+
+/* ---- proposals ---- */
+.props{display:grid; gap:14px; margin:24px 0}
+.prop{
+  display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start;
+  background:var(--surface); border:1px solid var(--rule); padding:18px 20px; box-shadow:var(--shadow);
+}
+.prop .mark{
+  font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.08em;
+  color:var(--det); border:1px solid var(--det); padding:3px 8px; border-radius:2px; white-space:nowrap;
+}
+.prop.warn .mark{color:var(--alert); border-color:var(--alert)}
+.prop h3{margin:0 0 6px; font-size:15.5px}
+.prop p{margin:0; font-size:14.5px; color:var(--ink2); line-height:1.8}
+
+footer{
+  margin-top:72px; padding-top:24px; border-top:1px solid var(--rule);
+  font-family:var(--mono); font-size:11.5px; color:var(--ink3); line-height:2;
+}
+footer .src{display:block; word-break:break-all}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>dialog-harness <b>v6.11.0 →</b></span>
+    <span>crosscut-council</span>
+    <span>2026-08-29</span>
+  </div>
+  <h1>Council の二つの実行方式</h1>
+  <p class="standfirst">同じ Council 規範に、<strong>サブエージェント手動フロー</strong>と <strong>Workflow</strong> という二つの実行基盤がある。v6.11.0 は後者を既定、前者を degrade 経路と定めた。両者は「何を出すか」ではなく「<strong>規約で守るか、構造で守るか</strong>」で分かれる。</p>
+</header>
+
+<div class="verdict">
+  <h2>まず結論</h2>
+  <ol>
+    <li><strong>判定の中身は変わらない。</strong>重み・帯・ペルソナ人格・<code>final_decision: null</code>・H カテゴリ人間専管はどちらも同一の正典に従う（不変条件 I-1）。差が出るのは<strong>規律の担保方法</strong>だけ。</li>
+    <li><strong>Workflow は規約を構造に置き換える。</strong>情報純度・schema・重み計算・ログ書式が「守る約束」から「破れない配線」になる。代償は逐次可視性・人間の割り込み・モデルティアの手動制御。</li>
+    <li><strong>ただし「Workflow 化 = 決定論」ではない。</strong>同じ v6.11.0 でも <code>council-fanout</code> は決定論 JS、<code>review-pipeline</code> は重み計算まで LLM に投げている。差は基盤ではなくスクリプトの書き方に宿る。</li>
+  </ol>
+</div>
+
+<section>
+  <h2><span class="num">01 / 骨格</span>制御フローを誰が持っているか</h2>
+  <p class="lede">これが唯一の本質的な差で、以下すべてはここから派生する。</p>
+
+  <div class="lanes">
+    <div class="lane lane--mod">
+      <span class="tag">A — subagent 手動フロー</span>
+      <h3>モデルが手順書を読んで進める</h3>
+      <p>本体セッション（CI では OC = Opus）が <code>SKILL.md</code> §処理フローを読み、Task ツールで leaf subagent を起動する。順序・並列性・入力の切り分けは、その場のモデルの読解に依存する。</p>
+      <p>subagent は subagent を生成できない（委譲は 1 階層）。中間結果はすべて呼び出し側のコンテキストに戻る。</p>
+      <span class="path">.claude/skills/crosscut-council/SKILL.md<br>.claude/agents/review-persona-*.md</span>
+    </div>
+    <div class="lane lane--det">
+      <span class="tag">B — Workflow</span>
+      <h3>スクリプトが制御フローを保持する</h3>
+      <p><code>council-fanout.workflow.mjs</code> が Phase 0 → 重み → Phase 1 → 対立度 → Phase 3 → ログ生成を JS として持ち、LLM が要る箇所だけ <code>agent()</code> に委譲する。順序も並列性も入力の切り分けもコードが決める。</p>
+      <p>メインコンテキストに戻るのは最終結果と <code>log_block</code> だけ。<code>Date.now()</code> / <code>Math.random()</code> は禁止（再開キャッシュを壊すため）で、<code>invocation_id</code> と <code>timestamp</code> は呼び出し側が採番して <code>args</code> で渡す。</p>
+      <span class="path">.claude/skills/crosscut-council/references/workflows/council-fanout.workflow.mjs</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02 / 差異マトリクス</span>12 の軸で並べる</h2>
+  <div class="scroller">
+    <table>
+      <caption>出典: <code>crosscut-council/SKILL.md</code> §実行基盤 / <code>council-fanout.workflow.mjs</code> / <code>references/orchestrator.md</code> / <code>dh-upgrades/upgrade-spec-v6.11.0.md</code> F1・F7・C-2。</caption>
+      <thead>
+        <tr>
+          <th scope="col">軸</th>
+          <th scope="col" class="c-mod">A — subagent 手動フロー</th>
+          <th scope="col" class="c-det">B — Workflow</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">制御フロー<span class="axis">control</span></th>
+          <td class="mod">モデル駆動。手順書の読解に依存</td>
+          <td class="det">スクリプト。決定論</td></tr>
+        <tr><th scope="row">情報純度<span class="axis">purity</span></th>
+          <td class="mod">規約で禁止（「他ペルソナ出力を渡さない」）。破れる</td>
+          <td class="det">構造で不可能。プロンプトに他ペルソナ出力を差し込む経路が存在しない</td></tr>
+        <tr><th scope="row">重み計算<span class="axis">weights</span></th>
+          <td class="mod">Orchestrator（＝モデル）が <code>council-weights.md</code> を読んで計算</td>
+          <td class="det">agent は YAML の転記のみ。<code>base × ethos + modifier</code> は JS</td></tr>
+        <tr><th scope="row">スコアと帯<span class="axis">scoring</span></th>
+          <td class="mod">モデルが算術。<em>重みを按分して recommended を捏造した事故の前例あり</em>（<code>d1m4n5</code>）</td>
+          <td class="det">JS で <code>Σ(weight×confidence)</code>、tie は丸め前の生値で判定。帯外は 1 回リトライ→<code>judgment_failed</code></td></tr>
+        <tr><th scope="row">出力規格<span class="axis">schema</span></th>
+          <td class="mod">プロンプト依存。<code>dimension</code> 欠落・options 正規化ギャップが軸監査 WARN の根因</td>
+          <td class="det">JSON schema 強制。<code>stance_normalized</code> は enum、<code>dimension</code> 必須、<code>notes</code> が枠外異見の受け皿</td></tr>
+        <tr><th scope="row">ログ生成<span class="axis">log</span></th>
+          <td class="mod">§8 ブロックを手書き。フィールド欠落で CTL から脱落しうる</td>
+          <td class="det">スクリプトが生成。YAML エスケープ順序まで固定</td></tr>
+        <tr><th scope="row">コンテキスト<span class="axis">context</span></th>
+          <td class="mod">全ペルソナ出力・中間物が呼び出し側に載る</td>
+          <td class="det">最終結果と <code>log_block</code> のみ</td></tr>
+        <tr><th scope="row">再実行<span class="axis">resume</span></th>
+          <td class="mod">不可。毎回やり直し</td>
+          <td class="det">journal + <code>resumeFromRunId</code>。未変更 prefix はキャッシュ即返し</td></tr>
+        <tr><th scope="row">モデルティア<span class="axis">tier</span></th>
+          <td class="mod">Task ごとに override。CI は難度 tier で persona_tier を昇格させる配線が既にある</td>
+          <td class="det"><code>agent(opts.model / effort)</code>。<code>council-fanout</code> は未指定＝セッション継承、review 版は難度ゲート未配線（既知の限界 L-4）</td></tr>
+        <tr><th scope="row">人間の割り込み<span class="axis">interrupt</span></th>
+          <td class="mod">逐次進行が見える。途中で止めて向き直せる</td>
+          <td class="det">走り切り。<code>/workflows</code> で進捗は見えるが介入点は無い</td></tr>
+        <tr><th scope="row">失敗時<span class="axis">failure</span></th>
+          <td class="mod">モデルがその場で繕う。沈黙しやすい</td>
+          <td class="det"><code>pre_check_failed</code> / <code>workflow_failed</code> / <code>judgment_failed</code> を返し、degrade を明示要求（仕様 C-2）</td></tr>
+        <tr><th scope="row">構造的制約<span class="axis">limits</span></th>
+          <td class="mod">subagent は subagent を作れない（委譲 1 階層）</td>
+          <td class="det">時刻・乱数 API 禁止。並列は <code>min(16, CPU-2)</code>、総 agent 1000、<code>workflow()</code> のネストは 1 段</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03 / 工程</span>Council 5 工程での実際の差</h2>
+  <p class="lede">SKILL.md の処理フローを、両方式で並べたもの。工程の順序は規範が定めた実際のシーケンスであり、番号は装飾ではない。</p>
+  <div class="phase-head">
+    <div>工程</div><div class="m">A — 手動フロー</div><div class="d">B — Workflow</div>
+  </div>
+  <div class="phases">
+    <div class="phase">
+      <div class="step">Phase 0<br>Pre-Check</div>
+      <div class="a">モデルが council_type / category / decision_category を判定。必須項目の欠落は気づかれないことがある</div>
+      <div class="b">9 項目の必須検証。options 2–8 件を強制。H1–H4 は即 <code>escalate_to_human</code> で打ち切り</div>
+    </div>
+    <div class="phase">
+      <div class="step">重み計算</div>
+      <div class="a">モデルが読んで掛け算する</div>
+      <div class="b">agent は転記のみ、計算は JS。未知 category は <code>judgment</code> へフォールバックし <code>category_fallback: true</code> を自動記録</div>
+    </div>
+    <div class="phase">
+      <div class="step">Phase 1<br>3 軸独立観測</div>
+      <div class="a">「他ペルソナ出力・重み・履歴を渡さない」という<em>約束</em>のもと 3 Task を並列起動</div>
+      <div class="b"><code>parallel()</code> で 3 <code>agent()</code>。各プロンプトは自ペルソナのファイル指定のみを含み、他者の出力を渡す変数が存在しない</div>
+    </div>
+    <div class="phase">
+      <div class="step">対立度判定</div>
+      <div class="a">モデルが reason_divergence / unanimous / simple_conflict を読み分ける</div>
+      <div class="b"><code>dimension</code> の Jaccard ≤ 0.30 で機械判定。軸監査スクリプトと同値契約</div>
+    </div>
+    <div class="phase">
+      <div class="step">Phase 3<br>Judgment</div>
+      <div class="a">判定 agent が出した <code>weight_calculation</code> を Orchestrator が検算（同じモデル層での自己検算）</div>
+      <div class="b">スコアも帯も JS で先に確定し、agent には<strong>帯だけ</strong>渡す（gap 生値は渡さない）。帯外なら retry、2 回目も外れれば <code>judgment_failed</code></div>
+    </div>
+    <div class="phase">
+      <div class="step">ログ / CTL</div>
+      <div class="a">§8 ブロックを人手で書き、<code>council-log-sync.py</code> へ</div>
+      <div class="b"><code>log_block</code> を返す。追記と同期のクロージング手順は共通</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04 / 実測</span>ログの形が実行方式を露呈する</h2>
+  <p class="lede"><code>history/COUNCIL-LOG.md</code> の全 65 エントリのうち、Workflow が生成した記録は<strong>フィールド構成で識別できる</strong>。手動フローでは書かれないフィールドがあるからだ。</p>
+
+  <div class="evidence">
+    <h3>Workflow 生成にだけ現れる 3 フィールド</h3>
+<pre class="log"><span class="dim">  weight_calculation:</span>
+    scores:
+      - stance: "…"
+<span class="add">        components:                      # persona 別の weight × confidence 内訳</span>
+<span class="add">  weight_calculation_retry_count: 0     # 帯外リトライ回数</span>
+<span class="add">  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }</span>
+</pre>
+    <ul class="chips">
+      <li class="wf">66e3d9 — 08-25</li>
+      <li class="wf">v7ord1 — 08-26</li>
+      <li class="wf">amrace — 08-26</li>
+      <li class="man">634df2 — 08-27</li>
+      <li class="man">v615im — 08-28</li>
+      <li class="man">hkwire — 08-28</li>
+    </ul>
+    <p style="margin-top:18px">v6.11.0 の受け入れ基準 F1-6 は「導入後最初の 3 発動」を要求し、<span style="color:var(--det)">緑の 3 件</span>がそれを満たしている。しかし<span style="color:var(--alert)">直近 3 件</span>は 3 フィールドを欠き、<code>phase_reached</code> も <code>"phase_3"</code> ではなく <code>"1→3"</code>——手動フロー時代の書式に戻っている。受け入れ確認の窓を過ぎたあと、既定が使われなくなった形跡である（記録の形からの推定であり、実行時ログでの裏取りはしていない）。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05 / 落とし穴</span>Workflow 化しても決定論とは限らない</h2>
+  <p class="lede">同じ v6.11.0 で書かれた 2 本のスクリプトの間に、無視できない落差がある。ここを「Workflow だから安全」と読むと、規律は移らない。</p>
+  <div class="lanes">
+    <div class="lane lane--det">
+      <span class="tag">council-fanout（F1）</span>
+      <h3>決定論を最大化した実装</h3>
+      <p>フィールド単位の schema、JS でのスコアリングと帯計算、ログ書式の生成まで機械が持つ。LLM が触るのは persona の観測と judgment の言語化だけ。</p>
+    </div>
+    <div class="lane lane--mod">
+      <span class="tag">review-pipeline（F2）</span>
+      <h3>構造化だけを強制した実装</h3>
+      <p>schema は <code>{ type: 'object' }</code> のみ（既知の限界 L-1）。<code>final_weights</code> の計算も <code>weighted_score</code> の適用も agent 任せで、難度 tier は計算するが分岐に使わない（L-4）ため常時フル合議になる。</p>
+    </div>
+  </div>
+  <p>したがって差異の主語は「基盤」ではなく「<strong>どこまでを JS に降ろしたか</strong>」である。Workflow は決定論を<em>可能にする</em>器であって、決定論そのものではない。</p>
+</section>
+
+<section>
+  <h2><span class="num">06 / 不変</span>どちらでも変わらないもの</h2>
+  <ul class="notes">
+    <li><strong>実行基盤は判定を持たない</strong>（I-1 / escalation-matrix）。<code>final_decision</code> は常に <code>null</code>、決めるのは人間か合意プロセス。</li>
+    <li><strong>H1–H4 は人間専管。</strong>Workflow に渡しても即 <code>escalate_to_human</code> で返る。</li>
+    <li><strong>degrade は機能停止ではない</strong>（仕様 C-2）。Workflow tool 非対応環境・<code>judgment_failed</code> 時は手動フローで完遂し、人間に warn を残す。<em>つまり手動フローは旧式ではなく、現役の縮退経路である。</em></li>
+    <li><strong>journal は reviewer に渡さない</strong>（I-4）。実行側の内部成果物であり、独立検証のコンテキスト隔離を破らせない。</li>
+    <li><strong>並列度の既定上限</strong>（F7-2）: Council fan-out 3+1 / review ≤ 8 / 反証 = critical 機能 × 3 / 協調層 teammate ≤ 3。超過は ADR 必須。</li>
+    <li><strong>第 3 階層（議論型協調層 / Agent Teams）は未導入。</strong>規範が定義するのは抽象契約のみで、実装固有情報は時限メタデータ付きで <code>templates/experimental/</code> に隔離される（F6）。</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">07 / 適用</span>DH 更新への持ち込み候補</h2>
+  <p class="lede">以下は判断材料であって決定ではない。採否は人間が決める（philosophy 第 6 条）。</p>
+  <div class="props">
+    <div class="prop warn">
+      <span class="mark">P1</span>
+      <div>
+        <h3>既定が使われていない事実を先に片づける</h3>
+        <p>「Workflow が既定」と規範が言う一方、直近 3 発動は手動書式で記録されている。規範と実運用の乖離は v6.1.0 の CTL 分断と同型の空文化。degrade を選んだなら理由を、選んでいないなら起動導線を直す。</p>
+      </div>
+    </div>
+    <div class="prop">
+      <span class="mark">P2</span>
+      <div>
+        <h3>実行方式をログに明示フィールドで持つ</h3>
+        <p>いまは <code>confidence_band</code> の有無という<em>副作用</em>から推定している。<code>execution_mode: workflow | manual</code> の 1 フィールドがあれば、degrade 率が CTL と同じ精度で観測できる。</p>
+      </div>
+    </div>
+    <div class="prop">
+      <span class="mark">P3</span>
+      <div>
+        <h3>review-pipeline の落差を閉じる</h3>
+        <p>L-1（フィールド schema）と L-4（難度ゲート未配線）は v6.11.0 が自ら次サイクル送りと記録した宿題。閉じるまでは CI 側の tier1 軽量分岐を残す前提が続く。</p>
+      </div>
+    </div>
+    <div class="prop">
+      <span class="mark">P4</span>
+      <div>
+        <h3>失われた側——人間の割り込み——を補う</h3>
+        <p>手動フローの実利は逐次可視性と途中介入だった。Workflow ではそれが無い。<code>notes</code> フィールド（仕様 C-3）は枠外の異見を拾う弁だが、<em>走行中に人が向き直す</em>手段の代替ではない。何を代替に置くかは未定義のまま。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="src">source — .claude/skills/crosscut-council/{SKILL.md, references/orchestrator.md, references/workflows/*.mjs}</span>
+  <span class="src">source — dh-upgrades/upgrade-spec-v6.11.0.md / delivery/ANALYSIS-agent-orchestration-2026-08-14.md / history/COUNCIL-LOG.md</span>
+  <span class="src">dialog-harness v6.11.0+ · 2026-08-29</span>
+</footer>
+
+</div>
+</body>
+</html>
