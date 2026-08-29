@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## Council 実行方式の記録 teeth — 「原則 Workflow」の実効化（Council `wfdflt`、patch、in progress, target 2026-08-29、PR #217）
+## Council 実行方式の記録 teeth — 「原則 Workflow」の実効化（Council `wfdflt`、patch、released 2026-08-29、PR #217 merged）
 
 起点はひでさんの発話「原則ワークフローを使用するようにしたい」。着手の承認として有効だが、
 escalation-matrix「規範文書改変」行により内容確定は実装前 Council 諮問 + 献上時人間判定を要するため、
