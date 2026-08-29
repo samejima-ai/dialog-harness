@@ -494,8 +494,12 @@ def audit_execution_mode(entries: list[dict]) -> dict:
         "workflow": declared["workflow"],
         "manual": declared["manual"],
         "unknown": unknown,
-        # 宣言済み母集団でのみ算出。unknown を分母に入れると導入前エントリで恒久的に薄まる
+        # 宣言済み母集団でのみ算出。unknown を分母に入れると導入前エントリで恒久的に薄まる。
+        # **閾値判定は丸め前の生値（_degrade_rate_raw）で行う** — 表示用に丸めた値で比較すると
+        # 0.3004 → 0.300 のように境界直上が下振れして WARN を取り逃す
+        # （council-fanout.workflow.mjs の tie 判定と同じ規律: 丸め前の生値で比べる）
         "degrade_rate": round(declared["manual"] / declared_total, 3) if declared_total else None,
+        "_degrade_rate_raw": (declared["manual"] / declared_total) if declared_total else None,
         "degrade_reasons": reasons,
         "manual_without_reason": manual_without_reason,
         "declaration_mismatch": mismatches,
@@ -750,9 +754,9 @@ def collect_warnings(result: dict) -> list[str]:
             "自己申告が実行基盤フィールドの有無と食い違う"
         )
     if (
-        ex["degrade_rate"] is not None
+        ex["_degrade_rate_raw"] is not None
         and ex["declared_total"] >= OBSERVATION_WINDOW
-        and ex["degrade_rate"] > DEGRADE_RATE_MAX
+        and ex["_degrade_rate_raw"] > DEGRADE_RATE_MAX   # 丸め前の生値で比較（境界の取り逃しを防ぐ）
     ):
         w.append(
             f"degrade 率 {ex['degrade_rate']:.0%}（宣言済み {ex['declared_total']} 件）が閾値 "

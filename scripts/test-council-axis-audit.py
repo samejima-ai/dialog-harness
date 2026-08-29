@@ -327,6 +327,32 @@ check([m["invocation_id"] for m in ex["declaration_mismatch"]] == ["e-lie"],
 check(ex["window_reached"] is False and ex["observation_window"] == audit.OBSERVATION_WINDOW,
       "11: 観測窓は宣言済み件数で判定する（SKILL.md §実行方式と同値契約）")
 
+check(ex["_degrade_rate_raw"] == 0.5,
+      "11: 閾値判定用に丸め前の生値を保持する")
+
+
+# 閾値判定は丸め前の生値で行う（表示用に丸めた値で比べると境界直上を取り逃す）。
+# 0.3004 は round(...,3) で 0.300 になり、丸め後の比較では WARN が出ない
+def _warn_result(rate_raw: float, declared_total: int) -> list[str]:
+    return audit.collect_warnings({
+        "axis_independence": {}, "confidence_spread": {},
+        "effective_weights": {"summary": {}, "per_category": {}},
+        "dimension_coverage": {"dimension_record_rate": None},
+        "classification": {"threshold_mismatches": [], "out_of_domain": [], "normalization_gap": []},
+        "execution_mode": {
+            "degrade_rate": round(rate_raw, 3), "_degrade_rate_raw": rate_raw,
+            "declared_total": declared_total, "manual_without_reason": [], "declaration_mismatch": [],
+        },
+    })
+
+
+check(any("degrade 率" in w for w in _warn_result(0.3004, 12)),
+      "11: **丸めで 0.300 になる境界直上でも WARN を出す**（丸め前の生値で比較）")
+check(not any("degrade 率" in w for w in _warn_result(0.30, 12)),
+      "11: 閾値ちょうどでは WARN を出さない（超過のみ）")
+check(not any("degrade 率" in w for w in _warn_result(0.9, 9)),
+      "11: 観測窓未到達なら degrade 率で WARN しない（母集団不足で誤警報しない）")
+
 # 実ログでの回帰: 導入前エントリを遡及推定で埋めない（全件 unknown のまま残る）
 real = audit.audit_execution_mode(audit.parse_entries(
     (HERE.parent / "history" / "COUNCIL-LOG.md").read_text(encoding="utf-8")
