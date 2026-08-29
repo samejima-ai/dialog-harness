@@ -2,6 +2,43 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## Council 実行方式の記録 teeth — 「原則 Workflow」の実効化（Council `wfdflt`、2026-08-29、PR #TBD）
+
+起点はひでさんの発話「原則ワークフローを使用するようにしたい」。着手の承認として有効だが、
+escalation-matrix「規範文書改変」行により内容確定は実装前 Council 諮問 + 献上時人間判定を要するため、
+`council-fanout.workflow.mjs`（＝まさに本件の対象）で諮問した `council-2026-08-29T23:00:00Z-wfdflt`
+（reason_divergence、jc 0.78、3 軸とも案B）の実装。
+
+**実測（動機）**: `delivery/ANALYSIS-council-execution-modes-2026-08-29.html`（PR #216 merged）。
+v6.11.0 F1-6 の受け入れ 3 発動（`66e3d9` / `v7ord1` / `amrace`）の直後、直近 3 件
+（`634df2` / `v615im` / `hkwire`）が手動フロー書式に回帰していた。受け入れ窓が閉じた途端に
+既定が使われなくなる構造は v6.1.0 の CTL 分断（手順書依存の空文化）と同型。
+
+- **案A 部分**: `crosscut-council/SKILL.md` §処理フローの**冒頭**に「実行方式は 2 つある — 既定は Workflow」を新設。
+  フロー図が手動手順に読めていた affordance を是正し、**コピペ可能な起動 1 ブロック**（scriptPath + args 雛形）を置いた。
+  文言だけでは再び空文化するという開発者軸の指摘（起動の活性化エネルギーが真因）の反映。degrade 条件は
+  `tool_unavailable` / `judgment_failed` / `pre_check_failed` / `workflow_failed` の 4 つに限定し、
+  それ以外は `other` + 理由を書いて warn を残す
+- **案B 本体**: §8 ログに `execution_mode`（workflow / manual / 欠落=unknown の**三値**）と
+  `degrade_reason`（列挙値 + 自由記述）を追加。`council-fanout.workflow.mjs` が `execution_mode: "workflow"` を
+  自動記入し、手動 degrade は自己申告。正典は `references/output-format.md` §8 + §execution_mode の規約
+- **観測**: `scripts/council-axis-audit.py` に **B7 実行方式**セクションを追加 — degrade 率（宣言済み母集団のみ）、
+  `degrade_reason` 内訳、理由なき degrade、**自己申告と機械推定の突合**（実行基盤だけが書く
+  `weight_calculation_retry_count` / `confidence_band` の有無から推定し、宣言との乖離を WARN）。
+  回帰テストは `scripts/test-council-axis-audit.py` §11（6 件）
+- **意図的にやらないこと**: 案C（CI FAIL 化）は不採択。degrade は仕様 C-2 の正当な経路であり、
+  FAIL 化は最も安価な通過法を「もっともらしい定型文」にして誠実さを罰する（哲学者）。
+  log-sync パーサが非準拠エントリを黙って捨てる仕様と合わさると「落ちるくらいなら記録しない」圧を生み、
+  CTL 脱落を再生産する（開発者）。**遡及記入も禁止** — 既存 66 エントリは unknown のまま残す
+  （副作用フィールドからの推定を実測値へ昇格させないため）
+- **I-1 の維持**: `execution_mode` / `degrade_reason` を CTL 算出式にも `.council-ctl.json`（5 field 固定）にも
+  接続しない。degrade 率は観測値であって権限の入力ではない
+- **観測窓**: 宣言済み 10 発動、または 2026-10-31 の早い方で degrade 率と内訳を人間に提示する
+  （読む主体 = L0 振り返り儀式 / cycle retrospective）。欄だけ足して読む予定日を書かないと
+  観測欄そのものが一段上の空文化になる（哲学者の必須条件）
+- **未解決（申し送り）**: 回帰の真因が未特定（Workflow tool の可用性か、起動の活性化エネルギーか）。
+  記録の形からの推定であり実行時ログの裏取りは未実施。`degrade_reason` が今後これに答える
+
 ## エージェントオーケストレーション実行基盤 — Workflow 背骨 + 議論型協調層（v6.11.0、minor 昇格、in progress, target 2026-08-15、PR #TBD）
 
 L0 前ブレスト（PR #184）→ L0 対話（全層同時 1 リリース / Teams 抽象契約 + 時限付き随時層 / 記録 teeth、

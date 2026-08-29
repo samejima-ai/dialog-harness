@@ -226,6 +226,11 @@ const logBlock = [
   `  category_fallback: ${categoryFallback}`,
   `  decision_category: "${args.decision_category}"`,
   `  phase_reached: "phase_3"`,
+  // execution_mode は本スクリプトが到達した時点で必ず workflow（Council `wfdflt`・2026-08-29）。
+  // 手動 degrade 側は自己申告ゆえ漏れうるので、council-axis-audit.py が
+  // components / weight_calculation_retry_count / confidence_band の有無から推定した値と突合する
+  `  execution_mode: "workflow"`,
+  `  degrade_reason: null`,
   `  conflict_type: "${conflictType}"`,
   `  options:`,
   ...args.options.map(o => `    - "${y(o)}"`),

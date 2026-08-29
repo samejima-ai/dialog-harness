@@ -3101,3 +3101,52 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: "agreed_recommended_with_3_conditions（実装者合意 2026-08-28。開発者の実行条件 3 件を実装に反映: .gitignore ファイル単位 / local_verify.py 同時移設 / fields キー互換維持。哲学者申し送り 4 件（heartbeat・許可リスト再審契機・自己購読遮断・性能縮退の可逆手順）を SKILL.md に記録。E2E 検証: 機微 payload 4 種が観測行に漏れないことをテストで固定）"
+- invocation_id: "council-2026-08-29T23:00:00Z-wfdflt"
+  timestamp: "2026-08-29T23:00:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "「原則 Workflow を使用する」を実効化するために、どこまでを機械強制にすべきか。文言だけで足りるのか、記録フィールドまでか、CI の FAIL まで踏み込むべきか。"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "reason_divergence"
+  options:
+    - "案A（文言のみ）: SKILL.md §処理フローの冒頭に実行方式の分岐を移設し「既定 = council-fanout.workflow.mjs / 手動は degrade のみ」と degrade 条件を明示する。ログ schema・スクリプト・CI は変更しない"
+    - "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない"
+    - "案C（強制 teeth）: 案B に加え、degrade_reason を伴わない manual エントリを harness-verify の FAIL 条件に昇格させ、CI で落とす"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない", confidence: 0.8, dimension: "ROI（観測投資対効果 / 下振れリスクの非対称性）", note: "経営視点で最も価値があるのは execution_mode ではなく degrade_reason のほうである。前者は「何が起きたか」しか答えないが、後者は「なぜ既定が使われなかったか」＝今回の議題そのものの未解決部分に答える。案B は対策であると同時に原因究明装置であり、その点が案A・案C に無い固有の便益。ゆえに degrade_reason は自由記述ではなく最初から列挙値（tool_unavailable / judgment_failed / other + 自由記述）にすること。自由記述だけだと集計できず、観測値として使えないまま形骸化する。\n\n記入経路は 3 段で設計するのが安い。(1) primary = council-fanout の自動記入（漏れない）、(2) secondary = 手動時の実装者記入（漏れうる）、(3) cross-check = components / weight_calculation_retry_count / confidence_band の 3 フィールド有無による機械推定を council-log-sync 側で突合。(3) は今回の実測で既に有効性が確認済みの手法であり、追加実装コストはほぼゼロ。これを入れておけば concerns の自己選択バイアスは大幅に潰せる（宣言 manual と推定 manual の乖離自体が観測値になる）。\n\n案C を今やらない代わりに、後戻りしないための期限を切ることを強く推す。「次 5 発動」を観測窓とし、degrade 率と degrade_reason 内訳を人間に提示する時点を明示する。受け入れ窓が終わった途端に既定が使われなくなったという今回の形跡は、まさに「窓が閉じたら誰も見なくなる」構造の実例であり、案B にも同じことが起きうる。観測を入れるなら、観測結果を見る予定日までを同 PR に含めなければ投資が回収されない。" }
+    開発者: { stance: "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない", confidence: 0.85, dimension: "保守性 / 可測性（observability）", note: "1) 根本原因の仮説が options でカバーされていない。回帰は「既定と書いていないから」ではなく「起動の活性化エネルギーが高いから」の可能性が高い。council-fanout.workflow.mjs は invocation_id / timestamp / repo_root / decision_category を呼び出し側採番で要求する（REQUIRED 10 項目）。この採番手順が §処理フローの冒頭に無いと、手動フローの方が着手が速い状態が残る。案A のテキスト改訂は「既定である」という規範文より、コピペ可能な起動 1 ブロック（scriptPath + args 雛形）を §処理フロー冒頭に置く方が実効が高い。文言だけを直して起動レシピを置かなければ、案A 部分は再び空文化する。\n\n2) 案C を将来的に検討するなら、対象を取り違えないこと。潰すべきリスクは「manual なのに理由が無い」ではなく「そもそもエントリが記録されない」である。FAIL 化するなら degrade_reason 欠落ではなく、Council 発動と COUNCIL-LOG エントリ数の突合（発動痕跡があるのに §8 ブロックが無い）を対象にすべきで、これは別機構（実行痕跡側）が要る。現時点の情報では未着手で良い。\n\n3) 昇格条件を数値で先に決めておくと再諮問が安くなる。案B 導入後 10 発動を母集団として、degrade 率が閾値（例: 30%）を超え、かつ degrade_reason が定型文で埋まっているなら「記録 teeth では起動が変わらない」の証拠になる。その時に打つ手は FAIL 昇格ではなく起動経路の自動化（クロージング手順と同様に、Council 発動時点で workflow 呼び出しを既定手順として埋め込む）である。" }
+    哲学者: { stance: "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない", confidence: 0.7, dimension: "長期影響", note: "三点。(1) 沈黙している前提：本件は「人が規範を守らない」問題として語られているが、実行主体は AI である。AI は文書の宣言順ではなく読解順に従う。ならば第一の teeth は CI ではなく文書構造（案A）であり、案B は「効いたかどうかを知るための目」であって強制ではない。強制と観測を同じ「teeth」語で括ると、案B→案C が連続した強度の階段に見えてしまうが、両者は種類が違う。(2) 案B の副産物こそ本体かもしれない。今回の発見は 65 エントリを副作用フィールドで遡る考古学によって初めて成立した。高価で再現困難な検出行為である。execution_mode の価値は degrade を減らすことより、この検出を安価で反復可能にすることにある。仮に degrade 率が下がらなくても案B は元を取る。(3) メタな観測：この諮問自体がどちらの実行方式で回っているかが、そのまま最初の観測データになる。" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない"
+    scores:
+      - stance: "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 8.1
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.8 }
+          - { persona: "開発者", weight: 6, confidence: 0.85 }
+          - { persona: "哲学者", weight: 2, confidence: 0.7 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }
+  recommended: "案B（記録 teeth）: 案A に加え、§8 ログに execution_mode（workflow|manual）と degrade_reason を追加する。council-fanout が自動記入し、手動時は実装者が記入。council-log-sync.py / council-axis-audit.py が同値契約で読み degrade 率を観測値として出す。欠落は WARN 止まりで FAIL にしない ——ただし 3 軸が別々に付した条件を骨格と不可分として同 PR に含める（観測窓と再諮問期日の明記 / degrade_reason は列挙値化 / workflow 専用フィールドとの WARN 照合 / 既存 65 エントリへの遡及記入禁止・欠落は三値の null / degrade 率を CTL 入力にしない / degrade 率を誰がいつ読むかの周期）"
+  minority_opinion: "結論は一致するが観測次元は分離（ROI / 保守性・可測性 / 長期影響）。本判定で扱い切れなかった観点: ①真因未特定——Workflow tool の可用性が原因なら文言も teeth も無効（3 軸共通の懸念、実行時ログ裏取り未実施）②起動の活性化エネルギー（REQUIRED 10 項目の採番手順）は案A/B/C いずれでも下がらない可能性③観測の自己選択バイアス（degrade 時ほど記入が漏れる）④欠落・manual・workflow は三値として扱い欠落を manual に畳まない⑤既存 65 エントリは null のまま（遡及推定は禁止）⑥案C 保留が再諮問されないまま上限として固定化するリスク⑦FAIL 化するなら対象は degrade_reason 欠落ではなく「発動痕跡はあるがエントリが無い」突合（別機構）。"
+  weight_note: "stance 一致（reason_divergence）のため重み配分は判定に影響しなかった。参考値: 経営者2 / 開発者6 / 哲学者2、weighted_score 8.1（ΣW=10）。third_way_excluded なし、tie_break_applied なし。"
+  reasoning: "3 軸が独立した物差しで同一結論に到達した reason_divergence。ROI 軸（経営者）: 案A は受け入れ窓直後 3 件連続手動という実測で既に反証済み、案C は degrade 率の観測値がゼロの段階で FAIL を打つ順序逆転であり、機構停止という下振れが上振れに対し非対称に大きい。案B はフィールド 2 個の増分で可逆。保守性・可測性軸（開発者）: 案A は効いたかを測る経路が無く v6.1.0 CTL 分断と同型、案C は log-sync パーサが非準拠エントリを黙って捨てる仕様ゆえ「落ちるくらいなら記録しない」圧を生んで CTL 脱落を再生産し、かつ harness-verifier は BOUNDARY §3/§5 で実行時ログ検査が越境。案B は workflow 側 1 行 + axis-audit 計数 1 項目で実装費が小さく可測。長期影響軸（哲学者）: degrade は告白であり FAIL 化は最も安価な通過法を「もっともらしい定型文」にして誠実さを罰する。記録が無償・偽造にのみ代償という非対称性が案B で満たされる。3 軸とも「案A 単独では不足・案C は時期尚早」で一致し、独立した支持が 3 本立った。ゆえに骨格は案B とし、各軸が付した条件（観測窓と再諮問期日 / 実装上の整合検査と遡及禁止 / 読む周期）を同 PR に含めることを不可分とする。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み

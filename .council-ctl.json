@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "ctl": "CTL-2",
+  "ctl": "CTL-1",
   "delegation_scope": [
     "C1",
-    "C2",
-    "C4"
+    "C2"
   ],
   "escalation_categories": [
-    "C3"
+    "C3",
+    "C4"
   ],
-  "ctl_calculated_at": "2026-08-27T16:45:25Z",
+  "ctl_calculated_at": "2026-08-29T23:12:22Z",
   "council_data_version": "0.1",
   "_note": "CTL の導出結果のみ。判定内容・議題は含まない。CI は本ファイルを権限の縮小方向にのみ参照する（拡張には使わない）。実体は user-scope の council-data で、本ファイルはその投影である。"
 }

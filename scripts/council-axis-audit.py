@@ -425,6 +425,89 @@ def audit_dimension_coverage(entries: list[dict], axes: list[str]) -> dict:
     }
 
 
+# ---- B7: 実行方式（execution_mode / degrade_reason）----------------------------
+#
+# （Council `council-2026-08-29T23:00:00Z-wfdflt`、案B = 記録 teeth）。
+# 「原則 Workflow」を実効化するための**観測**であって強制ではない。本監査は WARN のみを出し、
+# CI を落とさない（degrade は仕様 C-2 の正当な経路であり、潰すと機構が停止する）。
+#
+# 三値で扱う: workflow / manual / 欠落=unknown。**欠落を manual に畳まない**
+# （workflow 側の記入漏れを degrade と誤認するため）。既存エントリへの遡及記入は禁止ゆえ、
+# 導入前のエントリは恒久的に unknown のまま残る。degrade 率は宣言済み母集団でのみ算出する。
+
+DEGRADE_RATE_MAX = 0.30          # 宣言済み母集団での degrade 率の警戒閾値
+OBSERVATION_WINDOW = 10          # 再諮問の観測窓（SKILL.md §実行方式の「10 発動」と同値契約）
+VALID_DEGRADE_REASONS = {
+    "tool_unavailable",
+    "judgment_failed",
+    "pre_check_failed",
+    "workflow_failed",
+    "other",
+}
+# 実行基盤だけが書くフィールド。手動 degrade の自己申告を機械側から突合するための目印
+# （2026-08-29 の実測で、この 3 フィールドの有無だけで実行方式を識別できることが確認済み。
+#  components は persona_summary より深い字下げのため本パーサでは拾わず、残り 2 つを使う）
+_WORKFLOW_ONLY_FIELDS = ("weight_calculation_retry_count", "confidence_band")
+
+
+def _degrade_reason_key(raw: str | None) -> str | None:
+    """degrade_reason の先頭列挙値だけを取り出す（後続の自由記述は集計に使わない）。"""
+    if raw is None:
+        return None
+    v = raw.strip()
+    if not v or v == "null":
+        return None
+    head = re.split(r"[\s:：（(]", v, maxsplit=1)[0].strip().strip('"')
+    return head if head in VALID_DEGRADE_REASONS else "unlisted"
+
+
+def audit_execution_mode(entries: list[dict]) -> dict:
+    declared = {"workflow": 0, "manual": 0}
+    unknown = 0
+    reasons: dict[str, int] = {}
+    mismatches: list[dict] = []
+    manual_without_reason: list[str] = []
+
+    for e in entries:
+        mode = (e.get("execution_mode") or "").strip() or None
+        # 機械推定: 実行基盤だけが書くフィールドが 1 つでもあれば workflow 由来とみなす
+        estimated = "workflow" if any(f in e for f in _WORKFLOW_ONLY_FIELDS) else "manual"
+        if mode not in declared:
+            unknown += 1
+            continue
+        declared[mode] += 1
+        if mode != estimated:
+            mismatches.append(
+                {"invocation_id": e["invocation_id"], "declared": mode, "estimated": estimated}
+            )
+        if mode == "manual":
+            key = _degrade_reason_key(e.get("degrade_reason"))
+            if key is None:
+                manual_without_reason.append(e["invocation_id"])
+            else:
+                reasons[key] = reasons.get(key, 0) + 1
+
+    declared_total = declared["workflow"] + declared["manual"]
+    return {
+        "entries_total": len(entries),
+        "declared_total": declared_total,
+        "workflow": declared["workflow"],
+        "manual": declared["manual"],
+        "unknown": unknown,
+        # 宣言済み母集団でのみ算出。unknown を分母に入れると導入前エントリで恒久的に薄まる
+        "degrade_rate": round(declared["manual"] / declared_total, 3) if declared_total else None,
+        "degrade_reasons": reasons,
+        "manual_without_reason": manual_without_reason,
+        "declaration_mismatch": mismatches,
+        "observation_window": OBSERVATION_WINDOW,
+        "window_reached": declared_total >= OBSERVATION_WINDOW,
+        "note": (
+            "degrade 率は観測値であって権限の入力ではない（CTL 算出式・.council-ctl.json に接続しない）。"
+            "unknown は導入前エントリまたは記入漏れ。遡及記入は禁止（推定を実測へ昇格させないため）"
+        ),
+    }
+
+
 # ---- レポート -----------------------------------------------------------------
 
 
@@ -550,6 +633,52 @@ def render(result: dict) -> str:
         )
     L.append("")
 
+    ex = result["execution_mode"]
+    L.append("## B7. 実行方式（既定 = Workflow / degrade の観測）")
+    L.append("")
+    L.append(
+        f"- 宣言済み {ex['declared_total']} 件（workflow {ex['workflow']} / manual {ex['manual']}）"
+        f" / 未宣言 unknown {ex['unknown']} 件"
+        + (f" — degrade 率 {ex['degrade_rate']:.0%}" if ex["degrade_rate"] is not None else " — degrade 率は算出不能（宣言 0 件）")
+    )
+    if ex["degrade_reasons"]:
+        L.append(
+            "- degrade_reason 内訳: "
+            + ", ".join(f"`{k}` {v} 件" for k, v in sorted(ex["degrade_reasons"].items()))
+        )
+    if ex["manual_without_reason"]:
+        L.append("")
+        L.append(
+            f"- {warn} **degrade_reason 欠落の manual {len(ex['manual_without_reason'])} 件**: "
+            "理由が無い degrade は「なぜ既定が使われなかったか」に答えず、観測値として使えない。"
+            "列挙値（tool_unavailable / judgment_failed / pre_check_failed / workflow_failed / other）"
+            "を先頭に置くこと（`output-format.md` §execution_mode の規約）。"
+        )
+    if ex["declaration_mismatch"]:
+        L.append("")
+        L.append(
+            f"- {warn} **宣言と推定の乖離 {len(ex['declaration_mismatch'])} 件**: "
+            "自己申告の `execution_mode` と、実行基盤だけが書くフィールド"
+            f"（{' / '.join(f'`{f}`' for f in _WORKFLOW_ONLY_FIELDS)}）の有無から推定した値が食い違う。"
+            "名ばかりの `workflow` 記入は観測値を汚す。"
+        )
+        L.append(
+            "  - 該当: "
+            + ", ".join(
+                f"`{m['invocation_id'][-8:]}`（宣言 {m['declared']} / 推定 {m['estimated']}）"
+                for m in ex["declaration_mismatch"][:12]
+            )
+            + ("…" if len(ex["declaration_mismatch"]) > 12 else "")
+        )
+    L.append("")
+    L.append(
+        f"> 観測窓は宣言済み {ex['observation_window']} 発動（現在 {ex['declared_total']} 件"
+        f"{'・到達' if ex['window_reached'] else '・未到達'}）。到達時点、または 2026-10-31 の早い方で "
+        "degrade 率と内訳を人間に提示する（`SKILL.md` §実行方式）。"
+        "**degrade 率は観測値であって権限の入力ではない** — CTL 算出式にも `.council-ctl.json` にも接続しない（I-1）。"
+    )
+    L.append("")
+
     warns = result["warnings"]
     L.append("## 総括")
     L.append("")
@@ -609,6 +738,27 @@ def collect_warnings(result: dict) -> list[str]:
             "stance 完全一致では simple_conflict になる記録が stance 一致として残っている。"
             "options を §8 に記録すれば本監査も正規化できる（閾値の問題ではない）"
         )
+    ex = result["execution_mode"]
+    if ex["manual_without_reason"]:
+        w.append(
+            f"degrade_reason 欠落の manual {len(ex['manual_without_reason'])} 件 — "
+            "理由なき degrade は原因究明装置として機能しない"
+        )
+    if ex["declaration_mismatch"]:
+        w.append(
+            f"execution_mode の宣言と推定の乖離 {len(ex['declaration_mismatch'])} 件 — "
+            "自己申告が実行基盤フィールドの有無と食い違う"
+        )
+    if (
+        ex["degrade_rate"] is not None
+        and ex["declared_total"] >= OBSERVATION_WINDOW
+        and ex["degrade_rate"] > DEGRADE_RATE_MAX
+    ):
+        w.append(
+            f"degrade 率 {ex['degrade_rate']:.0%}（宣言済み {ex['declared_total']} 件）が閾値 "
+            f"{DEGRADE_RATE_MAX:.0%} 超 — 記録 teeth では起動が変わっていない。"
+            "打つ手は CI FAIL 化ではなく起動経路の自動化（Council `wfdflt` 開発者 notes 3）"
+        )
     return w
 
 
@@ -640,6 +790,7 @@ def main(argv: list[str] | None = None) -> int:
         "dimension_coverage": audit_dimension_coverage(entries, axes),
         "axis_independence": audit_axis_independence(entries, axes),
         "classification": audit_classification(entries, axes),
+        "execution_mode": audit_execution_mode(entries),
         "confidence_spread": conf,
         "effective_weights": (
             audit_effective_weights(weights_path, conf, axes)
