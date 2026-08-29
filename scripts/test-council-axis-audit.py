@@ -15,6 +15,7 @@
   8. 終了コードは常に 0（warn のみ・block しない）
   9. classify_conflict: 3 値分類（dimension 分離で reason_divergence / 重複で unanimous）
  10. B6: 閾値ずれ・正規化ギャップ・値域外を **別の診断として分離**する
+ 11. B7: execution_mode の三値・degrade 率の母集団・自己申告と機械推定の突合
 
 使い方: python3 scripts/test-council-axis-audit.py
 """
@@ -284,6 +285,81 @@ check(cls["checked"] == 2, "10: 照合できた件数（b6-threshold と b6-ok�
 # 分類器と監査の閾値が同値であること（conflict-typology.md §判定ロジックとの契約）
 check(audit.DIMENSION_JACCARD_MAX == 0.30,
       "10: DIMENSION_JACCARD_MAX は conflict-typology.md の DIMENSION_OVERLAP_MAX と同値")
+
+# ---- 11. B7 実行方式（execution_mode / degrade_reason）------------------------
+#
+# Council `wfdflt` 案B（2026-08-29）。三値の扱い・自己申告と機械推定の突合・遡及禁止が要点。
+
+def ex_log(rows: list[tuple[str, str | None, str | None, bool]]) -> str:
+    """rows = [(invocation_id, execution_mode|None, degrade_reason|None, 実行基盤フィールドの有無)]"""
+    out = []
+    for inv, mode, reason, wf in rows:
+        lines = [f'- invocation_id: "{inv}"', '  timestamp: "2026-08-29T00:00:00Z"']
+        if mode is not None:
+            lines.append(f'  execution_mode: "{mode}"')
+        if reason is not None:
+            lines.append(f'  degrade_reason: {reason}')
+        if wf:
+            lines.append("  weight_calculation_retry_count: 0")
+            lines.append('  confidence_band: { lo: 0.6, hi: 0.9, basis: "gap_ratio" }')
+        lines.append('  recommended: "x"')
+        out.append("\n".join(lines))
+    return "\n".join(out)
+
+
+ex = audit.audit_execution_mode(audit.parse_entries(ex_log([
+    ("e-wf", "workflow", "null", True),                             # 既定経路
+    ("e-man", "manual", '"tool_unavailable: Windows CLI"', False),   # 正当な degrade
+    ("e-noreason", "manual", None, False),                          # 理由欠落
+    ("e-lie", "workflow", "null", False),                           # 宣言 workflow / 推定 manual
+    ("e-legacy", None, None, True),                                 # 導入前エントリ = unknown
+])))
+check(ex["unknown"] == 1 and ex["manual"] == 2 and ex["workflow"] == 2,
+      "11: **欠落を manual に畳まない**（三値。記入漏れを degrade と誤認しない）")
+check(ex["declared_total"] == 4 and ex["degrade_rate"] == 0.5,
+      "11: degrade 率は宣言済み母集団のみで算出（unknown を分母に入れない）")
+check(ex["degrade_reasons"] == {"tool_unavailable": 1},
+      "11: degrade_reason は先頭の列挙値だけを集計（自由記述は集計に混ぜない）")
+check(ex["manual_without_reason"] == ["e-noreason"],
+      "11: 理由なき degrade を独立に検出する（原因究明装置として機能しないため）")
+check([m["invocation_id"] for m in ex["declaration_mismatch"]] == ["e-lie"],
+      "11: 自己申告と実行基盤フィールドの有無を突合する（名ばかりの workflow 記入を検出）")
+check(ex["window_reached"] is False and ex["observation_window"] == audit.OBSERVATION_WINDOW,
+      "11: 観測窓は宣言済み件数で判定する（SKILL.md §実行方式と同値契約）")
+
+check(ex["_degrade_rate_raw"] == 0.5,
+      "11: 閾値判定用に丸め前の生値を保持する")
+
+
+# 閾値判定は丸め前の生値で行う（表示用に丸めた値で比べると境界直上を取り逃す）。
+# 0.3004 は round(...,3) で 0.300 になり、丸め後の比較では WARN が出ない
+def _warn_result(rate_raw: float, declared_total: int) -> list[str]:
+    return audit.collect_warnings({
+        "axis_independence": {}, "confidence_spread": {},
+        "effective_weights": {"summary": {}, "per_category": {}},
+        "dimension_coverage": {"dimension_record_rate": None},
+        "classification": {"threshold_mismatches": [], "out_of_domain": [], "normalization_gap": []},
+        "execution_mode": {
+            "degrade_rate": round(rate_raw, 3), "_degrade_rate_raw": rate_raw,
+            "declared_total": declared_total, "manual_without_reason": [], "declaration_mismatch": [],
+        },
+    })
+
+
+check(any("degrade 率" in w for w in _warn_result(0.3004, 12)),
+      "11: **丸めで 0.300 になる境界直上でも WARN を出す**（丸め前の生値で比較）")
+check(not any("degrade 率" in w for w in _warn_result(0.30, 12)),
+      "11: 閾値ちょうどでは WARN を出さない（超過のみ）")
+check(not any("degrade 率" in w for w in _warn_result(0.9, 9)),
+      "11: 観測窓未到達なら degrade 率で WARN しない（母集団不足で誤警報しない）")
+
+# 実ログでの回帰: 導入前エントリを遡及推定で埋めない（全件 unknown のまま残る）
+real = audit.audit_execution_mode(audit.parse_entries(
+    (HERE.parent / "history" / "COUNCIL-LOG.md").read_text(encoding="utf-8")
+)) if (HERE.parent / "history" / "COUNCIL-LOG.md").is_file() else None
+if real is not None:
+    check(real["entries_total"] == real["unknown"] + real["declared_total"],
+          "11: 実ログで三値の合計がエントリ総数に一致（取りこぼしゼロ）")
 
 # ---- 結果 ---------------------------------------------------------------------
 

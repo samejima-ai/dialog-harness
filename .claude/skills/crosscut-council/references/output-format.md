@@ -297,6 +297,15 @@ Judgment Agent から実装者への delta 応答：
   decision_category: "C2"   # 必須（v6.1.0）: C1-C4 / H1-H4。CTL 統計のカテゴリキー。
                             # category（重み軸）と直交。欠落すると同期で null 化され CTL に算入されない
   phase_reached: "phase_3"
+  # execution_mode（Council `wfdflt` 2026-08-29 追加・必須扱い）: この発動をどちらの実行方式で回したか。
+  # "workflow" = council-fanout.workflow.mjs（既定・スクリプトが自動記入）
+  # "manual"   = subagent 手動フロー（degrade 経路。degrade_reason を必ず併記）
+  # 欠落 = unknown（三値。欠落を manual に畳まない — 記入漏れを degrade と誤認するため）
+  execution_mode: "workflow"
+  # degrade_reason（execution_mode: manual のときのみ・列挙値 + 自由記述）:
+  # tool_unavailable | judgment_failed | pre_check_failed | workflow_failed | other
+  # 自由記述だけだと集計できず観測値として使えないため、必ず列挙値を先頭に置く
+  degrade_reason: null
   conflict_type: "simple_conflict"
   final_weights:
     経営者: 2
@@ -360,6 +369,22 @@ Judgment Agent から実装者への delta 応答：
 | `modification_note` | §合意プロセス | `implementer_consent = agreed_with_modification` 時の修正点記録 |
 
 これらの field は append-only ルールに従い、新エントリでも既存エントリでも欠落していて構わない。記録時は §4 出力からの転記を原則とし、独自加筆は禁止する（情報純度原則）。
+
+### `execution_mode` / `degrade_reason` の規約（Council `wfdflt`・2026-08-29）
+
+上記 optional 群とは扱いが違うため独立して定義する。
+
+| 規約 | 内容 |
+|---|---|
+| **三値** | `workflow` / `manual` / **欠落 = unknown**。欠落を `manual` に畳まない（workflow 側の記入漏れを degrade と誤認するため） |
+| **記入経路** | ① primary = `council-fanout.workflow.mjs` が自動記入（漏れない） ② secondary = 手動 degrade 時に実装者が記入（漏れうる） ③ cross-check = `components` / `weight_calculation_retry_count` / `confidence_band` の有無による機械推定を `council-axis-audit.py` が突合し、宣言と推定の乖離を WARN する |
+| **遡及禁止** | 既存エントリへ推定値を書き込まない。推定は推定のまま。degrade 率は本 field 導入後の新規エントリのみを母集団とする（推定を実測へ昇格させる事故の防止） |
+| **CTL 非接続** | `execution_mode` / `degrade_reason` を CTL 算出式の入力にしない。`.council-ctl.json`（5 field 固定）にも載せない。実行基盤が権限量を左右する判定を持つと I-1 に抵触する |
+| **列挙値優先** | `degrade_reason` は列挙値を先頭に置き、必要なら自由記述を続ける。自由記述だけでは集計できず、観測値として使えないまま形骸化する |
+
+> **なぜ「なぜ既定が使われなかったか」を記録するのか**: `execution_mode` は「何が起きたか」しか
+> 答えないが、`degrade_reason` は原因に答える。本 field 群は degrade を減らす装置であると同時に
+> **原因究明装置**であり、そちらが主たる便益である（Council `wfdflt` 経営者 notes）。
 
 ## バリデーション
 

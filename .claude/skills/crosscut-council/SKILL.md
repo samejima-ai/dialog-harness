@@ -146,6 +146,50 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
 
 ## 処理フロー（PR1: Phase 0 + 1 + 3、Phase 2 のみスキップ）
 
+### 実行方式は 2 つある — 既定は Workflow（最初に読むこと）
+
+**以下のフロー図は「何が起きるか」の定義であって、「あなたが手で辿る手順」ではない。**
+実行は `references/workflows/council-fanout.workflow.mjs`（Workflow tool）が既定であり、
+手動 subagent フローは degrade 経路（仕様 C-2）に限る。下記のレシピをそのまま使って起動する:
+
+```
+Workflow({
+  scriptPath: "<repo_root>/.claude/skills/crosscut-council/references/workflows/council-fanout.workflow.mjs",
+  args: {
+    context: "<議題の状況・制約>",
+    options: ["<案A>", "<案B>", ...],        // 2-8 件
+    question_to_answer: "<答えるべき問い>",
+    source_skill: "<呼び出し元 skill 名>",
+    category: "implementation | operation | maintenance | issue_triage | error_handling | judgment | conception",
+    decision_category: "C1 | C2 | C3 | C4",   // H1-H4 は Council を回さず即人間献上
+    invocation_id: "council-<ISO8601Z>-<6文字>",  // 呼び出し側が採番（スクリプト内で Date 不可）
+    timestamp: "<ISO8601Z>",                      // 同上
+    repo_root: "<絶対パス>"
+  }
+})
+```
+
+**degrade（手動フローで完遂してよい）のは次の 3 つだけ**。いずれも記録に理由を残す:
+
+| degrade_reason | 条件 |
+|---|---|
+| `tool_unavailable` | 実行環境に Workflow tool が無い |
+| `judgment_failed` | 帯外リトライ超過で `judgment_failed` が返った |
+| `pre_check_failed` / `workflow_failed` | スクリプトが入力検証・ペルソナ取得に失敗した |
+
+上記に当てはまらないのに手動で回すことは**既定からの逸脱**であり、`degrade_reason: "other"` と
+その理由を書いて人間に warn を残す（記録しないより、理由付きで残すほうが常に正しい）。
+**degrade は正当な経路であって失敗ではない** — 潰すと機能停止になる（仕様 C-2）。
+実行方式は §8 ログの `execution_mode` に記録する（§ログ要件）。
+
+> **観測窓と再諮問（Council `wfdflt` 経営者・哲学者の必須条件）**: 本規約の導入後
+> **10 発動、または 2026-10-31 のいずれか早い時点**で、`python3 scripts/council-axis-audit.py` の
+> §実行方式セクション（degrade 率と `degrade_reason` 内訳）を人間に提示する。読む主体は
+> **L0 振り返り儀式**（`layer0-spec-architect`）と、cycle 完了時の retrospective。
+> degrade 率が高止まりし理由が `other` の定型文で埋まっているなら、打つ手は CI FAIL 化ではなく
+> **起動経路の自動化**である（開発者 notes 3）。この期日を書かずに欄だけ足すと、
+> 観測欄そのものが一段上の空文化になる（哲学者）。
+
 ```
 [入力] 発動要請 (context + options + question_to_answer + source_skill)
   ↓
@@ -193,8 +237,9 @@ self-report をログ化（DELIVERY.md / 実装メモ等に invocation_id 採番
 - Phase 1 の情報純度はスクリプト構造が強制する（他ペルソナ出力を渡す経路が存在しない）
 - persona 出力は schema 強制: `stance_normalized`（options への正規化）・`dimension` 必須・`confidence` 0-1。**`notes` 自由記述フィールド**が schema に収まらない異見の受け皿（仕様 C-3）
 - 出力の `log_block` を COUNCIL-LOG へ追記 → 同期、が §クロージング手順の実行形
-- **degrade 経路（仕様 C-2）**: Workflow tool 非対応環境、および `judgment_failed`（帯外 retry 2 超過）時は、本 SKILL の処理フローを**従来どおり subagent 手動フローで完遂**し、人間に warn を残す。実行基盤の不在・失敗は機能停止ではなく従来動作への回帰である
+- **degrade 経路（仕様 C-2）**: Workflow tool 非対応環境、および `judgment_failed`（帯外 retry 2 超過）時は、本 SKILL の処理フローを**従来どおり subagent 手動フローで完遂**し、人間に warn を残す。実行基盤の不在・失敗は機能停止ではなく従来動作への回帰である。degrade の条件と記録義務は §処理フロー冒頭「実行方式は 2 つある」が正典
 - 実行基盤は**判定を持たない**（escalation-matrix §3、I-1）。judgment の内容・final_decision null・合意プロセスは本 SKILL の規約のまま
+- **degrade 率は観測値であって権限の入力ではない**（Council `wfdflt` 開発者・必須条件）。`execution_mode` / `degrade_reason` を CTL 算出式へ接続してはならない（接続すると実行基盤が権限量を左右する判定を持つことになり I-1 に抵触する）。`.council-ctl.json` の 5 フィールド固定にも載せない
 
 ### クロージング手順（CTL 自動同期・毎回必須）
 
@@ -270,12 +315,20 @@ Judgment Agent 出力（Council の判断）
 - 発動元スキル（layer1-autonomous-dev 等）
 - question_to_answer
 - Council種別
-- Phase到達（PR1 は常に `1→3`）
+- Phase到達（PR1 は Phase 2 のみスキップ。値は `phase_3` に統一する — 実行基盤が生成する値が正典）
 - conflict_type（`unanimous` / `reason_divergence` / `simple_conflict`）
 - final_weights（適用された重み配分）
 - judgment_confidence
+- **execution_mode**（`workflow` / `manual`。Council `wfdflt`（2026-08-29）追加。実行基盤が自動記入、手動 degrade 時は実装者が記入）
+- **degrade_reason**（`execution_mode: manual` のときのみ。`tool_unavailable` / `judgment_failed` / `pre_check_failed` / `workflow_failed` / `other` + 自由記述。§処理フロー冒頭の表が正典）
 - implementer_consent（後追記、合意プロセス完了時）
 - human_escalated（bool）
+
+**`execution_mode` は三値で扱う**（Council `wfdflt` 哲学者・必須条件）: `workflow` / `manual` /
+**欠落（unknown）**。欠落を `manual` に畳んではならない — 将来の記入漏れを degrade と誤認する。
+**既存エントリへの遡及記入は禁止**（同 開発者・経営者）。副作用フィールド
+（`components` / `weight_calculation_retry_count` / `confidence_band`）からの推定は推定のままにし、
+実測値として書き込まない。degrade 率は本フィールド導入後の新規エントリのみを母集団とする。
 
 **記録は必ず `- invocation_id: "..."` ブロック形式（[references/output-format.md](references/output-format.md) §8）で書く**
 （2026-07-20 明文化）。見出し形式（`## council-...`）や自由 Markdown での記録は
