@@ -13,6 +13,9 @@
   9. review_window: 下限未満の比率
  10. warnings_for: 制御点不在の検出 / rework は常に主指標として提示
  11. 終了コードは常に 0
+ 12. slice_period: 境界は [since, until)。未 merge の扱い
+ 13. fetch_merged_from_master が **body を返す**（落とすと rework が過小計上される回帰）
+ 14. render_compare: 複数計測の横並び。優劣を判定しない
 
 使い方: python3 scripts/test-harness-benchmark.py
 """
@@ -179,6 +182,56 @@ with tempfile.TemporaryDirectory() as td:
         r = subprocess.run([sys.executable, str(HERE / "harness-benchmark.py"),
                             "--states", str(p), *extra], capture_output=True, text=True)
         check(r.returncode == 0, f"11: 終了コード 0（{extra or '既定'}）")
+
+# ---- 12. slice_period ---------------------------------------------------------
+
+rows = [pr(1, merged="2026-01-01T00:00:00Z"), pr(2, merged="2026-02-01T00:00:00Z"),
+        pr(3, merged="2026-03-01T00:00:00Z"), pr(4, merged=None)]
+check([r["number"] for r in hb.slice_period(rows, "2026-02-01", None)] == [2, 3],
+      "12: since は境界を含む（>= since）")
+check([r["number"] for r in hb.slice_period(rows, None, "2026-02-01")] == [1, 4],
+      "12: until は境界を含まない（< until）")
+check([r["number"] for r in hb.slice_period(rows, "2026-02-01", "2026-03-01")] == [2],
+      "12: [since, until) の半開区間")
+check([r["number"] for r in hb.slice_period(rows, None, None)] == [1, 2, 3, 4],
+      "12: 未指定なら素通し")
+check(4 not in [r["number"] for r in hb.slice_period(rows, "2026-01-01", None)],
+      "12: **since 指定時は未 merge を落とす**（期間に属さないため）")
+
+# ---- 13. fetch_merged_from_master の body 回帰 --------------------------------
+# 実バグ: body を落としたまま出荷し、kakuman の rework が 3.7% -> 0.9% に過小計上された。
+# 原因は取得層にあり判定層のテストでは捕まらなかったため、_git を差し替えて契約を固定する。
+
+_real_git = hb._git
+try:
+    hb._git = lambda args: ("fix: 修正 (#11)\x012026-01-02T00:00:00Z\x01#10 の取りこぼしを直す\x02"
+                            "feat: 機構 (#10)\x012026-01-01T00:00:00Z\x01本文\x02")
+    got = hb.fetch_merged_from_master("origin/master")
+    check(set(got) == {10, 11}, "13: PR 番号を拾う")
+    check(got[11].get("body") == "#10 の取りこぼしを直す",
+          "13: **body を返す**（落とすと rework の明示参照判定が title しか見えなくなる）")
+    check(got[10]["merged_at"] == "2026-01-01T00:00:00Z", "13: merge 時刻を拾う")
+    merged = [{"number": n, **v} for n, v in got.items()]
+    check(hb.rework_metrics(merged)["reworked"] == 1,
+          "13: body 込みなら rework が検出される（過小計上しない）")
+    stripped = [{k: v for k, v in m.items() if k != "body"} for m in merged]
+    check(hb.rework_metrics(stripped)["reworked"] == 0,
+          "13: body を落とすと検出できない = このバグの再現")
+finally:
+    hb._git = _real_git
+
+# ---- 14. render_compare -------------------------------------------------------
+
+ma = hb.measure([pr(1, merged="2026-01-01T00:00:00Z", first="2026-01-01T00:00:00Z",
+                    created="2026-01-01T00:00:00Z", agent=True)], "A")
+mb = hb.measure([pr(2, merged="2026-01-01T00:00:00Z", first="2026-01-01T00:00:00Z",
+                    created="2026-01-01T00:00:00Z", agent=True, human=1)], "B")
+check(ma["label"] == "A" and mb["label"] == "B", "14: measure が label を保持する")
+out = hb.render_compare([ma, mb])
+check("| A | B |" in out, "14: label が見出しになる")
+check("rework rate" in out and "介入率" in out, "14: 主要指標が行になる")
+check("優劣を判定しない" in out, "14: **優劣を判定しない旨を必ず添える**")
+check(hb.render_compare([ma]).count("|") > 0, "14: 1 件でも落ちない")
 
 print(f"passed: {_passes}")
 if _failures:
