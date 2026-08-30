@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天井に張り付いた指標 — Council 判定支援機構の性能計測</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#EBEEEC; --surface:#F7F9F8; --sunk:#E0E5E3;
+  --ink:#12201E; --ink2:#4B5C59; --ink3:#7C8A87;
+  --rule:#C7D1CE; --rule-soft:#D9E0DE;
+  --s1:#008E6B;            /* 無修正で採られた分 */
+  --s2:#A9412A;            /* 分子に吸収された分 */
+  --grid:#D3DBD9;
+  --shadow:0 1px 0 rgba(18,32,30,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1514; --surface:#161D1C; --sunk:#1D2624;
+    --ink:#E6ECEA; --ink2:#A6B4B1; --ink3:#76837F;
+    --rule:#2C3735; --rule-soft:#232C2B;
+    --s1:#0E9683; --s2:#D95926;
+    --grid:#2A3533;
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1514; --surface:#161D1C; --sunk:#1D2624;
+  --ink:#E6ECEA; --ink2:#A6B4B1; --ink3:#76837F;
+  --rule:#2C3735; --rule-soft:#232C2B;
+  --s1:#0E9683; --s2:#D95926;
+  --s1-wash:#0F2A27; --s2-wash:#2B1A16;
+  --grid:#2A3533;
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px; margin:0 auto; padding:0 24px 104px}
+@media (max-width:600px){ .wrap{padding:0 16px 72px} body{font-size:15px} }
+
+/* ---- masthead ---- */
+.masthead{padding:60px 0 34px; border-bottom:2px solid var(--ink)}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink3); display:flex; flex-wrap:wrap; gap:8px 16px; margin:0 0 22px;
+}
+.eyebrow b{color:var(--s1); font-weight:600}
+h1{
+  font-family:var(--display); font-weight:900; letter-spacing:.01em;
+  font-size:clamp(30px,5.6vw,52px); line-height:1.24; margin:0 0 18px; text-wrap:balance;
+}
+.standfirst{font-size:clamp(15px,1.9vw,18px); color:var(--ink2); max-width:62ch; margin:0}
+.standfirst strong{color:var(--ink); font-weight:700}
+
+/* ---- KPI strip ---- */
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule);
+  border:1px solid var(--rule); margin:34px 0 0; box-shadow:var(--shadow)}
+@media (max-width:720px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+.kpi{background:var(--surface); padding:18px 18px 20px}
+.kpi .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink3); display:block; margin-bottom:8px}
+.kpi .v{font-family:var(--mono); font-weight:700; font-size:clamp(22px,3.4vw,30px);
+  line-height:1.1; letter-spacing:-.01em; font-variant-numeric:tabular-nums; display:block}
+.kpi .n{font-size:12.5px; line-height:1.6; color:var(--ink3); display:block; margin-top:7px}
+.kpi--alert .v{color:var(--s2)}
+.kpi--good .v{color:var(--s1)}
+
+/* ---- sections ---- */
+section{margin-top:66px}
+h2{font-family:var(--display); font-weight:700; font-size:clamp(20px,3vw,27px);
+  line-height:1.4; margin:0 0 10px; text-wrap:balance}
+h2 .num{font-family:var(--mono); font-size:12px; font-weight:600; color:var(--s1);
+  letter-spacing:.1em; display:block; margin-bottom:6px}
+h3{font-family:var(--body); font-weight:700; font-size:16px; margin:32px 0 8px}
+p{margin:0 0 16px; max-width:66ch}
+.lede{color:var(--ink2); margin-bottom:8px; max-width:66ch}
+a{color:var(--s1); text-underline-offset:3px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--s1); outline-offset:3px}
+code{font-family:var(--mono); font-size:.86em; background:var(--sunk); padding:1px 5px; border-radius:2px}
+strong{font-weight:700}
+
+/* ---- figure ---- */
+figure{margin:26px 0 0; background:var(--surface); border:1px solid var(--rule); box-shadow:var(--shadow)}
+.fig-head{padding:18px 22px 0}
+.fig-title{font-family:var(--body); font-weight:700; font-size:15px; margin:0 0 4px}
+.fig-sub{font-size:13px; line-height:1.7; color:var(--ink3); margin:0; max-width:70ch}
+.plot{padding:16px 22px 4px; overflow-x:auto}
+.plot svg{display:block; width:100%; height:auto; min-width:520px}
+figcaption{padding:0 22px 20px; font-size:13px; line-height:1.8; color:var(--ink2); max-width:76ch}
+figcaption strong{color:var(--ink)}
+
+/* svg type */
+.svg-label{font-family:var(--body); font-size:13px; fill:var(--ink)}
+.svg-mono{font-family:var(--mono); font-size:11.5px; fill:var(--ink2); font-variant-numeric:tabular-nums}
+.svg-tick{font-family:var(--mono); font-size:10.5px; fill:var(--ink3); font-variant-numeric:tabular-nums}
+.svg-fam{font-family:var(--mono); font-size:10.5px; fill:var(--ink3); letter-spacing:.13em; text-transform:uppercase}
+.svg-on-fill{font-family:var(--mono); font-size:12.5px; font-weight:700; fill:#fff; font-variant-numeric:tabular-nums}
+.svg-note{font-family:var(--body); font-size:12.5px; fill:var(--ink2)}
+.gridline{stroke:var(--grid); stroke-width:1}
+.axisline{stroke:var(--rule); stroke-width:1}
+
+/* legend */
+.legend{display:flex; flex-wrap:wrap; gap:8px 20px; padding:2px 22px 0; margin:0}
+.legend span{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink2)}
+.legend i{width:11px; height:11px; border-radius:2px; display:block; flex:none}
+
+/* table view */
+details{border-top:1px dashed var(--rule); margin-top:4px}
+summary{cursor:pointer; padding:11px 22px; font-family:var(--mono); font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--ink3); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸ "; color:var(--s1)}
+details[open] summary::before{content:"▾ "}
+summary:hover{color:var(--ink)}
+.scroller{overflow-x:auto; border-top:1px solid var(--rule-soft)}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:13.5px}
+th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--rule-soft)}
+thead th{font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--ink3); font-weight:600; background:var(--sunk); border-bottom:1px solid var(--rule)}
+td.num,th.num{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:none}
+
+/* callout */
+.callout{margin:30px 0 0; padding:24px 26px; background:var(--surface);
+  border:1px solid var(--rule); border-left:4px solid var(--s2); box-shadow:var(--shadow)}
+.callout--good{border-left-color:var(--s1)}
+.callout h3{margin:0 0 10px; font-size:16px}
+.callout p{margin:0 0 12px}
+.callout p:last-child{margin-bottom:0}
+
+/* gap panel */
+.gap-panel{display:grid; grid-template-columns:auto 1fr; gap:0 26px; align-items:baseline;
+  margin:26px 0 0; padding:26px; background:var(--surface); border:1px solid var(--rule);
+  border-top:3px solid var(--s2); box-shadow:var(--shadow)}
+@media (max-width:600px){ .gap-panel{grid-template-columns:1fr; gap:12px} }
+.gap-panel .big{font-family:var(--mono); font-weight:700; font-size:clamp(44px,9vw,72px);
+  line-height:1; color:var(--s2); font-variant-numeric:tabular-nums}
+.gap-panel .big small{display:block; font-family:var(--mono); font-size:11px; font-weight:500;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--ink3); margin-top:10px}
+.gap-panel p{margin:0 0 12px}
+.gap-panel p:last-child{margin-bottom:0}
+
+/* proposals */
+ol.props{margin:22px 0 0; padding:0; list-style:none; counter-reset:p}
+ol.props li{counter-increment:p; display:grid; grid-template-columns:auto 1fr; gap:0 18px;
+  padding:18px 0; border-top:1px solid var(--rule)}
+ol.props li::before{content:counter(p); font-family:var(--mono); font-size:12px; font-weight:700;
+  color:var(--s1); padding-top:4px}
+ol.props b{display:block; font-size:15px; margin-bottom:4px}
+ol.props span{color:var(--ink2); font-size:14.5px; line-height:1.8}
+
+footer{margin-top:72px; padding-top:24px; border-top:2px solid var(--ink);
+  font-size:13px; line-height:1.9; color:var(--ink3)}
+footer code{font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow"><span>dialog-harness</span><b>council-performance</b><span>2026-08-30</span><span>n = 67 発動</span></p>
+  <h1>天井に張り付いた指標</h1>
+  <p class="standfirst">Council の自律権限（CTL）を昇格させる指標は <strong>67 発動すべてで 1.000</strong> だった。それは機構が優秀だからではなく、<strong>下がる経路が構造的に存在しない</strong>から。同じログの同じ field から、判別力のある指標も取れる。</p>
+</header>
+
+<div class="kpis">
+  <div class="kpi kpi--alert">
+    <span class="k">agreement_rate</span>
+    <span class="v">1.000</span>
+    <span class="n">CTL 算出の唯一の入力。負例 0 件</span>
+  </div>
+  <div class="kpi kpi--good">
+    <span class="k">無修正採択率</span>
+    <span class="v">0.788</span>
+    <span class="n">骨格に何も足されず採られた率</span>
+  </div>
+  <div class="kpi">
+    <span class="k">判別力 AUC</span>
+    <span class="v">0.689</span>
+    <span class="n">judgment_confidence の当たり具合</span>
+  </div>
+  <div class="kpi">
+    <span class="k">妥当性の観測</span>
+    <span class="v">0</span>
+    <span class="n">正解を保持する field が存在しない</span>
+  </div>
+</div>
+
+<section>
+  <h2><span class="num">P1 — 採択</span>同じ 66 件を、二つの場所で切る</h2>
+  <p class="lede">結果側に記録されているのは <code>implementer_consent</code> ただ一つ。そこから 2 本の率が出るが、分母は同じで<strong>分子の切り位置だけが違う</strong>。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">66 件の帰結と、二つの分子</p>
+      <p class="fig-sub">v6.12.0 で <code>agreed_with_synthesis</code>（止揚 = 骨格を採った上で少数意見を併合）が agreement_rate の分子に入った。判断自体は正しい — 結果として指標が天井に達した。</p>
+    </div>
+    <p class="legend">
+      <span><i style="background:var(--s1)"></i>agreed — 無修正で採用</span>
+      <span><i style="background:var(--s2)"></i>agreed_with_synthesis — 骨格を採り併合</span>
+    </p>
+    <div class="plot">
+      <svg viewBox="0 0 900 322" role="img" aria-label="66 件のうち agreed が 52 件、agreed_with_synthesis が 14 件。agreement_rate の分子は両方を含み 66/66。無修正採択率の分子は agreed のみで 52/66。">
+        <text class="svg-tick" x="64" y="44">0</text>
+        <text class="svg-tick" x="856" y="44" text-anchor="end">66 件</text>
+
+        <rect x="64" y="56" width="624" height="48" rx="4" fill="var(--s1)">
+          <title>agreed — 52 件（78.8%）</title>
+        </rect>
+        <rect x="690" y="56" width="166" height="48" rx="4" fill="var(--s2)">
+          <title>agreed_with_synthesis — 14 件（21.2%）</title>
+        </rect>
+
+        <text class="svg-mono" x="376" y="126" text-anchor="middle" fill="var(--ink)">agreed — 52 件</text>
+        <text class="svg-mono" x="773" y="126" text-anchor="middle" fill="var(--ink)">synthesis — 14 件</text>
+
+        <line class="axisline" x1="64" y1="146" x2="856" y2="146"/>
+
+        <g>
+          <line x1="64" y1="178" x2="856" y2="178" stroke="var(--s2)" stroke-width="2"/>
+          <line x1="64" y1="170" x2="64" y2="186" stroke="var(--s2)" stroke-width="2"/>
+          <line x1="856" y1="170" x2="856" y2="186" stroke="var(--s2)" stroke-width="2"/>
+          <text class="svg-mono" x="64" y="204" fill="var(--s2)">CTL の agreement_rate — 分子 66 / 66 = 1.000</text>
+        </g>
+
+        <g>
+          <line x1="64" y1="240" x2="688" y2="240" stroke="var(--s1)" stroke-width="2"/>
+          <line x1="64" y1="232" x2="64" y2="248" stroke="var(--s1)" stroke-width="2"/>
+          <line x1="688" y1="232" x2="688" y2="248" stroke="var(--s1)" stroke-width="2"/>
+          <line x1="688" y1="240" x2="856" y2="240" stroke="var(--s1)" stroke-width="1.5" stroke-dasharray="3 4" opacity=".45"/>
+          <text class="svg-mono" x="64" y="266" fill="var(--s1)">無修正採択率 — 分子 52 / 66 = 0.788</text>
+        </g>
+
+        <line x1="856" y1="286" x2="856" y2="312" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text class="svg-note" x="846" y="308" text-anchor="end">modified / rejected が入る区画 — 幅ゼロ（67 発動で 0 件）</text>
+      </svg>
+    </div>
+    <figcaption><strong>2 本の乖離 0.212 が、そのまま「agreement_rate が何を測っていないか」の量である。</strong> CTL-1/2 の閾値は 0.90、CTL-3 は 0.95 — どちらも 1.000 は通る。閾値を上げても意味がない。これは閾値の問題ではなく、<strong>負例の生成経路の問題</strong>。</figcaption>
+    <details>
+      <summary>数値を表で見る</summary>
+      <div class="scroller"><table>
+        <thead><tr><th>implementer_consent（正規化）</th><th class="num">件数</th><th class="num">比率</th><th>agreement_rate の分子</th></tr></thead>
+        <tbody>
+          <tr><td>agreed</td><td class="num">52</td><td class="num">77.6%</td><td>算入する</td></tr>
+          <tr><td>agreed_with_synthesis</td><td class="num">14</td><td class="num">20.9%</td><td>算入する</td></tr>
+          <tr><td>modified</td><td class="num">0</td><td class="num">0%</td><td>算入しない</td></tr>
+          <tr><td>rejected</td><td class="num">0</td><td class="num">0%</td><td>算入しない</td></tr>
+          <tr><td>未記録</td><td class="num">1</td><td class="num">1.5%</td><td>母数から除外</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+  </figure>
+
+  <div class="callout">
+    <h3>負例ゼロは 2 通りに読める — そして今は切り分けられない</h3>
+    <p>(a) 実際に骨格の差し替えが一度も起きなかった／(b) 差し替えが起きたが <code>_with_</code> 語尾で記録され、止揚として吸収された。</p>
+    <p><code>ctl-calculation.md</code> L188 は「本区分は自己申告ではなく人間の事後評価が入力する」と規定する。しかし <code>implementer_consent</code> は §8 の後追記フィールドで、<strong>その後追記を人間が行ったことを検証する機械経路は存在しない</strong>。規定と実装の間にギャップがある。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">P2 — キャリブレーション</span>自信のほうは、当たっている</h2>
+  <p class="lede">「無修正採択を 1、それ以外を 0」として <code>judgment_confidence</code> を予測確率とみなす（n=60）。対角線に乗るほど較正が良い。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">信頼度ビンごとの、予測と実測</p>
+      <p class="fig-sub">点の大きさは件数。破線は完全較正（予測 = 実測）。</p>
+    </div>
+    <div class="plot">
+      <svg viewBox="0 0 900 470" role="img" aria-label="信頼度ビンごとの予測平均と実測無修正採択率の散布図。4 点はいずれも完全較正の対角線の近傍にある。">
+        <line class="gridline" x1="80" y1="410" x2="450" y2="410"/>
+        <line class="gridline" x1="80" y1="336" x2="450" y2="336"/>
+        <line class="gridline" x1="80" y1="262" x2="450" y2="262"/>
+        <line class="gridline" x1="80" y1="188" x2="450" y2="188"/>
+        <line class="gridline" x1="80" y1="114" x2="450" y2="114"/>
+        <line class="gridline" x1="80" y1="40" x2="450" y2="40"/>
+
+        <line class="axisline" x1="80" y1="40" x2="80" y2="410"/>
+        <line class="axisline" x1="80" y1="410" x2="450" y2="410"/>
+
+        <text class="svg-tick" x="72" y="414" text-anchor="end">0.5</text>
+        <text class="svg-tick" x="72" y="266" text-anchor="end">0.7</text>
+        <text class="svg-tick" x="72" y="118" text-anchor="end">0.9</text>
+        <text class="svg-tick" x="72" y="44" text-anchor="end">1.0</text>
+        <text class="svg-tick" x="80" y="432" text-anchor="middle">0.5</text>
+        <text class="svg-tick" x="228" y="432" text-anchor="middle">0.7</text>
+        <text class="svg-tick" x="376" y="432" text-anchor="middle">0.9</text>
+        <text class="svg-tick" x="450" y="432" text-anchor="middle">1.0</text>
+
+        <text class="svg-fam" x="80" y="456">予測 — confidence 平均</text>
+        <text class="svg-fam" x="-225" y="18" transform="rotate(-90)" text-anchor="middle">実測 — 無修正採択率</text>
+
+        <line x1="80" y1="410" x2="450" y2="40" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text class="svg-tick" x="392" y="88" transform="rotate(-45 392 88)">完全較正</text>
+
+        <circle cx="106" cy="369" r="9.4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2">
+          <title>0.00–0.70 — 予測 0.536 / 実測 0.556 / n=9</title></circle>
+        <circle cx="265" cy="225" r="14.2" fill="var(--s1)" stroke="var(--surface)" stroke-width="2">
+          <title>0.70–0.80 — 予測 0.750 / 実測 0.750 / n=32</title></circle>
+        <circle cx="285" cy="122" r="11.6" fill="var(--s1)" stroke="var(--surface)" stroke-width="2">
+          <title>0.80–0.90 — 予測 0.827 / 実測 0.889 / n=18</title></circle>
+        <circle cx="376" cy="40" r="5.8" fill="var(--s1)" stroke="var(--surface)" stroke-width="2">
+          <title>0.90–1.00 — 予測 0.900 / 実測 1.000 / n=1</title></circle>
+
+        <text class="svg-mono" x="122" y="373">n=9</text>
+        <text class="svg-mono" x="285" y="229">n=32</text>
+        <text class="svg-mono" x="303" y="126">n=18</text>
+        <text class="svg-mono" x="388" y="44">n=1</text>
+
+        <g transform="translate(530,52)">
+          <text class="svg-fam" x="0" y="0">計測値</text>
+          <line class="axisline" x1="0" y1="12" x2="330" y2="12"/>
+
+          <text class="svg-label" x="0" y="46">Brier score</text>
+          <text class="svg-mono" x="330" y="46" text-anchor="end" fill="var(--ink)" font-size="15" font-weight="700">0.1617</text>
+          <text class="svg-tick" x="0" y="66">ベースレート予測器 0.1789 より小さい</text>
+          <line class="gridline" x1="0" y1="84" x2="330" y2="84"/>
+
+          <text class="svg-label" x="0" y="118">skill score</text>
+          <text class="svg-mono" x="330" y="118" text-anchor="end" fill="var(--s1)" font-size="15" font-weight="700">+0.096</text>
+          <text class="svg-tick" x="0" y="138">無情報予測器より 9.6% 改善</text>
+          <line class="gridline" x1="0" y1="156" x2="330" y2="156"/>
+
+          <text class="svg-label" x="0" y="190">AUC（判別力）</text>
+          <text class="svg-mono" x="330" y="190" text-anchor="end" fill="var(--s1)" font-size="15" font-weight="700">0.689</text>
+          <text class="svg-tick" x="0" y="210">0.5 = ランダム。強くはないが明確に離れている</text>
+          <line class="gridline" x1="0" y1="228" x2="330" y2="228"/>
+
+          <text class="svg-label" x="0" y="262">系統誤差</text>
+          <text class="svg-mono" x="330" y="262" text-anchor="end" fill="var(--ink)" font-size="15" font-weight="700">−0.024</text>
+          <text class="svg-tick" x="0" y="282">平均 conf 0.743 − 実測 0.767。過信なし</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>4 ビンとも対角線の近傍にあり、<strong>較正は良好</strong>。これは軸監査 B2 の所見（ペルソナ個々の confidence が σ≈0.04 で固定 = prompt の産物の疑い）と<strong>矛盾しない</strong> — ペルソナ層が固定的でも、judgment 段の合成 confidence は議題に反応している。σ の警告はペルソナ層に対するもので、判定層とは分けて読む。</figcaption>
+    <details>
+      <summary>数値を表で見る</summary>
+      <div class="scroller"><table>
+        <thead><tr><th>confidence ビン</th><th class="num">n</th><th class="num">予測平均</th><th class="num">実測</th></tr></thead>
+        <tbody>
+          <tr><td>0.00–0.70</td><td class="num">9</td><td class="num">0.536</td><td class="num">0.556</td></tr>
+          <tr><td>0.70–0.80</td><td class="num">32</td><td class="num">0.750</td><td class="num">0.750</td></tr>
+          <tr><td>0.80–0.90</td><td class="num">18</td><td class="num">0.827</td><td class="num">0.889</td></tr>
+          <tr><td>0.90–1.00</td><td class="num">1</td><td class="num">0.900</td><td class="num">1.000</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">P3 — 事前シグナル</span>機構は、自分の弱い判定を見分けている</h2>
+  <p class="lede">判定前に分かっている属性ごとに、無修正採択率が分かれるか。分かれるなら「弱い判定を事前に見分けられている」ことになる。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">属性別の無修正採択率</p>
+      <p class="fig-sub">縦の破線は全体の 0.788。点の大きさは件数。</p>
+    </div>
+    <div class="plot">
+      <svg viewBox="0 0 900 476" role="img" aria-label="属性別の無修正採択率。human_escalated の escalated が 0.455 で最も低く、auto の 0.855 と大きく分かれる。">
+        <line class="axisline" x1="300" y1="42" x2="300" y2="440"/>
+        <line class="gridline" x1="404.0" y1="42" x2="404.0" y2="440"/>
+        <line class="gridline" x1="508.0" y1="42" x2="508.0" y2="440"/>
+        <line class="gridline" x1="612.0" y1="42" x2="612.0" y2="440"/>
+        <line class="gridline" x1="716.0" y1="42" x2="716.0" y2="440"/>
+        <line class="gridline" x1="820.0" y1="42" x2="820.0" y2="440"/>
+        <text class="svg-tick" x="300" y="34" text-anchor="middle">0</text>
+        <text class="svg-tick" x="508.0" y="34" text-anchor="middle">0.4</text>
+        <text class="svg-tick" x="716.0" y="34" text-anchor="middle">0.8</text>
+        <text class="svg-tick" x="820.0" y="34" text-anchor="middle">1.0</text>
+        <line x1="709.8" y1="42" x2="709.8" y2="440" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text class="svg-tick" x="705.8" y="458" text-anchor="end">全体 0.788</text>
+        <text class="svg-fam" x="0" y="62">human_escalated — 人間へ上げたか</text>
+        <line x1="300" y1="86" x2="744.6" y2="86" stroke="var(--s1)" stroke-width="2" opacity=".3"/>
+        <circle cx="744.6" cy="86" r="17.3" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>auto — 0.855 / n=55</title></circle>
+        <text class="svg-label" x="290" y="91" text-anchor="end">auto</text>
+        <text class="svg-mono" x="890" y="91" text-anchor="end">0.855 · n=55</text>
+        <line x1="300" y1="122" x2="536.6" y2="122" stroke="var(--s2)" stroke-width="2" opacity=".3"/>
+        <circle cx="536.6" cy="122" r="10.0" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"><title>escalated — 0.455 / n=11</title></circle>
+        <text class="svg-label" x="290" y="127" text-anchor="end">escalated</text>
+        <text class="svg-mono" x="890" y="127" text-anchor="end" fill="var(--s2)">0.455 · n=11</text>
+        <text class="svg-fam" x="0" y="176">conflict_type — 対立類型</text>
+        <line x1="300" y1="200" x2="757.6" y2="200" stroke="var(--s1)" stroke-width="2" opacity=".3"/>
+        <circle cx="757.6" cy="200" r="13.0" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>unanimous — 0.880 / n=25</title></circle>
+        <text class="svg-label" x="290" y="205" text-anchor="end">unanimous</text>
+        <text class="svg-mono" x="890" y="205" text-anchor="end">0.880 · n=25</text>
+        <line x1="300" y1="236" x2="653.6" y2="236" stroke="var(--s1)" stroke-width="2" opacity=".3"/>
+        <circle cx="653.6" cy="236" r="13.0" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>simple_conflict — 0.680 / n=25</title></circle>
+        <text class="svg-label" x="290" y="241" text-anchor="end">simple_conflict</text>
+        <text class="svg-mono" x="890" y="241" text-anchor="end">0.680 · n=25</text>
+        <line x1="300" y1="272" x2="560.0" y2="272" stroke="var(--s2)" stroke-width="2" opacity=".3"/>
+        <circle cx="560.0" cy="272" r="8.4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"><title>reason_divergence — 0.500 / n=6（平均 confidence は 0.793 と高い）</title></circle>
+        <text class="svg-label" x="290" y="277" text-anchor="end">reason_divergence</text>
+        <text class="svg-mono" x="890" y="277" text-anchor="end" fill="var(--s2)">0.500 · n=6</text>
+        <text class="svg-fam" x="0" y="326">category — 重み軸</text>
+        <line x1="300" y1="350" x2="768.0" y2="350" stroke="var(--s1)" stroke-width="2" opacity=".3"/>
+        <circle cx="768.0" cy="350" r="9.7" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>implementation — 0.900 / n=10</title></circle>
+        <text class="svg-label" x="290" y="355" text-anchor="end">implementation</text>
+        <text class="svg-mono" x="890" y="355" text-anchor="end">0.900 · n=10</text>
+        <line x1="300" y1="386" x2="722.8" y2="386" stroke="var(--s1)" stroke-width="2" opacity=".3"/>
+        <circle cx="722.8" cy="386" r="14.2" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>conception — 0.813 / n=32</title></circle>
+        <text class="svg-label" x="290" y="391" text-anchor="end">conception</text>
+        <text class="svg-mono" x="890" y="391" text-anchor="end">0.813 · n=32</text>
+        <line x1="300" y1="422" x2="625.0" y2="422" stroke="var(--s1)" stroke-width="2" opacity=".3"/>
+        <circle cx="625.0" cy="422" r="11.2" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>judgment — 0.625 / n=16（既定カテゴリ）</title></circle>
+        <text class="svg-label" x="290" y="427" text-anchor="end">judgment</text>
+        <text class="svg-mono" x="890" y="427" text-anchor="end">0.625 · n=16</text>
+      </svg>
+    </div>
+    <figcaption><strong>escalated は auto の半分近くしかそのまま通らない（0.455 対 0.855）。これは機構の失点ではなく、エスカレーション基準が正しく効いている証拠である。</strong> 低い confidence → 人間へ上げる → 実際に手が入る、という連鎖が観測できる。既定カテゴリの <code>judgment</code> が最も低い（0.625）のは、<code>category_fallback</code> の流れ込み先が最も弱いという構図を示唆する。</figcaption>
+  </figure>
+
+  <div class="callout">
+    <h3>reason_divergence — 唯一の反証候補</h3>
+    <p>「異なる次元から同じ結論に到達」した判定は、<strong>平均 confidence が 0.793 と高いのに、無修正採択率は 0.500 で最低</strong>。3 軸が別々の理由で同じ結論に達したとき機構は強く確信するが、実際にはその後に何かが足されている。</p>
+    <p>n=6 ゆえ断定はしない。ただし <code>conflict-typology.md</code> の対立類型 B を「情報量が多い good case」とする現行解釈への反証候補として、観測を続ける価値がある。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">P5 — 計測可能性</span>測れないものは、性能の欠落ではない</h2>
+  <p class="lede">記録率の低いフィールドが示すのは「機構の性能が低い」ことではなく「<strong>性能を測る手段が無い</strong>」こと。是正は記録側（<code>output-format.md</code> §8）に向く。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">§8 フィールドの記録率</p>
+      <p class="fig-sub">全 67 エントリに対する記録率。破線は 80% の目安。</p>
+    </div>
+    <div class="plot">
+      <svg viewBox="0 0 900 366" role="img" aria-label="フィールド別の記録率。dimension 58.2%、options 16.4%、execution_mode 1.5% が 80% を大きく下回る。">
+        <line class="axisline" x1="300" y1="34" x2="300" y2="330"/>
+        <line class="gridline" x1="440" y1="34" x2="440" y2="330"/>
+        <line class="gridline" x1="580" y1="34" x2="580" y2="330"/>
+        <line class="gridline" x1="720" y1="34" x2="720" y2="330"/>
+        <line class="gridline" x1="860" y1="34" x2="860" y2="330"/>
+        <text class="svg-tick" x="300" y="26" text-anchor="middle">0</text>
+        <text class="svg-tick" x="580" y="26" text-anchor="middle">50%</text>
+        <text class="svg-tick" x="860" y="26" text-anchor="middle">100%</text>
+        <line x1="748" y1="34" x2="748" y2="330" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text class="svg-tick" x="752" y="348">80%</text>
+        <rect x="300" y="42" width="526.4" height="18" rx="4" fill="var(--s1)"><title>decision_category — 63/67 = 94.0%</title></rect>
+        <text class="svg-label" x="290" y="56" text-anchor="end">decision_category</text>
+        <text class="svg-mono" x="836" y="56">94.0%</text>
+        <rect x="300" y="78" width="509.6" height="18" rx="4" fill="var(--s1)"><title>judgment_confidence — 61/67 = 91.0%</title></rect>
+        <text class="svg-label" x="290" y="92" text-anchor="end">judgment_confidence</text>
+        <text class="svg-mono" x="820" y="92">91.0%</text>
+        <rect x="300" y="114" width="493.4" height="18" rx="4" fill="var(--s1)"><title>conflict_type — 59/67 = 88.1%</title></rect>
+        <text class="svg-label" x="290" y="128" text-anchor="end">conflict_type</text>
+        <text class="svg-mono" x="803" y="128">88.1%</text>
+        <rect x="300" y="150" width="485.0" height="18" rx="4" fill="var(--s1)"><title>persona_summary — 58/67 = 86.6%</title></rect>
+        <text class="svg-label" x="290" y="164" text-anchor="end">persona_summary</text>
+        <text class="svg-mono" x="795" y="164">86.6%</text>
+        <rect x="300" y="186" width="485.0" height="18" rx="4" fill="var(--s1)"><title>timestamp — 58/67 = 86.6%</title></rect>
+        <text class="svg-label" x="290" y="200" text-anchor="end">timestamp</text>
+        <text class="svg-mono" x="795" y="200">86.6%</text>
+        <rect x="300" y="222" width="325.9" height="18" rx="4" fill="var(--s2)"><title>dimension — 39/67 = 58.2% — 閾値未満</title></rect>
+        <text class="svg-label" x="290" y="236" text-anchor="end">dimension</text>
+        <text class="svg-mono" x="636" y="236" fill="var(--s2)">58.2% — 閾値未満</text>
+        <rect x="300" y="258" width="91.8" height="18" rx="4" fill="var(--s2)"><title>options — 11/67 = 16.4% — 閾値未満</title></rect>
+        <text class="svg-label" x="290" y="272" text-anchor="end">options</text>
+        <text class="svg-mono" x="402" y="272" fill="var(--s2)">16.4% — 閾値未満</text>
+        <rect x="300" y="294" width="8.4" height="18" rx="4" fill="var(--s2)"><title>execution_mode — 1/67 = 1.5% — 閾値未満</title></rect>
+        <text class="svg-label" x="290" y="308" text-anchor="end">execution_mode</text>
+        <text class="svg-mono" x="318" y="308" fill="var(--s2)">1.5% — 閾値未満</text>
+      </svg>
+    </div>
+    <figcaption>下位 3 つはいずれも既知。<code>dimension</code> は軸監査 B5、<code>options</code> は B6 の正規化ギャップ、<code>execution_mode</code> は導入直後で観測窓（宣言済み 10 発動）に未到達 — 本計測は独立に同じ結論へ達した。</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">限界</span>測っているのは受容であって、正解ではない</h2>
+  <p class="lede">ここまでの数字がすべて答えているのは 2 問だけ。「この機構の推奨は採られるか」と「この機構は自分の判定の弱さを事前に見分けられるか」。</p>
+  <p>答えていないのは <strong>「この機構の判断は正しいか」</strong> である。採用した案が後に問題を起こさなかったか、棄却した案のほうが良かったのではないか — それを保持する field は <code>COUNCIL-LOG.md</code> に存在しない。そして CTL（自律権限の昇格）は、前者の指標だけを入力としている。</p>
+
+  <div class="gap-panel">
+    <div class="big">9<small>未回収の予測</small></div>
+    <div>
+      <p><code>minority_opinion</code> には「Wave N 末で観測し、条件が満たされれば再諮問する」という<strong>将来検証の約束が 9 件</strong>書き込まれている。これは予測であり、検証結果は正解ラベルになる。</p>
+      <p>一方、後続 Council が明示的に前の判定を参照するのは <strong>2 件</strong>（<code>parent_invocation_id</code> / <code>references_prior</code>）にとどまる。<strong>ベンチマークの材料は生成済みで、回収経路だけが無い。</strong></p>
+    </div>
+  </div>
+
+  <h3>提案（いずれも提案に留め、判断は人間 = D5 に残す）</h3>
+  <ol class="props">
+    <li><b><code>revisit_at</code> / <code>revisit_condition</code> を §8 に足す</b><span>「Wave N 末で観測」を機械が拾える形にすれば、予測 → 検証のループが初めて閉じる。これが唯一、受容ではなく妥当性を測る経路になる。</span></li>
+    <li><b><code>consent_source: human | implementer_ai</code> を後追記に足す</b><span><code>ctl-calculation.md</code> L188 の規定を機械可読にするだけで、負例ゼロの解釈が (a) と (b) に切り分けられる。</span></li>
+    <li><b>CTL の入力に agreement_rate 以外を足すかは L0 対話</b><span>本計測は指標を追加していない。負例ゼロの事実を提示するにとどめる（<code>council-weights.md</code> §編集プロトコルと同型で、数値・算出式の変更は L0/D5 専管）。</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="num">参考</span>AI 判断のベンチマークは、借りられるのが指標だけ</h2>
+  <p class="lede">Council を丸ごと当てはめられる既製ベンチマークは無い。既存の系統はいずれも<strong>正解が外部に定義できる問題</strong>を扱うが、Council が扱うのは正解が事後にしか現れない設計判断だから。</p>
+
+  <div class="scroller" style="border:1px solid var(--rule); background:var(--surface); box-shadow:var(--shadow); margin-top:24px">
+    <table>
+      <thead><tr><th>層</th><th>代表例</th><th>Council との距離</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>LLM-as-a-Judge の較正</strong><br><span style="color:var(--ink3);font-size:12.5px">ECE / Brier / MCE / κ</span></td>
+          <td><a href="https://arxiv.org/html/2606.19544v1">Reliability without Validity</a>（一致率と一貫性は高いのに妥当性が伴わない）／<a href="https://arxiv.org/pdf/2508.06225">Overconfidence in LLM-as-a-Judge</a></td>
+          <td>対象は<strong>既に正解ラベルがある</strong>タスクの採点者。<strong>指標だけは借りられる</strong> — 本計測の Brier / skill score / ビン別実測はここから来ている</td>
+        </tr>
+        <tr>
+          <td><strong>多エージェント熟議</strong><br><span style="color:var(--ink3);font-size:12.5px">構造が最も近い</span></td>
+          <td><a href="https://arxiv.org/pdf/2605.01986">12 Angry AI Agents</a>（ペルソナ付与が結論に与える影響）／<a href="https://arxiv.org/pdf/2606.29654">Budgeted Act-or-Defer</a>／<a href="https://arxiv.org/html/2607.06157v1">Deliberative Collaboration</a></td>
+          <td>Act-or-Defer は「自分で決めるか上に上げるか」を局所信頼性で決める枠組み — <strong><code>human_escalated</code> とほぼ同じ問題設定</strong>。実測の 0.855 対 0.455 はこの言葉で言えば defer 判定が効いていること</td>
+        </tr>
+        <tr>
+          <td><strong>方針曖昧性下の判断</strong><br><span style="color:var(--ink3);font-size:12.5px">用途が最も近い</span></td>
+          <td><a href="https://arxiv.org/pdf/2605.07699">DRIP-R</a>（規約が矛盾する／明記が無い場面での意思決定）</td>
+          <td>Council が実際に扱う問題（SPEC 矛盾・トレードオフ）に最も近いが、それでも正解は外部定義</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout--good">
+    <h3>結論 — 課題は自分で作るしかない</h3>
+    <p>借りられるのは<strong>指標であって課題ではない</strong>。そして課題の材料は、すでに 9 件生成されている。上の提案 1 は、外部ベンチマークを探す話ではなく<strong>自前のベンチマークを蓄積する仕掛け</strong>そのものである。</p>
+  </div>
+</section>
+
+<footer>
+  <p>本計測は集計のみで <strong>LLM 判定を一切含まない</strong> — 死角を持つ者に死角の有無を尋ねない、という軸監査と同じ設計制約による。終了コードは常に 0（warn のみ・block しない、philosophy.md 第 6 条 人間最終承認）。</p>
+  <p>再現: <code>python3 scripts/council-performance.py</code> ／ 機械可読 <code>--json</code> ／ 回帰テスト <code>scripts/test-council-performance.py</code>（55 checks）<br>
+  出典: <code>history/COUNCIL-LOG.md</code> §8 ブロック形式 67 エントリ（2026-04-29 〜 2026-08-28）・<a href="https://github.com/samejima-ai/dialog-harness/pull/221">PR #221</a></p>
+</footer>
+
+</div>
+</body>
+</html>
