@@ -2,6 +2,42 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## ハーネス送出性能の世界水準ベンチマーク — 比較可能な部分と、比較不能な部分（analysis + tool、2026-08-30）
+
+起点はひでさんの発話「DH のハーネス性能を世界基準でベンチマーク検証してください」。
+`ANALYSIS-agentic-sdlc-world-standard-2026-08-28` §2-C が名指しした G2（agent PR 受入監査）の
+実測にあたる。既存 `scripts/pr-audit.py` は G2 を実装済みだが `gh` を要求し、本セッションの
+実行環境に `gh` が無かったため、**`refs/pull/*/head` を fetch して git だけで測る**経路を新設した。
+
+**計測経路が指標を作った実例（記録）**: 最初に master の squash commit だけで計算したところ
+merge 率 1.000 / human-commit 率 0.000 になった。squash が commit 単位の情報を破壊し、かつ
+「master に squash commit がある」＝「merged」ゆえ**分母に不採用 PR が入り得なかった**ため。
+PR head ref を取ると merge 率 96.5% / human-commit 率 1.8%、不採用 6 件が可視化された。
+
+**実測（closed PR 184 / agent PR 171 / merged 165、2026-04-18〜08-30）**:
+
+- **フロー指標は上位帯**（比較可能）: merge 頻度 1.23/日、lead time 中央値 **18.5 分**、
+  1 日以内 98.8%、修復中央値 0.9 時間。DORA が Elite クラスタを検出した年の目安を満たす
+- **受入指標 W9 は比較不能**: merge 率 96.5%（参照 dotnet/runtime 67.9%）/ human-commit 介入率
+  1.8%（参照 45%）。参照系は全 PR が人間レビューを通る系での値で、DH は opt-out auto-merge ゆえ
+  **落とす主体・直す主体がプロセス上に居ない**。数字が良いのではなく制御点が無い
+- **レビュー窓の直接観測**: PR open → merge 中央値 13.4 分、**31.5%（52/165）が 5 分未満**
+- **rework rate 10.9%**（18/165・明示参照のみ。loose 上界は 46.1%）が**唯一「負例が観測できる」
+  品質指標** — 後続 fix PR の実在から導くため、自己申告にも人間ゲートにも依存しない
+
+**本セッション 3 例目の同型パターン（一般化）**: Council `agreement_rate` 1.000 / agent PR
+merge 率 96.5% がいずれも天井に張り付き、無修正採択率 0.788 / rework rate 10.9% は判別する。
+**自己申告フィールドと人間ゲートに依存する指標は天井に張り付き、成果物から導く指標だけが
+判別力を持つ。** DH は人間の関与を減らすことに成功しており、その成功が人間の関与を測定基盤に
+していた指標を無効化している（業界が重心を置く受入率・介入率・revert 率はすべて人間ゲート前提）。
+
+- 追加: `scripts/harness-benchmark.py`（git のみ・LLM 判定なし・exit 常に 0・`comparable:false` を機械的に立てる）
+- 追加: `scripts/test-harness-benchmark.py`（33 checks、合成フィクスチャ）
+- 追加: `delivery/ANALYSIS-harness-benchmark-2026-08-30.md`
+- 改訂: `GRAPH.yml` に node + F1 からの conditional edge
+- 指標の目標値化はしていない（Goodhart 回避 = pr-audit I-4 と同じ規律）。W9 の降格・母集団分割・
+  2026-11-06 auto-merge roll-back ゲートへの入力は**提案に留め判断は D5**
+
 ## Council 性能計測の可視化 — 天井に張り付いた指標（analysis、2026-08-30）
 
 起点はひでさんの発話「検証結果を可視化して」。同日の `council-performance` 実測（PR #221）を

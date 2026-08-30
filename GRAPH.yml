@@ -130,6 +130,10 @@ nodes:
     kind: tool
     role: support
     impl: scripts/council-performance.py
+  - id: harness-benchmark
+    kind: tool
+    role: support
+    impl: scripts/harness-benchmark.py
   - id: auto-merge
     kind: tool
     role: support
@@ -323,6 +327,11 @@ edges:
     to: council-performance
     type: conditional
     condition: "振り返り儀式 F1（スクリプト不在なら skip）"
+    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
+  - from: layer0-spec-architect
+    to: harness-benchmark
+    type: conditional
+    condition: "振り返り儀式 F1（PR head ref 未取得なら skip）"
     source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
   - from: layer0-spec-architect
     to: council-log-sync
