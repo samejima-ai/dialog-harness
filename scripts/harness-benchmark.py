@@ -37,12 +37,34 @@ W9 指標には **「比較不能」と明示**し、参照値を判定に使わ
 
 **LLM 判定を一切含まない。** 集計のみ。終了コードは常に 0（warn のみ・block しない）。
 
+## 比較しないと、値が何を意味するか決まらない
+
+単独の rework 10.9% は高いのか低いのか決まらない。**比較対象を 2 方向で取れる**:
+
+- **横断（別プロジェクト）**: 同じハーネスを積んだ別 repo で同じ計測を回す。
+  ドメインが違っても値が一致する指標は**ハーネスの性質**、ばらつく指標は
+  **プロジェクトの性質**を拾っている（＝指標として働いている）
+- **時系列（自己比較）**: `--since` / `--until` で期間を切る。外部ベースライン不要で
+  「改善しているか」に答えられる。dotnet/runtime 自身もこの形で成功率の推移を出している
+
+`--compare` は `--json` の出力を複数受け取り、横並びの表にする。
+
 ## 使い方
 
     git fetch origin '+refs/pull/*/head:refs/remotes/origin/pr/*'   # 前提
     python3 scripts/harness-benchmark.py
     python3 scripts/harness-benchmark.py --states prs.json   # W9 も出す
     python3 scripts/harness-benchmark.py --json
+
+    # 横断: 別 repo でも同じツールが動く（cwd をその repo にする）
+    cd ../other-repo && python3 ../dh/scripts/harness-benchmark.py \
+        --base origin/main --label other --json > other.json
+
+    # 時系列: 期間で切る
+    python3 scripts/harness-benchmark.py --since 2026-06-01 --until 2026-07-15 --json > q2.json
+
+    # 横並び
+    python3 scripts/harness-benchmark.py --compare dh.json other.json q2.json
 
 `--states` は `[{"number":1,"title":"...","created_at":"...","merged_at":"..."|null}, ...]`。
 gh なら `gh pr list --state closed --limit 500 --json number,title,createdAt,mergedAt`、
@@ -242,17 +264,23 @@ def fetch_pr_commits(number: int, base: str = "origin/master") -> list[dict] | N
 
 
 def fetch_merged_from_master(base: str = "origin/master") -> dict[int, dict]:
-    """master の squash commit から PR 番号と merge 時刻を得る（--states 不在時の代替）。"""
+    """master の squash commit から PR 番号・merge 時刻・**本文**を得る（--states 不在時の代替）。
+
+    **body を必ず拾う。** squash merge の commit body には PR 本文が入っており、
+    rework の「先行 PR 番号を明示参照」判定はそこを読む。body を落とすと参照が
+    title 内に書かれた分しか見えず、**rework が系統的に過小計上される**
+    （実測: kakuman で body 込み 3.7% → title のみ 0.9%）。
+    """
     out: dict[int, dict] = {}
-    log = _git(["log", base, "--format=%s\x01%aI\x02"])
+    log = _git(["log", base, "--format=%s\x01%aI\x01%b\x02"])
     for rec in log.split("\x02"):
         rec = rec.strip("\n")
         if not rec.strip():
             continue
-        subj, _, date = rec.partition("\x01")
-        m = PR_SUFFIX.search(subj)
+        parts = (rec.split("\x01") + [""] * 3)[:3]
+        m = PR_SUFFIX.search(parts[0])
         if m:
-            out[int(m.group(1))] = {"title": subj, "merged_at": date}
+            out[int(m.group(1))] = {"title": parts[0], "merged_at": parts[1], "body": parts[2]}
     return out
 
 
@@ -290,9 +318,23 @@ def build(states_path: str | None, base: str) -> list[dict]:
 # ---- 出力 -------------------------------------------------------------------
 
 
-def measure(prs: list[dict]) -> dict:
+def slice_period(prs: list[dict], since: str | None, until: str | None) -> list[dict]:
+    """merge 日で期間を切る。境界は [since, until)。未 merge は since 指定時に落とす。"""
+    out = []
+    for p in prs:
+        d = (p.get("merged_at") or "")[:10]
+        if since and (not d or d < since):
+            continue
+        if until and d and d >= until:
+            continue
+        out.append(p)
+    return out
+
+
+def measure(prs: list[dict], label: str = "this") -> dict:
     agent = [p for p in prs if p.get("agent_pr")]
     return {
+        "label": label,
         "prs_total": len(prs),
         "flow": flow_metrics(agent),
         "rework": rework_metrics([p for p in agent if p.get("merged_at")]),
@@ -335,6 +377,36 @@ def render(m: dict) -> str:
     return "\n".join(L)
 
 
+def render_compare(ms: list[dict]) -> str:
+    """複数の計測結果を横並びにする。**判定はしない** — 差を見せるだけ。"""
+    def pct(v):
+        return f"{v*100:.1f}%" if v is not None else "n/a"
+    def num(v, unit=""):
+        return f"{v}{unit}" if v is not None else "n/a"
+    heads = [m.get("label") or "?" for m in ms]
+    L = ["# ハーネス送出性能の比較", "",
+         "| 指標 | " + " | ".join(heads) + " |",
+         "|---|" + "---|" * len(ms)]
+    rows = [
+        ("agent PR 数", lambda m: str(m["acceptance"]["agent_prs"])),
+        ("観測期間（日）", lambda m: num(m["flow"].get("span_days"))),
+        ("deployment frequency", lambda m: num(m["flow"].get("per_day"), "/日")),
+        ("change lead time 中央値", lambda m: num(m["flow"].get("lead_median_min"), " 分")),
+        ("lead time 1 日以内", lambda m: pct(m["flow"].get("lead_under_1d"))),
+        ("deployment rework rate", lambda m: pct(m["rework"]["rework_rate"])),
+        ("復旧時間 中央値", lambda m: num(m["rework"].get("recovery_median_h"), " 時間")),
+        ("human-commit 介入率", lambda m: pct(m["acceptance"]["human_commit_rate"])),
+    ]
+    for name, f in rows:
+        L.append(f"| {name} | " + " | ".join(f(m) for m in ms) + " |")
+    L += ["",
+          "> **読み方**: ドメインが違っても値が揃う指標は**ハーネスの性質**、ばらつく指標は"
+          "**プロジェクトの性質**を拾っている（＝判別力がある）。",
+          "> 本表は差を示すだけで優劣を判定しない — 比較先のプロセス（人間ゲートの有無）が"
+          "違えば受入指標は元から比較不能である（§2）。"]
+    return "\n".join(L)
+
+
 def warnings_for(m: dict) -> list[str]:
     out = []
     a, w, r = m["acceptance"], m["review_window"], m["rework"]
@@ -358,8 +430,24 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--states", default=None, help="PR 状態 JSON（gh / GitHub MCP の出力）")
     ap.add_argument("--base", default="origin/master", help="基準ブランチ")
+    ap.add_argument("--label", default="this", help="比較表での見出し名")
+    ap.add_argument("--since", default=None, help="この日以降に merge された PR のみ（YYYY-MM-DD）")
+    ap.add_argument("--until", default=None, help="この日より前に merge された PR のみ（YYYY-MM-DD）")
+    ap.add_argument("--compare", nargs="+", default=None,
+                    help="--json 出力を複数受け取り横並びにする（計測はしない）")
     ap.add_argument("--json", action="store_true", help="機械可読出力")
     args = ap.parse_args()
+
+    if args.compare:
+        ms = []
+        for f in args.compare:
+            try:
+                ms.append(json.load(open(f, encoding="utf-8")))
+            except (OSError, ValueError) as e:
+                sys.stderr.write(f"読めません {f}: {e}\n")
+        if ms:
+            print(render_compare(ms))
+        return 0
 
     try:
         prs = build(args.states, args.base)
@@ -369,7 +457,11 @@ def main() -> int:
     if not prs:
         return 0
 
-    m = measure(prs)
+    prs = slice_period(prs, args.since, args.until)
+    if not prs:
+        sys.stderr.write("期間内に PR がありません\n")
+        return 0
+    m = measure(prs, args.label)
     print(json.dumps({**m, "warnings": warnings_for(m)}, ensure_ascii=False, indent=2)
           if args.json else render(m))
     return 0

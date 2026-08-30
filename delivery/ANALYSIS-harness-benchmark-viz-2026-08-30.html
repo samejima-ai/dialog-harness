@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>比較不能という結果 — DH ハーネス性能の世界水準ベンチマーク</title>
+<title>比較の相手を作る — DH ハーネス性能ベンチマーク（横断 + 時系列）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
@@ -159,8 +159,8 @@ footer{margin-top:72px; padding-top:24px; border-top:2px solid var(--ink);
 
 <header class="masthead">
   <p class="eyebrow"><span>dialog-harness</span><b>harness-benchmark</b><span>2026-08-30</span><span>closed PR 184 / merged 165</span></p>
-  <h1>比較不能という結果</h1>
-  <p class="standfirst">DH のハーネス性能を世界水準の指標で測った。<strong>フロー指標は上位帯</strong>にあった。しかし業界がいま重心を置く<strong>受入指標は、比較そのものが成立しない</strong>。DH は人間の関与を減らすことに成功しており、その成功が、人間の関与を測定基盤にしていた指標を無効化している。</p>
+  <h1>比較の相手を作る</h1>
+  <p class="standfirst">DH のハーネス性能を世界水準の指標で測った。<strong>フロー指標は上位帯</strong>にあり、業界標準の<strong>受入指標は比較が成立しなかった</strong>。そこで比較先を外部に求めるのをやめ、<strong>同じハーネスを積んだ別プロジェクト（kakuman）と、DH 自身の過去</strong>を相手に置いた。値が揃う指標と、3〜4 倍ばらつく指標に分かれた。</p>
 </header>
 
 <div class="kpis">
@@ -341,7 +341,125 @@ footer{margin-top:72px; padding-top:24px; border-top:2px solid var(--ink);
 </section>
 
 <section>
-  <h2><span class="num">4 — 総合</span>境界に張り付く指標と、内側に散る指標</h2>
+  <h2><span class="num">4 — 比較の相手を作る</span>同じハーネスを積んだ、別のプロジェクト</h2>
+  <p class="lede">外部ベースラインが使えないなら、比較先を内側に取る。<strong>kakuman-platform-v3.0</strong> は DH を利用者側（D3）で積んだ実プロダクト — 建設業の業務アプリで、ドメインは DH 自身（メタハーネス）と何も共有していない。同じツールをそのまま回せる。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">kakuman ÷ DH — 何が揃い、何がばらつくか</p>
+      <p class="fig-sub">軸は倍率（対数）。×1 に近いほど 2 プロジェクトで同じ値。DH agent PR 165 / kakuman agent PR 539。</p>
+    </div>
+    <div class="plot">
+      <svg viewBox="0 0 900 400" role="img" aria-label="kakuman と DH の指標比。lead time・1日以内率・復旧時間は 0.88〜1.22 倍とほぼ揃い、rework・deploy 頻度・介入率は 0.34 倍から 4.22 倍と大きくばらつく。">
+        <line x1="300" y1="52" x2="300" y2="336" stroke="var(--grid)" stroke-width="1"/>
+        <text class="svg-tick" x="300" y="356" text-anchor="middle">×0.25</text>
+        <line x1="433" y1="52" x2="433" y2="336" stroke="var(--grid)" stroke-width="1"/>
+        <text class="svg-tick" x="433" y="356" text-anchor="middle">×0.5</text>
+        <line x1="567" y1="52" x2="567" y2="336" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text class="svg-tick" x="567" y="356" text-anchor="middle">×1</text>
+        <line x1="700" y1="52" x2="700" y2="336" stroke="var(--grid)" stroke-width="1"/>
+        <text class="svg-tick" x="700" y="356" text-anchor="middle">×2</text>
+        <line x1="833" y1="52" x2="833" y2="336" stroke="var(--grid)" stroke-width="1"/>
+        <text class="svg-tick" x="833" y="356" text-anchor="middle">×4</text>
+        <text class="svg-tick" x="567" y="376" text-anchor="middle">同じ</text>
+        <text class="svg-fam" x="0" y="46">ほぼ揃う — ハーネスの性質</text>
+        <line x1="542" y1="86" x2="567" y2="86" stroke="var(--ink3)" stroke-width="2" opacity=".3"/>
+        <circle cx="542" cy="86" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>change lead time 中央値: DH 18.5 分 / kakuman 16.3 分（比 0.88×）</title></circle>
+        <text class="svg-label" x="290" y="91" text-anchor="end">change lead time 中央値</text>
+        <text class="svg-mono" x="890" y="91" text-anchor="end">0.88×</text>
+        <line x1="565" y1="126" x2="567" y2="126" stroke="var(--ink3)" stroke-width="2" opacity=".3"/>
+        <circle cx="565" cy="126" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>lead time 1 日以内: DH 98.8% / kakuman 98.0%（比 0.99×）</title></circle>
+        <text class="svg-label" x="290" y="131" text-anchor="end">lead time 1 日以内</text>
+        <text class="svg-mono" x="890" y="131" text-anchor="end">0.99×</text>
+        <line x1="567" y1="166" x2="605" y2="166" stroke="var(--ink3)" stroke-width="2" opacity=".3"/>
+        <circle cx="605" cy="166" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>復旧時間 中央値: DH 0.9h / kakuman 1.1h（比 1.22×）</title></circle>
+        <text class="svg-label" x="290" y="171" text-anchor="end">復旧時間 中央値</text>
+        <text class="svg-mono" x="890" y="171" text-anchor="end">1.22×</text>
+        <text class="svg-fam" x="0" y="214">大きくばらつく — プロジェクトの性質を拾っている</text>
+        <line x1="359" y1="254" x2="567" y2="254" stroke="var(--ink3)" stroke-width="2" opacity=".3"/>
+        <circle cx="359" cy="254" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>deployment rework rate: DH 10.9% / kakuman 3.7%（比 0.34×）</title></circle>
+        <text class="svg-label" x="290" y="259" text-anchor="end">deployment rework rate</text>
+        <text class="svg-mono" x="890" y="259" text-anchor="end">0.34×</text>
+        <line x1="567" y1="294" x2="826" y2="294" stroke="var(--ink3)" stroke-width="2" opacity=".3"/>
+        <circle cx="826" cy="294" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>deployment frequency: DH 1.23/日 / kakuman 4.75/日（比 3.86×）</title></circle>
+        <text class="svg-label" x="290" y="299" text-anchor="end">deployment frequency</text>
+        <text class="svg-mono" x="890" y="299" text-anchor="end">3.86×</text>
+        <line x1="567" y1="334" x2="844" y2="334" stroke="var(--ink3)" stroke-width="2" opacity=".3"/>
+        <circle cx="844" cy="334" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>human-commit 介入率: DH 1.8% / kakuman 7.6%（比 4.22×）</title></circle>
+        <text class="svg-label" x="290" y="339" text-anchor="end">human-commit 介入率</text>
+        <text class="svg-mono" x="890" y="339" text-anchor="end">4.22×</text>
+      </svg>
+    </div>
+    <figcaption><strong>lead time・1 日以内率・復旧時間は 0.88〜1.22 倍でほぼ一致した。</strong> ドメインが何も共通しない 2 プロジェクトで揃うのだから、これは<strong>ハーネスの性質</strong>である。PR あたり commit 数も中央値 2・平均 2.3 で完全一致した。<br><br>対して <strong>rework・deploy 頻度・介入率は 0.34〜4.22 倍とばらつく</strong>。ばらつくということは<strong>プロジェクトの違いを拾えている</strong>ということで、指標として働いている証拠になる。</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">時系列 — 自分の過去と比べる</p>
+      <p class="fig-sub">期間の境界は両 repo で同一にした。実線 = DH、破線 = kakuman。</p>
+    </div>
+    <div class="plot">
+      <svg viewBox="0 0 900 300" role="img" aria-label="共通期間で揃えた時系列。DH の rework は 15.7%から 7.1% へ下がり介入率は 1.4% から 0% へ消える。kakuman の rework は 2〜6% で安定し介入率は 5.8% から 9.5% へ上昇する。">
+        <text class="svg-fam" x="70" y="34">deployment rework rate</text>
+        <line class="gridline" x1="70" y1="250" x2="360" y2="250"/>
+        <text class="svg-tick" x="62" y="254" text-anchor="end">0%</text>
+        <line class="gridline" x1="70" y1="187" x2="360" y2="187"/>
+        <text class="svg-tick" x="62" y="191" text-anchor="end">6%</text>
+        <line class="gridline" x1="70" y1="124" x2="360" y2="124"/>
+        <text class="svg-tick" x="62" y="128" text-anchor="end">12%</text>
+        <line class="gridline" x1="70" y1="61" x2="360" y2="61"/>
+        <text class="svg-tick" x="62" y="65" text-anchor="end">18%</text>
+        <polyline points="70,85 215,175 360,175" fill="none" stroke="var(--ink2)" stroke-width="2"/>
+        <circle cx="70" cy="85" r="5" fill="var(--ink2)" stroke="var(--ink2)" stroke-width="2"><title>DH 05-08〜06-15: 15.7%</title></circle>
+        <circle cx="215" cy="175" r="5" fill="var(--ink2)" stroke="var(--ink2)" stroke-width="2"><title>DH 06-15〜07-25: 7.1%</title></circle>
+        <circle cx="360" cy="175" r="5" fill="var(--ink2)" stroke="var(--ink2)" stroke-width="2"><title>DH 07-25〜08-31: 7.1%</title></circle>
+        <text class="svg-mono" x="368" y="179">DH</text>
+        <polyline points="70,213 215,191 360,227" fill="none" stroke="var(--ink2)" stroke-width="2" stroke-dasharray="5 4"/>
+        <circle cx="70" cy="213" r="5" fill="var(--surface)" stroke="var(--ink2)" stroke-width="2"><title>kakuman 05-08〜06-15: 3.5%</title></circle>
+        <circle cx="215" cy="191" r="5" fill="var(--surface)" stroke="var(--ink2)" stroke-width="2"><title>kakuman 06-15〜07-25: 5.6%</title></circle>
+        <circle cx="360" cy="227" r="5" fill="var(--surface)" stroke="var(--ink2)" stroke-width="2"><title>kakuman 07-25〜08-31: 2.2%</title></circle>
+        <text class="svg-mono" x="368" y="231">kakuman</text>
+        <text class="svg-tick" x="70" y="272" text-anchor="middle">5月</text>
+        <text class="svg-tick" x="215" y="272" text-anchor="middle">7月</text>
+        <text class="svg-tick" x="360" y="272" text-anchor="middle">8月</text>
+        <text class="svg-fam" x="560" y="34">human-commit 介入率</text>
+        <line class="gridline" x1="560" y1="250" x2="820" y2="250"/>
+        <text class="svg-tick" x="552" y="254" text-anchor="end">0%</text>
+        <line class="gridline" x1="560" y1="180" x2="820" y2="180"/>
+        <text class="svg-tick" x="552" y="184" text-anchor="end">4%</text>
+        <line class="gridline" x1="560" y1="110" x2="820" y2="110"/>
+        <text class="svg-tick" x="552" y="114" text-anchor="end">8%</text>
+        <line class="gridline" x1="560" y1="40" x2="820" y2="40"/>
+        <text class="svg-tick" x="552" y="44" text-anchor="end">12%</text>
+        <polyline points="560,226 690,250 820,250" fill="none" stroke="var(--ink2)" stroke-width="2"/>
+        <circle cx="560" cy="226" r="5" fill="var(--ink2)" stroke="var(--ink2)" stroke-width="2"><title>DH 05-08〜06-15: 1.4%</title></circle>
+        <circle cx="690" cy="250" r="5" fill="var(--ink2)" stroke="var(--ink2)" stroke-width="2"><title>DH 06-15〜07-25: 0%</title></circle>
+        <circle cx="820" cy="250" r="5" fill="var(--ink2)" stroke="var(--ink2)" stroke-width="2"><title>DH 07-25〜08-31: 0%</title></circle>
+        <text class="svg-mono" x="828" y="254">DH</text>
+        <polyline points="560,148 690,89 820,84" fill="none" stroke="var(--ink2)" stroke-width="2" stroke-dasharray="5 4"/>
+        <circle cx="560" cy="148" r="5" fill="var(--surface)" stroke="var(--ink2)" stroke-width="2"><title>kakuman 05-08〜06-15: 5.8%</title></circle>
+        <circle cx="690" cy="89" r="5" fill="var(--surface)" stroke="var(--ink2)" stroke-width="2"><title>kakuman 06-15〜07-25: 9.2%</title></circle>
+        <circle cx="820" cy="84" r="5" fill="var(--surface)" stroke="var(--ink2)" stroke-width="2"><title>kakuman 07-25〜08-31: 9.5%</title></circle>
+        <text class="svg-mono" x="828" y="88">kakuman</text>
+        <text class="svg-tick" x="560" y="272" text-anchor="middle">5月</text>
+        <text class="svg-tick" x="690" y="272" text-anchor="middle">7月</text>
+        <text class="svg-tick" x="820" y="272" text-anchor="middle">8月</text>
+        <text class="svg-note" x="70" y="294">共通期間 2026-05-08〜08-31（両 repo が同時に稼働している範囲）／ DH の中期は n=14 と小さい</text>
+      </svg>
+    </div>
+    <figcaption><strong>DH の介入率は 1.4% → 0% → 0% と消えた。kakuman は 5.8% → 9.2% → 9.5% と増えている。</strong> 同じ opt-out auto-merge の下で、正反対に動いている。<br><br>rework は DH が 15.7% → 7.1% と改善する一方、kakuman は 2〜6% で始めから低い水準にある。DH の中期は n=14 と小さく、振れ幅の解釈には注意が必要。</figcaption>
+  </figure>
+
+  <div class="callout">
+    <h3>前節の結論を一部訂正する</h3>
+    <p>§2 で「human-commit 介入率は制御点が無いので情報を持たない」と書いた。<strong>これは言い過ぎだった。</strong></p>
+    <p>同じ opt-out auto-merge の下で、この指標は 1.8%（DH）と 7.6%（kakuman）で <strong>4.2 倍動く</strong>。動くなら情報は持っている。ただしそれは dotnet/runtime の 45% が測るものとは<strong>別種の情報</strong>である — 45% は「<strong>必須ゲートを通した量</strong>」、DH / kakuman の値は「<strong>義務がない中で人間が自発的に関与した量</strong>」を測っている。前者との比較が成立しないという §2 の結論は変わらないが、指標そのものが無意味なのではない。</p>
+    <p>そして自発的関与は、<strong>ハーネス自身の開発（D4）でだけ消滅している</strong>。利用者プロジェクト（D3）では逆に増えている。メタ機構の自己開発ほど人間が見なくなる、という構図がここに出ている。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">5 — 総合</span>境界に張り付く指標と、内側に散る指標</h2>
   <p class="lede">本セッションで測った 5 指標を 1 本の軸に並べると、値の出所で綺麗に分かれる。</p>
 
   <figure>
@@ -411,7 +529,7 @@ footer{margin-top:72px; padding-top:24px; border-top:2px solid var(--ink);
 </section>
 
 <section>
-  <h2><span class="num">5 — 限界</span>この計測で言えないこと</h2>
+  <h2><span class="num">6 — 限界</span>この計測で言えないこと</h2>
   <div class="scroller" style="border:1px solid var(--rule); background:var(--surface); box-shadow:var(--shadow); margin-top:24px">
     <table>
       <thead><tr><th>限界</th><th>内容</th></tr></thead>
