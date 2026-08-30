@@ -2,6 +2,28 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## Council 性能計測の可視化 — 天井に張り付いた指標（analysis、2026-08-30）
+
+起点はひでさんの発話「検証結果を可視化して」。同日の `council-performance` 実測（PR #221）を
+`delivery/ANALYSIS-council-execution-modes-2026-08-29.html` と同じ HTML 分析シリーズとして図解した。
+
+**図の主眼は「同じ 66 件を、二つの場所で切る」**: 結果側に記録があるのは `implementer_consent`
+ただ一つで、そこから出る 2 本の率は分母が同じで**分子の切り位置だけが違う**。1 本の帯に
+2 本の分子ブラケットを重ねることで、`agreement_rate` の 1.000 と無修正採択率の 0.788 が
+同一データの別の切り方であること、そして `modified` / `rejected` が入る区画の幅がゼロで
+あることを一枚で見せる。
+
+- 追加: `delivery/ANALYSIS-council-performance-viz-2026-08-30.html`
+  - P1 採択（帯 + 二つの分子ブラケット）/ P2 較正（reliability diagram + 計測値）/
+    P3 事前シグナル（属性別 lollipop、全体 0.788 の参照線）/ P5 記録率（80% 閾値線）
+  - 限界の提示（受容 ≠ 正解、未回収の予測 9 件）と外部ベンチマーク 3 層の整理を併載
+- 系列パレットは既存シリーズの teal / terracotta を踏襲しつつ、**categorical として
+  検証を通る step に調整**（light `#008E6B` / `#A9412A`、dark `#0E9683` / `#D95926`。
+  シリーズ既定の `--det #0C6E64` ⇄ `--mod #4F5F8C` は CVD ΔE 6.6・normal ΔE 10.7 で
+  2 色エンコードには使えないため、文書クロムのみに残す）
+- 数値は `scripts/council-performance.py --json` の出力をそのまま転記（手計算を挟まない）
+- 新規指標・新規計測は追加していない（PR #221 の実測の再表現に閉じる）
+
 ## Council 判定支援機構の性能計測 — 出力側の観測を追加（analysis + tool、2026-08-30）
 
 起点はひでさんの発話「Council ログを解析して判定支援機構の性能を計測して」。
