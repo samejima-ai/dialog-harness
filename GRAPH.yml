@@ -126,6 +126,10 @@ nodes:
     kind: tool
     role: support
     impl: scripts/council-axis-audit.py
+  - id: council-performance
+    kind: tool
+    role: support
+    impl: scripts/council-performance.py
   - id: auto-merge
     kind: tool
     role: support
@@ -312,6 +316,11 @@ edges:
     source: scripts/council-log-sync.py
   - from: layer0-spec-architect
     to: council-axis-audit
+    type: conditional
+    condition: "振り返り儀式 F1（スクリプト不在なら skip）"
+    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
+  - from: layer0-spec-architect
+    to: council-performance
     type: conditional
     condition: "振り返り儀式 F1（スクリプト不在なら skip）"
     source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
