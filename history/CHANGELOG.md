@@ -2,6 +2,40 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## Council 判定支援機構の性能計測 — 出力側の観測を追加（analysis + tool、2026-08-30）
+
+起点はひでさんの発話「Council ログを解析して判定支援機構の性能を計測して」。
+
+既存の `scripts/council-axis-audit.py` は **入力側**（3 軸が独立に観測できているか）を測るが、
+**出力側**（出た判定がその後どうなったか）を測る経路は `agreement_rate`（CTL 算出の入力）1 本しか
+なかった。その 1 本を実測したところ **67 発動で 1.000、負例 0 件**であることが判明した。
+
+**実測（`delivery/ANALYSIS-council-performance-2026-08-30.md`）**:
+
+- `agreement_rate` の分子から落ちるのは `modified` / `rejected` の 2 値だけで、**その 2 値は
+  67 発動で一度も記録されていない**。閾値（CTL-1/2/3 の 0.90 / 0.95）を上げても 1.000 は通る。
+  これは閾値の問題ではなく**負例の生成経路の問題**である
+- 一方 `judgment_confidence` は結果と相関を持つ: Brier 0.1617 / skill score **+0.096** /
+  AUC **0.689** / 系統誤差 −0.024（過信なし）。ビン別の予測平均と実測もほぼ一致
+- `human_escalated` が最も強い事前シグナル: auto 0.855 vs escalated 0.455。
+  **エスカレーション基準は正しく効いている**
+- `reason_divergence` は confidence が高い（0.793）のに無修正採択率が最低（0.500）。n=6 ゆえ
+  断定はしないが、対立類型 B を「情報量が多い good case」とする現行解釈への反証候補として観測を続ける
+- ペルソナ層の confidence 固定（axis-audit B2、σ≈0.04）と本所見は矛盾しない。**judgment 段の
+  合成 confidence は議題に反応している**。σ の警告はペルソナ層に対するもので、判定層とは分けて読む
+
+**構造的な限界（本計測が答えていないこと）**: `implementer_consent` は**受容の記録であって
+正解の記録ではない**。判定が現実に妥当だったかを保持する field はログに存在しない。
+`minority_opinion` には「Wave N 末で観測し条件が満たされれば再諮問」という将来検証の約束が
+9 件書き込まれているが、それを回収する機械経路が無い。**ベンチマークの材料は生成済みで、
+回収経路だけが無い**（提案は分析文書 §5、判断は D5 に残す）。
+
+- 追加: `scripts/council-performance.py`（集計のみ・LLM 判定を含まない・終了コード常に 0）
+- 追加: `scripts/test-council-performance.py`（55 checks、合成フィクスチャ上で検査ロジックを検証）
+- 追加: `delivery/ANALYSIS-council-performance-2026-08-30.md`（§6 に外部ベンチマークの整理を併載）
+- 改訂: `GRAPH.yml` に `council-performance` node + F1 からの conditional edge を登録
+- 指標定義・CTL 算出式は**変更していない**（`council-weights.md` §編集プロトコルと同型で L0/D5 専管）
+
 ## Council 実行方式の記録 teeth — 「原則 Workflow」の実効化（Council `wfdflt`、patch、released 2026-08-29、PR #217 merged）
 
 起点はひでさんの発話「原則ワークフローを使用するようにしたい」。着手の承認として有効だが、
