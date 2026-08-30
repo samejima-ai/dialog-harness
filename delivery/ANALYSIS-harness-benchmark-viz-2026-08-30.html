@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>比較不能という結果 — DH ハーネス性能の世界水準ベンチマーク</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#EBEEEC; --surface:#F7F9F8; --sunk:#E0E5E3;
+  --ink:#12201E; --ink2:#4B5C59; --ink3:#7C8A87;
+  --rule:#C7D1CE; --rule-soft:#D9E0DE;
+  --s1:#008E6B;            /* 成果物由来 = 判別する */
+  --s2:#A9412A;            /* 自己申告・人間ゲート由来 = 境界に張り付く */
+  --grid:#D3DBD9; --band:#EDE2DE;
+  --shadow:0 1px 0 rgba(18,32,30,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1514; --surface:#161D1C; --sunk:#1D2624;
+    --ink:#E6ECEA; --ink2:#A6B4B1; --ink3:#76837F;
+    --rule:#2C3735; --rule-soft:#232C2B;
+    --s1:#0E9683; --s2:#D95926;
+    --grid:#2A3533; --band:#2B1E19;
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1514; --surface:#161D1C; --sunk:#1D2624;
+  --ink:#E6ECEA; --ink2:#A6B4B1; --ink3:#76837F;
+  --rule:#2C3735; --rule-soft:#232C2B;
+  --s1:#0E9683; --s2:#D95926;
+  --grid:#2A3533; --band:#2B1E19;
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.85; -webkit-font-smoothing:antialiased}
+.wrap{max-width:940px; margin:0 auto; padding:0 24px 104px}
+@media (max-width:600px){ .wrap{padding:0 16px 72px} body{font-size:15px} }
+
+.masthead{padding:60px 0 34px; border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink3); display:flex; flex-wrap:wrap; gap:8px 16px; margin:0 0 22px}
+.eyebrow b{color:var(--s1); font-weight:600}
+h1{font-family:var(--display); font-weight:900; letter-spacing:.01em;
+  font-size:clamp(30px,5.6vw,52px); line-height:1.24; margin:0 0 18px; text-wrap:balance}
+.standfirst{font-size:clamp(15px,1.9vw,18px); color:var(--ink2); max-width:62ch; margin:0}
+.standfirst strong{color:var(--ink); font-weight:700}
+
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--rule);
+  border:1px solid var(--rule); margin:34px 0 0; box-shadow:var(--shadow)}
+@media (max-width:720px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+.kpi{background:var(--surface); padding:18px}
+.kpi .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink3); display:block; margin-bottom:8px}
+.kpi .v{font-family:var(--mono); font-weight:700; font-size:clamp(21px,3.3vw,29px);
+  line-height:1.1; letter-spacing:-.01em; font-variant-numeric:tabular-nums; display:block}
+.kpi .n{font-size:12.5px; line-height:1.6; color:var(--ink3); display:block; margin-top:7px}
+.kpi--alert .v{color:var(--s2)} .kpi--good .v{color:var(--s1)}
+
+section{margin-top:66px}
+h2{font-family:var(--display); font-weight:700; font-size:clamp(20px,3vw,27px);
+  line-height:1.4; margin:0 0 10px; text-wrap:balance}
+h2 .num{font-family:var(--mono); font-size:12px; font-weight:600; color:var(--s1);
+  letter-spacing:.1em; display:block; margin-bottom:6px}
+h3{font-family:var(--body); font-weight:700; font-size:16px; margin:32px 0 8px}
+p{margin:0 0 16px; max-width:66ch}
+.lede{color:var(--ink2); margin-bottom:8px; max-width:66ch}
+a{color:var(--s1); text-underline-offset:3px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--s1); outline-offset:3px}
+code{font-family:var(--mono); font-size:.86em; background:var(--sunk); padding:1px 5px; border-radius:2px}
+
+figure{margin:26px 0 0; background:var(--surface); border:1px solid var(--rule); box-shadow:var(--shadow)}
+.fig-head{padding:18px 22px 0}
+.fig-title{font-family:var(--body); font-weight:700; font-size:15px; margin:0 0 4px}
+.fig-sub{font-size:13px; line-height:1.7; color:var(--ink3); margin:0; max-width:70ch}
+.plot{padding:16px 22px 4px; overflow-x:auto}
+.plot svg{display:block; width:100%; height:auto; min-width:520px}
+figcaption{padding:0 22px 20px; font-size:13px; line-height:1.8; color:var(--ink2); max-width:76ch}
+figcaption strong{color:var(--ink)}
+.legend{display:flex; flex-wrap:wrap; gap:8px 20px; padding:2px 22px 0; margin:0}
+.legend span{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink2)}
+.legend i{width:11px; height:11px; border-radius:2px; display:block; flex:none}
+
+.svg-label{font-family:var(--body); font-size:13px; fill:var(--ink)}
+.svg-mono{font-family:var(--mono); font-size:11.5px; fill:var(--ink2); font-variant-numeric:tabular-nums}
+.svg-tick{font-family:var(--mono); font-size:10.5px; fill:var(--ink3); font-variant-numeric:tabular-nums}
+.svg-fam{font-family:var(--mono); font-size:10.5px; fill:var(--ink3); letter-spacing:.13em; text-transform:uppercase}
+.svg-note{font-family:var(--body); font-size:12.5px; fill:var(--ink2)}
+.gridline{stroke:var(--grid); stroke-width:1}
+.axisline{stroke:var(--rule); stroke-width:1}
+
+details{border-top:1px dashed var(--rule); margin-top:4px}
+summary{cursor:pointer; padding:11px 22px; font-family:var(--mono); font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--ink3); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸ "; color:var(--s1)}
+details[open] summary::before{content:"▾ "}
+summary:hover{color:var(--ink)}
+.scroller{overflow-x:auto; border-top:1px solid var(--rule-soft)}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:13.5px}
+th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+thead th{font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--ink3); font-weight:600; background:var(--sunk); border-bottom:1px solid var(--rule)}
+td.num,th.num{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:none}
+
+.callout{margin:30px 0 0; padding:24px 26px; background:var(--surface);
+  border:1px solid var(--rule); border-left:4px solid var(--s2); box-shadow:var(--shadow)}
+.callout--good{border-left-color:var(--s1)}
+.callout h3{margin:0 0 10px; font-size:16px}
+.callout p{margin:0 0 12px} .callout p:last-child{margin-bottom:0}
+
+/* 比較不能パネル */
+.sever{display:grid; grid-template-columns:1fr auto 1fr; gap:0; margin:26px 0 0;
+  border:1px solid var(--rule); background:var(--surface); box-shadow:var(--shadow)}
+@media (max-width:680px){ .sever{grid-template-columns:1fr} }
+.sever .side{padding:24px 26px}
+.sever .side h4{margin:0 0 4px; font-size:15px; font-family:var(--body); font-weight:700}
+.sever .side .who{font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink3); display:block; margin-bottom:14px}
+.sever dl{margin:0; display:grid; grid-template-columns:1fr auto; gap:9px 12px; align-items:baseline}
+.sever dt{font-size:13.5px; color:var(--ink2)}
+.sever dd{margin:0; font-family:var(--mono); font-weight:700; font-size:16px;
+  font-variant-numeric:tabular-nums; text-align:right}
+.sever .gap{display:flex; align-items:center; justify-content:center; padding:0 6px;
+  border-left:1px dashed var(--rule); border-right:1px dashed var(--rule); background:var(--sunk)}
+.sever .gap span{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+  writing-mode:vertical-rl; color:var(--s2); font-weight:700; padding:20px 0}
+@media (max-width:680px){
+  .sever .gap{border:none; border-top:1px dashed var(--rule); border-bottom:1px dashed var(--rule); padding:10px}
+  .sever .gap span{writing-mode:horizontal-tb; padding:0}
+}
+.sever .note{grid-column:1/-1; padding:18px 26px; border-top:1px solid var(--rule);
+  background:var(--sunk); font-size:13.5px; line-height:1.8; color:var(--ink2)}
+.sever .note strong{color:var(--ink)}
+
+ol.props{margin:22px 0 0; padding:0; list-style:none; counter-reset:p}
+ol.props li{counter-increment:p; display:grid; grid-template-columns:auto 1fr; gap:0 18px;
+  padding:18px 0; border-top:1px solid var(--rule)}
+ol.props li::before{content:counter(p); font-family:var(--mono); font-size:12px; font-weight:700;
+  color:var(--s1); padding-top:4px}
+ol.props b{display:block; font-size:15px; margin-bottom:4px}
+ol.props span{color:var(--ink2); font-size:14.5px; line-height:1.8}
+
+footer{margin-top:72px; padding-top:24px; border-top:2px solid var(--ink);
+  font-size:13px; line-height:1.9; color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow"><span>dialog-harness</span><b>harness-benchmark</b><span>2026-08-30</span><span>closed PR 184 / merged 165</span></p>
+  <h1>比較不能という結果</h1>
+  <p class="standfirst">DH のハーネス性能を世界水準の指標で測った。<strong>フロー指標は上位帯</strong>にあった。しかし業界がいま重心を置く<strong>受入指標は、比較そのものが成立しない</strong>。DH は人間の関与を減らすことに成功しており、その成功が、人間の関与を測定基盤にしていた指標を無効化している。</p>
+</header>
+
+<div class="kpis">
+  <div class="kpi kpi--good">
+    <span class="k">change lead time</span><span class="v">18.5<small style="font-size:14px"> 分</small></span>
+    <span class="n">初 commit → merge の中央値。1 日以内 98.8%</span>
+  </div>
+  <div class="kpi kpi--good">
+    <span class="k">deploy frequency</span><span class="v">1.23<small style="font-size:14px"> /日</small></span>
+    <span class="n">165 merge / 133.8 日（稼働 46 日）</span>
+  </div>
+  <div class="kpi kpi--alert">
+    <span class="k">レビュー窓 &lt; 5 分</span><span class="v">31.5%</span>
+    <span class="n">人間が diff を読めない速さで merge</span>
+  </div>
+  <div class="kpi">
+    <span class="k">rework rate</span><span class="v">10.9%</span>
+    <span class="n">唯一「負例が観測できる」品質指標</span>
+  </div>
+</div>
+
+<section>
+  <h2><span class="num">1 — 比較できた部分</span>フロー指標は上位帯にある</h2>
+  <p class="lede">人間ゲートの有無に依存しないため、他組織と直接比較できる。</p>
+
+  <div class="scroller" style="border:1px solid var(--rule); background:var(--surface); box-shadow:var(--shadow); margin-top:24px">
+    <table>
+      <thead><tr><th>指標</th><th class="num">DH 実測</th><th>参照（DORA）</th></tr></thead>
+      <tbody>
+        <tr><td>deployment frequency</td><td class="num">1.23/日<br><span style="color:var(--ink3);font-size:12px">8.6/週</span></td><td>Elite = オンデマンド（1 日複数回）</td></tr>
+        <tr><td>change lead time<br><span style="color:var(--ink3);font-size:12px">初 commit → merge</span></td><td class="num">中央値 18.5 分<br><span style="color:var(--ink3);font-size:12px">p90 3.5h / 1 日以内 98.8%</span></td><td>Elite = 1 日未満</td></tr>
+        <tr><td>deployment rework rate</td><td class="num">10.9%</td><td>固定閾値の公表なし</td></tr>
+        <tr><td>failed deployment recovery</td><td class="num">中央値 0.9 時間<br><span style="color:var(--ink3);font-size:12px">24h 以内 77.8%</span></td><td>Elite = 1 時間未満</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout--good">
+    <h3>ただし「Elite 認定」ではない</h3>
+    <p>DORA のクラスタ境界は<strong>毎年の cluster analysis で再導出される相対値</strong>であり、固定の合格線ではない（2022 年は Elite クラスタ自体が検出されなかった）。上表の「Elite =」はクラスタが検出された年の目安で、順位づけではなく当てはめである。</p>
+    <p>DH 側の代理定義も明示しておく — <strong>deployment = master への merge</strong>（repo 配布のハーネスゆえ別立ての deploy 工程が無い）、<strong>lead time = PR ブランチ初 commit → merge</strong>（L0 対話の時間は含まない）。n=165・単一 repo・単一運用者で、DORA の多組織サーベイとは統計的性質が違う。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">2 — 比較できなかった部分</span>受入指標は、数字が良いのではない</h2>
+  <p class="lede">業界が計測の重心を置く 3 指標（merge 率・revert 率・介入率）。DH の値は参照系を大きく上回るが、<strong>この比較は成立しない</strong>。</p>
+
+  <div class="sever">
+    <div class="side">
+      <span class="who">dotnet/runtime — 10 ヶ月・878 PR</span>
+      <h4>全 PR が人間レビューを通る</h4>
+      <dl>
+        <dt>merge 率</dt><dd>67.9%</dd>
+        <dt>revert 率</dt><dd>0.6%</dd>
+        <dt>human-commit 介入率</dt><dd>45%</dd>
+      </dl>
+    </div>
+    <div class="gap"><span>比較不能</span></div>
+    <div class="side">
+      <span class="who">dialog-harness — 4.4 ヶ月・171 PR</span>
+      <h4>opt-out auto-merge（既定で人間が触らない）</h4>
+      <dl>
+        <dt>merge 率</dt><dd style="color:var(--s2)">96.5%</dd>
+        <dt>revert 率</dt><dd style="color:var(--s2)">0.0%</dd>
+        <dt>human-commit 介入率</dt><dd style="color:var(--s2)">1.8%</dd>
+      </dl>
+    </div>
+    <p class="note">参照系の 67.9% は「32.1% が人間に落とされた」という<strong>制御点が働いた記録</strong>であり、45% は「人間が手を入れた」記録である。DH には stop ラベルが無い限り自動 merge する設計上、<strong>落とす主体も直す主体もプロセス上に存在しない</strong>。<br><br>したがって — <strong>96.5% は「96.5% が良かった」ではなく「落とす主体が居ない」。1.8% は「直す必要が無かった」ではなく「直す人が見ていない」。</strong></p>
+  </div>
+
+  <h3>制御点の不在は、直接観測できる</h3>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">PR が open してから merge されるまで</p>
+      <p class="fig-sub">区間は等幅ではない（対数的に広がる）。人間が diff を読む下限を 5 分と置いた。</p>
+    </div>
+    <p class="legend">
+      <span><i style="background:var(--s2)"></i>5 分未満 — レビュー窓が物理的に存在しない</span>
+      <span><i style="background:var(--s1)"></i>5 分以上</span>
+    </p>
+    <div class="plot">
+      <svg viewBox="0 0 900 424" role="img" aria-label="PR open から merge までの時間分布。0-2 分に 23.6%、2-5 分に 7.9% が集中し、合計 31.5% が 5 分未満で merge されている。">
+        <line class="axisline" x1="300" y1="36" x2="300" y2="376"/>
+        <line class="gridline" x1="412" y1="36" x2="412" y2="376"/>
+        <line class="gridline" x1="524" y1="36" x2="524" y2="376"/>
+        <line class="gridline" x1="636" y1="36" x2="636" y2="376"/>
+        <line class="gridline" x1="748" y1="36" x2="748" y2="376"/>
+        <line class="gridline" x1="860" y1="36" x2="860" y2="376"/>
+        <text class="svg-tick" x="300" y="28" text-anchor="middle">0</text>
+        <text class="svg-tick" x="524" y="28" text-anchor="middle">10%</text>
+        <text class="svg-tick" x="748" y="28" text-anchor="middle">20%</text>
+        <text class="svg-tick" x="860" y="28" text-anchor="middle">25%</text>
+
+        <rect x="300" y="44" width="528.6" height="22" rx="4" fill="var(--s2)"><title>0–2 分: 39 件 / 23.6%</title></rect>
+        <text class="svg-label" x="290" y="60" text-anchor="end">0 – 2 分</text>
+        <text class="svg-mono" x="838" y="60" fill="var(--s2)">23.6%</text>
+
+        <rect x="300" y="86" width="176.9" height="22" rx="4" fill="var(--s2)"><title>2–5 分: 13 件 / 7.9%</title></rect>
+        <text class="svg-label" x="290" y="102" text-anchor="end">2 – 5 分</text>
+        <text class="svg-mono" x="487" y="102" fill="var(--s2)">7.9%</text>
+
+        <rect x="300" y="128" width="528.6" height="22" rx="4" fill="var(--s1)"><title>5–15 分: 39 件 / 23.6%</title></rect>
+        <text class="svg-label" x="290" y="144" text-anchor="end">5 – 15 分</text>
+        <text class="svg-mono" x="838" y="144">23.6%</text>
+
+        <rect x="300" y="170" width="297.9" height="22" rx="4" fill="var(--s1)"><title>15–30 分: 22 件 / 13.3%</title></rect>
+        <text class="svg-label" x="290" y="186" text-anchor="end">15 – 30 分</text>
+        <text class="svg-mono" x="608" y="186">13.3%</text>
+
+        <rect x="300" y="212" width="244.2" height="22" rx="4" fill="var(--s1)"><title>30–60 分: 18 件 / 10.9%</title></rect>
+        <text class="svg-label" x="290" y="228" text-anchor="end">30 – 60 分</text>
+        <text class="svg-mono" x="554" y="228">10.9%</text>
+
+        <rect x="300" y="254" width="257.6" height="22" rx="4" fill="var(--s1)"><title>1–3 時間: 19 件 / 11.5%</title></rect>
+        <text class="svg-label" x="290" y="270" text-anchor="end">1 – 3 時間</text>
+        <text class="svg-mono" x="568" y="270">11.5%</text>
+
+        <rect x="300" y="296" width="190.4" height="22" rx="4" fill="var(--s1)"><title>3–24 時間: 14 件 / 8.5%</title></rect>
+        <text class="svg-label" x="290" y="312" text-anchor="end">3 – 24 時間</text>
+        <text class="svg-mono" x="501" y="312">8.5%</text>
+
+        <rect x="300" y="338" width="13.4" height="22" rx="3" fill="var(--s1)"><title>24 時間超: 1 件 / 0.6%</title></rect>
+        <text class="svg-label" x="290" y="354" text-anchor="end">24 時間超</text>
+        <text class="svg-mono" x="324" y="354">0.6%</text>
+
+        <text class="svg-note" x="300" y="404" fill="var(--s2)">5 分未満に 31.5%（52/165）— 中央値は 13.4 分</text>
+      </svg>
+    </div>
+    <figcaption><strong>約 3 分の 1 の PR は、人間がレビューできる速さで merge されていない。</strong> これは欠陥ではなく設計どおりの動作である — auto-merge は stop ラベルの不在を暗黙承認とみなす。ただし<strong>その設計の下では受入指標は情報を持たない</strong>、というのがこの節の結論。<br><br>この文書の元になった PR 自身も、open から merge まで約 1 分だった。上の赤い帯に含まれる。</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2><span class="num">3 — 唯一使える品質指標</span>rework rate は、誰の申告も要らない</h2>
+  <p class="lede">merge 後 14 日以内に、その PR 番号を<strong>明示参照する</strong> fix / revert PR が入った比。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">手戻り率の下界と上界</p>
+      <p class="fig-sub">定義の厳しさで値が変わるため、両端を示して下界を採用値とする。</p>
+    </div>
+    <div class="plot">
+      <svg viewBox="0 0 900 196" role="img" aria-label="手戻り率は厳密定義で 10.9%、緩い定義で 46.1%。真値はこの間にある。">
+        <line class="axisline" x1="80" y1="120" x2="860" y2="120"/>
+        <line class="gridline" x1="236" y1="40" x2="236" y2="120"/>
+        <line class="gridline" x1="392" y1="40" x2="392" y2="120"/>
+        <line class="gridline" x1="548" y1="40" x2="548" y2="120"/>
+        <line class="gridline" x1="704" y1="40" x2="704" y2="120"/>
+        <text class="svg-tick" x="80" y="140" text-anchor="middle">0</text>
+        <text class="svg-tick" x="236" y="140" text-anchor="middle">10%</text>
+        <text class="svg-tick" x="392" y="140" text-anchor="middle">20%</text>
+        <text class="svg-tick" x="548" y="140" text-anchor="middle">30%</text>
+        <text class="svg-tick" x="704" y="140" text-anchor="middle">40%</text>
+        <text class="svg-tick" x="860" y="140" text-anchor="middle">50%</text>
+
+        <rect x="250" y="62" width="549" height="26" fill="var(--s1)" opacity=".18"/>
+        <line x1="250" y1="52" x2="250" y2="98" stroke="var(--s1)" stroke-width="3"/>
+        <line x1="799" y1="52" x2="799" y2="98" stroke="var(--s1)" stroke-width="3" opacity=".5"/>
+        <text class="svg-mono" x="250" y="42" text-anchor="middle" fill="var(--s1)" font-size="14" font-weight="700">10.9%</text>
+        <text class="svg-tick" x="250" y="114" text-anchor="middle">strict（採用）</text>
+        <text class="svg-mono" x="799" y="42" text-anchor="middle" font-size="14" font-weight="700">46.1%</text>
+        <text class="svg-tick" x="799" y="114" text-anchor="middle">loose（上界）</text>
+        <text class="svg-note" x="524" y="82" text-anchor="middle">真値はこの範囲</text>
+
+        <text class="svg-note" x="80" y="174">strict = 後続 fix/revert が当該 PR 番号を明示参照（18/165）　／　loose = 14 日以内に同一ファイルを触る fix/revert（76/165）</text>
+      </svg>
+    </div>
+    <figcaption>loose を採らない理由: 小規模 repo では大半の PR が同じコアファイル（<code>SKILL.md</code> / <code>SPEC.md</code> / <code>GRAPH.yml</code>）に触れるため、ファイル重複はほぼ自動的に成立し過大計上になる。strict は下界だが誤検出がほぼ無い。<br><br>修復時間は<strong>中央値 0.9 時間</strong>、24 時間以内 77.8%。連鎖の実例として <code>#123 #124 #126 #127 #128 → #129</code>（5 PR をまとめて 1 fix が数時間内に修復）。</figcaption>
+  </figure>
+
+  <div class="callout callout--good">
+    <h3>なぜこの指標だけが使えるのか</h3>
+    <p>merge 率も介入率も CTL の <code>agreement_rate</code> も、「人間または AI が記録したフィールド」か「人間ゲートの通過記録」に依存する。rework rate は<strong>後から実際に fix PR が出たという事実</strong>から導かれる。</p>
+    <p>誰の申告も要らず、auto-merge であろうと人間レビューであろうと同じように観測できる。<strong>ただし目標値化してはいけない</strong> — fix PR に先行 PR 番号を書かなくなるだけで下がる指標である。</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4 — 総合</span>境界に張り付く指標と、内側に散る指標</h2>
+  <p class="lede">本セッションで測った 5 指標を 1 本の軸に並べると、値の出所で綺麗に分かれる。</p>
+
+  <figure>
+    <div class="fig-head">
+      <p class="fig-title">指標の値と、その出所</p>
+      <p class="fig-sub">網掛けは 0–5% と 95–100% の境界帯。値がここに入る指標は、事実上その値しか取り得ない。</p>
+    </div>
+    <p class="legend">
+      <span><i style="background:var(--s2)"></i>自己申告フィールド・人間ゲート由来</span>
+      <span><i style="background:var(--s1)"></i>成果物（diff・後続 PR）由来</span>
+    </p>
+    <div class="plot">
+      <svg viewBox="0 0 900 396" role="img" aria-label="5 指標を 0 から 1 の軸に配置した図。自己申告・人間ゲート由来の 3 指標はすべて境界帯（0-5% と 95-100%）に張り付き、成果物由来の 2 指標は内側に散る。">
+        <rect x="300" y="52" width="25" height="272" fill="var(--band)"/>
+        <rect x="775" y="52" width="25" height="272" fill="var(--band)"/>
+        <line class="axisline" x1="300" y1="324" x2="800" y2="324"/>
+        <line class="gridline" x1="400" y1="52" x2="400" y2="324"/>
+        <line class="gridline" x1="500" y1="52" x2="500" y2="324"/>
+        <line class="gridline" x1="600" y1="52" x2="600" y2="324"/>
+        <line class="gridline" x1="700" y1="52" x2="700" y2="324"/>
+        <text class="svg-tick" x="300" y="344" text-anchor="middle">0</text>
+        <text class="svg-tick" x="500" y="344" text-anchor="middle">0.4</text>
+        <text class="svg-tick" x="700" y="344" text-anchor="middle">0.8</text>
+        <text class="svg-tick" x="800" y="344" text-anchor="middle">1.0</text>
+        <text class="svg-tick" x="312" y="368" text-anchor="middle">境界帯</text>
+        <text class="svg-tick" x="788" y="368" text-anchor="middle">境界帯</text>
+        <text class="svg-fam" x="0" y="46">自己申告・人間ゲート由来 — 値が境界に張り付く</text>
+        <line x1="300" y1="76" x2="800" y2="76" stroke="var(--s2)" stroke-width="2" opacity=".22"/>
+        <circle cx="800" cy="76" r="9" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"><title>Council agreement_rate = 1.000（modified / rejected が 67 発動で 0 件）</title></circle>
+        <text class="svg-label" x="290" y="81" text-anchor="end">Council agreement_rate</text>
+        <text class="svg-mono" x="890" y="81" text-anchor="end" fill="var(--s2)">1.000</text>
+        <line x1="300" y1="116" x2="782" y2="116" stroke="var(--s2)" stroke-width="2" opacity=".22"/>
+        <circle cx="782" cy="116" r="9" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"><title>agent PR merge 率 = 0.965（落とす主体がプロセス上に不在）</title></circle>
+        <text class="svg-label" x="290" y="121" text-anchor="end">agent PR merge 率</text>
+        <text class="svg-mono" x="890" y="121" text-anchor="end" fill="var(--s2)">0.965</text>
+        <line x1="300" y1="156" x2="309" y2="156" stroke="var(--s2)" stroke-width="2" opacity=".22"/>
+        <circle cx="309" cy="156" r="9" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"><title>human-commit 介入率 = 0.018（直す主体がプロセス上に不在）</title></circle>
+        <text class="svg-label" x="290" y="161" text-anchor="end">human-commit 介入率</text>
+        <text class="svg-mono" x="890" y="161" text-anchor="end" fill="var(--s2)">0.018</text>
+        <text class="svg-fam" x="0" y="212">成果物（diff・後続 PR）由来 — 内側に散る</text>
+        <line x1="300" y1="242" x2="694" y2="242" stroke="var(--s1)" stroke-width="2" opacity=".22"/>
+        <circle cx="694" cy="242" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>Council 無修正採択率 = 0.788（記録された結果の切り方から導く）</title></circle>
+        <text class="svg-label" x="290" y="247" text-anchor="end">Council 無修正採択率</text>
+        <text class="svg-mono" x="890" y="247" text-anchor="end">0.788</text>
+        <line x1="300" y1="282" x2="354" y2="282" stroke="var(--s1)" stroke-width="2" opacity=".22"/>
+        <circle cx="354" cy="282" r="9" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"><title>deployment rework rate = 0.109（後続 fix PR の実在から導く）</title></circle>
+        <text class="svg-label" x="290" y="287" text-anchor="end">deployment rework rate</text>
+        <text class="svg-mono" x="890" y="287" text-anchor="end">0.109</text>
+      </svg>
+    </div>
+    <figcaption><strong>自己申告フィールドと人間ゲートに依存する指標は境界に張り付き、成果物から導く指標だけが内側に値を持つ。</strong> 3 対 2 の一致は偶然ではない — 境界に張り付いた 3 つは、いずれも<strong>負例を生む経路そのものがプロセス上に無い</strong>。<code>agreement_rate</code> は <code>modified</code>/<code>rejected</code> が 67 発動で 0 件、merge 率は落とす主体が不在、介入率は直す主体が不在である。</figcaption>
+  </figure>
+
+  <div class="callout">
+    <h3>自律度を上げるほど、自律度を評価する指標が使えなくなる</h3>
+    <p>DH は「人間の関与を減らす」ことに成功している。そしてその成功が、<strong>人間の関与を測定基盤にしていた指標を無効化している</strong>。</p>
+    <p>先行分析（<code>ANALYSIS-agentic-sdlc-world-standard-2026-08-28</code> §W9）は業界動向を「計測の重心は生成量から受入率・介入率・revert 率へ移った」とまとめた。しかし<strong>その 3 つはいずれも人間ゲートを前提とする指標</strong>である。ゲートを外した系では、業界がいま重心を置く指標が丸ごと使えない。</p>
+  </div>
+
+  <h3>提案（いずれも提案に留め、判断は人間 = D5 に残す）</h3>
+  <ol class="props">
+    <li><b>rework rate を主指標に昇格する</b><span>月次 <code>harness-verify</code> に載せれば継続観測になる。<strong>目標値化はしない</strong>（fix PR に番号を書かなくなるだけで下がる）。</span></li>
+    <li><b>受入指標は「参照系と比較しない指標」へ降格する</b><span>廃止ではない。opt-in 領域（<code>auto-merge-boundary.md</code>）に該当した PR だけを母集団にすれば、その部分集合では人間ゲートが実在するため意味を回復する。<strong>母集団を分ける</strong>のが正しい直し方。</span></li>
+    <li><b>レビュー窓を観測項目に加える</b><span>5 分未満 merge 比率は、auto-merge 境界が想定どおり効いているかの直接指標になる。opt-in 領域の PR がこの比率に混ざっていたら境界の破れ。</span></li>
+    <li><b>2026-11-06 の auto-merge roll-back ゲートに本実測を入力する</b><span>先行分析が「逸脱の妥当性検証」と位置づけたゲート。rework 10.9% / revert 0% / 修復中央値 0.9h が一次データになる。</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2><span class="num">5 — 限界</span>この計測で言えないこと</h2>
+  <div class="scroller" style="border:1px solid var(--rule); background:var(--surface); box-shadow:var(--shadow); margin-top:24px">
+    <table>
+      <thead><tr><th>限界</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td><strong>母集団</strong></td><td>n=165・単一 repo・単一運用者。DORA の多組織サーベイや dotnet/runtime（878 PR・多人数）と統計的性質が違う。帯の当てはめは目安であって順位づけではない</td></tr>
+        <tr><td><strong>lead time の起点</strong></td><td>ブランチ作成起点で、仕様検討（L0 対話）の時間を含まない。DH の実作業の相当部分が対話にあることを踏まえると、実際のリードタイムはこれより長い</td></tr>
+        <tr><td><strong>rework は下界</strong></td><td>10.9% と 46.1% の間のどこが真値かは決めていない</td></tr>
+        <tr><td><strong>revert 0% の意味</strong></td><td>品質ではなく修復様式の反映。DH は revert より前方修正（fix PR）を採るため、dotnet/runtime の 0.6% と同列に置けない</td></tr>
+        <tr><td><strong>そもそもの限界</strong></td><td><strong>「AI 自律開発ハーネス」の業界標準ベンチマークは存在しない。</strong> 本計測は既存 SDLC 指標の転用であって、確立された benchmark suite への提出ではない</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <h3>計測経路が指標を作った — 記録として</h3>
+    <p>最初、master の squash commit だけで計算したとき <strong>merge 率 1.000 / human-commit 率 0.000</strong> が出た。squash が commit 単位の情報を破壊し、かつ「master に squash commit がある」＝「merged」なので<strong>分母に不採用 PR が入り得なかった</strong>ためである。</p>
+    <p><code>git fetch origin '+refs/pull/*/head:refs/remotes/origin/pr/*'</code> で PR head ref を取ると 96.5% / 1.8% になり、不採用 6 件が可視化された。<strong>この文書の §4 が指摘している現象を、計測手法そのものが一度踏んでいる。</strong></p>
+  </div>
+</section>
+
+<footer>
+  <p>集計のみで <strong>LLM 判定を一切含まない</strong>。終了コードは常に 0（warn のみ・block しない、philosophy.md 第 6 条 人間最終承認）。</p>
+  <p>再現: <code>git fetch origin '+refs/pull/*/head:refs/remotes/origin/pr/*'</code> → <code>python3 scripts/harness-benchmark.py --states &lt;PR 状態 JSON&gt;</code> ／ 回帰テスト <code>scripts/test-harness-benchmark.py</code>（33 checks）<br>
+  出典: <a href="https://devblogs.microsoft.com/dotnet/ten-months-with-cca-in-dotnet-runtime/">Ten Months with Copilot Coding Agent in dotnet/runtime</a> ／ <a href="https://dora.dev/guides/dora-metrics-four-keys/">DORA's software delivery performance metrics</a> ／ <a href="https://dora.dev/insights/dora-metrics-history/">A history of DORA's metrics</a> ／ <a href="https://github.com/samejima-ai/dialog-harness/pull/223">PR #223</a></p>
+</footer>
+
+</div>
+</body>
+</html>
