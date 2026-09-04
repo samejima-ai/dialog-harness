@@ -3150,3 +3150,59 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+
+- invocation_id: "council-2026-09-04T10:05:00Z-lg0903"
+  timestamp: "2026-09-04T10:05:00Z"
+  source_skill: "l0-pre-brainstorm"
+  question_to_answer: "コードベース自身のログの「場所」を、台帳型（所在を宣言・実体は各所）で実現すべきか、物理集約型（repo 内 logs/ に JSONL・台帳なし）で実現すべきか。人間は C を選んだが、同時に確定した Q5/Q6/Q7 の回答（logs.yml 前提）と衝突している。どの骨格を採り、衝突をどう整合させるべきか。"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "simple_conflict"
+  options:
+    - "A 台帳のみ（logs.yml で所在・読み手・保持・PII・droppable を宣言。実体は各所のまま動かさない）"
+    - "B 台帳 + 二層（logs.yml + repo 内 .dh/log/ に生 JSONL ローカル gitignore / 蒸留 md commit）"
+    - "C 物理集約のみ（repo 内 logs/ に全ログを JSONL で貯める。台帳は作らない。DB / SaaS / ホーム配下の記録は対象外か export で持ち込む）"
+    - "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）", confidence: 0.78, dimension: "ROI（投資対効果 / 保守コストの下限化）", note: "経営判断としての違和感は「台帳か物理か」という問いの立て方自体にある。実測で分かっているのは、失われているものが sensor の stdout 1 種だけで、他 22 種は既に各所に存在しているという事実。つまり本件の投資対象は『新しい場所を作る』ことではなく『消えている 1 種を拾う』ことであり、C か D かは tee の書き出し先ディレクトリに README を置くかどうかの差でしかない。台帳型（A / B）は「所在の整理」という別の課題への投資であって、人間が発話で求めた「貯めとく場所」の解ではない。Q5-7 の回答は判断キットが logs.yml を前提に問いを組んだことで誘導された可能性があり、衝突は人間の意図の矛盾ではなくキットの設問設計の産物と見る。" }
+    開発者: { stance: "B 台帳 + 二層（logs.yml + repo 内 .dh/log/ に生 JSONL ローカル gitignore / 蒸留 md commit）", confidence: 0.72, dimension: "保守性 / 可逆性", note: "議題の「台帳 vs 物理集約」は偽の二択に見える。人間が C で守りたいのは「実体が 1 箇所に貯まること」、Q5/6/7 が守りたいのは「DH が配れる宣言ファイルがあること」で、両者は「宣言ファイル = 収集器の設定」とすれば同一物になる。衝突しているのは骨格ではなく logs.yml の性格（文書か設定か）の未定義。また 12-factor 逸脱の度合いはラッパー方式で縮小できる: sensor スクリプト自身にファイル書込を足すのは避け（決定論センサーを汚さない）、実行環境側で集約する。" }
+    哲学者: { stance: "第3の道", confidence: 0.6, dimension: "前提への問い", note: "人間の「台帳を作らない」は「もう 1 枚メンテする文書を増やしたくない」の表現と読む（代謝の実害を身体で知っている人の直感）。ならば整合の方向は「台帳を消す（C）」でも「人間を台帳側へ引き戻す（A/B）」でもなく「台帳を手書きしない」。最も近い option は D だが、D の README / index.yml は手書きゆえ D もまた腐る。B と D の中間に「生成される索引」を置くのが本案で、options では表せない。もう 1 つの沈黙前提: 「所在」は AI にとって routing であり、既に CLAUDE.md ルーティング表（常駐 vs 遅延参照）という同型の機構がある。新しい台帳を発明するより、repo に置けない記録の所在はその表の行として扱う方が思想的に一貫する。" }
+  judgment_confidence: 0.38
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）"
+    scores:
+      - stance: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.34
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.78 }
+      - stance: "B 台帳 + 二層（logs.yml + repo 内 .dh/log/ に生 JSONL ローカル gitignore / 蒸留 md commit）"
+        supporters: ["開発者"]
+        weight_sum: 3
+        weighted_score: 2.16
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.72 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第3の道: 骨格は C（repo 内 logs/ を「コードベースが自分の走行を記憶する身体」とする）。ただし台帳は「作らない」のでも「独立ファイルとして書く」のでもなく「手で書かない」。所在・読み手・保持・PII・droppable は各 stream の自己記述（機械が書く header 行）として logs/ の中に置き、logs.yml は database.types.ts と同型の生成物にする。repo に置けない DB / SaaS / transcript は「所在を告げる出来事」1 行として logs/ に流し、AI にとっての所在（呼ぶ MCP / gate）は既存ルーティング表の行として持つ。台帳は log に溶ける。", weight: 5, confidence: 0.6, reason: "options 外の自由記述。weight 非加算・minority_opinion へ転載" }
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.3, hi: 0.5, basis: "gap_ratio" }
+  recommended: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）— ただし索引は「手書き文書」ではなく「収集器が読み・検査スクリプトが機械検証する設定」として置き、Q5/Q6/Q7 の logs.yml をこの 1 枚（logs/index.yml）に同一化して衝突を解消する。生 JSONL は logs/raw/ のみ gitignore、蒸留 md は tracked。DB / SaaS / transcript は store 列で「repo 外」を宣言するだけで export を committed 領域へ持ち込まない"
+  minority_opinion: "開発者(3, 0.72): B = 台帳を「収集器が読む設定」とし、check-* は改変せず外側ラッパー（hook / CI step）が tee。検査スクリプトを同 PR で出荷しないと即 prose 化して drift。export は raw(gitignore) 限定、`.dh/log/` 丸ごと ignore は子の再 include 不可、dedup キー（session_id+ts+sensor id）要。哲学者(5, 0.60, 第3の道・加算外): 骨格 C、台帳は「手で書かない」。各 stream の機械 header 行から logs.yml を database.types.ts 同型で生成。repo 外記録は「所在を告げる出来事」1 行で流し、AI の所在は既存ルーティング表の行で持つ。保持期限は stream 自身が持ち代謝機械を同時に設ける。"
+  weight_note: "weight_calculation を機械適用（経営者3/開発者3/哲学者5、operation 寄りの均衡配分）。哲学者は options 外 stance で third_way_excluded（ΣW の 45% ≥ 30% → 上限 0.50 切下げ）。gap 0.18 は拮抗帯。"
+  reasoning: "重み配分を機械適用した結果、経営者(3×0.78=2.34) が開発者(3×0.72=2.16) を僅差で上回り D が骨格。哲学者(5) は options 外の第3の道ゆえ加算対象外。ただし gap は ΣW=11 に対し極小（拮抗帯）で、かつ third_way_excluded が全 weight の 45% を占めるため、judgment_confidence は帯上限 0.50 以下に留め、人間エスカレーション圏と明記する。実質的な収束点は 3 軸で共通している: (1) 実害として失われているのは sensor/ci の stdout 1 種のみで、これは repo 内物理集約で 100% 埋まる（人間の C 選択の意図と一致）。(2) 手書き台帳は CHANGELOG/HANDOFF が 2 ヶ月止まった実害の通り腐る。(3) よって独立台帳ファイルは作らず、Q5-7 の logs.yml を logs/ 内の 1 枚に同一化する。3 軸が分かれるのはその 1 枚の性格で、経営者=最小索引（列 3 つ以下）、開発者=収集器が読む設定 + 検査スクリプト同 PR 出荷、哲学者=機械生成物。D を骨格にしつつ開発者の「設定として機械読み・機械検証」を吸収すると D と B は同値になり、衝突は「骨格」ではなく「logs.yml の性格（文書か設定か）」の未定義に帰着する。判断キットの設問が logs.yml を前提に組まれたことで生じた衝突であり、人間の意図の矛盾ではない。残る人間判断点: 索引を手書き最小索引に留めるか（D）、収集器設定として同 PR で検査スクリプトまで出荷するか（B 相当）、生成物にするか（第3の道）。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  final_decision: null
+  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
