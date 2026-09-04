@@ -53,6 +53,7 @@
 | Q8 メモ置き場 | B `delivery/ANALYSIS-*` に統一、kakuman も移す。矛盾に注意 | kakuman 側は skill 2 ファイル（AI 不可侵）の改訂が先。順序を ANALYSIS メモ §Q8 に記載。**本 cycle では移動していない** |
 | Q9 VERSION drift | A 別 PR で先に | VERSION vs upgrade-spec の対応表を別 PR で献上（未着手） |
 | Q10 次の一手 | A ブレスト継続、HTML で選択できるように | 棚卸しキット 0904 を公開: https://claude.ai/code/artifact/add88e1f-1f58-493a-b062-99523af63caa |
+| **Q3′ 索引 1 枚の性格** | **B 収集器が読む設定 + 検査スクリプト同 PR**（Council lg3p01、jc 0.80、3 軸一致。09-04「Council で決めて」委任） | 付帯 4 条件（初便は schema 検査のみ / retention 削除は可逆形先行 / 配線 diff 同 PR / ハードコード path 禁止）を L0 入力に |
 
 回答原文:
 

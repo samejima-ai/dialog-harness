@@ -24,9 +24,9 @@
 | Q7 | DB | expense_ocr_metrics | kakuman | runtime | none | B |
 | Q8 | DB | cc-cockpit SQLite | cc-cockpit | runtime + ai-session | none | C（transcript の派生） |
 | Q9 | gitignore | *.log | kakuman | runtime / tooling | unknown | B |
-| Q10 | gitignore | harness-verifier/reports/（丸ごと） | kakuman | sensor | none | A |
+| Q10 | gitignore | harness-verifier/reports/（丸ごと） | kakuman | ai-session（訂正） | none | 別議題 |
 | Q11 | gitignore | *.log | cc-cockpit | runtime / tooling | unknown | B |
-| Q12 | gitignore | coverage/ | cc-cockpit | sensor | none | A |
+| Q12 | gitignore | coverage/ | cc-cockpit | （書き手ゼロ） | none | C |
 | Q13 | gitignore | playwright-report/ + test-results/ | cc-cockpit | sensor | none | A |
 | Q14 | gitignore | .cc-cockpit/（セッション報告） | cc-cockpit | 成果物 | unknown | C（ログでない） |
 | Q15 | gitignore | hook-observations.jsonl | DH（kakuman 同名） | ai-session | none | B |
@@ -45,6 +45,15 @@
 - Q6 freee-monitor sync ログの表名（SPEC FX-SAMEJIMA §F の言及のみ）
 - Q9 / Q11 の `*.log` の書き手
 
-## 決定記録
+## 決定記録（2026-09-04 ひでさん「疲れる！Council で決めて」→ Council lginv1 の推奨を採用）
 
-（回答が返ったら「Q / 決定 / 段階 1 の初期集合」をここに追記し、ANALYSIS メモ §ブレスト決定 にも写す）
+| 項目 | 決定 |
+|---|---|
+| 段階 1 の初期集合 | **Q0（決定論センサーの stdout + exit code）1 stream のみ**。他 22 行は `logs/index.yml` の所在行のみ |
+| Q3 GitHub Actions ログ | Q0 の CI 側発生源として index.yml に併記（別 stream にしない） |
+| Q13 E2E 結果 | 「test:e2e の stdout は Q0 に含まれる」と定義で吸収 |
+| Q10 harness-verifier/reports（kakuman） | **種別訂正 sensor → ai-session**（書くのは hook-observations.jsonl だけ）。「蒸留物が残らない」は kakuman に verify.py が無い = DH 資産の配布範囲の**別議題** |
+| Q12 coverage/（cc-cockpit） | **対象外**（coverage の依存・設定・script が無く書き手ゼロ、gitignore は雛形の残骸） |
+| 同時に決めるもの | Q0 の書き手（LLM 非使用 1 ラッパー・exit code 透過・pnpm verify 既定経路）/ 読み手（献上前センサー通過 / F1 への接続）/ `logs/raw` の rotate 規則 / 段階 2 昇格条件（蒸留 1 回完走 + 参照実績 1 件）/ **3 ヶ月で読まれなければ縮小する stop 判断の予約** |
+
+Council: `council-2026-09-04T10:50:00Z-lginv1`（C2 / conception / simple_conflict / jc 0.78。C = 開発者 3×0.85 + 哲学者 5×0.65 = 5.80 vs B = 経営者 3×0.75 = 2.25）。少数意見（経営者 B = Q0 + Q10 の 2 行）は「昇格条件・stop 予約・PII 実物確認」として吸収。

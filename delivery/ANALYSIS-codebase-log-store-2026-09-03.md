@@ -201,11 +201,25 @@ v6.15.0 起源の scripts / templates が既に main に存在する
 
 kakuman で `docs/brainstorm/` を参照している箇所は 09-04 実測で **SPEC.md 4 箇所・REGIME.md 1 箇所・`docs/brainstorm/README.md`・`.claude/skills/l0-pre-brainstorm/SKILL.md` 4 箇所・`.claude/skills/feedback-triage/SKILL.md` 1 箇所・history / delivery の記録 8 箇所**。このうち **`.claude/skills/**` の 2 ファイルは L-FROZEN-META（AI 不可侵）**ゆえ AI は書き換えられない。順序: ① 人間が 2 skill の記録先を `delivery/ANALYSIS-*` に改訂（または DH 昇格版 skill が降りてくる）→ ② AI が 6 ファイルを `delivery/` へ移し、SPEC 4 リンクと REGIME 1 行を更新、`docs/brainstorm/README.md` を転送先案内に置換（history / delivery の過去記録は書き換えない）。①前に AI だけで②をやると skill と実態が食い違うので、**本 cycle では kakuman 側は動かしていない**。
 
-### 開いたままの論点（更新）
+### 2026-09-04 ひでさん「疲れる！Council で決めて」— 残 2 件を Council 推奨で確定（人間委任）
 
-- Q3′（索引 1 枚の性格）— キット 0903 に追加、人間回答待ち
-- Q9-A の実行（VERSION と upgrade-spec の対応表）— 別 PR
-- 棚卸しキット 0904（22 種 + 欠落 1、A/B/C）— 人間回答待ち
+委任の形: 本諮問 2 件の `recommended` をそのまま決定として採用する、と人間が事前に宣言。3 諮問（lg0903 / lg3p01 / lginv1）の actual_outcome は `agreed`（note に委任の旨）で記録した。哲学者軸の懸念「委任で推奨がそのまま決定になる構造は第 6 条（人間最終承認）が形式化する兆候」は minority_opinion に保持し、ここにも写す。
+
+**Q3′ = B（`council-2026-09-04T10:50:00Z-lg3p01`、reason_divergence、jc 0.80、3 軸一致）**: `logs/index.yml` は「収集器が読む設定 + 検査スクリプトを同 PR で出荷」。外側ラッパーが index.yml を読んで `logs/raw/` に tee（check-* / lint-* 本体は改変しない、exit code 透過）。付帯条件（3 軸共通）: ①初便の検査は schema 検査（path 実在・store 列・列上限）に絞る ②retention 超過削除は dry-run / ごみ箱移動の可逆形で先行 ③ラッパーの配線 diff（pnpm verify / CI step）を同 PR の受入条件に含める ④ラッパーがハードコード path で動く抜け道を作らない（作った瞬間 B は A に退化）。開発者: raw 先頭に機械 header 1 行（stream id / store / ts / dedup key）を吐けば後日 C（生成物）へ移行できる = B は C の on-ramp。CI では dedup キーに run_id 分岐。Windows（cc-cockpit）ゆえ shell 非依存の python ラッパー。
+
+**段階 1 の初期集合 = C（`council-2026-09-04T10:50:00Z-lginv1`、simple_conflict、jc 0.78、開発者 + 哲学者 vs 経営者）**: **Q0（決定論センサーの stdout + exit code）1 stream だけ**を `logs/` に載せる。他 22 行は index.yml の所在行のみ。付帯: ①Q3（Actions ログ）は Q0 の CI 側発生源として index.yml に併記（別 stream にしない）②Q13（E2E）は「test:e2e の stdout は Q0 に含まれる」と定義で吸収 ③Q10 は logs/ の行ではなく**別議題**へ（下記）④Q0 の書き手（LLM 非使用 1 ラッパー・exit code 透過・pnpm verify 既定経路）と読み手（献上前センサー通過 / F1 への接続）・`logs/raw` の rotate 規則・段階 2 昇格条件を index.yml と同時に決める。少数意見（経営者、吸収）: 段階 1→2 の昇格条件（蒸留 1 回完走 + 参照実績 1 件）を先に決める / **3 ヶ月で Q0 が一度も読まれなければ拡張せず縮小する stop 判断を予約** / PII none をセンサー stdout の実物で確認 / GitHub の retention 変更を段階 2 の繰り上げトリガーに。
+
+**棚卸し表の訂正（開発者軸が実ファイルで検出、09-04 に AI が裏取り済み）**:
+- Q10: kakuman の `harness-verifier/reports/` に書くのは `observe.py` の `hook-observations.jsonl` だけ（種別 = ai-session、Q15 と同じ）。月次 `YYYY-MM.md` を生成する `verify.py` は kakuman に存在しない。→ 「蒸留物すら残らない実害」の正体は **kakuman に harness-verifier ツールが無い = DH 資産の配布範囲の議題**。ログ層の外で別建て
+- Q12: cc-cockpit に coverage の依存・設定・script が無い（`package.json` / `vitest.config.ts` に 0 件）。`.gitignore` の `coverage/` は雛形の残骸 = 書き手ゼロ → 対象外
+- Q13: playwright の html report は CI artifact として 7 日保持（`ci.yml` retention-days: 7）。蒸留に要る pass/fail・失敗テスト名は stdout に出る = Q0 の部分集合
+
+### 開いたままの論点（09-04 更新）
+
+- Q9-A の実行（VERSION と upgrade-spec の対応表）— 別 PR、未着手
+- Q8-B の kakuman 側実行 — skill 2 本の人間改訂が先（§Q8）
+- Q10 別議題: kakuman に harness-verifier（verify.py / 月次 reports）を配布するか（DH 資産の配布範囲）
+- 段階 1 の実装 = L0（upgrade-spec 起草）へ上げる材料は揃った。上げるのは人間の明示指示のみ
 
 ## 次にやるなら（09-04 更新）
 

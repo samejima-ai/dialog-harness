@@ -2,14 +2,14 @@
   "key": "dh-log-inventory-0904",
   "title": "ログ棚卸しキット 0904",
   "eyebrow": "dialog-harness · ログ層 · 3 リポの記録 22 種 + 欠落 1 · 2026-09-04",
-  "lede": "ログ層キット 0903 Q10-A「台帳初版（3 リポ分）を調査で埋めてから判断する」の実行。機械が吐く記録を 1 行 1 問に並べた。<span class='mono'>23</span> 行に A / B / C を付けて「回答まとめ」を貼れば、段階 1 の初期集合が確定する。1 行 1 分。",
+  "lede": "ログ層キット 0903 Q10-A「台帳初版（3 リポ分）を調査で埋めてから判断する」の実行。機械が吐く記録を 1 行 1 問に並べた。<span class='mono'>23</span> 行に A / B / C を付けて「回答まとめ」を貼れば、段階 1 の初期集合が確定する。1 行 1 分。 <b>09-04 追記</b>: 人間の委任により Council lginv1 で確定（上表）。○× は不要。",
   "meta": [
     "<span>起点 <b>ログ層キット 0903 の回答（Q1-A: sensor + ci から / 将来は 5 種全部）</b></span>",
     "<span>実測 <b>09-03〜04 · 各リポの .gitignore / SPEC / migrations / db/index.ts</b></span>",
     "<span>推奨の規則 <b>sensor・ci = A ／ runtime・audit・蒸留物 = B ／ 正が別にある・ログでない = C</b></span>",
     "<span>局面 <b>L0 前ブレスト（未確定・cycle ではない）</b></span>"
   ],
-  "hero_html": "<div class='grid-2'><div class='panel'><h3>種別の内訳（22 種 + 欠落 1）</h3><div class='bar'><div class='seg' style='flex:9;background:var(--c1)' data-tip='runtime 9（Sentry / Vercel / DB ログ 4 / SQLite / *.log 2）'>9</div><div class='seg' style='flex:7;background:var(--c2)' data-tip='sensor 7（センサー出力〔欠落〕/ verifier reports 2 / coverage / E2E / PERF_AUDIT / ASSESSMENT / ANALYSIS）'>7</div><div class='seg' style='flex:4;background:var(--c3)' data-tip='ai-session 4（transcript 2 / hook 観測 / .cc-cockpit 報告）'>4</div><div class='seg' style='flex:1;background:var(--c4)' data-tip='ci 1（GitHub Actions ログ）'></div><div class='seg neutral' style='flex:2' data-tip='audit 2（samejima_activity_log / CTL 記録）'>2</div></div><div class='legend'><span><i class='sw' style='background:var(--c1)'></i>runtime</span><span><i class='sw' style='background:var(--c2)'></i>sensor</span><span><i class='sw' style='background:var(--c3)'></i>ai-session</span><span><i class='sw' style='background:var(--c4)'></i>ci</span><span><i class='sw neutral'></i>audit</span></div><div class='caption'>Q1-A の「sensor + ci から」に該当し、PII が無く、正が別に無い行が推奨 A。うち 1 行（決定論センサー出力）は今どこにも無い。</div></div><div class='panel'><h3>推奨の内訳</h3><div class='stat-row' style='grid-template-columns:1fr 1fr 1fr'><div class='stat'><div class='n' style='color:var(--c1)'>5</div><div class='l'>A 段階 1 で対象</div></div><div class='stat'><div class='n' style='color:var(--c2)'>12</div><div class='l'>B 後段で対象</div></div><div class='stat'><div class='n'>6</div><div class='l'>C 対象外</div></div></div><div class='caption' style='margin-top:14px'>C の根拠は 3 つだけ: 正が別にある（SQLite は transcript の派生、CTL 記録は COUNCIL-LOG の派生）／ ログではなく成果物（.cc-cockpit 報告、ASSESSMENT）／ 動かさない（transcript は読み取り専用・SPEC C11）。</div></div></div>",
+  "hero_html": "<div class='panel' style='margin-bottom:18px'><h3>決定記録（2026-09-04「疲れる！Council で決めて」→ Council lginv1 の推奨を採用）</h3><div class='tbl-wrap'><table><thead><tr><th>項目</th><th>決定</th></tr></thead><tbody><tr><td>段階 1 の初期集合</td><td><b>Q0（決定論センサーの stdout + exit code）1 stream のみ</b>。他 22 行は logs/index.yml の所在行のみ</td></tr><tr><td>Q3 Actions ログ</td><td>Q0 の CI 側発生源として index.yml に併記（別 stream にしない）</td></tr><tr><td>Q13 E2E 結果</td><td>「test:e2e の stdout は Q0 に含まれる」と定義で吸収</td></tr><tr><td>Q10 verifier reports（kakuman）</td><td>種別訂正 sensor → ai-session。kakuman に verify.py が無い = DH 資産の配布範囲の<b>別議題</b></td></tr><tr><td>Q12 coverage/（cc-cockpit）</td><td><b>対象外</b>（依存・設定・script が無く書き手ゼロ）</td></tr><tr><td>同時に決めるもの</td><td>Q0 の書き手（1 ラッパー・exit code 透過・pnpm verify 既定経路）/ 読み手（献上前センサー通過 / F1）/ raw の rotate / 段階 2 昇格条件 / 3 ヶ月で読まれなければ縮小する stop 予約</td></tr></tbody></table></div><div class='caption'>C = 開発者 3×0.85 + 哲学者 5×0.65 = 5.80 vs B（経営者）2.25、jc 0.78。少数意見（Q0 + Q10 の 2 行）は昇格条件・stop 予約・PII 実物確認として吸収。正本: delivery/DECISION-KIT-codebase-log-inventory-2026-09-04.md</div></div><div class='grid-2'><div class='panel'><h3>種別の内訳（22 種 + 欠落 1）</h3><div class='bar'><div class='seg' style='flex:9;background:var(--c1)' data-tip='runtime 9（Sentry / Vercel / DB ログ 4 / SQLite / *.log 2）'>9</div><div class='seg' style='flex:7;background:var(--c2)' data-tip='sensor 7（センサー出力〔欠落〕/ verifier reports 2 / coverage / E2E / PERF_AUDIT / ASSESSMENT / ANALYSIS）'>7</div><div class='seg' style='flex:4;background:var(--c3)' data-tip='ai-session 4（transcript 2 / hook 観測 / .cc-cockpit 報告）'>4</div><div class='seg' style='flex:1;background:var(--c4)' data-tip='ci 1（GitHub Actions ログ）'></div><div class='seg neutral' style='flex:2' data-tip='audit 2（samejima_activity_log / CTL 記録）'>2</div></div><div class='legend'><span><i class='sw' style='background:var(--c1)'></i>runtime</span><span><i class='sw' style='background:var(--c2)'></i>sensor</span><span><i class='sw' style='background:var(--c3)'></i>ai-session</span><span><i class='sw' style='background:var(--c4)'></i>ci</span><span><i class='sw neutral'></i>audit</span></div><div class='caption'>Q1-A の「sensor + ci から」に該当し、PII が無く、正が別に無い行が推奨 A。うち 1 行（決定論センサー出力）は今どこにも無い。</div></div><div class='panel'><h3>推奨の内訳</h3><div class='stat-row' style='grid-template-columns:1fr 1fr 1fr'><div class='stat'><div class='n' style='color:var(--c1)'>5</div><div class='l'>A 段階 1 で対象</div></div><div class='stat'><div class='n' style='color:var(--c2)'>12</div><div class='l'>B 後段で対象</div></div><div class='stat'><div class='n'>6</div><div class='l'>C 対象外</div></div></div><div class='caption' style='margin-top:14px'>C の根拠は 3 つだけ: 正が別にある（SQLite は transcript の派生、CTL 記録は COUNCIL-LOG の派生）／ ログではなく成果物（.cc-cockpit 報告、ASSESSMENT）／ 動かさない（transcript は読み取り専用・SPEC C11）。</div></div></div>",
   "sections": [
     {
       "eyebrow": "01 · 守る線",
@@ -132,7 +132,7 @@
         {
           "k": "A",
           "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
-          "rec": "推奨"
+          "rec": "Council: Q0 に併記"
         },
         {
           "k": "B",
@@ -327,15 +327,14 @@
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman .gitignore:55",
-        "<b>種別</b>: sensor（DH verifier） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: md / jsonl",
+        "<b>種別</b>: ai-session（<b>訂正</b>: 書くのは observe.py の hook-observations.jsonl だけ） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: md / jsonl",
         "<b>読み手</b>: ai ／ <b>PII</b>: none ／ <b>保持</b>: ローカルのみ",
-        "DH 本体は YYYY-MM.md を commit するが kakuman は丸ごと除外 = 蒸留物も残らない"
+        "<b>訂正（09-04 実ファイル確認）</b>: kakuman に verify.py（月次 YYYY-MM.md 生成）は存在しない。「蒸留物が残らない」はログ層ではなく DH 資産の配布範囲の別議題"
       ],
       "options": [
         {
           "k": "A",
-          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
-          "rec": "推奨"
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
         },
         {
           "k": "B",
@@ -343,7 +342,8 @@
         },
         {
           "k": "C",
-          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "Council: 別議題"
         }
       ],
       "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
@@ -387,13 +387,12 @@
         "<b>発生源</b>: cc-cockpit .gitignore",
         "<b>種別</b>: sensor（test） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: lcov / html",
         "<b>読み手</b>: human ／ <b>PII</b>: none ／ <b>保持</b>: 次回実行で上書き",
-        "vitest の出力。数値だけ残せば足りる"
+        "<b>訂正（09-04 実ファイル確認）</b>: package.json / vitest.config.ts に coverage の記述 0 件。.gitignore の coverage/ は雛形の残骸 = 書き手ゼロ"
       ],
       "options": [
         {
           "k": "A",
-          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
-          "rec": "推奨"
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
         },
         {
           "k": "B",
@@ -401,7 +400,8 @@
         },
         {
           "k": "C",
-          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "Council: 対象外"
         }
       ],
       "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
@@ -416,13 +416,13 @@
         "<b>発生源</b>: cc-cockpit .gitignore",
         "<b>種別</b>: sensor（E2E） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: html / trace",
         "<b>読み手</b>: human ／ <b>PII</b>: none ／ <b>保持</b>: 次回実行で上書き",
-        "知覚層（E2E）は gate 化しない（kakuman G-TEST と同型）。結果の要約だけ残す"
+        "知覚層（E2E）は gate 化しない（kakuman G-TEST と同型）。結果の要約だけ残す。html report は CI artifact 7 日保持（ci.yml retention-days: 7）"
       ],
       "options": [
         {
           "k": "A",
           "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
-          "rec": "推奨"
+          "rec": "Council: Q0 に吸収"
         },
         {
           "k": "B",
