@@ -1,0 +1,346 @@
+{
+  "key": "dh-log-store-0903",
+  "title": "ログ層キット 0903",
+  "eyebrow": "dialog-harness · メタスキル設計 · コードベース自身のログ置き場 · 2026-09-03",
+  "lede": "「開発ログではなく、コードベース自体のログを貯めとく場所」を DH の横断機構としてどう設ける か。3 リポジトリの実態と一次情報を調べた結果を <span class='mono'>10</span> 問に畳んだ。○ を付けて「回答まとめ」を貼れば、次はブレスト決定として記録し、指示があれば L0 へ上げる。",
+  "meta": [
+    "<span>起点 <b>ひでさん 09-03「あらゆるログを記録しておく場所を設けたい」</b></span>",
+    "<span>実測 <b>09-03 · kakuman / cc-cockpit / dialog-harness の 3 リポ</b></span>",
+    "<span>局面 <b>L0 前ブレスト（未確定・cycle ではない）</b></span>",
+    "<span>正本 <b class='mono'>delivery/ANALYSIS-codebase-log-store-2026-09-03.md</b>（PR #238 merged）</span>"
+  ],
+  "hero_html": "<div class='grid-2'><div class='panel'><h3>機械が吐く記録 23 種の保管先（3 リポ合計・09-03 実測）</h3><div class='bar'><div class='seg' style='flex:8;background:var(--c1)' data-tip='repo 内・gitignore 8 種（*.log / test-results / .cc-cockpit / hook-observations.jsonl 等）'>8</div><div class='seg' style='flex:5;background:var(--c2)' data-tip='DB 5 種（samejima_activity_log / underlay_usage_* / freee sync / expense_ocr_metrics / SQLite usage_daily）'>5</div><div class='seg' style='flex:4;background:var(--c3)' data-tip='repo 内・committed 4 種（PERF_AUDIT.md / harness-verifier reports / delivery/ANALYSIS）'>4</div><div class='seg' style='flex:3;background:var(--c4)' data-tip='外部 SaaS 3 種（Sentry / Vercel / GitHub Actions ログ）'>3</div><div class='seg neutral' style='flex:3' data-tip='ホーム配下 3 種（~/.claude/projects の transcript、3 リポ共通）'>3</div></div><div class='legend'><span><i class='sw' style='background:var(--c1)'></i>repo 内・gitignore</span><span><i class='sw' style='background:var(--c2)'></i>DB</span><span><i class='sw' style='background:var(--c3)'></i>repo 内・committed</span><span><i class='sw' style='background:var(--c4)'></i>外部 SaaS</span><span><i class='sw neutral'></i>ホーム配下</span></div><div class='caption'>出所: ANALYSIS メモ §F1 の表を数えたもの。決定論センサー（<span class='mono'>scripts/check-*</span>）の出力はこの 23 種のどこにも無い。stdout に流れて消える。</div></div><div class='panel'><h3>要旨</h3><div class='stat-row' style='grid-template-columns:1fr 1fr'><div class='stat'><div class='n' style='color:var(--c1)'>5</div><div class='l'>保管先の種類<br>（所在の一覧が無い）</div></div><div class='stat'><div class='n' style='color:var(--no)'>0</div><div class='l'>蓄積されている<br>検査ログ（センサー / CI）</div></div><div class='stat'><div class='n'>10</div><div class='l'>人間が答える問い<br>2 分 × 6・5 分 × 4</div></div><div class='stat'><div class='n' style='color:var(--c4)'>1</div><div class='l'>DH に既にある同型の枠<br>（telemetry-reflux.yml）</div></div></div><div class='caption' style='margin-top:14px'>AI の見立て: 欠けているのは保管先ではなく「このプロジェクトにどんなログがあるか」の所在一覧。台帳から始め、物理集約は後。</div></div></div>",
+  "sections": [
+    {
+      "eyebrow": "01 · 今と提案",
+      "h2": "ログはどこへ消え、どこを通せば AI が見つけられるか",
+      "sub": "上段が今。発生源ごとに別の場所へ流れ、AI は「どこに何があるか」を知る手段を持たない。センサー出力は stdout で消える。下段が提案。台帳（logs.yml）が全保管先を指し、repo 内に置く分は生 JSONL（ローカル）と蒸留 md（commit）の二層にする。",
+      "html": "<div class='flow-wrap'><svg class='chart flow' viewBox='0 0 960 430' role='img' aria-label='今の経路: センサー・CI・アプリ・Claude Code の 4 発生源が stdout・Actions ログ・Sentry や DB・ホーム配下へ別々に流れ、AI は所在を知れない。提案: 台帳 logs.yml が全保管先を指し、repo 内は生 JSONL ローカルと蒸留 md commit の二層'><defs><marker id='ah' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' class='arrow'/></marker><marker id='ah2' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' class='arrow-accent'/></marker></defs><text x='20' y='30' class='lbl-note'>今</text><rect class='box' x='20' y='44' width='150' height='40' rx='8'/><text x='95' y='69' text-anchor='middle' class='lbl-body'>センサー check-*</text><path class='edge-no' d='M170 64 H258' marker-end='url(#ah)'/><rect class='box-dim' x='260' y='44' width='150' height='40' rx='8'/><text x='335' y='69' text-anchor='middle' class='lbl-body'>stdout → 消える</text><rect class='box' x='20' y='94' width='150' height='40' rx='8'/><text x='95' y='119' text-anchor='middle' class='lbl-body'>CI（Actions）</text><path class='edge' d='M170 114 H258' marker-end='url(#ah)'/><rect class='box' x='260' y='94' width='150' height='40' rx='8'/><text x='335' y='119' text-anchor='middle' class='lbl-body'>Actions ログ 90 日</text><rect class='box' x='20' y='144' width='150' height='40' rx='8'/><text x='95' y='169' text-anchor='middle' class='lbl-body'>アプリ runtime</text><path class='edge' d='M170 164 H258' marker-end='url(#ah)'/><rect class='box' x='260' y='144' width='150' height='40' rx='8'/><text x='335' y='169' text-anchor='middle' class='lbl-body'>Sentry / DB ops</text><rect class='box' x='20' y='194' width='150' height='40' rx='8'/><text x='95' y='219' text-anchor='middle' class='lbl-body'>Claude Code</text><path class='edge' d='M170 214 H258' marker-end='url(#ah)'/><rect class='box' x='260' y='194' width='150' height='40' rx='8'/><text x='335' y='219' text-anchor='middle' class='lbl-body'>~/.claude · hooks</text><path class='edge-no' d='M410 114 H468' marker-end='url(#ah)'/><path class='edge-no' d='M410 164 H468' marker-end='url(#ah)'/><path class='edge-no' d='M410 214 H468' marker-end='url(#ah)'/><rect class='box-dim' x='470' y='94' width='180' height='140' rx='8'/><text x='560' y='150' text-anchor='middle' class='lbl-body'>AI（CC）</text><text x='560' y='170' text-anchor='middle' class='lbl-body-2'>どこに何があるか</text><text x='560' y='188' text-anchor='middle' class='lbl-body-2'>知る手段が無い</text><line x1='20' y1='262' x2='940' y2='262' class='grid'/><text x='20' y='292' class='lbl-note'>提案</text><rect class='box' x='20' y='306' width='130' height='44' rx='8'/><text x='85' y='324' text-anchor='middle' class='lbl-body'>発生源 4 種</text><text x='85' y='342' text-anchor='middle' class='lbl-body-2'>変えない</text><path class='edge' d='M150 328 H168' marker-end='url(#ah)'/><rect class='box' x='170' y='306' width='160' height='44' rx='8'/><text x='250' y='324' text-anchor='middle' class='lbl-body'>生 JSONL（ローカル）</text><text x='250' y='342' text-anchor='middle' class='lbl-body-2'>gitignore · OTel 最小形</text><path class='edge' d='M330 328 H348' marker-end='url(#ah)'/><rect class='box' x='350' y='306' width='140' height='44' rx='8'/><text x='420' y='324' text-anchor='middle' class='lbl-body'>蒸留 md（commit）</text><text x='420' y='342' text-anchor='middle' class='lbl-body-2'>月次 / cycle 末</text><rect class='box-strong' x='520' y='296' width='200' height='64' rx='8'/><text x='620' y='320' text-anchor='middle' class='lbl-body'>台帳 logs.yml（commit）</text><text x='620' y='340' text-anchor='middle' class='lbl-body-2'>所在 · 読み手 · 保持 · PII</text><rect class='box-dim' x='750' y='306' width='190' height='44' rx='8'/><text x='845' y='324' text-anchor='middle' class='lbl-body'>DB / SaaS / ホーム配下</text><text x='845' y='342' text-anchor='middle' class='lbl-body-2'>動かさない</text><path class='edge-loop' d='M520 328 H 492' marker-end='url(#ah2)'/><path class='edge-loop' d='M720 328 H 748' marker-end='url(#ah2)'/><path class='edge-loop' d='M620 360 V 384 H 250 V 352' marker-end='url(#ah2)'/><text x='480' y='412' text-anchor='middle' class='lbl-note'>破線 = 台帳が指す先。実体は動かさず、台帳だけが全保管先を知っている。AI は台帳を読めば所在が分かる。</text></svg></div>"
+    },
+    {
+      "eyebrow": "02 · 3 段階",
+      "h2": "台帳 → 二層 → 逆流接続、の順に深くなる",
+      "sub": "段階 1 は調査だけで埋まり、規範に触れない。段階 2 は各プロジェクトの .gitignore と hook に手が入る。段階 3 は「ログを見て AI が仕事を発見する」新しい振る舞いで、DH の telemetry-reflux / signal-scan と接続する L0 案件。",
+      "html": "<div class='flow-wrap'><svg class='chart flow' viewBox='0 0 960 270' role='img' aria-label='3 段階の梯子。段階 1 台帳: logs.yml を 3 リポ分埋める、必要なものは調査のみ。段階 2 二層: 生 JSONL ローカル + 蒸留 md commit、必要なのは gitignore と hook の局所改修。段階 3 逆流接続: 台帳の store を signal-scan の検知器入力にする、L0 必須'><defs><marker id='ah3' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto-start-reverse'><path d='M0 0 L10 5 L0 10 z' class='arrow'/></marker></defs><rect class='box-strong' x='30' y='150' width='280' height='100' rx='8'/><text x='50' y='178' class='lbl-body' style='font-weight:700'>段階 1 · 台帳</text><text x='50' y='200' class='lbl-body-2'>logs.yml を 3 リポ分埋める（所在の一覧）</text><text x='50' y='218' class='lbl-body-2'>必要なもの: 調査のみ・規範に触れない</text><text x='50' y='236' class='lbl-body-2'>深さ: AI が「何があるか」を知る</text><path class='edge' d='M310 200 H 338' marker-end='url(#ah3)'/><rect class='box' x='340' y='95' width='280' height='100' rx='8'/><text x='360' y='123' class='lbl-body' style='font-weight:700'>段階 2 · 二層</text><text x='360' y='145' class='lbl-body-2'>生 JSONL（ローカル）+ 蒸留 md（commit）</text><text x='360' y='163' class='lbl-body-2'>必要: .gitignore + hook の局所改修</text><text x='360' y='181' class='lbl-body-2'>深さ: センサー出力が初めて残る</text><path class='edge' d='M620 145 H 648' marker-end='url(#ah3)'/><rect class='box-dim' x='650' y='40' width='280' height='100' rx='8'/><text x='670' y='68' class='lbl-body' style='font-weight:700'>段階 3 · 逆流接続</text><text x='670' y='90' class='lbl-body-2'>台帳の store を signal-scan 検知器の入力に</text><text x='670' y='108' class='lbl-body-2'>必要: L0（telemetry-reflux と統合判定）</text><text x='670' y='126' class='lbl-body-2'>深さ: ログから AI が仕事を発見する</text><text x='30' y='262' class='lbl-note'>右へ行くほど規律の判定が増える。段階 1 の台帳が「読み手 / 保持 / PII」の線を先に引くので、段階 2 で集めても監視装置に転化しにくい。</text></svg></div>"
+    },
+    {
+      "eyebrow": "03 · 守る線",
+      "h2": "どの段階でも変えないもの",
+      "sub": "kakuman が事故と再諮問で得た線 3 本と、DH が既に持つ線 2 本。ログ層はこの 5 本の内側で設計する。",
+      "html": "<div class='guards'><div class='guard'><b>個人単位の利用率・ランキング・未利用者リストを作らない</b><span class='why'>罠 X-NORTHSTAR-A。個人に紐づけた瞬間、観測は「誰が使っていないか」の監視装置になる。kakuman F4-8 は本体表（匿名）と対応表を分け、対応表を 90 日で先に消す構造で解いた</span></div><div class='guard'><b>ログに氏名・email を平文で残さない</b><span class='why'>罠 X-OBS-PII。人物は employee_id 参照。外部 SaaS へ送る面が増えるときは SPEC §プライバシー契約へ追記必須</span></div><div class='guard'><b>ログを機能の入力にしない（ログ表を DROP しても機能が動く）</b><span class='why'>kakuman F4-8 U-1 のステートレス判定基準。読み戻さない・UI に出さない・処理を分岐させない。これが「観測」と「保存機能」を分ける線</span></div><div class='guard'><b>常時発火する検知を作らない</b><span class='why'>DH telemetry-reflux TR-4。検知器は絞って始め、実測 1 ヶ月で見直す。「貯めるだけのログ」は同型で、読まれないログは形骸化する</span></div><div class='guard'><b>事故を経ていない機構を DH に還流しない</b><span class='why'>dh-manifest upstream U-5。還流するのは機構ではなく「それを必要とした出来事」。ログ層も kakuman 側の実測（何が見つからず困ったか）を添えて上げる</span></div></div>"
+    },
+    {
+      "eyebrow": "04 · 答える順番",
+      "h2": "30 分強で全部答えられる",
+      "sub": "短いものから。答えたら下の「回答まとめ」をコピーして対話に貼る。答えなくてよい問いは飛ばしてよい（未回答のまま貼れる）。",
+      "html": "<div class='steps' style='grid-template-columns:repeat(3,1fr)'><div class='step'><div class='t'>STEP 1</div><div class='m'>2 分</div><div class='chips'><span class='chip' data-chip='Q2'>Q2</span><span class='chip' data-chip='Q4'>Q4</span><span class='chip' data-chip='Q6'>Q6</span><span class='chip' data-chip='Q8'>Q8</span><span class='chip' data-chip='Q9'>Q9</span><span class='chip' data-chip='Q10'>Q10</span></div></div><div class='step'><div class='t'>STEP 2</div><div class='m'>5 分</div><div class='chips'><span class='chip' data-chip='Q1'>Q1</span><span class='chip' data-chip='Q3'>Q3</span><span class='chip' data-chip='Q5'>Q5</span><span class='chip' data-chip='Q7'>Q7</span></div></div><div class='step'><div class='t'>STEP 3</div><div class='m'>貼り戻す</div><div class='chips'><span class='chip'>回答まとめをコピー</span></div></div></div><div class='caption'>選択肢を押すと chip が紫になる。選んだ内容はこの端末のブラウザにだけ残る（誰にも送られない）。</div>"
+    }
+  ],
+  "questions_section": {
+    "eyebrow": "05 · 人間が決めること",
+    "h2": "Q1〜Q10",
+    "sub": "各問いは 事実 → 選択肢 → 決まったら AI が何をするか。「推奨」は AI の見立てで、実測と一次情報に紐づけてある。× 付きは規律上または構造上選べないもの。"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "title": "「あらゆるログ」の範囲をどこから始めるか",
+      "short": "範囲",
+      "time": "5 分",
+      "fbs": "起点: ひでさん 09-03 / メモ U-1",
+      "facts": [
+        "機械が吐く記録は 5 種に分けられる: <b>runtime</b>（アプリが動いて出す）/ <b>sensor</b>（check-* / lint-* の決定論検査）/ <b>ci</b>（Actions）/ <b>ai-session</b>（CC transcript + hooks）/ <b>audit</b>（業務の監査ログ）",
+        "このうち<b>どこにも蓄積されていないのは sensor だけ</b>（stdout で消える）。runtime / audit は DB か Sentry、ci は Actions 90 日、ai-session はホーム配下に既にある",
+        "ai-session は cc-cockpit が既に読み手として存在し、<b>読み取り専用・書き換え禁止</b>（SPEC C11）が確定している",
+        "「あらゆる」を最初から 1 箇所に集めると PII 区分の違うものが同居する（守る線 2 本目）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>sensor + ci（コードが検査された記録）から始める</b>。唯一の欠落を埋め、PII が無い領域で形を作る",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "runtime + audit（アプリが動いて出す記録）を主にする。kakuman の DB ログ群を台帳化するところから"
+        },
+        {
+          "k": "C",
+          "label": "ai-session（transcript / hooks）を主にする。cc-cockpit をログ層の読み手として位置づけ直す"
+        },
+        {
+          "k": "D",
+          "label": "5 種全部を最初から対象にする"
+        }
+      ],
+      "after": "A なら段階 1 の台帳は sensor / ci の行から埋め、他 3 種は「所在だけ書く」行にする。D なら台帳 23 行を 3 リポ分埋める調査が先に要る（実装ではない）。"
+    },
+    {
+      "id": "Q2",
+      "title": "主な読み手を誰にするか",
+      "short": "読み手",
+      "time": "2 分",
+      "fbs": "メモ U-2 / kakuman SPEC FX-SAMEJIMA §F",
+      "facts": [
+        "kakuman は既に「<b>開発観測ログ = CC が読む・人間 UI は提供しない</b>」という分類を持つ（samejima_activity_log / harness 観測ログ / freee sync ログ）",
+        "12-factor Logs の想定する読み手は運用者と分析基盤。読み手が AI なら JSONL + 台帳で足り、ダッシュボードは要らない",
+        "逆流機構（signal-scan）を読み手にするなら、検知器が読める決定論の形式（閾値比較・存在判定）に限る（TR-2）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>AI（CC）を主読者</b>にする。形式は AI がパースできること優先（JSONL / md）、人間向け UI は作らない",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "人間を主読者にする。可視化（ダッシュボード / HTML レポート）を前提に設計する"
+        },
+        {
+          "k": "C",
+          "label": "逆流機構（signal-scan の検知器）を主読者にする。段階 3 を最初から狙う"
+        }
+      ],
+      "after": "A なら台帳の reader 列は既定 ai、形式は OTel LogRecord の最小サブセット（ts / event / severity / body / attrs / session.id）。B は別途 UI の L0 が要る。"
+    },
+    {
+      "id": "Q3",
+      "title": "「場所」を何で実現するか",
+      "short": "形（台帳 / 物理）",
+      "time": "5 分",
+      "fbs": "メモ §選択肢 A〜E",
+      "facts": [
+        "3 リポで 23 種の記録が <b>5 保管先</b>に散っている。DB ログ（kakuman）は repo に持って来られず、cc-cockpit / DH は DB を持たない",
+        "DH には <b>telemetry-reflux.yml</b>（信号源を宣言する枠）が既にあり、同じ「DH は枠だけ・実定義はプロジェクト」の型に台帳は乗る",
+        "hook-observer は既に「生 jsonl = ローカル gitignore / 蒸留 md = commit」の二層で運用している（Council hook 修理・案 B）",
+        "12-factor は「アプリはログファイルを管理しない」。repo 内に貯めるのは意図的逸脱（Q7）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>台帳（logs.yml）から始める</b>。実体は各所のまま、所在・読み手・保持・PII・droppable を宣言する",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "台帳 + 二層（生ローカル JSONL / 蒸留 commit）を最初から同時に入れる"
+        },
+        {
+          "k": "C",
+          "label": "物理集約（repo 内 logs/ に全部 JSONL）だけ。台帳は作らない"
+        },
+        {
+          "k": "D",
+          "label": "DB 集約（ops スキーマ相当）を規範化する",
+          "rec": "×横断不可",
+          "disabled": true
+        }
+      ],
+      "after": "A なら段階 1 = 調査のみ（3 リポ分の台帳初版）。B なら段階 2 の .gitignore + hook 改修を kakuman / cc-cockpit / DH に 1 本ずつ。C は Q7 の逸脱理由が必須になる。"
+    },
+    {
+      "id": "Q4",
+      "title": "生ログと蒸留物をどう扱うか",
+      "short": "生 / 蒸留",
+      "time": "2 分",
+      "fbs": "メモ U-3 / DH hook-observer / kakuman history 代謝",
+      "facts": [
+        "DH の先例: <b>hook-observations.jsonl は untrack + .gitignore</b>、reports/YYYY-MM.md（月次蒸留）だけ commit",
+        "kakuman の実害: 生ログ（CHANGELOG / HANDOFF）の追記が 2 ヶ月止まり、蒸留物（SUMMARY）しか残らなかった → <b>「書く先を増やすと止まる」</b>",
+        "reindex-librarian は history の代謝（HOT → COLD）を担う既存 skill。ログの蒸留を相乗りさせれば代謝のリズムが 1 本で済む"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>二層。生はローカル gitignore、蒸留のみ commit。蒸留は reindex-librarian の代謝に相乗り</b>",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "二層。蒸留は新しい skill / script に分ける（librarian と独立）"
+        },
+        {
+          "k": "C",
+          "label": "生も commit する（蒸留しない。git が保管先）"
+        },
+        {
+          "k": "D",
+          "label": "生だけローカルに貯め、蒸留しない（当面は読み手が生を直接読む）"
+        }
+      ],
+      "after": "A なら reindex-librarian の入力に「台帳が指す生ログ」を足す提案を DH 側へ献上（skill 改訂 = 人間作業）。C は repo 肥大と PII 混入の線を台帳で先に引く必要がある。"
+    },
+    {
+      "id": "Q5",
+      "title": "DH のどこに置くか（D2 テンプレ / 既存 yml / 新 skill）",
+      "short": "DH 上の位置",
+      "time": "5 分",
+      "fbs": "メモ U-4 / DIMENSIONS §2 / dh-manifest",
+      "facts": [
+        "D2 = L0 が存在保証するファイル群（package.json / SPEC.md / sensors / CI 設定 / CHANGELOG 等）。<b>logs.yml はこの列に自然に入る</b>",
+        "telemetry-reflux.yml は「何を監視するか（信号源 + 閾値）」、台帳は「何が記録されているか（所在）」。<b>概念は別だが、信号源の source 欄は台帳の id を参照できる</b>",
+        "新 skill（D4）の新設は人間専有 + Council + 人間合意（DIMENSIONS §1.1）。最小主義ラダーは「書かないものが最も可逆」",
+        "ひでさんの発話は「DH メタスキル開発」。skill として持つ必要があるかは、台帳の運用が「AI の判断を要する手順」を含むかで決まる"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>D2 テンプレとして logs.yml + 検査スクリプト（check-logs-ledger）を配布</b>。skill は作らない。telemetry-reflux.yml の隣に置く",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "telemetry-reflux.yml に統合（reflux_sources に store / retention / pii 列を足して 1 ファイルにする）"
+        },
+        {
+          "k": "C",
+          "label": "新 skill（crosscut-log-ledger）として D4 に新設。台帳の生成・検査・蒸留の手順を skill が持つ"
+        }
+      ],
+      "after": "A なら templates/rules/common/ に log-ledger.rules.md + logs.yml 雛形を追加する提案（DH 側の人間作業）。C は Council 諮問 + upgrade-spec 起草が前提で、段階 2 以降の手順が固まってから。"
+    },
+    {
+      "id": "Q6",
+      "title": "dh-manifest.yml の boundary をどう扱うか",
+      "short": "manifest boundary",
+      "time": "2 分",
+      "fbs": "メモ U-5 / dh-manifest.yml paths",
+      "facts": [
+        "paths は overwrite（skills / templates）/ merge（settings.json）/ redeploy（workflows）/ never_touch（SPEC / history / delivery 等）の 4 分類",
+        "never_touch の注記: <b>「明示列挙しない = 既定で不可侵」</b>。プロジェクトが書くログ実体は列挙しなくても守られる",
+        "logs.yml は DH が雛形を配り、プロジェクトが実定義を書く = settings.json と同じ <b>merge</b> 分類が自然"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>logs.yml を merge 分類に追加。ログ実体（.dh/log/ 等）は列挙しない</b>（既定不可侵で足りる）",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "logs.yml と ログ実体の両方を never_touch に列挙する（明示して安全側に倒す）"
+        },
+        {
+          "k": "C",
+          "label": "manifest は触らない（雛形の再配布は手動）"
+        }
+      ],
+      "after": "A / B とも dh-manifest.yml の 1〜2 行追記（DH 側の人間作業、upstream-scan のテストに影響しないか確認）。C は DH 更新時に雛形が届かない。"
+    },
+    {
+      "id": "Q7",
+      "title": "12-factor からの逸脱をどう扱うか",
+      "short": "12-factor 逸脱",
+      "time": "5 分",
+      "fbs": "メモ U-6 / https://12factor.net/logs",
+      "facts": [
+        "12-factor Logs: <b>「A twelve-factor app never concerns itself with routing or storage of its output stream. It should not attempt to write to or manage logfiles.」</b>",
+        "逸脱の理由になりうるもの: 小規模・単独開発 / 読み手が AI / 実行環境が個人 PC で集約基盤（collector）を持たない / cc-cockpit は「中から漏らさない」（C8）で外部送信を禁じている",
+        "台帳の store 列が「local: / db: / saas: / home:」を区別していれば、将来 collector を持ったとき store を書き換えるだけで移行できる"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>逸脱を明記し、台帳の store 列で将来の外部集約へ移行可能な形にしておく</b>",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "標準に従う。repo 内は台帳だけ、実体は全て外部（Sentry / OTel collector / DB）へ"
+        },
+        {
+          "k": "C",
+          "label": "明記しない（小規模なので規範に書くほどではない）"
+        }
+      ],
+      "after": "A なら log-ledger.rules.md の冒頭に「逸脱の理由 3 点 + 移行条件」を 1 段落。B は cc-cockpit C8 と衝突するため cc-cockpit を対象外にする判断が要る。"
+    },
+    {
+      "id": "Q8",
+      "title": "ブレストメモの置き場を DH でどう揃えるか",
+      "short": "メモ置き場",
+      "time": "2 分",
+      "fbs": "メモ U-7 / kakuman ブレスト 2026-08-24 決定",
+      "facts": [
+        "kakuman の l0-pre-brainstorm は <b>docs/brainstorm/</b> を規定（08-24 ひでさん決定・DH 昇格は 2 段構え）",
+        "DH 本体は .gitignore で <b>docs/* を除外</b>（skill-only repository 方針、PR #3）。brainstorm-orchestration.md §3 は delivery/ANALYSIS-*.md を指定",
+        "本件のメモは DH 標準に従い delivery/ANALYSIS-codebase-log-store-2026-09-03.md に置いた（PR #238 merged）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>skill 規範は docs/brainstorm/ を既定にし、DH 本体だけ delivery/ANALYSIS-* を例外とする</b>（置き場は各 REGIME が決める）",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "delivery/ANALYSIS-* に統一（kakuman 側も移す）"
+        },
+        {
+          "k": "C",
+          "label": "docs/brainstorm/ に統一（DH の .gitignore を緩める）"
+        }
+      ],
+      "after": "A なら l0-pre-brainstorm 昇格時の記述に 1 行足すだけ。B は kakuman の 6 ファイルを移動 + README 改訂。C は DH の skill-only 方針（PR #3）の再評価が要る。"
+    },
+    {
+      "id": "Q9",
+      "title": "VERSION の drift を本件と切り離すか",
+      "short": "VERSION drift",
+      "time": "2 分",
+      "fbs": "メモ F6 / U-8",
+      "facts": [
+        "DH の <span class='mono'>VERSION</span> は <b>6.11.0</b>（最終更新 PR #186）。一方 upgrade-spec v6.12.0〜v6.15.0 が存在し、v6.15.0 起源の signal-scan.py / telemetry-reflux.rules.md は main に実装済み",
+        "upgrade-spec-v6.15.0 の状態欄は「L0 起草（人間レビュー待ち）」のまま",
+        "ログ層を「v6.x のどこに乗せるか」を語るには、いまの版が何かが先に要る"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>本件と切り離し、先に別 PR で揃える</b>（VERSION を bump するか、未 release を upgrade-spec 側に明記する）",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "ログ層を載せる版と一緒に揃える（同じ minor に同梱）"
+        },
+        {
+          "k": "C",
+          "label": "放置（VERSION は配布互換の判定にしか使わないので急がない）"
+        }
+      ],
+      "after": "A なら AI が現状差分（各 upgrade-spec の状態欄 vs 実装の有無）を表にして献上、bump の可否は人間判断。"
+    },
+    {
+      "id": "Q10",
+      "title": "次に何をするか",
+      "short": "次の一手",
+      "time": "2 分",
+      "fbs": "l0-pre-brainstorm §L0 へ上げる（人間の明示指示のみ）",
+      "facts": [
+        "L0 前ブレストは「次へ進まない」で終わってよい局面。L0（spec-architect）へ上げるのは人間の明示指示のみ",
+        "Q1〜Q3 が決まれば、台帳初版を 3 リポ分埋める作業は<b>調査だけでできる</b>（実装ではない・規範に触れない）",
+        "「センサー出力が消えている」は台帳の有無と独立に、verify 相当の出力を JSONL 1 本に追記するだけで止血できる（L0 へ上げる場合の最小スコープ候補）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>ブレスト継続。台帳初版（3 リポ分）を調査で埋めてから判断する</b>",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "L0 へ上げる（spec-architect で upgrade-spec 起草。Q1〜Q9 の回答を入力にする）"
+        },
+        {
+          "k": "C",
+          "label": "ここで止める（メモは残っている。再開は任意）"
+        }
+      ],
+      "after": "A なら次回セッションで delivery/ANALYSIS-codebase-log-store に「台帳初版」節を追記（PR は docs のみ）。B なら回答まとめを spec-architect の入力に渡す。C は何もしない（正常系）。"
+    }
+  ],
+  "foot": "推奨は AI の見立てであって決定ではない。件数（23 種 / 5 保管先）は ANALYSIS メモ §F1 の表を数えたもので、各リポの .gitignore・SPEC・dh-manifest を 09-03 に読んだ結果。一次情報の URL はメモ §F5。選択はこの端末のブラウザにだけ残り、誰にも送られない。",
+  "summaryTitle": "ログ層キット 0903 — 回答",
+  "summaryFooter": "（貼り戻し先: この対話。AI が delivery/ANALYSIS-codebase-log-store-2026-09-03.md の §ブレスト決定 に写す）"
+}
