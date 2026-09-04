@@ -9,7 +9,7 @@
     "<span>推奨の規則 <b>sensor・ci = A ／ runtime・audit・蒸留物 = B ／ 正が別にある・ログでない = C</b></span>",
     "<span>局面 <b>L0 前ブレスト（未確定・cycle ではない）</b></span>"
   ],
-  "hero_html": "<div class='grid-2'><div class='panel'><h3>種別の内訳（22 種 + 欠落 1）</h3><div class='bar'><div class='seg' style='flex:9;background:var(--c1)' data-tip='runtime 9（Sentry / Vercel / DB ログ 4 / SQLite / *.log 2）'>9</div><div class='seg' style='flex:7;background:var(--c2)' data-tip='sensor 7（センサー出力〔欠落〕/ verifier reports 2 / coverage / E2E / PERF_AUDIT / ASSESSMENT / ANALYSIS）'>7</div><div class='seg' style='flex:4;background:var(--c3)' data-tip='ai-session 4（transcript 2 / hook 観測 / .cc-cockpit 報告）'>4</div><div class='seg' style='flex:1;background:var(--c4)' data-tip='ci 1（GitHub Actions ログ）'></div><div class='seg neutral' style='flex:2' data-tip='audit 2（samejima_activity_log / CTL 記録）'></div></div><div class='legend'><span><i class='sw' style='background:var(--c1)'></i>runtime</span><span><i class='sw' style='background:var(--c2)'></i>sensor</span><span><i class='sw' style='background:var(--c3)'></i>ai-session</span><span><i class='sw' style='background:var(--c4)'></i>ci</span><span><i class='sw neutral'></i>audit</span></div><div class='caption'>Q1-A の「sensor + ci から」に該当し、PII が無く、正が別に無い行が推奨 A。うち 1 行（決定論センサー出力）は今どこにも無い。</div></div><div class='panel'><h3>推奨の内訳</h3><div class='stat-row' style='grid-template-columns:1fr 1fr 1fr'><div class='stat'><div class='n' style='color:var(--c1)'>5</div><div class='l'>A 段階 1 で対象</div></div><div class='stat'><div class='n' style='color:var(--c2)'>12</div><div class='l'>B 後段で対象</div></div><div class='stat'><div class='n'>6</div><div class='l'>C 対象外</div></div></div><div class='caption' style='margin-top:14px'>C の根拠は 3 つだけ: 正が別にある（SQLite は transcript の派生、CTL 記録は COUNCIL-LOG の派生）／ ログではなく成果物（.cc-cockpit 報告、ASSESSMENT）／ 動かさない（transcript は読み取り専用・SPEC C11）。</div></div></div>",
+  "hero_html": "<div class='grid-2'><div class='panel'><h3>種別の内訳（22 種 + 欠落 1）</h3><div class='bar'><div class='seg' style='flex:9;background:var(--c1)' data-tip='runtime 9（Sentry / Vercel / DB ログ 4 / SQLite / *.log 2）'>9</div><div class='seg' style='flex:7;background:var(--c2)' data-tip='sensor 7（センサー出力〔欠落〕/ verifier reports 2 / coverage / E2E / PERF_AUDIT / ASSESSMENT / ANALYSIS）'>7</div><div class='seg' style='flex:4;background:var(--c3)' data-tip='ai-session 4（transcript 2 / hook 観測 / .cc-cockpit 報告）'>4</div><div class='seg' style='flex:1;background:var(--c4)' data-tip='ci 1（GitHub Actions ログ）'></div><div class='seg neutral' style='flex:2' data-tip='audit 2（samejima_activity_log / CTL 記録）'>2</div></div><div class='legend'><span><i class='sw' style='background:var(--c1)'></i>runtime</span><span><i class='sw' style='background:var(--c2)'></i>sensor</span><span><i class='sw' style='background:var(--c3)'></i>ai-session</span><span><i class='sw' style='background:var(--c4)'></i>ci</span><span><i class='sw neutral'></i>audit</span></div><div class='caption'>Q1-A の「sensor + ci から」に該当し、PII が無く、正が別に無い行が推奨 A。うち 1 行（決定論センサー出力）は今どこにも無い。</div></div><div class='panel'><h3>推奨の内訳</h3><div class='stat-row' style='grid-template-columns:1fr 1fr 1fr'><div class='stat'><div class='n' style='color:var(--c1)'>5</div><div class='l'>A 段階 1 で対象</div></div><div class='stat'><div class='n' style='color:var(--c2)'>12</div><div class='l'>B 後段で対象</div></div><div class='stat'><div class='n'>6</div><div class='l'>C 対象外</div></div></div><div class='caption' style='margin-top:14px'>C の根拠は 3 つだけ: 正が別にある（SQLite は transcript の派生、CTL 記録は COUNCIL-LOG の派生）／ ログではなく成果物（.cc-cockpit 報告、ASSESSMENT）／ 動かさない（transcript は読み取り専用・SPEC C11）。</div></div></div>",
   "sections": [
     {
       "eyebrow": "01 · 守る線",
@@ -33,7 +33,7 @@
     {
       "id": "Q0",
       "title": "<span class='mono'>欠落</span> 決定論センサーの出力（check-* / lint-* / verify）",
-      "short": "決定論センサーの出力（check-* / lint-* ",
+      "short": "センサー出力（欠落）",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman 16 本 / cc-cockpit lint・test / DH scripts/test-*",
@@ -62,7 +62,7 @@
     {
       "id": "Q1",
       "title": "<span class='mono'>外部 SaaS</span> Sentry（エラー / トレース / Replay）",
-      "short": "Sentry（エラー / トレース / Replay）",
+      "short": "Sentry",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman",
@@ -91,7 +91,7 @@
     {
       "id": "Q2",
       "title": "<span class='mono'>外部 SaaS</span> Vercel deploy / runtime ログ",
-      "short": "Vercel deploy / runtime ログ",
+      "short": "Vercel ログ",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman",
@@ -120,7 +120,7 @@
     {
       "id": "Q3",
       "title": "<span class='mono'>外部 SaaS</span> GitHub Actions ログ（workflow run）",
-      "short": "GitHub Actions ログ（workflow r",
+      "short": "GitHub Actions ログ",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: 3 リポ",
@@ -178,7 +178,7 @@
     {
       "id": "Q5",
       "title": "<span class='mono'>DB</span> underlay_usage_events / _sessions",
-      "short": "underlay_usage_events / _ses",
+      "short": "underlay_usage 2 表",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman ops",
@@ -265,7 +265,7 @@
     {
       "id": "Q8",
       "title": "<span class='mono'>DB</span> cc-cockpit SQLite（sessions / timeline / usage_daily / report_reads）",
-      "short": "cc-cockpit SQLite（sessions /",
+      "short": "cc-cockpit SQLite",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: cc-cockpit",
@@ -323,7 +323,7 @@
     {
       "id": "Q10",
       "title": "<span class='mono'>repo 内・gitignore</span> harness-verifier/reports/（丸ごと）",
-      "short": "harness-verifier/reports/（丸ご",
+      "short": "harness-verifier/reports（kakuman）",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman .gitignore:55",
@@ -381,7 +381,7 @@
     {
       "id": "Q12",
       "title": "<span class='mono'>repo 内・gitignore</span> coverage/（cc-cockpit）",
-      "short": "coverage/（cc-cockpit）",
+      "short": "coverage/",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: cc-cockpit .gitignore",
@@ -410,7 +410,7 @@
     {
       "id": "Q13",
       "title": "<span class='mono'>repo 内・gitignore</span> playwright-report/ + test-results/（cc-cockpit）",
-      "short": "playwright-report/ + test-re",
+      "short": "playwright-report + test-results",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: cc-cockpit .gitignore",
@@ -439,7 +439,7 @@
     {
       "id": "Q14",
       "title": "<span class='mono'>repo 内・gitignore</span> .cc-cockpit/（セッションが書く報告）",
-      "short": ".cc-cockpit/（セッションが書く報告）",
+      "short": ".cc-cockpit/ 報告",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: cc-cockpit .gitignore・SPEC F9",
@@ -468,7 +468,7 @@
     {
       "id": "Q15",
       "title": "<span class='mono'>repo 内・gitignore</span> harness-verifier/reports/hook-observations.jsonl",
-      "short": "harness-verifier/reports/hoo",
+      "short": "hook-observations.jsonl",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: DH .gitignore（kakuman も同名）",
@@ -526,7 +526,7 @@
     {
       "id": "Q17",
       "title": "<span class='mono'>repo 内・committed</span> docs/PROJECT-*ASSESSMENT*.html",
-      "short": "docs/PROJECT-*ASSESSMENT*.ht",
+      "short": "PROJECT-ASSESSMENT html",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: kakuman",
@@ -555,7 +555,7 @@
     {
       "id": "Q18",
       "title": "<span class='mono'>repo 内・committed</span> harness-verifier/reports/YYYY-MM.md",
-      "short": "harness-verifier/reports/YYY",
+      "short": "verifier reports YYYY-MM.md",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: DH",
@@ -584,7 +584,7 @@
     {
       "id": "Q19",
       "title": "<span class='mono'>repo 内・committed</span> delivery/ANALYSIS-*.md / *.html",
-      "short": "delivery/ANALYSIS-*.md / *.h",
+      "short": "delivery/ANALYSIS-*",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: DH",
@@ -613,7 +613,7 @@
     {
       "id": "Q20",
       "title": "<span class='mono'>ホーム配下</span> ~/.claude/projects/**/*.jsonl（CC transcript）",
-      "short": "~/.claude/projects/**/*.json",
+      "short": "CC transcript jsonl",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: 3 リポ共通",
@@ -642,7 +642,7 @@
     {
       "id": "Q21",
       "title": "<span class='mono'>ホーム配下</span> ~/.claude/projects/<session>/subagents/agent-*.jsonl",
-      "short": "~/.claude/projects/<session>",
+      "short": "subagent transcript jsonl",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: 3 リポ共通",
@@ -671,7 +671,7 @@
     {
       "id": "Q22",
       "title": "<span class='mono'>ホーム配下</span> ~/.claude/council-data/invocations/*.json（CTL 記録）",
-      "short": "~/.claude/council-data/invoc",
+      "short": "council-data invocations",
       "time": "1 分",
       "facts": [
         "<b>発生源</b>: user-scope（3 リポ横断）",
