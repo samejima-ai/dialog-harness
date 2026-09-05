@@ -107,12 +107,21 @@ jobs:
       # gemini-review.yml の GEMINI_API_KEY check と同形式。fork PR / secret 欠落
       # 環境で gh が auth fail → red CI を防ぐ
       #
-      # v6.17.0 F7: **存在**だけでなく**有効性**も見る。
-      #   旧版は `-z` の存在検査のみで、secret が失効していると available=true のまま
+      # v6.17.0 F7: **存在**だけでなく**使用可能性**も見る。
+      #   旧版は `-z` の存在検査のみで、secret が失効していても available=true のまま
       #   後段の `gh pr view` が `HTTP 401: Bad credentials` で exit 1 になり、
       #   「非該当 PR は notice で skip（red CI にしない）」という本 workflow の設計方針が
-      #   破れて**全 PR が red になる**（2026-09-05 実測: PR #247 の 3 head すべてで再現）。
-      #   失効は人間専管（secrets 再発行）ゆえ AI は直せない。ゆえに red ではなく skip に倒す。
+      #   破れて**全 PR が red になる**。失効・SSO 未認可・権限剥奪はいずれも secret 側の
+      #   問題で AI は直せない（人間専管）ため、red ではなく skip に倒す。
+      #
+      #   探査先は `user` ではなく `repos/$GH_REPO`: 認証（token が生きているか）だけでなく
+      #   認可（この repo を読めるか）まで 1 回で見るため。`user` は SSO 未認可・権限剥奪の
+      #   PAT を通してしまい、後段で 403 になる。
+      #
+      #   失敗時は `::notice::` ではなく **`::warning::`**: notice は run ログに埋もれ、
+      #   「red を消したら誰も気づかなくなった」= 沈黙と等価になる。本 spec が塞ごうと
+      #   している欠落（走らなくなったことは red にならないので誰も気づかない）を
+      #   本 step 自身が再演しないため、非ブロッキングだが可視な信号にする。
       - name: Check GH_REVIEW_PAT availability
         id: check_pat
         env:
@@ -121,12 +130,21 @@ jobs:
           if [ -z "$GH_REVIEW_PAT_PROBE" ]; then
             echo "::notice::GH_REVIEW_PAT 未設定（fork PR や secret 欠落環境）。auto-merge を skip。"
             echo "available=false" >> "$GITHUB_OUTPUT"
-          elif ! GH_TOKEN="$GH_REVIEW_PAT_PROBE" gh api user --silent >/dev/null 2>&1; then
-            echo "::notice::GH_REVIEW_PAT が無効（401 Bad credentials 等）。auto-merge を skip（red にしない）。secret の再発行は人間専管。"
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          set +e
+          PROBE_ERR=$(GH_TOKEN="$GH_REVIEW_PAT_PROBE" gh api "repos/$GH_REPO" --silent 2>&1)
+          PROBE_RC=$?
+          set -e
+          if [ "$PROBE_RC" -eq 0 ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # 非 0 の内訳（401 失効 / 403 未認可・権限不足 / 5xx・ネットワーク一時障害）は
+          # 区別できないため断定しない。gh の stderr をそのまま添えて人間が判別できるようにする。
+          PROBE_ERR=$(printf '%s' "$PROBE_ERR" | tr '\n' ' ' | cut -c1-300)
+          echo "::warning::GH_REVIEW_PAT で repos/$GH_REPO を読めません（probe exit=$PROBE_RC）。auto-merge を skip します。secret の再発行 / SSO 認可 / 権限付与のいずれかが要る可能性があります（人間専管）。API の一時障害なら次の event で自動回復します。probe: $PROBE_ERR"
+          echo "available=false" >> "$GITHUB_OUTPUT"
 
       - name: Resolve PR number
         id: resolve
