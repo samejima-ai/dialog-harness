@@ -58,6 +58,11 @@ AI 側の読み（訂正歓迎）:
 - **単一バイナリ**（言語ランタイム不要）、tree-sitter 162 言語 + 12 言語で LSP 型解決、SQLite、
   **background watcher で自動同期**、15 tools、LLM 不要、Windows は PowerShell installer。SLSA L3 / Sigstore 署名
 - 計測: 5 質問型合計 ~3,400 tok vs ~412,000 tok（121x）。Linux kernel 28M 行を 3 分で index
+- 設計上の差（README 実読）: 出力に **pagination + token budget が組み込み**（`offset`/`limit`、「要求トークン × 4 byte」の決定論上限）
+  = F9-7 の「影響範囲 10 万 tok」問題への構造的対策を持つ。索引は **repo 外** `~/.cache/codebase-memory-mcp/`（gitignore 不要）、
+  任意で `.codebase-memory/graph.db.zst` を commit してチーム共有可。除外は `.gitignore` 階層 + `.cbmignore`。
+  installer は `~/.claude.json` と project `.mcp.json` を**書き換える**（DH の hook 思想「自動導入しない」と要調整）。
+  daemon がアカウント単位で常駐（最初のセッションが起動・最後が停止）
 - → 記事の 4 本構成が抱える「4 更新経路・Python 3.13・570MB モデル DL」を **1 本・自動同期・ランタイム不要**で
   置き換えうる。ただし機能は「構造グラフ」に閉じ、Graphify の文書横断・Serena のシンボル編集は持たない
 
@@ -159,6 +164,9 @@ https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agent
 | `search "require admin employee"`（多語） | — | **0 件**（`requireAdmin` は存在する。多語 = 部分文字列 AND でない = fork が直した既知欠陥） |
 | `communities` 出力（全 member 列挙） | **233 KB ≈ 58,000 tok** | **840 KB ≈ 210,000 tok** |
 | `detect-changes` 出力 | 0.4 KB ≈ 100 tok。`context_savings: {estimated: true, saved_tokens: 60,646}` | 同 ≈ 100 tok。`saved_tokens: 211,655, estimated: true` |
+| `search requireAdmin`（単一識別子） | — | 2.5 KB ≈ 620 tok、3 定義を正しく列挙（`admin/actions.ts` / `lib/route-guards.ts` / `apps/master/_lib/auth.ts`） |
+| `query callers_of requireAdmin` | — | 3.6 KB ≈ 890 tok、**曖昧性で再問い合わせ要求**（3 node 一致 → qualified_name 指定で再実行） |
+| **`impact --files lib/route-guards.ts --depth 2`**（記事の中心機能） | — | **414 KB ≈ 103,000 tok**。272 nodes / 176 files が「影響」。同じ問いの grep 基準値: `grep -rn requireAdmin` = 46 files / 14 KB ≈ 3,600 tok |
 
 読み取り（判定ではない）:
 1. **鮮度維持は安価**: 全量 build が 10 秒未満、増分 1 秒未満。pre-commit に載せても開発体験を壊さない（記事の「手動更新 3 本」問題は
@@ -174,6 +182,11 @@ https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agent
    の既存規範（hook-observations / v6.16.0 I-4）と同型
 6. 「関数名が不明でも見つかる」（記事の意味検索）は **埋め込み前提**（better-code-review-graph の 570 MB モデル or code-review-graph の
    `embed`）。埋め込み無しの keyword mode では grep と同じ限界に戻る（kakuman の 0 件がその実例）
+7. **影響範囲は monorepo で逆転する**: 記事のサンプル（3 層構成の小さな API）では 4 ファイル → 22 ノードだったが、kakuman の
+   認可ガード 1 ファイルでは 2 hop で 272 nodes / 176 files = **10 万 tok**。grep の 30 倍。code-review-graph 作者が
+   「impact は deliberately conservative（recall 優先）」と書くとおりで、ハブ関数に対しては「読む量を減らす」でなく「読む量を増やす」
+   道具になる。`--max-results` と `depth 1` の既定化、あるいは「差分ファイル → 影響 tests だけ」に問いを絞る運用規約が要る。
+   **これは記事の「推測を消す」が monorepo の中心部では成立しないことの実測**であり、標準装備の可否を左右する
 
 ## 選択肢（暫定・Workflow の 3 独立設計 + 反証結果で更新予定）
 
