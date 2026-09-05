@@ -27,8 +27,15 @@
 #       （verify / review / copilot-pull-request-reviewer / gemini-review 等）が COMPLETED に
 #       なるまでポーリングで待つ（timeout で exit）。copilot review 等が無い PR でも、その check が
 #       rollup に現れない＝待機対象が減るだけで正常動作する。race 防止と「全 CI 後に merge」を両立。
-#   4.5（zero-check 防止）. harness-verify / gemini-review の最低どちらか 1 つが
-#       SUCCESS で走っていること（両方未実行の paths filter 外 PR を防ぐ）
+#   4.5（zero-check 防止）. harness-verify が SUCCESS で走っていること
+#       （未実行の paths filter 外 PR を防ぐ）。
+#       **v6.17.0 D-7（2026-09-05 人間判断）で gemini-review を本条件から外した**:
+#       gemini-review は 2026-05-09 以降 4 ヶ月 1 度も起動しておらず、
+#       「最低 1 verifier」の実体は既に harness-verify のみだった。
+#       条件が実質 1 本なのに 2 本あるように見える状態（宣言と実態の乖離）を解消する。
+#       今後の再沈黙は signal-scan 検知器 (e) workflow_silence が拾う。
+#       条件 5（走った場合は SUCCESS 必須）は残す — 復旧した場合に自動で効き、
+#       走らない限り no-op なので害が無い（可逆性の確保）。
 #
 # 非該当 PR は notice 出力で skip（red CI にしない）。
 #
@@ -350,13 +357,20 @@ jobs:
             exit 0
           fi
 
-          # 条件 4.5: 最低 1 つの independent verifier が SUCCESS で走っていること
-          # 両方 paths filter 外で zero-check 状態の PR を auto-merge してしまうのを防ぐ
-          # （例: workflow 単独変更 PR で harness-verify も gemini-review も発火しない場合）
+          # 条件 4.5: independent verifier が SUCCESS で走っていること
+          # paths filter 外で zero-check 状態の PR を auto-merge してしまうのを防ぐ
+          #
+          # v6.17.0 D-7（2026-09-05 人間判断）で gemini-review を本条件から外した。
+          # 旧版は「harness-verify / gemini-review の最低どちらか 1 つ」だったが、
+          # gemini-review は 2026-05-09 以降 4 ヶ月 1 度も起動しておらず、
+          # 「最低 1 verifier」の実体は既に harness-verify のみだった（宣言と実態の乖離）。
+          # 沈黙した verifier を OR の片側に残すと、条件が 2 本あるように見えて実質 1 本という
+          # 誤読を招く。外して実体に合わせる。再沈黙は signal-scan 検知器 (e) が拾う。
+          #
           # 注（Issue #125）: pending（存在するが未完了）は上流の条件 3.5 で待機 exit 済みのため、
-          # ここに到達した時点で HV/GR が空なのは「rollup に不在＝真に未発火」のみ（race ではない）。
-          if [ -z "$HV" ] && [ -z "$GR" ]; then
-            echo "::notice::PR #$PR_NUMBER に harness-verify / gemini-review いずれも走っていない（paths filter 外）。skip（最低 1 verifier の SUCCESS 必須）。"
+          # ここに到達した時点で HV が空なのは「rollup に不在＝真に未発火」のみ（race ではない）。
+          if [ -z "$HV" ]; then
+            echo "::notice::PR #$PR_NUMBER に harness-verify が走っていない（paths filter 外）。skip（independent verifier の SUCCESS 必須）。"
             exit 0
           fi
 
