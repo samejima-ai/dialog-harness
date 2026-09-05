@@ -106,6 +106,13 @@ jobs:
       # Pre-check: GH_REVIEW_PAT が available か（Copilot review #42 line 89）
       # gemini-review.yml の GEMINI_API_KEY check と同形式。fork PR / secret 欠落
       # 環境で gh が auth fail → red CI を防ぐ
+      #
+      # v6.17.0 F7: **存在**だけでなく**有効性**も見る。
+      #   旧版は `-z` の存在検査のみで、secret が失効していると available=true のまま
+      #   後段の `gh pr view` が `HTTP 401: Bad credentials` で exit 1 になり、
+      #   「非該当 PR は notice で skip（red CI にしない）」という本 workflow の設計方針が
+      #   破れて**全 PR が red になる**（2026-09-05 実測: PR #247 の 3 head すべてで再現）。
+      #   失効は人間専管（secrets 再発行）ゆえ AI は直せない。ゆえに red ではなく skip に倒す。
       - name: Check GH_REVIEW_PAT availability
         id: check_pat
         env:
@@ -113,6 +120,9 @@ jobs:
         run: |
           if [ -z "$GH_REVIEW_PAT_PROBE" ]; then
             echo "::notice::GH_REVIEW_PAT 未設定（fork PR や secret 欠落環境）。auto-merge を skip。"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          elif ! GH_TOKEN="$GH_REVIEW_PAT_PROBE" gh api user --silent >/dev/null 2>&1; then
+            echo "::notice::GH_REVIEW_PAT が無効（401 Bad credentials 等）。auto-merge を skip（red にしない）。secret の再発行は人間専管。"
             echo "available=false" >> "$GITHUB_OUTPUT"
           else
             echo "available=true" >> "$GITHUB_OUTPUT"

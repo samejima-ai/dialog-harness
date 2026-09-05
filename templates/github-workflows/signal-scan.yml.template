@@ -1,7 +1,8 @@
 # signal-scan — テレメトリ逆流の最小実装（v6.15.0 F1・Council v615im）
 #
-# リポジトリ自身が発する信号（赤 CI / 滞留 PR / 期限切れ review_trigger / CTL 未評価滞留）を
-# 決定論で検知し、Issue **候補**として起票する。LLM 判定を含まない（I-2）。
+# リポジトリ自身が発する信号（赤 CI / 滞留 PR / 期限切れ review_trigger / CTL 未評価滞留 /
+# workflow の沈黙 / 情報代謝の停滞）を決定論で検知し、Issue **候補**として起票する。
+# LLM 判定を含まない（I-2）。
 #
 # 出力は候補のみ — `signal-detected` ラベルを付け、`ready-for-ai` は付けない。
 # 候補の昇格は人間の判断（I-1・philosophy 第 8 条「観測 → 候補化 → 人間最終承認」）。
@@ -10,7 +11,11 @@
 #
 # 安全弁: 重複起票禁止（open の signal-detected と同一タイトルは skip）/
 #         起票上限 1 run 3 件 / 検知器の個別失敗で全体を止めない（warn 続行）。
-# 閾値: STALE_DAYS=7 / PENDING_MAX=10 / REVIEW_TRIGGER_DAYS=90（Council v615im 確定）。
+#         **タイトルは信号の同一性のみで構成し測定値を含めない**（v6.17.0 F8 の是正 —
+#         旧版は日数・件数を含めたため日次 cron で毎日 dedup が外れ、2026-08-28〜09-05 に
+#         同一 3 PR で 27 件の重複 Issue を生んだ。測定値は body に置く）。
+# 閾値: STALE_DAYS=7 / PENDING_MAX=10 / REVIEW_TRIGGER_DAYS=90（Council v615im 確定）/
+#       WORKFLOW_SILENCE_DAYS=60（v6.17.0 F7）/ 代謝は token_budget を正本とする（同 F8）。
 
 name: signal-scan
 

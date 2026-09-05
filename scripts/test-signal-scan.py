@@ -88,9 +88,80 @@ check("候補である旨（ready-for-ai を付けない）を明記",
       "候補" in body and "ready-for-ai" in body)
 check("決定論であることを明記", "LLM 判定なし" in body)
 
-print("== 検知器 4 本の固定（F1-1） ==")
-names = {"decide_red_ci", "decide_stale_prs", "decide_review_trigger", "decide_pending"}
-check("判定関数が 4 本とも存在", all(hasattr(m, n) for n in names))
+print("== (e) workflow_silence: 沈黙検知（v6.17.0 F7） ==")
+old_run = int((NOW - dt.timedelta(days=120)).timestamp())
+new_run = int((NOW - dt.timedelta(days=3)).timestamp())
+old_file = int((NOW - dt.timedelta(days=200)).timestamp())
+wfs = [
+    {"name": "gemini-review.yml", "last_run_epoch": old_run, "file_epoch": old_file},
+    {"name": "auto-merge.yml", "last_run_epoch": new_run, "file_epoch": old_file},
+    {"name": "never-ran.yml", "last_run_epoch": None, "file_epoch": old_file},
+    {"name": "brand-new.yml", "last_run_epoch": None,
+     "file_epoch": int((NOW - dt.timedelta(days=5)).timestamp())},
+    {"name": "no-basis.yml", "last_run_epoch": None, "file_epoch": None},
+]
+s = m.decide_workflow_silence(wfs, NOW, max_days=60)
+targets = [x["target"] for x in s]
+check("120 日沈黙（gemini-review）を検知", "gemini-review.yml" in targets, str(targets))
+check("3 日前に走った（auto-merge）は非検知", "auto-merge.yml" not in targets)
+check("未起動だがファイルが 200 日前（never-ran）を検知", "never-ran.yml" in targets)
+check("未起動だが新設 5 日（brand-new）は非検知＝誤検知しない",
+      "brand-new.yml" not in targets)
+check("基準時刻が取れない（no-basis）は判定しない", "no-basis.yml" not in targets)
+
+print("== (f) metabolism_stall: 未消化が token_budget 超（v6.17.0 F8） ==")
+state = {
+    "last_reindex_at": "2026-06-07T05:00:00Z",
+    "token_budget": 12000,
+    "files": [
+        {"name": "COUNCIL-LOG.md", "cursor_line": 2287, "total_lines": 3314,
+         "undigested_lines": 1027, "undigested_bytes": 92000},
+        {"name": "CHANGELOG.md", "cursor_line": 1403, "total_lines": 2340,
+         "undigested_lines": 937, "undigested_bytes": 80000},
+    ],
+}
+s = m.decide_metabolism_stall(state, NOW)
+check("未消化 43,000 tok > budget 12,000 → 検知", len(s) == 1, str(s))
+check("body に最終 reindex からの日数が入る", s and "最終 reindex から" in s[0]["body"])
+check("body に token_budget を明記", s and "12,000 tok" in s[0]["body"])
+small = dict(state, files=[dict(state["files"][0], undigested_bytes=1000)])
+check("未消化 250 tok ≤ budget → 非検知", m.decide_metabolism_stall(small, NOW) == [])
+check("cursor 未配備（None）は検知しない", m.decide_metabolism_stall(None, NOW) == [])
+check("token_budget 未設定（0）は検知しない",
+      m.decide_metabolism_stall(dict(state, token_budget=0), NOW) == [])
+
+print("== タイトル安定性（v6.17.0 F8 の是正・dedup が外れないこと） ==")
+# 実害: 日次 cron で age が毎日変わり、タイトル一致の dedup が外れて
+# 2026-08-28〜09-05 に同一 3 PR で 27 件の重複 Issue を生んだ。
+# 不変条件: 同じ信号は、測定値が変わってもタイトルが変わらない。
+pr = [{"number": 1, "title": "x", "createdAt": "2026-08-10T00:00:00Z",
+       "labels": [], "isDraft": False}]
+t1 = m.decide_stale_prs(pr, NOW, stale_days=7)[0]["title"]
+t2 = m.decide_stale_prs(pr, NOW + dt.timedelta(days=30), stale_days=7)[0]["title"]
+check("stale_pr: 30 日後も同一タイトル", t1 == t2, f"{t1!r} != {t2!r}")
+
+rt = [{"path": "a.md", "last_commit_epoch": old_epoch}]
+r1 = m.decide_review_trigger(rt, NOW, max_days=90)[0]["title"]
+r2 = m.decide_review_trigger(rt, NOW + dt.timedelta(days=30), max_days=90)[0]["title"]
+check("review_trigger: 30 日後も同一タイトル", r1 == r2, f"{r1!r} != {r2!r}")
+
+check("ctl_pending: 件数が変わっても同一タイトル",
+      m.decide_pending(11, limit=10)[0]["title"]
+      == m.decide_pending(99, limit=10)[0]["title"])
+
+w1 = m.decide_workflow_silence(wfs, NOW, max_days=60)[0]["title"]
+w2 = m.decide_workflow_silence(wfs, NOW + dt.timedelta(days=30), max_days=60)[0]["title"]
+check("workflow_silence: 30 日後も同一タイトル", w1 == w2, f"{w1!r} != {w2!r}")
+
+big = dict(state, files=[dict(state["files"][0], undigested_bytes=200000)])
+check("metabolism_stall: 測定値が変わっても同一タイトル",
+      m.decide_metabolism_stall(state, NOW)[0]["title"]
+      == m.decide_metabolism_stall(big, NOW)[0]["title"])
+
+print("== 検知器 6 本の固定（F1-1 + v6.17.0 F7/F8） ==")
+names = {"decide_red_ci", "decide_stale_prs", "decide_review_trigger", "decide_pending",
+         "decide_workflow_silence", "decide_metabolism_stall"}
+check("判定関数が 6 本とも存在", all(hasattr(m, n) for n in names))
 
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")

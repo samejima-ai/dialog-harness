@@ -79,6 +79,11 @@ WORKFLOW_PAIRS = [
     ("claude-review.yml", "claude-review.yml.template"),
     ("gemini-review.yml", "gemini-review.yml.template"),
     ("issue-pickup.yml", "issue-pickup.yml.template"),
+    # v6.17.0 F7/F8 で追加。本体・template とも v6.15.0 から実在したのに本表・
+    # HOST_ONLY・TEMPLATE_ONLY のいずれにも載っておらず、**5 組目のペアが黙って
+    # 未検査だった**（宣言が実体を網羅していない = v6.17.0 §0 の「実体 → 宣言」欠落の
+    # 同型例）。placeholder は無く 2 ファイルは byte 同一。
+    ("signal-scan.yml", "signal-scan.yml.template"),
 ]
 
 # ペア化しない（意図的非対称）— 記録のみ、drift 判定対象外
