@@ -59,7 +59,7 @@ AI 側の読み（訂正歓迎）:
   **background watcher で自動同期**、15 tools、LLM 不要、Windows は PowerShell installer。SLSA L3 / Sigstore 署名
 - 計測: 5 質問型合計 ~3,400 tok vs ~412,000 tok（121x）。Linux kernel 28M 行を 3 分で index
 - 設計上の差（README 実読）: 出力に **pagination + token budget が組み込み**（`offset`/`limit`、「要求トークン × 4 byte」の決定論上限）
-  = F9-7 の「影響範囲 10 万 tok」問題への構造的対策を持つ。索引は **repo 外** `~/.cache/codebase-memory-mcp/`（gitignore 不要）、
+  = F10-7 の「影響範囲 10 万 tok」問題への構造的対策を持つ。索引は **repo 外** `~/.cache/codebase-memory-mcp/`（gitignore 不要）、
   任意で `.codebase-memory/graph.db.zst` を commit してチーム共有可。除外は `.gitignore` 階層 + `.cbmignore`。
   installer は `~/.claude.json` と project `.mcp.json` を**書き換える**（DH の hook 思想「自動導入しない」と要調整）。
   daemon がアカウント単位で常駐（最初のセッションが起動・最後が停止）
@@ -89,7 +89,9 @@ AI 側の読み（訂正歓迎）:
 
 ### F5. DH の現状（実測 2026-09-05）
 
-- 3 リポ（DH / kakuman / cc-cockpit）とも **`.mcp.json` 不在**。DH 内に MCP / ナレッジグラフ / オントロジーの先行議論は **無し**（grep 0 件）
+- 3 リポ（DH / kakuman / cc-cockpit）とも **`.mcp.json` 不在**。DH 内に MCP / ナレッジグラフ / オントロジーの先行議論は **無し**
+  （本メモ追加前の `master` = commit `982eae0` を対象に `\.mcp\.json|knowledge ?graph|ナレッジグラフ|オントロジー|serena|graphify` を grep、
+  `history/archive/` 除外、2026-09-05 実測 0 件）
 - 最近傍の先例 = **`rtk-integration`**（外部 CLI で Bash 出力を 60-90% 圧縮 = 同じ「購読量削減」目的）。
   設計要素: バージョン固定（v0.37.1）/ install・uninstall の可逆性 / CLAUDE.md 追記テンプレ / 越境パッチはマーカー
   `<!-- rtk-integration: begin/end -->` で撤去可能 / 通知のみ・自動導入しない。**ただし Windows native 固定・prefix 無し・
@@ -133,7 +135,7 @@ AI 側の読み（訂正歓迎）:
 - plugin 提供 MCP と `.mcp.json` は tool 名前空間が異なる（`mcp__plugin_<name>_<server>__<tool>` vs `mcp__<server>__<tool>`）。
   記事の「VSCode 拡張で plugin MCP が読まれない」は plugin 経路固有の問題で、`.mcp.json` 経路なら回避
 
-### F10. Anthropic 公式の設計指針（一次: Effective context engineering for AI agents）
+### F9. Anthropic 公式の設計指針（一次: Effective context engineering for AI agents）
 
 https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 
@@ -149,7 +151,7 @@ https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agent
   CLAUDE.md の表で解消しようとしている点は、まさに指針が失敗モードと呼ぶ状態の対症療法）。
   「フォルダ階層・命名が信号」は kakuman の FX-* アンカー / 罠 ID / gate ID の設計と同じ主張（案 C の根拠）
 
-### F9. 一次計測（scratchpad コピー上、リポ本体には書き込まない）
+### F10. 一次計測（scratchpad コピー上、リポ本体には書き込まない）
 
 対象 = `git ls-files` で複製した cc-cockpit / kakuman（`.git` 初期化のみ）。ツール = `uvx --from code-review-graph==2.3.7`
 （記事と同版、この環境は Python 3.11 / uv あり）。トークンは bytes/4 の概算。
@@ -221,5 +223,5 @@ https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agent
 ## 次にやるなら
 
 - Workflow 結果（DH 点検所見 + 3 設計案 + 反証）を本メモ §DH 点検 / §選択肢 に反映
-- F9 一次計測の結果を追記
+- F10 一次計測は code-review-graph のみ追記済み。better-code-review-graph（埋め込み有り）/ codebase-memory-mcp を同条件で測るのは次ラウンド候補
 - 論点が出揃ったら「L0 に上げられそうです」と 1 回だけ提案する（人間の明示指示があるまで L0 へ上げない）
