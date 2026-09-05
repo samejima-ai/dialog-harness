@@ -394,8 +394,13 @@ def decide_metabolism_stall(state: dict | None, now: _dt.datetime,
         try:
             last = _dt.datetime.fromisoformat(
                 state["last_reindex_at"].replace("Z", "+00:00"))
+            # tz 無しの値（`2026-06-07T05:00:00`）は naive になり、aware な now との
+            # 減算が TypeError になる。history の時刻は UTC 表記の慣習なので UTC を補う。
+            # 補わずに引くと「個別失敗で全体を止めない」契約を (f) 自身が破る。
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=_dt.timezone.utc)
             since = f"最終 reindex から {(now - last).days} 日 / "
-        except ValueError:
+        except (ValueError, TypeError):
             since = ""
     detail = "\n".join(
         f"  - {f['name']}: cursor 記録時 {f['cursor_line']} 行 → 現末尾 {f['total_lines']} 行"

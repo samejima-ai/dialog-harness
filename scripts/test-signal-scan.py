@@ -187,6 +187,13 @@ check("量が budget 未満なら、何年沈黙していても発火しない�
       m.decide_metabolism_stall(quiet, NOW) == [])
 check("last_reindex_at が壊れていても落ちない",
       len(m.decide_metabolism_stall(dict(state, last_reindex_at="not-a-date"), NOW)) == 1)
+# tz 無しの値は naive datetime になり、aware な now との減算が TypeError になる。
+# ValueError しか捕まえていないと signal-scan 全体が落ち、
+# 「検知器の個別失敗で全体を止めない」契約を (f) 自身が破る。
+naive = m.decide_metabolism_stall(dict(state, last_reindex_at="2026-06-07T05:00:00"), NOW)
+check("tz 無しの last_reindex_at でも落ちず日数を出す（TypeError の回帰）",
+      len(naive) == 1 and "最終 reindex から 81 日" in naive[0]["body"],
+      str(naive)[:160])
 
 # cursor > 現末尾 = protocol の異常条件。黙って 0 に丸めず独立の信号にする。
 anom = {"last_reindex_at": None, "budget_lines": 0, "files": [],
