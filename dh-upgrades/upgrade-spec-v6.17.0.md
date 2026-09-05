@@ -1,6 +1,6 @@
 # upgrade-spec v6.17.0 — 宣言層の lock-step 清算（点検 (a)〜(h)）
 
-> **状態: L0 起草（人間レビュー待ち）**。本仕様の実装は escalation-matrix「規範文書改変」行
+> **状態: 実装中（F1 / F7 / F8 済 / F2-F6 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
 > （`.claude/skills/crosscut-council/references/escalation-matrix.md:31`）に従い、人間レビュー通過後・
 > **実装前に Council 諮問**を経る。本 spec 自体の設計判断は Council 未諮問（起草時点で意図的に未実施 —
 > 諮問対象は §判断点に列挙した 5 点）。
@@ -642,6 +642,15 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
   本 PR が `signal-scan.yml` と template の両方を編集するため、未検査のままだと片側だけ変えても検出されない。
   この (ii) は §0 の「実体 → 宣言」欠落の同型例であり、F2 / F4 が扱う欠落と同じ型が `check_template_sync` にもあったことを示す。
   検証: `check_template_sync` 5 ペア IN_SYNC / `test-signal-scan.py` 全通過（新規 17 assert）/ `harness-verifier --strict` 7 検査 PASS。
+- 2026-09-05: **PR-A 実装**（F1）。実装前 Council 諮問 `council-2026-09-05T23:40:00Z-vrsn01`
+  （`escalation-matrix.md:31` に従う。3 軸とも stance B / dimension の共有トークン 0 = 冗長ではなく
+  異なる次元からの一致 / weighted_score 8.58 / jc 0.78 / consensus_mode `escalate_to_human`）を通し、
+  判定が付した **9 条件をすべて実装に反映**した。VERSION 6.11.0 → 6.15.0、`GRAPH.yml` を同一 commit で追随、
+  `dev-env-spec.md:726` の**既存節を書き換え**（新節を作らず正典の二重化を避ける）、
+  状態行 4 本を実態に是正、§バージョン履歴を v4.2 で凍結、`UPDATE.md` に一度きりの読み替え表、
+  検査 8「宣言被覆」を新設（WARN は `git log --grep` でなく file-local 判定）。
+  検査の**検出能力は合成ツリーで実証**（`scripts/test-declaration-coverage.py`、健全ツリー 0 件を基準線に
+  6 欠陥をそれぞれ検出・偽陽性 0）。`implementer_consent` は null のまま = 合意プロセスは人間に残る。
 - 2026-09-05: **PR-E 自己レビュー是正**。検知器 (f) の初版が 3 重に誤測していたのを修正（追記方向 / budget の単位 /
   budget の解決順）。併せて一度加えた時間トリガを `metabolism-regime`「リズム（決定2・確定）」との矛盾ゆえ撤回。
   その過程で **(h) の根本原因**（reindex-protocol §2 M2 の prefix checksum が先頭 append と非互換で
