@@ -48,7 +48,7 @@ upgrade-spec 状態行 / RL 索引 / 代謝 cursor）が実体から離れた 8 
 | (e) | Level A checklist E-3 が Windows native を列挙しない | 規範と実態の不整合 | F5 | —（規範改変。Council 案件） |
 | (f) | RL が届くのに読込経路が無い + 現況索引 2 箇所 stale | 配線の欠落 | F6 | F6（RL 索引の件数一致検査） |
 | (g) | `GH_REVIEW_PAT` 失効で全 PR の auto-merge が red / gemini-review が 4 ヶ月未起動 | 運用 + 検知の欠落 | F7 | F7（PAT 有効性検査 + workflow 沈黙検知） |
-| (h) | 情報代謝が 2026-06-07 で停止（未消化 2,417 行） | 鮮度 | F8 | F8（cursor 停滞の決定論検知） |
+| (h) | 情報代謝が 2026-06-07 で停止（cursor 記録時点から +2,417 行） | 鮮度 | F8 | F8（cursor 停滞の決定論検知） |
 
 ### 設計方針 — 検査器を 8 本作らない
 
@@ -409,9 +409,9 @@ review_trigger:
 
 - `history/.metabolism-cursor.yml` の `last_reindex_at` は **2026-06-07T05:00:00Z**（約 3 ヶ月停止）
 - `dry_run_remaining: 3` のまま（本番 reindex を 2 回実施済みなのに減算されていない = protocol カウンタと実態の乖離）
-- 未消化 WARM delta（cursor 位置 vs 現末尾）:
+- cursor 記録時点からの増分（cursor の `line` = 記録時のファイル長 vs 現末尾）:
 
-| ファイル | cursor line | 現在行数 | 未消化 |
+| ファイル | cursor line | 現在行数 | 増分 |
 |---|---|---|---|
 | `COUNCIL-LOG.md` | 2,287 | 3,314 | **+1,027** |
 | `CHANGELOG.md` | 1,403 | 2,340 | **+937** |
@@ -419,25 +419,73 @@ review_trigger:
 | `REGIME-LOG.md` | 674 | 767 | **+93** |
 | 合計 | | | **+2,417 行** |
 
-- `token_budget: 12000` は設定されているが、**超過判定を実行する経路が無い**（人間が思い出したときだけ reindex が走る）
+- **この 2,417 行は「未消化行」ではなく代理指標**である。cursor が追う 4 本のうち 3 本
+  （`CHANGELOG.md` / `INTENT.md` / `REGIME-LOG.md`）は**先頭 append**（新しい記録が上に載る）で、
+  そこでは cursor の `line: N` は「記録時点のファイル長」であって「先頭から N 行が消化済み」を意味しない
+  （kakuman の `.metabolism-cursor.yml` が「line は読み進める起点ではない」と明記しているのと同じ性質）。
+  ゆえに**どの行が未読かは line からは決まらない**。
+  一方で「記録時点から何行増えたか」は追記方向に依らずに決まるので、停滞の代理指標として数えられる
+- 購読量 budget は `token_budget: 12000` だが、これは名前に反して **`default-load` 行数の近似上限**
+  （`.metabolism-config.yml` の注記）。解決順は ① 配布先 `REGIME.md` `## 情報代謝設定` → ② DH-self config
+- その budget は設定されているが、**超過判定を実行する経路が無い**（人間が思い出したときだけ reindex が走る）
 - `SUMMARY.md` の「直近 cycle 振り返り」も 2026-08-05 の 1 件で停止（規定は直近 3 件保持）
+
+### 実装中に判明した根本原因（2026-09-05 実測・spec 起草時には未把握）
+
+**(h) の「停止」は運用の怠慢ではなく、protocol の guard が構造的に通らない状態だった。**
+
+1. **DH の history は追記方向が混在している**。`CHANGELOG.md` / `INTENT.md` / `REGIME-LOG.md` は
+   **先頭 append**（新しい記録が上）、`COUNCIL-LOG.md` のみ **末尾 append**（実測: 各ファイルの
+   先頭と末尾の日付を比較）。
+2. **`reindex-protocol.md` §2 の M2 は末尾 append を前提にしている**。checksum の対象を
+   「先頭〜line の消化済みプレフィックス」に限る設計理由が
+   「append-only な history では**末尾追記で**全ファイル指紋が毎回変わり誤検知するため」と
+   明記されている。先頭 append のファイルでは**新しい記録が毎回プレフィックスを書き換える**ので、
+   この guard は正常な追記を「cursor 以前の改変」と判定する。
+3. **実測: 記録済み checksum は 4 本とも現ファイルと一致しない**。プレフィックス（末尾改行あり／なし）・
+   全文の 3 通りで sha256 を計算したが、いずれも記録値と不一致（`COUNCIL-LOG.md` は末尾 append だが
+   冒頭に訂正記録が挿入されたため同様に不一致）。
+4. `reindex-protocol.md` §1 は「guard を通過した後にのみ §3 の処理フローへ進む。曖昧なまま
+   結晶化・移送を行うのは独自補完であり禁止」と定めるため、**現状 reindex は起動しても
+   guard で停止する**。これが 2026-06-07 以降動いていない理由。
+
+**この是正は本 PR の対象外**（`.claude/skills/**` = L-FROZEN-META / escalation-matrix「規範文書改変」）。
+protocol 側を直すか cursor を貼り直すかは Council 諮問 + 人間判断を要する。ここでは事実の記録に留める。
 
 ### 是正
 
 `layer0-reindex-librarian` を起動して代謝を再開する（**本 spec の実装対象外** — 既存機構の運用であって仕様変更ではない。
-§実装しないもの）。本 spec が担うのは**停滞を検知する機構**のみ。
+§実装しないもの）。ただし上記のとおり **guard の是正が先** であり、それを踏まずに reindex を回すと
+「曖昧なまま結晶化」に該当する。本 spec が担うのは**停滞を検知する機構**のみ。
 
 ### 再発防止機構（signal-scan 検知器 (f)）
 
-- **代謝停滞検知**: `history/.metabolism-cursor.yml` の cursor 位置と対象ファイルの現末尾の差分行数を数え、
-  `token_budget`（行数換算）を超えたら候補として起票する。
-  `last_reindex_at` からの経過日数も併記する。**判定はせず数えるだけ**（I-2）
+- **代謝停滞検知**: `history/.metabolism-cursor.yml` の cursor 記録時点からの増分行数（現末尾 − `line`）を数え、
+  購読量 budget（行数）を超えたら候補として起票する。`last_reindex_at` からの経過日数も併記する。
+  **判定はせず数えるだけ**（I-2）。body には「増分行数は代理指標であって未消化量そのものではない」旨を明記する
+- **cursor > 現末尾は別信号**として持ち上げる（cursor 以前が改変された = reindex-protocol の異常条件）。
+  黙って 0 に丸めない
 - 既存検知器 (c)（`review_trigger` の経過日数）と同じ「時間で腐るものを数える」枠に入る
 
 > **実装済み（PR-E、2026-09-05）**: 検知器 (f) `decide_metabolism_stall` を実装。実リポで
-> 未消化 2,417 行 / 約 65,142 tok（bytes/4 概算）vs `token_budget` 12,000 を検出。
-> cursor の `line: N` が「先頭〜N が消化済みプレフィックス」を意味することを cursor 自身のコメントと
-> 行数検算（3,314 − 2,287 = 1,027）で確認済み。**代謝の実行（reindex）は未了**（§実装しないもの）。
+> 増分 2,417 行 vs 購読量 budget 12,000 行 → **閾値未満ゆえ非検知**。
+> つまり **regime の宣言する発火条件では reindex はまだ「回すべき時」ではない**。
+> (h) が問題なのは「回っていないこと」ではなく上記 guard で**回せないこと**であり、
+> 検知器 (f) はその区別を保ったまま量だけを数える。**代謝の実行（reindex）は未了**（§実装しないもの）。
+>
+> **時間トリガを入れなかった理由**: 一度は「最終 reindex から N 日」を trip 条件に加えたが、
+> `metabolism-regime`「リズム（決定2・確定）」が
+> 「発火条件: history 層が指定 token 量（購読量 budget）を超過した時点。**N-cycle トリガーは棄却**」
+> と確定しているため撤回した。検知器が既存の確定事項を上書きしてはならない
+> （閾値を (h) が発火するよう選ぶのは、標本に合わせた閾値の後付けでもある）。日数は body に参考値として併記する。
+>
+> **初版実装の誤りと是正（自己レビューで検出）**: 初版は「未消化 = `lines[N:]`」として bytes/4 で
+> 約 65,142 tok と算出し `token_budget` 超と報告していた。誤りが 3 点あった —
+> ① DH の history は 4 本中 3 本が**先頭 append** なので `lines[N:]` は最古の行を数えていた
+> ② `token_budget` は tok ではなく**行数**の上限（config 自身が明記）
+> ③ 配布先の正本である `REGIME.md` `## 情報代謝設定` を読んでいなかった。
+> 是正後は追記方向に依らない増分行数のみを数え、budget は REGIME → config の順で解決する。
+> 回帰テストに「先頭 append でも末尾 append でも同じ増分」「REGIME が config より優先」を追加。
 >
 > **実装中に発見した追加欠陥と是正（spec 起草時には未把握）**: signal-scan は日次 cron だが、
 > 既存 3 検知器のタイトルが測定値（`PR #1 が 18 日間 open のまま`）を含むため日付が変わるたびに

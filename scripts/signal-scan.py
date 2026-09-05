@@ -18,8 +18,14 @@ LLM 判定を含まない（I-2）。`ready-for-ai` は付けない — 候補�
                           ならないので誰も気づかない**。v6.17.0 F7 の実害:
                           gemini-review が 2026-05-09 以降 4 ヶ月沈黙し、auto-merge の
                           条件 4.5 が実質 harness-verify のみで成立していた）
-  (f) metabolism_stall  : 情報代謝の未消化分（cursor 位置 → 現末尾）が
-                          `.metabolism-config.yml` の token_budget を超過
+  (f) metabolism_stall  : cursor 記録時点からの **増分行数** > 購読量 budget
+                          （REGIME.md `## 情報代謝設定` → 無ければ
+                          `.metabolism-config.yml` の `token_budget`。名前に反して
+                          「default-load 行数の近似上限」）。
+                          **時間で発火させない** — metabolism-regime「リズム（決定2・確定）」が
+                          「発火条件は購読量 budget 超過。N-cycle トリガーは棄却」と
+                          明示しており、日数トリガはこの決定に反する。
+                          cursor > 現末尾（reindex-protocol の異常条件）は別信号
                           （v6.17.0 F8。判定はせず数えるだけ = I-2）
 
 安全弁:
@@ -33,7 +39,7 @@ LLM 判定を含まない（I-2）。`ready-for-ai` は付けない — 候補�
 
 閾値（(a)-(d) は Council v615im で確定・env で上書き可）:
   STALE_DAYS=7 / PENDING_MAX=10 / REVIEW_TRIGGER_DAYS=90 / MAX_ISSUES=3
-  WORKFLOW_SILENCE_DAYS=60（v6.17.0 F7）/ (f) の閾値は token_budget を正本とする
+  WORKFLOW_SILENCE_DAYS=60（v6.17.0 F7）/ (f) の閾値は購読量 budget（行数）を正本とする
 """
 
 from __future__ import annotations
@@ -145,7 +151,8 @@ def fetch_pr_workflows(root: str = REPO_ROOT) -> list[dict]:
                 created.replace("Z", "+00:00")).timestamp())
         else:
             last = None  # 取得は成功したが run が 1 件も無い
-        ts = _run(["git", "log", "-1", "--format=%ct", "--",
+        # `root` を渡された以上 git も root で叩く（cwd 依存だと別リポの mtime を読む）
+        ts = _run(["git", "-C", root, "log", "-1", "--format=%ct", "--",
                    f".github/workflows/{fn}"]).strip()
         out.append({
             "name": fn,
@@ -155,47 +162,74 @@ def fetch_pr_workflows(root: str = REPO_ROOT) -> list[dict]:
     return out
 
 
-def fetch_metabolism_state(root: str = REPO_ROOT) -> dict | None:
-    """情報代謝の cursor / config を読む。未配備なら None（検知器を skip）。
+def _resolve_budget_lines(root: str, hist: str) -> int:
+    """購読量 budget（行数）の解決。① 配布先 REGIME.md → ② DH-self config。
 
-    cursor の各エントリ（`  <name>.md: { line: N, ... }`）が指す行以降を「未消化」とし、
-    その byte 数を数える。tokens への換算は `bytes / 4`（DH 内の概算慣行）。
+    `token_budget` は名前に反して「default-load **行数**の近似上限」
+    （`.metabolism-config.yml` の注記「token ではなく default-load 行数の近似上限として運用」）。
+    配布先は REGIME.md `## 情報代謝設定` が正本なので先に見る。
+    """
+    regime_p = os.path.join(root, "REGIME.md")
+    if os.path.exists(regime_p):
+        with open(regime_p, encoding="utf-8") as fh:
+            sec = re.search(r"^#+\s*情報代謝設定\b(.*?)(?=^#{1,3}\s|\Z)", fh.read(), re.M | re.S)
+        if sec:
+            b = re.search(r"token_budget\D{0,20}?(\d+)", sec.group(1))
+            if b:
+                return int(b.group(1))
+    config_p = os.path.join(hist, ".metabolism-config.yml")
+    if os.path.exists(config_p):
+        with open(config_p, encoding="utf-8") as fh:
+            b = re.search(r"^\s*token_budget:\s*(\d+)", fh.read(), re.M)
+        if b:
+            return int(b.group(1))
+    return 0
+
+
+def fetch_metabolism_state(root: str = REPO_ROOT) -> dict | None:
+    """情報代謝の cursor / 予算を読む。未配備なら None（検知器を skip）。
+
+    **cursor の `line: N` は「記録時点のファイル長」であって「読み進める起点」とは限らない**。
+    先頭 append の history では line 番号の続きが時系列の続きにならず、cursor 自身が
+    「line は読み進める起点ではない」と明記している（kakuman `.metabolism-cursor.yml`）。
+    DH 本体も cursor が追う 4 本中 3 本が先頭 append である（2026-09-05 実測）。
+
+    ゆえに本検知器は「どの行が未消化か」を特定しない。数えるのは
+    **記録時点からの増分行数**（現末尾 − line）だけで、これは追記方向に依らない。
+    byte 数や「未消化」の主張はしない（どの行が未読かは line からは決まらないため）。
+
+    `cursor > 現末尾` は protocol の異常条件（cursor 以前の改変）。黙って 0 にせず
+    `anomalies` として持ち上げる。
     """
     hist = os.path.join(root, "history")
     cursor_p = os.path.join(hist, ".metabolism-cursor.yml")
-    config_p = os.path.join(hist, ".metabolism-config.yml")
     if not os.path.exists(cursor_p):
         return None
     with open(cursor_p, encoding="utf-8") as fh:
         cursor_text = fh.read()
-    config_text = ""
-    if os.path.exists(config_p):
-        with open(config_p, encoding="utf-8") as fh:
-            config_text = fh.read()
 
     m = re.search(r'^last_reindex_at:\s*"?([0-9T:+\-]+Z?)"?', cursor_text, re.M)
-    b = re.search(r"^\s*token_budget:\s*(\d+)", config_text, re.M)
 
-    files = []
+    files: list[dict] = []
+    anomalies: list[dict] = []
     for name, line in re.findall(r"^\s{2}([\w.\-]+\.md):\s*\{\s*line:\s*(\d+)",
                                  cursor_text, re.M):
         path = os.path.join(hist, name)
         if not os.path.exists(path):
             continue
         with open(path, encoding="utf-8") as fh:
-            lines = fh.readlines()
-        undigested = lines[int(line):]
-        files.append({
-            "name": name,
-            "cursor_line": int(line),
-            "total_lines": len(lines),
-            "undigested_lines": len(undigested),
-            "undigested_bytes": sum(len(x.encode("utf-8")) for x in undigested),
-        })
+            total = sum(1 for _ in fh)
+        cur = int(line)
+        if cur > total:
+            anomalies.append({"name": name, "cursor_line": cur, "total_lines": total})
+            continue
+        files.append({"name": name, "cursor_line": cur, "total_lines": total,
+                      "added_lines": total - cur})
     return {
         "last_reindex_at": m.group(1) if m else None,
-        "token_budget": int(b.group(1)) if b else 0,
+        "budget_lines": _resolve_budget_lines(root, hist),
         "files": files,
+        "anomalies": anomalies,
     }
 
 
@@ -317,21 +351,43 @@ def decide_workflow_silence(workflows: list[dict], now: _dt.datetime,
 
 
 def decide_metabolism_stall(state: dict | None, now: _dt.datetime,
-                            token_budget: int | None = None) -> list[dict]:
-    """情報代謝の未消化分が token_budget を超えたら候補起票（v6.17.0 F8）。
+                            budget_lines: int | None = None) -> list[dict]:
+    """cursor 記録時点からの増分が購読量 budget を超えたら候補起票（v6.17.0 F8）。
 
     判定はせず数えるだけ（I-2）。reindex を走らせるかは人間 / L0 が決める。
+
+    **発火条件を「量」に限る根拠**: metabolism-regime「リズム（決定2・確定）」は
+    「発火条件: history 層が指定 token 量（購読量 budget）を超過した時点。
+    **N-cycle トリガーは棄却**」と確定している。「最終 reindex から N 日」で
+    発火させると、この決定が棄却したリズムトリガを検知器が復活させることになる。
+    したがって日数は body に併記するだけで trip 条件にしない。
+
+    増分行数は追記方向に依らない代理指標であり、「未消化量そのもの」ではない
+    （cursor の line は先頭 append のファイルでは読み進める起点にならない。
+    厳密な消化済み範囲の判定は reindex-protocol の責務）。
     """
-    if not state or not state.get("files"):
+    if not state:
         return []
-    budget = token_budget if token_budget is not None else state.get("token_budget") or 0
-    if budget <= 0:
-        return []  # 予算未設定のプロジェクトでは検知しない
-    total_bytes = sum(f["undigested_bytes"] for f in state["files"])
-    total_lines = sum(f["undigested_lines"] for f in state["files"])
-    est_tokens = total_bytes // 4
-    if est_tokens <= budget:
-        return []
+    sigs = []
+
+    if state.get("anomalies"):
+        detail = ", ".join(f"{a['name']}（cursor {a['cursor_line']} 行 > 現末尾 {a['total_lines']} 行）"
+                           for a in state["anomalies"])
+        sigs.append({
+            "detector": "metabolism_stall", "target": "cursor-anomaly",
+            "title": "[signal:metabolism_stall] 代謝 cursor が現末尾を超えている",
+            "body": (f"検知器: metabolism_stall（cursor 異常）\n対象: {detail}\n"
+                     f"意味: cursor より前が改変された可能性がある（reindex-protocol の異常条件）。\n"
+                     f"増分の計数はこのファイルについて信頼できないため除外した。"),
+        })
+
+    budget = budget_lines if budget_lines is not None else state.get("budget_lines") or 0
+    if not state.get("files") or budget <= 0:
+        return sigs
+
+    total_added = sum(f["added_lines"] for f in state["files"])
+    if total_added <= budget:
+        return sigs
 
     since = ""
     if state.get("last_reindex_at"):
@@ -342,20 +398,26 @@ def decide_metabolism_stall(state: dict | None, now: _dt.datetime,
         except ValueError:
             since = ""
     detail = "\n".join(
-        f"  - {f['name']}: cursor {f['cursor_line']} 行 → 現末尾 {f['total_lines']} 行"
-        f"（未消化 {f['undigested_lines']} 行）" for f in state["files"])
-    return [{
+        f"  - {f['name']}: cursor 記録時 {f['cursor_line']} 行 → 現末尾 {f['total_lines']} 行"
+        f"（+{f['added_lines']} 行）" for f in state["files"])
+    sigs.append({
         "detector": "metabolism_stall", "target": "history",
-        # タイトルは同一性のみ（測定値を含めない）
-        "title": "[signal:metabolism_stall] 情報代謝が停滞（未消化が token_budget 超）",
-        "body": (f"検知器: metabolism_stall\n対象: `history/`（reduction_target = DH）\n"
-                 f"実測: {since}未消化 {total_lines} 行 / 約 {est_tokens:,} tok"
-                 f"（bytes/4 概算・閾値 token_budget = {budget:,} tok）\n"
+        "title": "[signal:metabolism_stall] 情報代謝が停滞（増分が購読量 budget 超）",
+        "body": (f"検知器: metabolism_stall\n対象: `history/`\n"
+                 f"実測: {since}cursor 記録時点から **+{total_added} 行**"
+                 f"（閾値 = 購読量 budget {budget} 行）\n"
                  f"{detail}\n"
-                 f"根拠: `history/.metabolism-cursor.yml` の cursor 位置と各ファイルの現末尾\n"
+                 f"根拠: `history/.metabolism-cursor.yml` の line（記録時点のファイル長）と現末尾の差。\n"
+                 f"      budget は REGIME.md `## 情報代謝設定` → "
+                 f"`history/.metabolism-config.yml` の順で解決（reindex-protocol §2.5）。\n"
+                 f"注記: 増分行数は追記方向に依らない**代理指標**であり「未消化量」そのものではない"
+                 f"（cursor の line は先頭 append のファイルでは読み進める起点にならない）。\n"
+                 f"      日数は参考値であって trip 条件ではない"
+                 f"（regime「リズム（決定2）」= N-cycle トリガーは棄却）。\n"
                  f"対応: `layer0-reindex-librarian` を起動して代謝を再開する"
                  f"（本検知器は数えるだけで代謝を実行しない = I-2）"),
-    }]
+    })
+    return sigs
 
 
 def dedup_and_cap(signals: list[dict], open_titles: set[str],
@@ -413,19 +475,33 @@ def main() -> None:
         except (subprocess.CalledProcessError, OSError, ValueError) as e:
             print(f"warn: 検知器 {name} の取得失敗（skip）: {e}", file=sys.stderr)
 
+    # dedup が効かないまま起票すると、まさに v6.17.0 F8 で是正した「重複 Issue の山」を
+    # 再生産する。open タイトルを読めなかったときは起票せず判定表示だけで終える（fail-safe）。
+    dedup_ok = True
     try:
         open_titles = fetch_open_signal_titles()
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        open_titles = set()
+    except (subprocess.CalledProcessError, OSError, ValueError) as e:
+        print(f"warn: open Issue のタイトル取得に失敗（{e}）。"
+              f"重複判定ができないため本 run は起票しない（次の cron で再試行）。",
+              file=sys.stderr)
+        open_titles, dedup_ok = set(), False
 
     to_file, dup = dedup_and_cap(signals, open_titles)
+    fresh = [x for x in signals if x["title"] not in open_titles]
+    dropped = fresh[len(to_file):]
     print(f"検知 {len(signals)} 件 / 重複 skip {dup} 件 / 起票対象 {len(to_file)} 件"
           f"（上限 {MAX_ISSUES}）")
     for s in to_file:
         print(f"  - {s['title']}")
+    # 上限で落ちた分は黙って消さない（次 run に持ち越されることを人間が知れるように）
+    for s in dropped:
+        print(f"  - （上限で持ち越し）{s['title']}")
 
     if args.dry_run:
         print("（--dry-run: 起票していません）")
+        return
+    if not dedup_ok:
+        print("（重複判定不能: 起票していません）")
         return
     if to_file:
         ensure_label()
