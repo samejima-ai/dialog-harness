@@ -109,6 +109,47 @@ check("未起動だが新設 5 日（brand-new）は非検知＝誤検知しな�
       "brand-new.yml" not in targets)
 check("基準時刻が取れない（no-basis）は判定しない", "no-basis.yml" not in targets)
 
+print("== (e) 取得失敗を「run 0 件」と混同しない（PR #248 Copilot 指摘の回帰） ==")
+# 取得失敗を last_run_epoch=None に潰すと file_epoch へフォールバックして
+# 「沈黙」と誤検知する。聞けなかったことと、聞いた結果 0 件だったことを混同しない。
+import subprocess as _sp
+_orig_run = m._run
+
+
+def _stub(gh_behavior):
+    def run(cmd):
+        if cmd[0] == "gh":
+            if gh_behavior == "fail":
+                raise _sp.CalledProcessError(1, cmd)
+            return gh_behavior
+        return "1700000000\n"          # git log の最終 commit epoch
+    return run
+
+
+try:
+    m._run = _stub("fail")
+    try:
+        m.fetch_pr_workflows()
+        check("gh 取得失敗は例外を送出する（None に潰さない）", False, "例外が出なかった")
+    except _sp.CalledProcessError:
+        check("gh 取得失敗は例外を送出する（None に潰さない）", True)
+
+    m._run = _stub('[{"foo": 1}]')
+    try:
+        m.fetch_pr_workflows()
+        check("createdAt 欠落の payload は ValueError", False, "例外が出なかった")
+    except ValueError:
+        check("createdAt 欠落の payload は ValueError（main の except に乗る）", True)
+
+    m._run = _stub("[]")
+    wf = m.fetch_pr_workflows()
+    check("run 0 件のときだけ last_run_epoch=None",
+          bool(wf) and all(w["last_run_epoch"] is None for w in wf), str(wf)[:120])
+    check("その場合も file_epoch は入る（判定側の代替基準）",
+          bool(wf) and all(w["file_epoch"] == 1700000000 for w in wf))
+finally:
+    m._run = _orig_run
+
 print("== (f) metabolism_stall: 未消化が token_budget 超（v6.17.0 F8） ==")
 state = {
     "last_reindex_at": "2026-06-07T05:00:00Z",

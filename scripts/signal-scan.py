@@ -111,9 +111,13 @@ def fetch_pending_count() -> int:
 def fetch_pr_workflows(root: str = REPO_ROOT) -> list[dict]:
     """`pull_request` トリガを持つ workflow と、その最終 run / 最終 commit 時刻。
 
-    最終 run が無い（1 度も走っていない）workflow は `last_run_epoch=None` を返し、
-    判定側が「ファイルが存在した期間」で代替評価する（新設直後の誤検知を避けるため
-    基準時刻を持たせる）。
+    `last_run_epoch=None` は **「取得に成功したうえで run が 1 件も無い」場合に限る**。
+    判定側はこのとき「ファイルが存在した期間」で代替評価する（新設直後の誤検知を避ける）。
+
+    取得失敗（403 / 429 / 一時障害 / 想定外 payload）は **None に落とさず送出**する。
+    None に潰すと `file_epoch` へフォールバックして「沈黙」と誤検知するため
+    （= 聞けなかったことと、聞いた結果 0 件だったことを混同しない）。
+    送出された例外は main が拾い、検知器 (e) 全体を warn + skip する。
     """
     wf_dir = os.path.join(root, ".github", "workflows")
     if not os.path.isdir(wf_dir):
@@ -127,14 +131,20 @@ def fetch_pr_workflows(root: str = REPO_ROOT) -> list[dict]:
         # `on:` 直下の 2 スペースインデント（pull_request / pull_request_target）
         if not re.search(r"^\s{2}pull_request(_target)?:", text, re.M):
             continue
-        try:
-            raw = _run(["gh", "run", "list", "--workflow", fn, "--limit", "1",
-                        "--json", "createdAt"])
-            arr = json.loads(raw)
+        # 取得失敗は握り潰さない（上の docstring 参照）。json / payload の異常は
+        # ValueError に正規化して main の except に乗せる。
+        arr = json.loads(_run(["gh", "run", "list", "--workflow", fn, "--limit", "1",
+                               "--json", "createdAt"]))
+        if not isinstance(arr, list):
+            raise ValueError(f"gh run list の payload が list でない（{fn}）")
+        if arr:
+            created = arr[0].get("createdAt") if isinstance(arr[0], dict) else None
+            if not created:
+                raise ValueError(f"gh run list の payload に createdAt が無い（{fn}）")
             last = int(_dt.datetime.fromisoformat(
-                arr[0]["createdAt"].replace("Z", "+00:00")).timestamp()) if arr else None
-        except (subprocess.CalledProcessError, FileNotFoundError, ValueError, KeyError):
-            last = None
+                created.replace("Z", "+00:00")).timestamp())
+        else:
+            last = None  # 取得は成功したが run が 1 件も無い
         ts = _run(["git", "log", "-1", "--format=%ct", "--",
                    f".github/workflows/{fn}"]).strip()
         out.append({
