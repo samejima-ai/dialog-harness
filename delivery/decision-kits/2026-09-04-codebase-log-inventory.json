@@ -1,0 +1,704 @@
+{
+  "key": "dh-log-inventory-0904",
+  "title": "ログ棚卸しキット 0904",
+  "eyebrow": "dialog-harness · ログ層 · 3 リポの記録 22 種 + 欠落 1 · 2026-09-04",
+  "lede": "ログ層キット 0903 Q10-A「台帳初版（3 リポ分）を調査で埋めてから判断する」の実行。機械が吐く記録を 1 行 1 問に並べた。<span class='mono'>23</span> 行に A / B / C を付けて「回答まとめ」を貼れば、段階 1 の初期集合が確定する。1 行 1 分。 <b>09-04 追記</b>: 人間の委任により Council lginv1 で確定（上表）。○× は不要。",
+  "meta": [
+    "<span>起点 <b>ログ層キット 0903 の回答（Q1-A: sensor + ci から / 将来は 5 種全部）</b></span>",
+    "<span>実測 <b>09-03〜04 · 各リポの .gitignore / SPEC / migrations / db/index.ts</b></span>",
+    "<span>推奨の規則 <b>sensor・ci = A ／ runtime・audit・蒸留物 = B ／ 正が別にある・ログでない = C</b></span>",
+    "<span>局面 <b>L0 前ブレスト（未確定・cycle ではない）</b></span>"
+  ],
+  "hero_html": "<div class='panel' style='margin-bottom:18px'><h3>決定記録（2026-09-04「疲れる！Council で決めて」→ Council lginv1 の推奨を採用）</h3><div class='tbl-wrap'><table><thead><tr><th>項目</th><th>決定</th></tr></thead><tbody><tr><td>段階 1 の初期集合</td><td><b>Q0（決定論センサーの stdout + exit code）1 stream のみ</b>。他 22 行は logs/index.yml の所在行のみ</td></tr><tr><td>Q3 Actions ログ</td><td>Q0 の CI 側発生源として index.yml に併記（別 stream にしない）</td></tr><tr><td>Q13 E2E 結果</td><td>「test:e2e の stdout は Q0 に含まれる」と定義で吸収</td></tr><tr><td>Q10 verifier reports（kakuman）</td><td>種別訂正 sensor → ai-session。kakuman に verify.py が無い = DH 資産の配布範囲の<b>別議題</b></td></tr><tr><td>Q12 coverage/（cc-cockpit）</td><td><b>対象外</b>（依存・設定・script が無く書き手ゼロ）</td></tr><tr><td>同時に決めるもの</td><td>Q0 の書き手（1 ラッパー・exit code 透過・pnpm verify 既定経路）/ 読み手（献上前センサー通過 / F1）/ raw の rotate / 段階 2 昇格条件 / 3 ヶ月で読まれなければ縮小する stop 予約</td></tr></tbody></table></div><div class='caption'>C = 開発者 3×0.85 + 哲学者 5×0.65 = 5.80 vs B（経営者）2.25、jc 0.78。少数意見（Q0 + Q10 の 2 行）は昇格条件・stop 予約・PII 実物確認として吸収。正本: delivery/DECISION-KIT-codebase-log-inventory-2026-09-04.md</div></div><div class='grid-2'><div class='panel'><h3>種別の内訳（22 種 + 欠落 1）</h3><div class='bar'><div class='seg' style='flex:9;background:var(--c1)' data-tip='runtime 9（Sentry / Vercel / DB ログ 4 / SQLite / *.log 2）'>9</div><div class='seg' style='flex:7;background:var(--c2)' data-tip='sensor 7（センサー出力〔欠落〕/ verifier reports 2 / coverage / E2E / PERF_AUDIT / ASSESSMENT / ANALYSIS）'>7</div><div class='seg' style='flex:4;background:var(--c3)' data-tip='ai-session 4（transcript 2 / hook 観測 / .cc-cockpit 報告）'>4</div><div class='seg' style='flex:1;background:var(--c4)' data-tip='ci 1（GitHub Actions ログ）'></div><div class='seg neutral' style='flex:2' data-tip='audit 2（samejima_activity_log / CTL 記録）'>2</div></div><div class='legend'><span><i class='sw' style='background:var(--c1)'></i>runtime</span><span><i class='sw' style='background:var(--c2)'></i>sensor</span><span><i class='sw' style='background:var(--c3)'></i>ai-session</span><span><i class='sw' style='background:var(--c4)'></i>ci</span><span><i class='sw neutral'></i>audit</span></div><div class='caption'>Q1-A の「sensor + ci から」に該当し、PII が無く、正が別に無い行が推奨 A。うち 1 行（決定論センサー出力）は今どこにも無い。</div></div><div class='panel'><h3>推奨の内訳</h3><div class='stat-row' style='grid-template-columns:1fr 1fr 1fr'><div class='stat'><div class='n' style='color:var(--c1)'>5</div><div class='l'>A 段階 1 で対象</div></div><div class='stat'><div class='n' style='color:var(--c2)'>12</div><div class='l'>B 後段で対象</div></div><div class='stat'><div class='n'>6</div><div class='l'>C 対象外</div></div></div><div class='caption' style='margin-top:14px'>C の根拠は 3 つだけ: 正が別にある（SQLite は transcript の派生、CTL 記録は COUNCIL-LOG の派生）／ ログではなく成果物（.cc-cockpit 報告、ASSESSMENT）／ 動かさない（transcript は読み取り専用・SPEC C11）。</div></div></div>",
+  "sections": [
+    {
+      "eyebrow": "01 · 守る線",
+      "h2": "棚卸しで変えないもの",
+      "sub": "ログ層キット 0903 §03 の 5 本をそのまま。行ごとの判断はこの内側で。",
+      "html": "<div class='guards'><div class='guard'><b>transcript jsonl を動かさない・書き換えない</b><span class='why'>cc-cockpit SPEC C11 / DONT。読み手は既にいる。ログ層が二重に持つ理由は無い</span></div><div class='guard'><b>DB のログ表を repo に持って来ない</b><span class='why'>ops 隔離（PostgREST 不到達）と 2 表分離は「誰が読めるか」の構造解。export した瞬間に構造が消える</span></div><div class='guard'><b>個人に紐づく列を段階 1 に入れない</b><span class='why'>X-NORTHSTAR-A / X-OBS-PII。段階 1 は sensor + ci（PII none）に閉じる</span></div><div class='guard'><b>成果物をログに混ぜない</b><span class='why'>.cc-cockpit 報告・ASSESSMENT html は人が読む文書。ログ層の読み手（AI）と形式が違う</span></div></div>"
+    },
+    {
+      "eyebrow": "02 · 答える順番",
+      "h2": "23 分で全部答えられる",
+      "sub": "推奨どおりなら A/B/C を押すだけ。違うと思う行だけ変える。",
+      "html": "<div class='steps' style='grid-template-columns:repeat(3,1fr)'><div class='step'><div class='t'>STEP 1</div><div class='m'>欠落 + sensor + ci（推奨 A）</div><div class='chips'><span class='chip' data-chip='Q0'>Q0</span><span class='chip' data-chip='Q3'>Q3</span><span class='chip' data-chip='Q10'>Q10</span><span class='chip' data-chip='Q12'>Q12</span><span class='chip' data-chip='Q13'>Q13</span></div></div><div class='step'><div class='t'>STEP 2</div><div class='m'>runtime / audit / 蒸留物（推奨 B）</div><div class='chips'><span class='chip' data-chip='Q1'>Q1</span><span class='chip' data-chip='Q2'>Q2</span><span class='chip' data-chip='Q4'>Q4</span><span class='chip' data-chip='Q5'>Q5</span><span class='chip' data-chip='Q6'>Q6</span><span class='chip' data-chip='Q7'>Q7</span><span class='chip' data-chip='Q9'>Q9</span><span class='chip' data-chip='Q11'>Q11</span><span class='chip' data-chip='Q15'>Q15</span><span class='chip' data-chip='Q16'>Q16</span><span class='chip' data-chip='Q18'>Q18</span><span class='chip' data-chip='Q19'>Q19</span></div></div><div class='step'><div class='t'>STEP 3</div><div class='m'>正が別 / 成果物（推奨 C）→ コピー</div><div class='chips'><span class='chip' data-chip='Q8'>Q8</span><span class='chip' data-chip='Q14'>Q14</span><span class='chip' data-chip='Q17'>Q17</span><span class='chip' data-chip='Q20'>Q20</span><span class='chip' data-chip='Q21'>Q21</span><span class='chip' data-chip='Q22'>Q22</span></div></div></div>"
+    }
+  ],
+  "questions_section": {
+    "eyebrow": "03 · 1 行 1 問",
+    "h2": "Q0〜Q22",
+    "sub": "各行は 発生源 / 種別 / 保管先 / 形式 / 読み手 / PII / 保持。A = 段階 1 で対象、B = 後段で対象、C = 対象外。推奨は 0903 の回答（Q1-A）から機械的に導いた規則で、AI の見立て。"
+  },
+  "questions": [
+    {
+      "id": "Q0",
+      "title": "<span class='mono'>欠落</span> 決定論センサーの出力（check-* / lint-* / verify）",
+      "short": "センサー出力（欠落）",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman 16 本 / cc-cockpit lint・test / DH scripts/test-*",
+        "<b>種別</b>: sensor ／ <b>保管先</b>: （無い）stdout で消える ／ <b>形式</b>: text",
+        "<b>読み手</b>: — ／ <b>PII</b>: none ／ <b>保持</b>: 0 日",
+        "唯一どこにも蓄積されていない記録。<span class='mono'>pnpm verify</span> = typecheck + lint + sensors + test + build の結果"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q1",
+      "title": "<span class='mono'>外部 SaaS</span> Sentry（エラー / トレース / Replay）",
+      "short": "Sentry",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman",
+        "<b>種別</b>: runtime ／ <b>保管先</b>: saas: Sentry.io ／ <b>形式</b>: Sentry event",
+        "<b>読み手</b>: human / ai(MCP) ／ <b>PII</b>: pseudonymous（sendDefaultPii:false・X-OBS-PII） ／ <b>保持</b>: Sentry 既定 90 日",
+        "tunnel /monitoring 経由。Session Replay はエラー時のみ"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q2",
+      "title": "<span class='mono'>外部 SaaS</span> Vercel deploy / runtime ログ",
+      "short": "Vercel ログ",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman",
+        "<b>種別</b>: runtime ／ <b>保管先</b>: saas: Vercel ／ <b>形式</b>: text",
+        "<b>読み手</b>: human / ai(MCP) ／ <b>PII</b>: unknown ／ <b>保持</b>: Vercel 既定（短い）",
+        "MCP get_runtime_logs で読める"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q3",
+      "title": "<span class='mono'>外部 SaaS</span> GitHub Actions ログ（workflow run）",
+      "short": "GitHub Actions ログ",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: 3 リポ",
+        "<b>種別</b>: ci ／ <b>保管先</b>: saas: GitHub ／ <b>形式</b>: text / job log",
+        "<b>読み手</b>: human / ai(MCP) ／ <b>PII</b>: none ／ <b>保持</b>: 90 日",
+        "DH signal-scan の検知器 (a) red_ci はこれを API で読む"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
+          "rec": "Council: Q0 に併記"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q4",
+      "title": "<span class='mono'>DB</span> samejima_activity_log",
+      "short": "samejima_activity_log",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman public",
+        "<b>種別</b>: audit ／ <b>保管先</b>: db: public ／ <b>形式</b>: row（append-only・RPC 書込）",
+        "<b>読み手</b>: ai(CC 直読み) ／ <b>PII</b>: pseudonymous（employee_id 参照・平文 PII 禁止） ／ <b>保持</b>: 無期限",
+        "三役 = 監査 / 翌朝の入力 / 学習素材（SPEC FX-SAMEJIMA §F）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q5",
+      "title": "<span class='mono'>DB</span> underlay_usage_events / _sessions",
+      "short": "underlay_usage 2 表",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman ops",
+        "<b>種別</b>: runtime ／ <b>保管先</b>: db: ops（PostgREST 不到達） ／ <b>形式</b>: row（2 表分離）",
+        "<b>読み手</b>: ai(service_role 直読み) ／ <b>PII</b>: 本体 none / 対応表 personal ／ <b>保持</b>: 本体 1 年 / 対応表 90 日 purge",
+        "X-NORTHSTAR-A の構造解。migration 20260824224945〜20260825014954"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q6",
+      "title": "<span class='mono'>DB</span> freee-monitor sync ログ",
+      "short": "freee-monitor sync ログ",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman",
+        "<b>種別</b>: runtime ／ <b>保管先</b>: db ／ <b>形式</b>: row",
+        "<b>読み手</b>: ai(CC) ／ <b>PII</b>: unknown（要確認） ／ <b>保持</b>: unknown",
+        "SPEC FX-SAMEJIMA §F で「開発観測ログ」と同列に言及。表名は本キットでは未確認"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q7",
+      "title": "<span class='mono'>DB</span> expense_ocr_metrics",
+      "short": "expense_ocr_metrics",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman",
+        "<b>種別</b>: runtime ／ <b>保管先</b>: db: public ／ <b>形式</b>: row",
+        "<b>読み手</b>: ai(CC) ／ <b>PII</b>: none（employee_id を持たない） ／ <b>保持</b>: 無期限",
+        "母集団でしか意味を持たない量（OCR 精度）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q8",
+      "title": "<span class='mono'>DB</span> cc-cockpit SQLite（sessions / timeline / usage_daily / report_reads）",
+      "short": "cc-cockpit SQLite",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: cc-cockpit",
+        "<b>種別</b>: runtime + ai-session ／ <b>保管先</b>: db: data/*.db（gitignore） ／ <b>形式</b>: sqlite",
+        "<b>読み手</b>: cc-cockpit 自身 ／ <b>PII</b>: none（ホスト識別子を持たない） ／ <b>保持</b>: アプリ寿命",
+        "transcript jsonl から導出したキャッシュ。jsonl が正"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "推奨"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q9",
+      "title": "<span class='mono'>repo 内・gitignore</span> *.log（kakuman）",
+      "short": "*.log（kakuman）",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman .gitignore:8",
+        "<b>種別</b>: runtime / tooling ／ <b>保管先</b>: local: repo ／ <b>形式</b>: text",
+        "<b>読み手</b>: — ／ <b>PII</b>: unknown ／ <b>保持</b>: unknown",
+        "任意ツールの出力。何が書いているかは未調査"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q10",
+      "title": "<span class='mono'>repo 内・gitignore</span> harness-verifier/reports/（丸ごと）",
+      "short": "harness-verifier/reports（kakuman）",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman .gitignore:55",
+        "<b>種別</b>: ai-session（<b>訂正</b>: 書くのは observe.py の hook-observations.jsonl だけ） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: md / jsonl",
+        "<b>読み手</b>: ai ／ <b>PII</b>: none ／ <b>保持</b>: ローカルのみ",
+        "<b>訂正（09-04 実ファイル確認）</b>: kakuman に verify.py（月次 YYYY-MM.md 生成）は存在しない。「蒸留物が残らない」はログ層ではなく DH 資産の配布範囲の別議題"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "Council: 別議題"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q11",
+      "title": "<span class='mono'>repo 内・gitignore</span> *.log（cc-cockpit）",
+      "short": "*.log（cc-cockpit）",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: cc-cockpit .gitignore",
+        "<b>種別</b>: runtime / tooling ／ <b>保管先</b>: local: repo ／ <b>形式</b>: text",
+        "<b>読み手</b>: — ／ <b>PII</b>: unknown ／ <b>保持</b>: unknown",
+        "同上"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q12",
+      "title": "<span class='mono'>repo 内・gitignore</span> coverage/（cc-cockpit）",
+      "short": "coverage/",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: cc-cockpit .gitignore",
+        "<b>種別</b>: sensor（test） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: lcov / html",
+        "<b>読み手</b>: human ／ <b>PII</b>: none ／ <b>保持</b>: 次回実行で上書き",
+        "<b>訂正（09-04 実ファイル確認）</b>: package.json / vitest.config.ts に coverage の記述 0 件。.gitignore の coverage/ は雛形の残骸 = 書き手ゼロ"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "Council: 対象外"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q13",
+      "title": "<span class='mono'>repo 内・gitignore</span> playwright-report/ + test-results/（cc-cockpit）",
+      "short": "playwright-report + test-results",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: cc-cockpit .gitignore",
+        "<b>種別</b>: sensor（E2E） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: html / trace",
+        "<b>読み手</b>: human ／ <b>PII</b>: none ／ <b>保持</b>: 次回実行で上書き",
+        "知覚層（E2E）は gate 化しない（kakuman G-TEST と同型）。結果の要約だけ残す。html report は CI artifact 7 日保持（ci.yml retention-days: 7）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）",
+          "rec": "Council: Q0 に吸収"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q14",
+      "title": "<span class='mono'>repo 内・gitignore</span> .cc-cockpit/（セッションが書く報告）",
+      "short": ".cc-cockpit/ 報告",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: cc-cockpit .gitignore・SPEC F9",
+        "<b>種別</b>: ai-session（成果物） ／ <b>保管先</b>: local: cwd 直下 ／ <b>形式</b>: html / md",
+        "<b>読み手</b>: human（sandbox 描画） ／ <b>PII</b>: unknown（外部入力扱い） ／ <b>保持</b>: 無期限（削除しない）",
+        "書き手 = セッション、読み手 = cc-cockpit。ログではなく報告"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "推奨"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q15",
+      "title": "<span class='mono'>repo 内・gitignore</span> harness-verifier/reports/hook-observations.jsonl",
+      "short": "hook-observations.jsonl",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: DH .gitignore（kakuman も同名）",
+        "<b>種別</b>: ai-session（hook 観測） ／ <b>保管先</b>: local: repo ／ <b>形式</b>: jsonl（append-only）",
+        "<b>読み手</b>: ai（continuous-learning） ／ <b>PII</b>: none（tool 名・時刻のみ） ／ <b>保持</b>: ローカルのみ",
+        "二層の先例（生 = ローカル / 蒸留 = YYYY-MM.md）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q16",
+      "title": "<span class='mono'>repo 内・committed</span> PERF_AUDIT.md",
+      "short": "PERF_AUDIT.md",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman",
+        "<b>種別</b>: sensor（手動計測） ／ <b>保管先</b>: repo: committed ／ <b>形式</b>: md",
+        "<b>読み手</b>: human / ai ／ <b>PII</b>: none ／ <b>保持</b>: 無期限",
+        "単発。再計測の手順が無い"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q17",
+      "title": "<span class='mono'>repo 内・committed</span> docs/PROJECT-*ASSESSMENT*.html",
+      "short": "PROJECT-ASSESSMENT html",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: kakuman",
+        "<b>種別</b>: sensor（手動評価） ／ <b>保管先</b>: repo: committed ／ <b>形式</b>: html",
+        "<b>読み手</b>: human ／ <b>PII</b>: none ／ <b>保持</b>: 無期限",
+        "ISO25010 評価 3 本。単発"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "推奨"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q18",
+      "title": "<span class='mono'>repo 内・committed</span> harness-verifier/reports/YYYY-MM.md",
+      "short": "verifier reports YYYY-MM.md",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: DH",
+        "<b>種別</b>: sensor（月次蒸留） ／ <b>保管先</b>: repo: committed ／ <b>形式</b>: md",
+        "<b>読み手</b>: human(D5) ／ <b>PII</b>: none ／ <b>保持</b>: 無期限",
+        "2026-05〜09 の 5 本。cron で月次"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q19",
+      "title": "<span class='mono'>repo 内・committed</span> delivery/ANALYSIS-*.md / *.html",
+      "short": "delivery/ANALYSIS-*",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: DH",
+        "<b>種別</b>: sensor（scripts/*.py の出力）+ 分析 ／ <b>保管先</b>: repo: committed ／ <b>形式</b>: md / html",
+        "<b>読み手</b>: human / ai ／ <b>PII</b>: none ／ <b>保持</b>: 無期限",
+        "14 本。council-performance / harness-benchmark 等の計測結果を含む"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）",
+          "rec": "推奨"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q20",
+      "title": "<span class='mono'>ホーム配下</span> ~/.claude/projects/**/*.jsonl（CC transcript）",
+      "short": "CC transcript jsonl",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: 3 リポ共通",
+        "<b>種別</b>: ai-session ／ <b>保管先</b>: home ／ <b>形式</b>: jsonl（非公開形式）",
+        "<b>読み手</b>: cc-cockpit（読み取り専用） ／ <b>PII</b>: personal（プロンプト全文） ／ <b>保持</b>: CC 任せ",
+        "書き換え禁止（cc-cockpit SPEC C11）。同一会話が複数 jsonl に分かれる"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "推奨"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q21",
+      "title": "<span class='mono'>ホーム配下</span> ~/.claude/projects/<session>/subagents/agent-*.jsonl",
+      "short": "subagent transcript jsonl",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: 3 リポ共通",
+        "<b>種別</b>: ai-session ／ <b>保管先</b>: home ／ <b>形式</b>: jsonl",
+        "<b>読み手</b>: cc-cockpit ／ <b>PII</b>: personal ／ <b>保持</b>: CC 任せ",
+        "分身の活動 = 親の生存（cc-cockpit F1）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "推奨"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    },
+    {
+      "id": "Q22",
+      "title": "<span class='mono'>ホーム配下</span> ~/.claude/council-data/invocations/*.json（CTL 記録）",
+      "short": "council-data invocations",
+      "time": "1 分",
+      "facts": [
+        "<b>発生源</b>: user-scope（3 リポ横断）",
+        "<b>種別</b>: audit（Council） ／ <b>保管先</b>: home ／ <b>形式</b>: json",
+        "<b>読み手</b>: council-ctl.py ／ <b>PII</b>: none（topic_summary は抽象要約） ／ <b>保持</b>: 無期限",
+        "COUNCIL-LOG.md（repo）から同期で導出。正は repo 側"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>段階 1 で対象</b>（最初に「場所」へ載せる）"
+        },
+        {
+          "k": "B",
+          "label": "<b>後段で対象</b>（5 種全部に広げるとき。いまは所在だけ把握）"
+        },
+        {
+          "k": "C",
+          "label": "<b>対象外</b>（ログではない / 正が別にある / 動かさない）",
+          "rec": "推奨"
+        }
+      ],
+      "after": "A なら段階 1 の初期集合に入れる。B なら所在・読み手・PII・保持を記録して待機。C なら記録から外す（理由は上の事実）。",
+      "note": false
+    }
+  ],
+  "foot": "件数は各リポの .gitignore・SPEC・migrations・db/index.ts を 09-03〜04 に読んだ結果。0903 キットの「23 種」は本表の 22 種 + 欠落 1 に対応する（数え方を揃えた）。freee-monitor sync ログ（Q6）と *.log の書き手（Q9 / Q11）は未確認で、A/B/C の判断には影響しない。推奨は AI の見立てであって決定ではない。選択はこの端末のブラウザにだけ残る。",
+  "summaryTitle": "ログ棚卸しキット 0904 — 回答",
+  "summaryFooter": "（貼り戻し先: この対話。AI が段階 1 の初期集合として ANALYSIS メモに写す）"
+}

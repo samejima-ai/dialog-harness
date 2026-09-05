@@ -39,6 +39,24 @@
 - 12-factor Logs / OpenTelemetry LogRecord / Claude Code hooks・telemetry: ANALYSIS メモ §F5（URL 付き）
 - VERSION drift: `VERSION` = 6.11.0（PR #186）vs `dh-upgrades/upgrade-spec-v6.15.0.md`
 
-## 決定記録
+## 決定記録（2026-09-04 ひでさん回答）
 
-（回答が返ったら「問い / 決定 / 次に AI がすること」の表をここに追記し、ANALYSIS メモ §ブレスト決定 にも写す）
+| 問い | 決定 | 次に AI がすること |
+|---|---|---|
+| Q1 範囲 | A sensor + ci から（将来 5 種全部） | 棚卸しキット 0904 で段階 1 の初期集合を確定 |
+| Q2 読み手 | A AI（CC）主。人間は明示指示時に HTML | 形式 = JSONL（OTel 最小形）+ 蒸留 md。人間向け UI は作らない |
+| Q3 形 | C 物理集約のみ・台帳なし → **Council 諮問** `lg0903`: 推奨 D（物理集約 + `logs/index.yml` 1 枚に Q5〜7 の宣言を同一化）、jc 0.38 ゆえ人間判断へ | 残判断点 = 索引の性格を **Q3′** として同キットに追加 |
+| Q4 生 / 蒸留 | A 二層・reindex-librarian 相乗り | `logs/raw/` のみ gitignore、蒸留は tracked |
+| Q5 DH 上の位置 | A D2 テンプレ + 検査スクリプト、skill 無し。**開発ログとコードベースのログを明確に分ける** | `history/`（判断）と `logs/`（機械）の分離表を ANALYSIS メモに記載 |
+| Q6 manifest | A merge 分類。「違和感あれば教えて」 | 違和感なし。パスだけ `logs/index.yml` に揃える（ANALYSIS メモ §Q6） |
+| Q7 12-factor | A 逸脱明記 + store 列 | D2 テンプレ冒頭に逸脱理由 3 点 + 移行条件（L0 で起草） |
+| Q8 メモ置き場 | B `delivery/ANALYSIS-*` に統一、kakuman も移す。矛盾に注意 | kakuman 側は skill 2 ファイル（AI 不可侵）の改訂が先。順序を ANALYSIS メモ §Q8 に記載。**本 cycle では移動していない** |
+| Q9 VERSION drift | A 別 PR で先に | VERSION vs upgrade-spec の対応表を別 PR で献上（未着手） |
+| Q10 次の一手 | A ブレスト継続、HTML で選択できるように | 棚卸しキット 0904 を公開: https://claude.ai/code/artifact/add88e1f-1f58-493a-b062-99523af63caa |
+| **Q3′ 索引 1 枚の性格** | **B 収集器が読む設定 + 検査スクリプト同 PR**（Council lg3p01、jc 0.80、3 軸一致。09-04「Council で決めて」委任） | 付帯 4 条件（初便は schema 検査のみ / retention 削除は可逆形先行 / 配線 diff 同 PR / ハードコード path 禁止）を L0 入力に |
+
+回答原文:
+
+```
+Q1 A（メモ: 将来的には5種全部を対象にしたい）/ Q2 A（メモ: あくまで開発のメインは AI。人間は明示的に指示をした時に HTML で読めるようにすればいいだけ）/ Q3 C（メモ: council にも問う）/ Q4 A / Q5 A（メモ: 重複してもいいけど、DH としての開発のログとアプリのログは明確に分けなくてはいけない）/ Q6 A（メモ: 正直よくわからんから何か違和感あったら教えて）/ Q7 A / Q8 B（メモ: カクマンプラットフォーム側のコードベースで矛盾が起こらないようにだけ気をつけて）/ Q9 A / Q10 A（メモ: 同様に HTML 化して選択できるように）
+```

@@ -161,9 +161,75 @@ v6.15.0 起源の scripts / templates が既に main に存在する
 
 ## ブレスト決定
 
-（まだ無い）
+**2026-09-04 ひでさん — ログ層キット 0903（10 問）の回答**（HTML: https://claude.ai/code/artifact/1c3b9517-a83d-4d41-b38d-86c0869fab28 、回答原文は `delivery/DECISION-KIT-codebase-log-store-2026-09-03.md` §決定記録）
 
-## 次にやるなら
+| Q | 決定 | ひでさんメモ |
+|---|---|---|
+| Q1 範囲 | **A** sensor + ci から始める | 将来的には 5 種全部を対象にしたい |
+| Q2 読み手 | **A** AI（CC）主 | 開発のメインは AI。人間は明示指示時に HTML で読めればよい |
+| Q3 形 | **C** 物理集約のみ・台帳を作らない | **council にも問う** → 諮問 `council-2026-09-04T10:05:00Z-lg0903`（下記） |
+| Q4 生 / 蒸留 | **A** 二層（生ローカル gitignore / 蒸留 commit・reindex-librarian 相乗り） | — |
+| Q5 DH 上の位置 | **A** D2 テンプレ（yml + 検査スクリプト、skill は作らない） | **DH として開発ログとアプリ（コードベース）のログは明確に分ける**。重複は可 |
+| Q6 manifest | **A** 宣言ファイルを merge 分類へ、実体は列挙しない | 「よくわからん。違和感あったら教えて」→ 下記 §Q6 の注記 |
+| Q7 12-factor | **A** 逸脱を明記し store 列で将来移行可能に | — |
+| Q8 メモ置き場 | **B** `delivery/ANALYSIS-*` に統一（kakuman 側も移す） | kakuman 側のコードベースで矛盾が起こらないよう注意 → 下記 §Q8 の実行条件 |
+| Q9 VERSION drift | **A** 本件と切り離し別 PR で先に | — |
+| Q10 次の一手 | **A** ブレスト継続（棚卸しを調査で埋める） | 同様に HTML 化して選択できるように → 棚卸しキット 0904 |
+
+### Q3 の Council 諮問結果（`council-2026-09-04T10:05:00Z-lg0903`、C2 / conception、judgment_confidence 0.38 = **人間エスカレーション圏**）
+
+- **骨格の推奨 = D**: 物理集約を主とし（人間の C の意図 = 実体が 1 箇所に貯まる、を保つ）、**独立した台帳ファイルは作らない**。Q5/Q6/Q7 の「logs.yml」は `logs/` 内の 1 枚（`logs/index.yml`）に同一化して衝突を解消する。生 JSONL は `logs/raw/` のみ gitignore（`logs/` 丸ごと ignore は子の再 include が効かない）、蒸留 md は tracked。DB / SaaS / transcript は store 列で「repo 外」を宣言するだけで export を committed 領域へ持ち込まない
+- **3 軸の共通認識**: ① 実害として失われているのは sensor/ci の stdout 1 種だけで、物理集約で 100% 埋まる ② 手書き台帳は腐る（CHANGELOG/HANDOFF 2 ヶ月停止の実害） ③ Q3-C と Q5〜7 の衝突は人間の意図の矛盾ではなく、**判断キットが logs.yml を前提に設問を組んだ産物**
+- **残る人間判断点（Council が降りた 1 点）= その 1 枚の性格**: (D-1) 手書きの最小索引・列 3 つ以下〔経営者〕/ (D-2) 収集器が読む設定 + 検査スクリプトを同 PR で出荷〔開発者・B 相当〕/ (D-3) 各 stream の機械 header から生成する生成物、`database.types.ts` 同型〔哲学者・第3の道・重み 5 だが options 外ゆえ非加算〕→ キット 0903 に **Q3′** として追加
+- 少数意見（保持）: 開発者 = export は raw 限定 / dedup キー（session_id + ts + sensor id）/ 検査スクリプト同 PR 出荷。哲学者 = 「台帳を消す」でも「人間を台帳側へ引き戻す」でもなく「台帳を手書きしない」。repo 外記録の所在は既存ルーティング表の行として持つ方が一貫する
+
+### Q5 メモの反映 — 開発ログとコードベースのログの分離（DH 規範の線）
+
+| | 開発ログ（既存） | コードベースのログ（本件） |
+|---|---|---|
+| 書き手 | 人間と AI の**判断** | **機械**（センサー / CI / アプリ / hook） |
+| 置き場 | `history/`（INTENT / CHANGELOG / HANDOFF / SUMMARY / COUNCIL-LOG） | `logs/`（raw = ローカル / 蒸留 = commit / index.yml） |
+| 代謝 | reindex-librarian（HOT → COLD） | 同じ機械に相乗り（Q4-A）。ただし対象ディレクトリは別 |
+| DH 上の分類 | `dh-manifest.yml` never_touch `history/` | `logs/index.yml` = merge、`logs/raw/` = 既定不可侵 |
+| 交差 | hook-observations.jsonl（AI セッションの観測）は**開発ログ側**に留める | 重複記録は可（ひでさん）。dedup キーだけ決める |
+
+### Q6 の注記（違和感の有無）
+
+構造的な違和感は無い。1 点だけ: Q3 の Council 結果により宣言ファイルは `logs.yml`（ルート）ではなく **`logs/index.yml`** になるので、merge 分類に書くパスもそれに揃える。`logs/` 丸ごとを never_touch に列挙する必要は無い（明示列挙しない = 既定で不可侵）。
+
+### Q8-B の実行条件（kakuman 側の矛盾回避）
+
+kakuman で `docs/brainstorm/` を参照している箇所は 09-04 実測で **SPEC.md 4 箇所・REGIME.md 1 箇所・`docs/brainstorm/README.md`・`.claude/skills/l0-pre-brainstorm/SKILL.md` 4 箇所・`.claude/skills/feedback-triage/SKILL.md` 1 箇所・history / delivery の記録 8 箇所**。このうち **`.claude/skills/**` の 2 ファイルは L-FROZEN-META（AI 不可侵）**ゆえ AI は書き換えられない。順序: ① 人間が 2 skill の記録先を `delivery/ANALYSIS-*` に改訂（または DH 昇格版 skill が降りてくる）→ ② AI が 6 ファイルを `delivery/` へ移し、SPEC 4 リンクと REGIME 1 行を更新、`docs/brainstorm/README.md` を転送先案内に置換（history / delivery の過去記録は書き換えない）。①前に AI だけで②をやると skill と実態が食い違うので、**本 cycle では kakuman 側は動かしていない**。
+
+### 2026-09-04 ひでさん「疲れる！Council で決めて」— 残 2 件を Council 推奨で確定（人間委任）
+
+委任の形: 本諮問 2 件の `recommended` をそのまま決定として採用する、と人間が事前に宣言。3 諮問（lg0903 / lg3p01 / lginv1）の actual_outcome は `agreed`（note に委任の旨）で記録した。哲学者軸の懸念「委任で推奨がそのまま決定になる構造は第 6 条（人間最終承認）が形式化する兆候」は minority_opinion に保持し、ここにも写す。
+
+**Q3′ = B（`council-2026-09-04T10:50:00Z-lg3p01`、reason_divergence、jc 0.80、3 軸一致）**: `logs/index.yml` は「収集器が読む設定 + 検査スクリプトを同 PR で出荷」。外側ラッパーが index.yml を読んで `logs/raw/` に tee（check-* / lint-* 本体は改変しない、exit code 透過）。付帯条件（3 軸共通）: ①初便の検査は schema 検査（path 実在・store 列・列上限）に絞る ②retention 超過削除は dry-run / ごみ箱移動の可逆形で先行 ③ラッパーの配線 diff（pnpm verify / CI step）を同 PR の受入条件に含める ④ラッパーがハードコード path で動く抜け道を作らない（作った瞬間 B は A に退化）。開発者: raw 先頭に機械 header 1 行（stream id / store / ts / dedup key）を吐けば後日 C（生成物）へ移行できる = B は C の on-ramp。CI では dedup キーに run_id 分岐。Windows（cc-cockpit）ゆえ shell 非依存の python ラッパー。
+
+**段階 1 の初期集合 = C（`council-2026-09-04T10:50:00Z-lginv1`、simple_conflict、jc 0.78、開発者 + 哲学者 vs 経営者）**: **Q0（決定論センサーの stdout + exit code）1 stream だけ**を `logs/` に載せる。他 22 行は index.yml の所在行のみ。付帯: ①Q3（Actions ログ）は Q0 の CI 側発生源として index.yml に併記（別 stream にしない）②Q13（E2E）は「test:e2e の stdout は Q0 に含まれる」と定義で吸収 ③Q10 は logs/ の行ではなく**別議題**へ（下記）④Q0 の書き手（LLM 非使用 1 ラッパー・exit code 透過・pnpm verify 既定経路）と読み手（献上前センサー通過 / F1 への接続）・`logs/raw` の rotate 規則・段階 2 昇格条件を index.yml と同時に決める。少数意見（経営者、吸収）: 段階 1→2 の昇格条件（蒸留 1 回完走 + 参照実績 1 件）を先に決める / **3 ヶ月で Q0 が一度も読まれなければ拡張せず縮小する stop 判断を予約** / PII none をセンサー stdout の実物で確認 / GitHub の retention 変更を段階 2 の繰り上げトリガーに。
+
+**棚卸し表の訂正（開発者軸が実ファイルで検出、09-04 に AI が裏取り済み）**:
+- Q10: kakuman の `harness-verifier/reports/` に書くのは `observe.py` の `hook-observations.jsonl` だけ（種別 = ai-session、Q15 と同じ）。月次 `YYYY-MM.md` を生成する `verify.py` は kakuman に存在しない。→ 「蒸留物すら残らない実害」の正体は **kakuman に harness-verifier ツールが無い = DH 資産の配布範囲の議題**。ログ層の外で別建て
+- Q12: cc-cockpit に coverage の依存・設定・script が無い（`package.json` / `vitest.config.ts` に 0 件）。`.gitignore` の `coverage/` は雛形の残骸 = 書き手ゼロ → 対象外
+- Q13: playwright の html report は CI artifact として 7 日保持（`ci.yml` retention-days: 7）。蒸留に要る pass/fail・失敗テスト名は stdout に出る = Q0 の部分集合
+
+### 開いたままの論点（09-04 更新）
+
+- Q9-A の実行（VERSION と upgrade-spec の対応表）— 別 PR、未着手
+- Q8-B の kakuman 側実行 — skill 2 本の人間改訂が先（§Q8）
+- Q10 別議題: kakuman に harness-verifier（verify.py / 月次 reports）を配布するか（DH 資産の配布範囲）
+- 段階 1 の実装 = L0（upgrade-spec 起草）へ上げる材料は揃った。上げるのは人間の明示指示のみ
+
+## L0 昇格（2026-09-04 ひでさん「L0昇格」）
+
+`dh-upgrades/upgrade-spec-v6.16.0.md` を起草（状態: L0 起草・人間レビュー待ち）。本メモの §ブレスト決定 + Council 3 諮問を入力に、不変条件 I-1〜I-9 / F1〜F6 / 実装しないもの / 判断点 5 / 申し送りへ畳んだ。以降の仕様変更は spec 側を正本とし、本メモは追記しない。
+
+## 次にやるなら（09-04 更新）
+
+- Q3′ と棚卸しキット 0904 の回答が揃えば、段階 1 の初期集合（sensor + ci）と `logs/index.yml` の形が決まり、L0（upgrade-spec 起草）へ上げられる材料が揃う（上げるのは人間の明示指示のみ）
+
+（初回の記述）
 
 - U-1 / U-2 の答えが出れば、F1 の表を「台帳の初版」として 3 プロジェクト分埋めるのは調査だけで
   できる（実装ではない）

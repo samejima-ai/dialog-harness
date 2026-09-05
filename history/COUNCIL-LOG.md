@@ -3150,3 +3150,165 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+
+- invocation_id: "council-2026-09-04T10:05:00Z-lg0903"
+  timestamp: "2026-09-04T10:05:00Z"
+  source_skill: "l0-pre-brainstorm"
+  question_to_answer: "コードベース自身のログの「場所」を、台帳型（所在を宣言・実体は各所）で実現すべきか、物理集約型（repo 内 logs/ に JSONL・台帳なし）で実現すべきか。人間は C を選んだが、同時に確定した Q5/Q6/Q7 の回答（logs.yml 前提）と衝突している。どの骨格を採り、衝突をどう整合させるべきか。"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "simple_conflict"
+  options:
+    - "A 台帳のみ（logs.yml で所在・読み手・保持・PII・droppable を宣言。実体は各所のまま動かさない）"
+    - "B 台帳 + 二層（logs.yml + repo 内 .dh/log/ に生 JSONL ローカル gitignore / 蒸留 md commit）"
+    - "C 物理集約のみ（repo 内 logs/ に全ログを JSONL で貯める。台帳は作らない。DB / SaaS / ホーム配下の記録は対象外か export で持ち込む）"
+    - "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）", confidence: 0.78, dimension: "ROI（投資対効果 / 保守コストの下限化）", note: "経営判断としての違和感は「台帳か物理か」という問いの立て方自体にある。実測で分かっているのは、失われているものが sensor の stdout 1 種だけで、他 22 種は既に各所に存在しているという事実。つまり本件の投資対象は『新しい場所を作る』ことではなく『消えている 1 種を拾う』ことであり、C か D かは tee の書き出し先ディレクトリに README を置くかどうかの差でしかない。台帳型（A / B）は「所在の整理」という別の課題への投資であって、人間が発話で求めた「貯めとく場所」の解ではない。Q5-7 の回答は判断キットが logs.yml を前提に問いを組んだことで誘導された可能性があり、衝突は人間の意図の矛盾ではなくキットの設問設計の産物と見る。" }
+    開発者: { stance: "B 台帳 + 二層（logs.yml + repo 内 .dh/log/ に生 JSONL ローカル gitignore / 蒸留 md commit）", confidence: 0.72, dimension: "保守性 / 可逆性", note: "議題の「台帳 vs 物理集約」は偽の二択に見える。人間が C で守りたいのは「実体が 1 箇所に貯まること」、Q5/6/7 が守りたいのは「DH が配れる宣言ファイルがあること」で、両者は「宣言ファイル = 収集器の設定」とすれば同一物になる。衝突しているのは骨格ではなく logs.yml の性格（文書か設定か）の未定義。また 12-factor 逸脱の度合いはラッパー方式で縮小できる: sensor スクリプト自身にファイル書込を足すのは避け（決定論センサーを汚さない）、実行環境側で集約する。" }
+    哲学者: { stance: "第3の道", confidence: 0.6, dimension: "前提への問い", note: "人間の「台帳を作らない」は「もう 1 枚メンテする文書を増やしたくない」の表現と読む（代謝の実害を身体で知っている人の直感）。ならば整合の方向は「台帳を消す（C）」でも「人間を台帳側へ引き戻す（A/B）」でもなく「台帳を手書きしない」。最も近い option は D だが、D の README / index.yml は手書きゆえ D もまた腐る。B と D の中間に「生成される索引」を置くのが本案で、options では表せない。もう 1 つの沈黙前提: 「所在」は AI にとって routing であり、既に CLAUDE.md ルーティング表（常駐 vs 遅延参照）という同型の機構がある。新しい台帳を発明するより、repo に置けない記録の所在はその表の行として扱う方が思想的に一貫する。" }
+  judgment_confidence: 0.38
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）"
+    scores:
+      - stance: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.34
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.78 }
+      - stance: "B 台帳 + 二層（logs.yml + repo 内 .dh/log/ に生 JSONL ローカル gitignore / 蒸留 md commit）"
+        supporters: ["開発者"]
+        weight_sum: 3
+        weighted_score: 2.16
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.72 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第3の道: 骨格は C（repo 内 logs/ を「コードベースが自分の走行を記憶する身体」とする）。ただし台帳は「作らない」のでも「独立ファイルとして書く」のでもなく「手で書かない」。所在・読み手・保持・PII・droppable は各 stream の自己記述（機械が書く header 行）として logs/ の中に置き、logs.yml は database.types.ts と同型の生成物にする。repo に置けない DB / SaaS / transcript は「所在を告げる出来事」1 行として logs/ に流し、AI にとっての所在（呼ぶ MCP / gate）は既存ルーティング表の行として持つ。台帳は log に溶ける。", weight: 5, confidence: 0.6, reason: "options 外の自由記述。weight 非加算・minority_opinion へ転載" }
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.3, hi: 0.5, basis: "gap_ratio" }
+  recommended: "D 物理集約を主とし、logs/ 内に最小の索引（README / index.yml 1 枚）で「repo に置けない記録の所在」だけを添える（台帳を独立ファイルにしない）— ただし索引は「手書き文書」ではなく「収集器が読み・検査スクリプトが機械検証する設定」として置き、Q5/Q6/Q7 の logs.yml をこの 1 枚（logs/index.yml）に同一化して衝突を解消する。生 JSONL は logs/raw/ のみ gitignore、蒸留 md は tracked。DB / SaaS / transcript は store 列で「repo 外」を宣言するだけで export を committed 領域へ持ち込まない"
+  minority_opinion: "開発者(3, 0.72): B = 台帳を「収集器が読む設定」とし、check-* は改変せず外側ラッパー（hook / CI step）が tee。検査スクリプトを同 PR で出荷しないと即 prose 化して drift。export は raw(gitignore) 限定、`.dh/log/` 丸ごと ignore は子の再 include 不可、dedup キー（session_id+ts+sensor id）要。哲学者(5, 0.60, 第3の道・加算外): 骨格 C、台帳は「手で書かない」。各 stream の機械 header 行から logs.yml を database.types.ts 同型で生成。repo 外記録は「所在を告げる出来事」1 行で流し、AI の所在は既存ルーティング表の行で持つ。保持期限は stream 自身が持ち代謝機械を同時に設ける。"
+  weight_note: "weight_calculation を機械適用（経営者3/開発者3/哲学者5、operation 寄りの均衡配分）。哲学者は options 外 stance で third_way_excluded（ΣW の 45% ≥ 30% → 上限 0.50 切下げ）。gap 0.18 は拮抗帯。"
+  reasoning: "重み配分を機械適用した結果、経営者(3×0.78=2.34) が開発者(3×0.72=2.16) を僅差で上回り D が骨格。哲学者(5) は options 外の第3の道ゆえ加算対象外。ただし gap は ΣW=11 に対し極小（拮抗帯）で、かつ third_way_excluded が全 weight の 45% を占めるため、judgment_confidence は帯上限 0.50 以下に留め、人間エスカレーション圏と明記する。実質的な収束点は 3 軸で共通している: (1) 実害として失われているのは sensor/ci の stdout 1 種のみで、これは repo 内物理集約で 100% 埋まる（人間の C 選択の意図と一致）。(2) 手書き台帳は CHANGELOG/HANDOFF が 2 ヶ月止まった実害の通り腐る。(3) よって独立台帳ファイルは作らず、Q5-7 の logs.yml を logs/ 内の 1 枚に同一化する。3 軸が分かれるのはその 1 枚の性格で、経営者=最小索引（列 3 つ以下）、開発者=収集器が読む設定 + 検査スクリプト同 PR 出荷、哲学者=機械生成物。D を骨格にしつつ開発者の「設定として機械読み・機械検証」を吸収すると D と B は同値になり、衝突は「骨格」ではなく「logs.yml の性格（文書か設定か）」の未定義に帰着する。判断キットの設問が logs.yml を前提に組まれたことで生じた衝突であり、人間の意図の矛盾ではない。残る人間判断点: 索引を手書き最小索引に留めるか（D）、収集器設定として同 PR で検査スクリプトまで出荷するか（B 相当）、生成物にするか（第3の道）。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  final_decision: null
+  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+
+- invocation_id: "council-2026-09-04T10:50:00Z-lg3p01"
+  timestamp: "2026-09-04T10:50:00Z"
+  source_skill: "l0-pre-brainstorm"
+  question_to_answer: "logs/index.yml 1 枚の性格を、手書き最小索引 / 収集器設定 + 検査スクリプト同 PR / 機械生成物 のどれにすべきか。人間は本諮問の推奨を決定として採用すると委任している。"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "reason_divergence"
+  options:
+    - "A 手書きの最小索引（列 store / path / reader の 3 つ以下。PII・保持はプロジェクト SPEC 側。検査は所在の実在 1 点）"
+    - "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）"
+    - "C 機械生成物（各 stream の header 行から index.yml を生成、database.types.ts 同型で手動編集禁止。repo 外記録は「所在を告げる出来事」1 行。保持は stream 自身が持ち代謝機械を同時に設ける）"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）", confidence: 0.72, dimension: "ROI（採用実現率 × 保守コスト）", note: "lg0903 からの立場変更（A → B）を明記する。変更理由は新情報ではなく、context に提示された実測 2 件（telemetry-reflux 0/3、history 2 ヶ月停止）を A の主リスクに正面から当てた結果。A と B の本質差は「index.yml を誰が読むか」であり、読み手が AI の目だけなら書かれず、機械が読むなら書かれる。検査項目の数は性格ではなく便数の問題で、初便を 2 点に絞った B は A の最小主義と矛盾しない。保留は不採用: 人間が決定委任済みで、追加情報で覆る見込みも薄い。" }
+    開発者: { stance: "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）", confidence: 0.78, dimension: "技術的実現性 / 保守性", note: "C（機械生成物）は技術的に正しい終着点だが、現状は生成元が無い。B のラッパーが raw ログ先頭に 1 行の機械 header（stream id / store / ts / dedup key）を吐くよう設計しておけば、後日 header から index.yml を再生成する C へ手動編集禁止付きで移行できる。すなわち B は C の on-ramp であり、A→B→C の順序を逆にすると（A から始めると）収集器が無いまま宣言だけが残り 12-factor 逸脱の記録も検査不能になる。また A の「所在の実在 1 点」は store が DB / SaaS / transcript の行に対して機械検査不能（外部到達性を検査すると secrets と network が要る）なので、実質 local file 行しか検査できない点は 3 案共通の限界として明記しておくべき。" }
+    哲学者: { stance: "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）", confidence: 0.7, dimension: "意味", note: "lg0903 の哲学者軸が C を採った点から意図的に離れる。理由は 2 つ。(1) C の「各 stream の header 行」は 16 本の check-*/lint-* と CI に新たな義務を課し、CI（GitHub Actions）には introspect すべき header が存在しない。database.types.ts が腐らないのは DB という一次情報が常に「そこにある」からで、logs は生成時点で消えうる一次情報ゆえ同型ではない。(2) 確定済み前提 Q5-A の文言「yml + 検査スクリプト」は既に B の形をしており、Q6-A の merge 分類は生成物と両立しない。もう 1 点、本諮問の答えより先に問うべき沈黙した前提：index.yml が「読まれる」のは CC がログを探す時だけで、それは稀である。稀にしか読まれない file は必ず腐る。だから B の本質は tee 機構ではなく「毎 run 読む消費者を file に与えること」であり、実装時にラッパーが index.yml を読まずに動く抜け道（ハードコード path）を作った瞬間に B は A に退化する。" }
+  judgment_confidence: 0.8
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）"
+    scores:
+      - stance: "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+          - { persona: "開発者", weight: 3, confidence: 0.78 }
+          - { persona: "哲学者", weight: 5, confidence: 0.7 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }
+  recommended: "B 収集器が読む設定 + 検査スクリプトを同 PR で出荷（外側ラッパーが index.yml を読んで logs/raw/ に tee。検査 = path 実在・retention 超過削除・PII 欄必須・store 列。dedup キー固定）— ただし 3 軸共通の付帯条件として、初便の検査は schema 検査（path 実在・store 列・列上限）に絞り、retention 削除は dry-run / ごみ箱移動の可逆形で先行、wrapper の配線 diff を同 PR 受入条件に含める"
+  minority_opinion: "結論は一致するが観測次元は分離（ROI / 技術的実現性・保守性 / 意味）。各軸の留保: 経営者は初便を tee + path 実在の 2 点に固定し PII・dedup・retention は第 2 便へ。開発者は PII 欄を初版に含め retention は dry-run から、CI では dedup キーに run_id 分岐、Windows ゆえ shell 非依存 python ラッパー。哲学者は PII 欄が none で埋まる儀式化を警戒し実績が出るまで検査対象から外す選択肢を残す。ラッパーがハードコード path で動く抜け道を作ると B は A に退化する。"
+  weight_note: "stance 一致のため重み配分（経営者 3 / 開発者 3 / 哲学者 5、ΣW=11）は判定に影響しなかった。weighted_score 8 は B 単独。third_way_excluded なし。"
+  reasoning: "reason_divergence: 3 軸が独立の次元から B に到達。ROI 軸（経営者）: telemetry-reflux 0/3・history 2 ヶ月停止の実測から、A は「書かれない」確率がほぼ 1 で設計工数が死ぬ。B は index.yml を wrapper が読む load-bearing 設定にするので不在が logs/raw/ 空として即可視化される。C は生成元となる stream が未実体化で過剰投資。技術的実現性 / 保守性軸（開発者）: check-*/lint-* 16 本は自由文 + exit code のみで機械 header を持たず C の生成元が無い。A は gitignore ゆえ path 実在検査が fresh clone で不成立。B は既存 hook / pnpm verify の連鎖に tee を挟むだけで決定論検査可能、かつ raw 先頭に機械 header を吐けば C への on-ramp になる。意味軸（哲学者）: file の真実性は著者の勤勉でなく消費する機械の有無で決まる。A は地図（人の勤勉依存）、C は鏡（repo 外 store を写せず Q6-A merge 分類と矛盾）、B は契約（毎 run 機械が読む）で A と C の止揚。3 軸とも B の肥大化リスクを認め、初便の検査絞り込みと retention 削除の可逆化で共通している。判断が新情報でなく既提示の実測を各軸の主リスクに当てた結果である点も収束の質を支える。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+
+- invocation_id: "council-2026-09-04T10:50:00Z-lginv1"
+  timestamp: "2026-09-04T10:50:00Z"
+  source_skill: "l0-pre-brainstorm"
+  question_to_answer: "ログ層の段階 1 の初期集合（logs/ に最初に載せる記録）をどの集合にすべきか。人間は本諮問の推奨を決定として採用すると委任している。"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "simple_conflict"
+  options:
+    - "A 推奨どおり 5 行（Q0 センサー出力 / Q3 Actions ログ / Q10 verifier reports kakuman / Q12 coverage / Q13 E2E 結果）を段階 1、他は推奨どおり B / C"
+    - "B 最小 2 行（Q0 センサー出力 + Q10 verifier reports kakuman = 今どこにも残っていない 2 つ）だけを段階 1。Q3 / Q12 / Q13 は B（後段）へ"
+    - "C Q0 センサー出力 1 行だけを段階 1（最初の 1 stream）。他 22 行は index.yml の所在行のみ（哲学者案）"
+    - "D 推奨 5 行 + Q15 hook-observations + Q18 / Q19（sensor 系の蒸留物）も段階 1（sensor 種別を全部）"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "B 最小 2 行（Q0 センサー出力 + Q10 verifier reports kakuman = 今どこにも残っていない 2 つ）だけを段階 1。Q3 / Q12 / Q13 は B（後段）へ", confidence: 0.75, dimension: "ROI", note: "A の推奨 5 行は「sensor・ci = A」という分類規則から出た集合であって、損失額から出た集合ではない。経営判断として違和感があるのはそこで、規則の適用先を増やすほど投資額は線形に増えるが、回収は「消えている記録」の数でしか増えない。段階 1 は損失ベースで最小に切り、規則ベースの拡張は段階 2 以降に「読まれた実績」を条件に行うべき。逆に B を採っても、3 ヶ月で Q0 の記録が一度も読まれなかったなら拡張せず縮小（stop）する判断を先に予約しておきたい。" }
+    開発者: { stance: "C Q0 センサー出力 1 行だけを段階 1（最初の 1 stream）。他 22 行は index.yml の所在行のみ（哲学者案）", confidence: 0.85, dimension: "技術的実現性 / 保守性", note: "schema 外の違和感 2 点。① 「推奨 5 行は規則から機械導出した」とあるが、規則の入力（種別 sensor/ci）自体が未検証だった。Q10・Q12 は書き手の有無を ls / grep で 1 回確かめれば落ちた行で、Shift Left の観点では棚卸し段階で決定論的に潰せた。② self-report が Q10 を「蒸留物すら残らない実害」と評しているが、実害の正体は「kakuman に harness-verifier ツールが無い」ことで、ログ層の議題ではなく DH 資産の配布範囲（テンプレから除去した資産を戻すか）の議題。本諮問の外で別建てにすべき。検査した一次情報: /home/user/kakuman-platform-v3.0/.gitignore L55/L65、同 package.json verify / verify:sensors、同 .github/workflows/ci.yml・observe.yml、同 .claude/skills/crosscut-hook-observer/scripts/observe.py L109-113、/home/user/cc-cockpit/.gitignore、同 package.json、同 vitest.config.ts、同 .github/workflows/ci.yml（playwright-results artifact retention 7 日）、/home/user/dialog-harness/harness-verifier/reports/2026-09.md。" }
+    哲学者: { stance: "C Q0 センサー出力 1 行だけを段階 1（最初の 1 stream）。他 22 行は index.yml の所在行のみ（哲学者案）", confidence: 0.65, dimension: "意味（記録が「在る」とは何か／読まれる瞬間の有無）", note: "棚卸しキットが「23 行 × A/B/C」の量の問いとして組まれたこと自体が決定疲れの原因で、質の問い「その記録を誰が・いつ読むか」は 1 行も問われていない。段階 1 の規則は「読む儀式を持つ記録だけが logs/ に入る」の 1 文で足り、23 行はその規則の適用結果として機械導出できる（人間に再度 ○× を求めない）。また Q0 と Q3 が同一内容の二重発生であることは lg0903 の 3 軸共通認識「失われているのは 1 種」と整合し、推奨 A の「5 行」は実質 1 種＋派生 4 つを別 stream として数えた重複計上である。" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "C Q0 センサー出力 1 行だけを段階 1（最初の 1 stream）。他 22 行は index.yml の所在行のみ（哲学者案）"
+    scores:
+      - stance: "C Q0 センサー出力 1 行だけを段階 1（最初の 1 stream）。他 22 行は index.yml の所在行のみ（哲学者案）"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 8
+        weighted_score: 5.8
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.85 }
+          - { persona: "哲学者", weight: 5, confidence: 0.65 }
+      - stance: "B 最小 2 行（Q0 センサー出力 + Q10 verifier reports kakuman = 今どこにも残っていない 2 つ）だけを段階 1。Q3 / Q12 / Q13 は B（後段）へ"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.25
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.75 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "gap_ratio" }
+  recommended: "C Q0 センサー出力 1 行だけを段階 1（最初の 1 stream）。他 22 行は index.yml の所在行のみ（哲学者案）。付帯: ①Q3 は Q0 の CI 側発生源として index.yml に併記（別 stream にしない）②Q13 は「test:e2e stdout は Q0 に含まれる」と定義で吸収 ③Q10 は logs/ の行ではなく別議題（kakuman に harness-verifier ツール自体が無い＝DH 資産の配布範囲）へ切り出し、棚卸し表の種別を sensor → ai-session に訂正 ④Q0 の書き手（LLM 非使用 1 wrapper・exit code 透過・pnpm verify 既定経路）と読み手（献上前センサー通過 / F1 への接続）・logs/raw の rotate 規則・段階 2 昇格条件を index.yml と同時に決める"
+  minority_opinion: "経営者（重み 3, 0.75）は B: 損失ベースで Q0+Q10 の 2 行、ただし実装は Q0 stream 1 本に相乗り。吸収すべき主張: ①段階 1→2 の昇格条件（蒸留 1 回完走 + 参照実績 1 件）を先に決め無期限化を防ぐ ②3 ヶ月で Q0 が一度も読まれなければ拡張せず縮小する stop 判断を予約 ③PII none の前提をセンサー stdout の実物で確認 ④Q3 後段送りは GitHub 90 日保持依存ゆえ retention 変更を繰り上げトリガーにする。哲学者の懸念「委任により推奨がそのまま決定になり第 6 条が形式化する兆候」も記録する。"
+  weight_note: "weight_calculation を機械適用（経営者 3 / 開発者 3 / 哲学者 5、按分なし、third_way_excluded 空）。哲学者重視配分で C 5.80 vs B 2.25、gap 率 0.32 → 帯 0.60–0.90。"
+  reasoning: "weight_calculation を機械適用: C = 開発者 3×0.85 + 哲学者 5×0.65 = 5.80、B = 経営者 3×0.75 = 2.25。ΣW 11 に対し gap 3.55（率 0.32）で明瞭に C へ収束。重み最大の哲学者（5）と一次情報を実検査した開発者（confidence 0.85、3 リポの .gitignore / package.json / workflows / observe.py を確認）が同一 stance で、B は経営者単独では閾値に達しない。対立の実体は狭い: 3 軸とも「どこにも残らないのは Q0 の stdout だけ」「実装物は 1 本」で一致しており、B と C の差は Q10 を段階 1 に数えるか否かのみ。その Q10 について開発者は「kakuman に書かれるのは hook-observations.jsonl（ai-session 種別）だけで月次 md の生成ツール自体が無い」と実ファイルで示し、経営者・哲学者も「最安手段は logs/ ではなく gitignore 側」と自ら留保している。よって Q10 を logs/ 段階 1 の行として立てる根拠は 3 軸のいずれからも支持されず、別議題化が整合的。哲学者の Q10 gitignore 解法は premise 未確認と自認しており、開発者の検査結果と食い違うため付帯には採らず別議題へ送る。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
