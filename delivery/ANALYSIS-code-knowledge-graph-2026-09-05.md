@@ -345,7 +345,29 @@ E-3 への Windows native 追記は 3 案とも要求 → 規範文書改変ゆ�
 
 ## ブレスト決定
 
-（人間が「これで行く」と言ったことだけ書く。現時点なし）
+> 人間が「これで行く」と言ったことだけを書く（AI の推奨は書かない）。
+
+- **2026-09-05 ひでさん「点検清算 (a)〜(h) を L0 で仕様化して」** → §いま出ている案 4 の (a)〜(h) を L0 昇格。
+  成果物 = **`dh-upgrades/upgrade-spec-v6.17.0.md`**（状態: L0 起草・人間レビュー待ち。版番号は同 spec の F1 の結論に従って rename されうる）。
+  **KG 標準装備そのものは L0 に上げていない**（同 spec §実装しないもの で明示除外。順序は §いま出ている案 2 の
+  「E → F/A → C の実測 → B の判断」のまま、配布先での一次計測を経てから別 spec）
+
+### L0 昇格後の対応関係
+
+| ブレスト側 (a)〜(h) | spec 側 | 実装前の追加ゲート |
+|---|---|---|
+| (a) VERSION / 状態行 drift | F1 | — |
+| (b) GRAPH 網羅性・edge source | F2 | D-2（verifier-philosophy の凍結判断は Council 寄り） |
+| (c) COUNCIL-LOG 二重管理 | F3 | **Council D-3** |
+| (d) manifest 分類・Level B 同居 | F4 | **Council D-4** |
+| (e) Level A E-3 | F5 | **Council D-5** |
+| (f) RL 読込経路・現況 SSOT | F6 | — |
+| (g) PAT 失効・gemini-review 沈黙 | F7 | PAT 再発行は人間専管（spec 対象外） |
+| (h) 代謝停止 | F8 | 代謝の実行は reindex-librarian の運用（spec 対象外） |
+
+仕様化の過程で、8 項目が独立した 8 個の不具合ではなく **1 つの構造的欠落（宣言層に「実体 → 宣言」方向と
+「宣言の鮮度」の検査が無い）の 8 つの現れ**であることが判明した。ゆえに spec は検査器を 8 本作らず、
+静的整合を harness-verifier 検査 8 に、時間経過を signal-scan 検知器 (e)(f) に集約している。
 
 ## 次にやるなら
 
@@ -353,5 +375,7 @@ E-3 への Windows native 追記は 3 案とも要求 → 規範文書改変ゆ�
 - 未読一次の回収: code-review-graph v2.3.8 release note 本文 / Graphify `install` ソース（書込先・block 手段・`--strict` の一回性）/ Boris スレッド返信（Daniel San）/ arXiv 2602.23368「Keyword search is all you need」/ Serena docs / codebase-memory-mcp installer.ps1 / Claude Code settings-reference・permissions・prompt-caching・env-vars
 - F10 の Windows / cp932 再計測、better-code-review-graph（埋め込み有り）と codebase-memory-mcp の同条件計測
 - 案 C プロトタイプの残り 3 点（check-traps-sync parity / 5 gate 分の grep 航法 call 数比較 / Windows 起動時間）
-- 点検清算 (a)〜(h) の PR 分割案を判断キット形式で人間へ（`decision-kit-html` 先例）
-- 「L0 に上げられそうか」: **点検の清算（(a)〜(h)）は上げられる**。KG 標準装備は E / F の一次計測（出来事）が無い段階では上げない見立て（U-5）
+- ~~点検清算 (a)〜(h) の PR 分割案~~ → **完了**。`upgrade-spec-v6.17.0.md` §実装順序と PR 分割（PR-A〜PR-G、PR-A が全先行）
+- ~~「L0 に上げられそうか」~~ → **点検清算は 2026-09-05 に L0 昇格済み**（§ブレスト決定）。KG 標準装備は E / F の一次計測（出来事）が無い段階では引き続き上げない（U-5）
+- spec の判断点 D-1〜D-7 を人間へ。うち D-3 / D-4 / D-5 は**実装前 Council 諮問**が必要（escalation-matrix「規範文書改変」行）。判断キット形式にするなら `decision-kit-html` 先例
+- `GH_REVIEW_PAT` の再発行（人間専管）。再発行までは DH 全 PR の auto-merge が止まり、人間 merge が要る
