@@ -588,6 +588,11 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
   本 PR が `signal-scan.yml` と template の両方を編集するため、未検査のままだと片側だけ変えても検出されない。
   この (ii) は §0 の「実体 → 宣言」欠落の同型例であり、F2 / F4 が扱う欠落と同じ型が `check_template_sync` にもあったことを示す。
   検証: `check_template_sync` 5 ペア IN_SYNC / `test-signal-scan.py` 全通過（新規 17 assert）/ `harness-verifier --strict` 7 検査 PASS。
+- 2026-09-05: **PR-E 自己レビュー是正**。検知器 (f) の初版が 3 重に誤測していたのを修正（追記方向 / budget の単位 /
+  budget の解決順）。併せて一度加えた時間トリガを `metabolism-regime`「リズム（決定2・確定）」との矛盾ゆえ撤回。
+  その過程で **(h) の根本原因**（reindex-protocol §2 M2 の prefix checksum が先頭 append と非互換で
+  guard が構造的に通らない。記録済み checksum は 4 本とも現ファイルと不一致）を実測で特定し §F8 に記録。
+  protocol の是正は L-FROZEN-META ゆえ本 spec の対象外（Council + 人間）。
 - 2026-09-05: L0 起草（本ファイル）。起点 = ひでさん「点検清算 (a)〜(h) を L0 で仕様化して」。
   一次材料 = `delivery/ANALYSIS-code-knowledge-graph-2026-09-05.md` §DH 点検所見。全数値は同日再実測。
   Council 未諮問（D-3 / D-4 / D-5 が実装前諮問の対象）
