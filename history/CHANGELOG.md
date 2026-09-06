@@ -2,6 +2,80 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 宣言層の清算 第 2 段 — 在るものが宣言されているか / 届く RL に読込経路を与える（v6.17.0 F2 + F6 / PR-B + PR-D、2026-09-06）
+
+**この版を持つと何が違うか**: 「実体はあるのに宣言に無いもの」が CI で落ちるようになる。
+これまで宣言層は「宣言 → 実体」（宣言したものが在るか）しか検査しておらず、逆向き
+（在るものが宣言されているか）と宣言の実質（宣言した根拠が本当にそれか）は誰も見ていなかった。
+skill を足しても GRAPH.yml に書き忘れれば黙って通り、RL を配っても読込経路が無ければ誰も気づかない。
+
+### F2 — GRAPH.yml の網羅性 + edge source の実質検査（PR-B、判断点 D-2）
+
+- **未登録 4 skill を処遇**。`crosscut-hook-observer` / `crosscut-continuous-learning` /
+  `rtk-integration` を node 登録し、`crosscut-verifier-philosophy` は発動禁止 placeholder
+  （v5.0.0 から 6 回後送・凍結/廃止の決定が未了）ゆえ新設 `graph_excluded` に理由付きで宣言
+- **`graph_excluded` を新設**。「実行グラフの経路ではない」という**性質の宣言**に限り、
+  「登録すべきだが面倒だから除く」ものを置く場所ではない（allowlist を作らない = 不変条件 I-1）。
+  未参照 script 4 本（`check_template_sync` / `pr-audit` / `reviewer-misjudgment` / `upstream-scan`）は
+  検査器・分析器としてここに入る
+- **HV-04 の 2 edge を削除**。`layer0-spec-architect → council-performance` / `→ harness-benchmark` は
+  `source: ritual-protocol.md` を宣言するが、同 protocol の F1 手順が実際に呼ぶのは
+  `council-log-sync.py`（:88-89）と `council-axis-audit.py`（:94-95）のみ。この 2 本を呼ぶ手順は
+  存在しない（実測。他の呼び出し元も `delivery/` の実行例のみで 0 件）。G-2 は `source` の
+  **パス存在**しか見ないため、実体のない宣言が PASS を通過していた。I-2「実装が正・宣言が従」に従い
+  宣言側を落とす
+- **G-5 の prefix フィルタを除去**。`startswith(("layer","crosscut"))` が `rtk-integration` を
+  黙って走査対象から落としていた（`glossary.py:250` の `managed_prefixes` と同型の欠陥）。
+  併せて宣言外 dir を**計数**する（v6.13.0 I-4「検出器は黙って捨てない」）
+- **検査 8 に F2 分を追加** — 検査 7（skill 網羅 = FAIL）/ 検査 8（script 網羅 = WARN）/
+  検査 9（source 実質 = WARN。`edge.source` の本文が `edge.to` を指す記述を持つか）
+
+### F6 — RL の読込経路修理 + 現況 SSOT 一本化（PR-D、判断点 D-6）
+
+- **G-RULES 標準行を新設**（`dev-env-spec.md`）。共通 RL 6 本は `templates/` の overwrite 配布で
+  3 リポに byte 一致で届いているが、**読込経路がどこにも無く誰も読んでいなかった**。
+  既存の G-MODEL 行と同型で「L0 は CLAUDE.md 生成時に正本参照を標準で 1 行含める」形にした
+- **L1 SKILL.md には配線しない**（D-6 が選択肢 (i) を採らなかった理由を明記）。DH 側の読込順序に
+  足すと全 cycle で 6 本が常時購読対象になり購読量が増える。RL が効くべきは配布先の実装時であり、
+  配布先 CLAUDE.md の 1 行なら効く場所で確実に読まれる
+- **現況の SSOT を `templates/rules/README.md` §common/ の現況 に一本化**。`dev-env-spec.md` の
+  配置 tree（3 本を落としていた）を README 参照 1 行に置換（純化 RL §2 二重定義禁止の自己適用）。
+  README 側の欠落 2 本（`claude-md-purity` / `telemetry-reflux`）も塞ぎ、実ファイル 6 本すべてを列挙
+- **検査 10（RL 現況被覆）を追加**。**件数ではなくファイル名で突き合わせる**
+  （件数一致は名前が入れ替わっても通ってしまう）。kakuman の `check-traps-sync.mjs` が
+  「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用
+
+### 過程で判明したこと
+
+- **`harness-verifier/README.md` の検証項目表が見出し「8 検証項目」に対し 5 行しか無かった** —
+  本 PR の主題である「実体 → 宣言」の欠落が README 自身にあった
+- **新規検査 2 本とも初版が偽陽性を出した**。検査 9 は実リポで 2 件（層 prefix を落とした略記
+  「L1（autonomous-dev）」と self-loop）、検査 10 は 4 件（README 本文中の override 例パス）。
+  I-4「常時発火する検知を作らない」に照らし、ship 前に精度を調整した
+- **prefix フィルタ除去で G-5 の検出が 0 → 3 件に増えた**が、一次情報で確認して 3 件とも誤検出と
+  判定し `g5_false_positives` に理由付きで記録（ユーザー発話例 / 出力を人間に提示する観測窓の記述 /
+  「廃止」という否定文脈）
+- **spec の実測値を 2 箇所訂正**。F6 の README 列挙は 3 本でなく 4 本、欠落は 3 本でなく 2 本だった
+- **説明が実装とずれていた**（Copilot レビュー指摘）。検査 10 はファイル名で突き合わせるのに
+  説明が「件数一致」のままだった = 本 PR の主題を説明文で再演していた。spec 側も「被覆一致」に改めた
+
+### 検証
+
+検査の**検出能力を合成ツリーで実証**（欠陥を仕込めば検出・健全なら 0 件・偽陽性 0）。回帰テストに
+F2 分 11 ケース + F6 分 5 ケースを追加。`harness-verifier --strict` 8 検査 PASS
+（G-5 検出 0 件・宣言外 dir 0 件 / skill 20 件 = node 19 + excluded 1 / script 10 件 = impl 6 + excluded 4 /
+source 実質検査 17 edge / RL 実ファイル 6 本 = README 列挙 6 本）。
+**L1 independent-reviewer の独立検証を通過**（M2 必須）— 検査を意図的に無効化してテストが落ちること、
+実リポに欠陥を注入して 4 検査すべてが検出することを外部から追認。
+
+### 申し送り
+
+- edge 削除により `council-performance` / `harness-benchmark` の 2 tool node が起動元を失った。
+  `graph_excluded` への移動が筋だが D-2 の確定文言を超えるため据え置き
+- `.dh/rules/` は複数の RL が「L0 が環境構築時に配置する」と宣言するが `dh-manifest.yml` に
+  `rules` の記載は無い（配布は `templates/` の overwrite に含まれる形）。F4（PR-C）で扱う
+- 残る F3 / F4 / F5 は D-3 / D-4 / D-5 の Council 諮問待ち。D-7 は再判断に戻っている
+
 ## VERSION 6.11.0 → 6.15.0 — 版番号に契機を与える（v6.17.0 F1 / PR-A、2026-09-05）
 
 **この版を持つと何が違うか**: 「自分の DH にあの機能が入っているか」を、コミットを追わずに版番号だけで
