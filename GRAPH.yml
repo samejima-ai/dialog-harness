@@ -104,6 +104,18 @@ nodes:
     kind: agent
     role: support
     impl: .claude/skills/crosscut-cycle-retrospective/SKILL.md
+  - id: crosscut-hook-observer
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-hook-observer/SKILL.md
+  - id: crosscut-continuous-learning
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-continuous-learning/SKILL.md
+  - id: rtk-integration
+    kind: agent
+    role: support
+    impl: .claude/skills/rtk-integration/SKILL.md
 
   # --- tool（確定的・LLM 不使用。philosophy 第 2 条「計算的解決を最優先」） ---
   - id: harness-verify
@@ -176,6 +188,43 @@ nodes:
     gate: H2
     delegation: L-FROZEN-META
     impl: .claude/skills/crosscut-autonomous-drive/references/delegation-boundary.md
+
+# ---------------------------------------------------------------------------
+# graph_excluded — 実体はあるが実行グラフのノードにしないもの（v6.17.0 F2 / D-2）。
+#
+# 目的: 「黙って対象外にする」状態を残さないこと。execution_graph.py G-5 は未登録 dir を
+# 計数せず走査対象外にしていたため、4 skill / 4 script の欠落が PASS を通過していた
+# （upgrade-spec-v6.17.0 §F2）。除外するなら**理由を宣言する**のが本節の役割。
+#
+# 不変条件: 本節は allowlist ではない（upgrade-spec §不変条件 I-1「除外リストを作らない」）。
+#   ここに書けるのは「実行グラフの経路ではない」という**性質の宣言**だけであり、
+#   「登録すべきだが面倒だから除く」ものを置く場所ではない。
+# ---------------------------------------------------------------------------
+graph_excluded:
+  # --- skill: 発動禁止の placeholder（凍結 / 廃止の決定が未了） ---
+  # SKILL.md 自身が「v5.0.0 では発動禁止 / DO NOT TRIGGER」と宣言する placeholder。
+  # v5.0.0 から 6 回後送された別案件（SK-08）で、凍結・廃止いずれの決定も未了。
+  # その未決定をここで可視化する（upgrade-spec-v6.17.0 §実装しないもの）。
+  # 本実装または廃止の決定時に本項を外す。
+  - id: crosscut-verifier-philosophy
+    path: .claude/skills/crosscut-verifier-philosophy/
+    reason: 発動禁止の placeholder（判定ロジック未実装・凍結/廃止の決定が未了）
+
+  # --- script: 実行グラフの経路ではなく、検査器 / 分析器（D-2） ---
+  # tool node は「グラフ上で誰かから起動される」ものに限る。以下は儀式や CI から
+  # 独立に走る検査・分析であって、node 間の起動関係を持たない。
+  - id: check_template_sync
+    path: scripts/check_template_sync.py
+    reason: DH 本体と templates/ の同期検査器。グラフの経路ではなく harness の自己検査
+  - id: pr-audit
+    path: scripts/pr-audit.py
+    reason: PR の事後分析器。実行グラフ上の起動関係を持たない分析専用
+  - id: reviewer-misjudgment
+    path: scripts/reviewer-misjudgment.py
+    reason: レビュー誤判定の事後集計器。実行グラフ上の起動関係を持たない分析専用
+  - id: upstream-scan
+    path: scripts/upstream-scan.py
+    reason: 配布先からの還流候補の走査器。実行グラフ上の起動関係を持たない分析専用
 
 # ---------------------------------------------------------------------------
 # edges — type は standard / conditional / loop。
@@ -323,16 +372,15 @@ edges:
     type: conditional
     condition: "振り返り儀式 F1（スクリプト不在なら skip）"
     source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
-  - from: layer0-spec-architect
-    to: council-performance
-    type: conditional
-    condition: "振り返り儀式 F1（スクリプト不在なら skip）"
-    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
-  - from: layer0-spec-architect
-    to: harness-benchmark
-    type: conditional
-    condition: "振り返り儀式 F1（PR head ref 未取得なら skip）"
-    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
+  # v6.17.0 F2 / HV-04: layer0-spec-architect → council-performance / harness-benchmark の
+  # 2 edge を削除した。source に宣言していた ritual-protocol.md が F1 手順で実際に呼ぶのは
+  # council-log-sync.py（:88-89）と council-axis-audit.py（:94-95）のみであり、この 2 本を
+  # 呼ぶ手順は存在しない（2026-09-06 実測。他の呼び出し元も delivery/ の実行例のみで 0 件）。
+  # G-2 は source のパス存在しか見ないため、実体のない宣言が PASS を通過していた。
+  # I-2「実装が正・宣言が従」に従い、実装に無い経路を宣言側から落とす。
+  # 申し送り: この結果 council-performance / harness-benchmark の 2 tool node は起動元を
+  # 持たない。graph_excluded への移動が筋だが、D-2 の確定文言（source を実態に合わせる）を
+  # 超える判断のため本 PR では node を残す（upgrade-spec-v6.17.0 §申し送り）。
   - from: layer0-spec-architect
     to: council-log-sync
     type: conditional
@@ -459,3 +507,13 @@ g5_false_positives:
   - layer1-autonomous-dev->crosscut-issue-implementer
   - layer1-independent-reviewer->layer2-integration-verifier
   - layer2-integration-verifier->layer2-orchestrator
+  # v6.17.0 F2: G-5 の prefix フィルタを外して新たに可視化された 3 件。
+  # いずれも 2026-09-06 に一次情報で確認した誤検出（文字列一致の限界＝G-5 が WARN 止まりである理由）。
+  #   autonomous-drive:41  — 「auto-merge を有効化して」というユーザー発話例。起動記述ではない
+  #   council:186          — council-axis-audit.py の「出力を人間に提示する」観測窓の記述。
+  #                          読む主体は L0 振り返り儀式であり council 自身の起動ではない
+  #   issue-implementer:43 — 「auto-merge ラベル自動付与は廃止」という否定文脈。
+  #                          実際の後段委譲は同 SKILL.md step 7 が担う
+  - crosscut-autonomous-drive->auto-merge
+  - crosscut-council->council-axis-audit
+  - crosscut-issue-implementer->auto-merge

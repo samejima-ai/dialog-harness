@@ -1,6 +1,6 @@
 # upgrade-spec v6.17.0 — 宣言層の lock-step 清算（点検 (a)〜(h)）
 
-> **状態: 実装中（F1 / F7 / F8 済 / F2-F6 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
+> **状態: 実装中（F1 / F2 / F7 / F8 済 / F3-F6 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
 > （`.claude/skills/crosscut-council/references/escalation-matrix.md:31`）に従い、人間レビュー通過後・
 > **実装前に Council 諮問**を経る。本 spec 自体の設計判断は Council 未諮問（起草時点で意図的に未実施 —
 > 諮問対象は §判断点に列挙した 5 点）。
@@ -660,6 +660,34 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 
 ## 履歴
 
+- 2026-09-06: **PR-B 実装**（F2）。D-2 の確定に従い、GRAPH.yml に未登録だった 4 skill を処遇し
+  （`crosscut-hook-observer` / `crosscut-continuous-learning` / `rtk-integration` を node 登録、
+  `crosscut-verifier-philosophy` は発動禁止 placeholder ゆえ新設 `graph_excluded` に理由付きで宣言）、
+  未参照 script 4 本（`check_template_sync` / `pr-audit` / `reviewer-misjudgment` / `upstream-scan`）を
+  `graph_excluded` に「実行グラフの経路ではなく検査器・分析器」として宣言した。
+  検査 8 に F2 分（検査 7 skill 網羅 = FAIL / 検査 8 script 網羅 = WARN / 検査 9 source 実質 = WARN）を追加し、
+  `execution_graph.py` G-5 の **prefix フィルタを除去**（`startswith(("layer","crosscut"))` が
+  `rtk-integration` を黙って落としていた。`glossary.py:250` と同型の欠陥）+ 宣言外 dir の計数を追加した。
+  **HV-04 の是正は edge 削除を選んだ**: `layer0-spec-architect → council-performance` /
+  `→ harness-benchmark` の 2 edge は `source: ritual-protocol.md` を宣言するが、同 protocol の F1 手順が
+  実際に呼ぶのは `council-log-sync.py`（:88-89）と `council-axis-audit.py`（:94-95）のみで、
+  この 2 本を呼ぶ手順は存在しない（2026-09-06 実測。他の呼び出し元も `delivery/` の実行例のみで 0 件）。
+  I-2「実装が正・宣言が従」に従い宣言側を落とした。
+  副作用として prefix フィルタ除去で G-5 の検出が 0 → 3 件に増えたが、一次情報で確認して
+  **3 件とも誤検出**と判定し `g5_false_positives` に理由付きで記録した
+  （「auto-merge を有効化して」というユーザー発話例 / `council-axis-audit.py` の出力を人間に提示する
+  観測窓の記述 / 「auto-merge ラベル自動付与は廃止」という否定文脈）。
+  検査 9 は初版が実リポで 2 件の偽陽性を出したため、**層 prefix を落とした略記**（SKILL.md 本文の
+  「L1（autonomous-dev）」表記）を一致とみなし、**self-loop を対象外**にして精度を上げた
+  （I-4「常時発火する検知を作らない」の担保）。
+  併せて `harness-verifier/README.md` の検証項目表が見出し「8 検証項目」に対し 5 行しか無かったのを
+  8 行に是正した — **本 PR の主題である「実体 → 宣言」の欠落が README 自身にあった**。
+  検証: 検査 8 回帰テストに F2 分 11 ケースを追加（欠陥を仕込めば検出・健全なら 0 件を合成ツリーで実証）/
+  `harness-verifier --strict` 8 検査 PASS（検出 0 件・宣言外 dir 0 件）/
+  `test-execution-graph` / `test-signal-scan` / `test-hook-wiring` 全通過。
+  **申し送り**: edge 削除の結果 `council-performance` / `harness-benchmark` の 2 tool node は起動元を
+  持たなくなった。`graph_excluded` への移動が筋だが、D-2 の確定文言（source を実態に合わせる）を
+  超える判断のため本 PR では node を残した。次サイクルの判断対象。
 - 2026-09-05: **PR-E 実装**（ひでさん「マージして進める」）。F7（`check_pat` 有効性検査 + 検知器 (e) workflow_silence）と
   F8（検知器 (f) metabolism_stall）を実装。加えて実装中に発見した 2 件を同梱:
   (i) **signal-scan の dedup が毎日外れる欠陥**（タイトルに測定値を含むため。実害 = 重複 Issue 27 件）→ タイトルを同一性のみに是正。
