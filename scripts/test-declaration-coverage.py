@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""harness-verifier 検査 8（宣言被覆・F1 / F2 / F4 / F6）の回帰テスト。
+"""harness-verifier 検査 8（宣言被覆・F1 / F2 / F3 / F4 / F6）の回帰テスト。
 
 合成リポジトリツリーに各欠陥を 1 つずつ仕込み、**検出することを実証する**。
 「実リポで PASS した」だけでは検査が空振りしていないことを示せない。
@@ -34,7 +34,7 @@ def check(name, cond, detail=""):
 def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
           specs=(), history=FROZEN_HISTORY, graph_body=None,
           skill_dirs=(), script_files=(), source_docs=(),
-          rules=(), rules_readme=None, manifest=None):
+          rules=(), rules_readme=None, manifest=None, state_in_dist=()):
     """合成ツリーを組む。
 
     graph_body を渡すと GRAPH.yml の nodes / edges / graph_excluded を差し替える（F2 用）。
@@ -64,6 +64,10 @@ def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
         dst.write_text(doc_body, encoding="utf-8")
     if manifest is not None:
         (root / "dh-manifest.yml").write_text(manifest, encoding="utf-8")
+    for rel in state_in_dist:
+        dst = root / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_text("# state" + chr(10), encoding="utf-8")
     if graph_version is not None:
         gb = graph_body if graph_body is not None else "nodes: []\n"
         (root / "GRAPH.yml").write_text(gb + f'version: "{graph_version}"\n', encoding="utf-8")
@@ -391,6 +395,26 @@ td, r = scenario(specs=OK_SPECS, manifest=MANIFEST_OK,
                  skill_dirs=("layer1-autonomous-dev",))
 check("human gate ノードを skill と誤認しない（prefix でなく SKILL.md 完全一致で判定）",
       r == [], str(r))
+print("== 13. F3: 配布物に配布先固有の状態を置かない ==")
+td, r = scenario(specs=OK_SPECS, skill_dirs=("crosscut-council",),
+                 state_in_dist=(".claude/skills/crosscut-council/history/COUNCIL-LOG.md",))
+check("配布物内の history/ を WARN で検出",
+      any(i["severity"] == "WARN" and i["location"].endswith("history/") for i in r), str(r))
+check("配布物内のログ実体を WARN で検出",
+      any(i["severity"] == "WARN" and "COUNCIL-LOG.md" in i["location"] for i in r), str(r))
+td.cleanup()
+
+GRAPH_CC = ("nodes:" + chr(10)
+            + "  - id: crosscut-council" + chr(10)
+            + "    impl: .claude/skills/crosscut-council/SKILL.md" + chr(10))
+td, r = scenario(specs=OK_SPECS, skill_dirs=("crosscut-council",), graph_body=GRAPH_CC)
+check("配布物に状態が無ければ通る（移送後の定常状態）", r == [], str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS, skill_dirs=("crosscut-council",),
+                 state_in_dist=("templates/rules/CHANGELOG.md",))
+check("templates/ 配下のログ実体も検出（skills だけを見ているのではない）",
+      any(i["severity"] == "WARN" and "CHANGELOG.md" in i["location"] for i in r), str(r))
 td.cleanup()
 
 print("== 常時発火しないこと（I-4）: 実リポで WARN / FAIL が 0 件 ==")
@@ -401,4 +425,4 @@ check("実リポで検出 0 件（是正済み）", graded == [], str(graded))
 
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")
-print("\nPASS: 検査 8（宣言被覆・F1 / F2 / F4 / F6）回帰テスト 全通過")
+print("\nPASS: 検査 8（宣言被覆・F1 / F2 / F3 / F4 / F6）回帰テスト 全通過")

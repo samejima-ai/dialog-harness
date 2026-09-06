@@ -7,8 +7,9 @@
     - 宣言の鮮度: 宣言が現在の実体に追いついているか
     - 宣言の実質: 宣言が指す source が実際にその内容を持つか
 
-本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/ F4（manifest 分類網羅）/
-F6（RL 現況の被覆）分を実装済み**で、v6.17.0 の受け皿はこれで揃った。
+本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/
+F3（配布物の状態）/ F4（manifest 分類網羅）/ F6（RL 現況の被覆）分を実装済み**で、
+v6.17.0 の受け皿はこれで揃った。
 
 F1（版整合）の検査項目:
     1. VERSION == GRAPH.yml の version:（不一致 = FAIL）
@@ -24,6 +25,9 @@ F4（manifest 分類網羅）の検査項目:
         unclassified_ok のいずれかに属す（属さない = WARN）
     12. `paths.owned_skills` == `.claude/skills/` 実在 dir（不一致 = FAIL）
         Council D-4 必須随伴条件 (a)。列挙漏れは「配布されないまま誰も困らない」静かな失敗になる
+F3（配布物の状態）の検査項目:
+    13. `overwrite:` 配下（skills / templates / agents）に history/ または *LOG*.md が
+        存在しない（存在 = WARN）。配布先固有の状態を配布物に置く型を封じる
 
 F6（RL 現況の被覆）の検査項目:
     10. templates/rules/common/*.md ⇄ README §common/ の現況 の列挙が一致（不一致 = FAIL）
@@ -58,6 +62,7 @@ F2（宣言網羅・source 実質）の検査項目:
       - stage_transition: DH が新しい配布面（新ディレクトリ）を持つとき、検査 11 の
         unclassified_ok を見直す（upgrade-spec-v6.17.0 §F4 規範メタデータ）
       - measured: 検査 11（WARN）が 6 cycle 連続 0 件なら降格候補
+      - measured: 検査 13（F3・WARN）が 6 cycle 連続 0 件なら降格候補
 """
 
 from __future__ import annotations
@@ -221,6 +226,8 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
 
     # --- 11-12. F4: manifest 分類網羅 + owned_skills の実在一致 ---
     f4_counts = _check_f4(repo_root, skills_dir, graph_path, issues)
+    # --- 13. F3: 配布物に配布先固有の状態を置かない ---
+    f3_counts = _check_f3(repo_root, issues)
 
     # --- 10. F6: 共通 RL の現況被覆 ---
     f6_counts = _check_f6(repo_root, issues)
@@ -247,6 +254,9 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                     f"未分類 {f4_counts['unclassified']} パス / "
                     f"owned_skills {f4_counts['owned_skills']} 件"
                     f"（GRAPH 宣言 {f4_counts['graph_skills']} 件と突合）"),
+        "location": ".claude/skills/",
+        "message": (f"F3 配布物の状態 — overwrite 配下 {f3_counts['scanned']} 面を走査 / "
+                    f"状態実体 {f3_counts['state_found']} 件"),
         "severity": "METRIC",
     })
     issues.append({
@@ -602,4 +612,61 @@ def _check_f4(repo_root: Path, skills_dir: Path, graph_path: Path,
                 "severity": "WARN",
             })
 
+    return counts
+
+
+def _check_f3(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
+    """F3: 配布物に「配布先固有になりうる状態」を置かない（検査 13）。
+
+    `overwrite:` 配下（`.claude/skills/` / `templates/` / `.claude/agents/`）に `history/`
+    ディレクトリまたは `*LOG*.md` が存在したら WARN。
+
+    これは (c) の一般形である。skill 内 COUNCIL-LOG は「社外秘ゆえ skill 内部に閉じて保管する」と
+    宣言しながら、`overwrite` 分類ゆえ配布先 2 リポへ byte 一致で配られていた
+    （実測 2026-09-06: kakuman 84,721 B / cc-cockpit 83,467 B）。
+    **最も秘匿すべきと宣言した場所が、最も広く配られる場所だった。**
+
+    同型の実害は SK-03 でも起きている（kakuman 固有 Council 2 件が上書きで消失）。
+    「skill 内に状態を置くと上書きで消える / 意図せず配られる」を型として封じる。
+
+    規範メタデータ:
+        stage: 全段階
+        review_trigger:
+          - measured: 配布物内 state 検査の WARN が 6 cycle 連続 0 件なら降格候補
+    """
+    counts = {"scanned": 0, "state_found": 0}
+    # overwrite 配下の実体（manifest を読まず固定するのは、manifest 自体が壊れていても
+    # この検査は動くべきだから。分類の網羅性は検査 11 が別途見る）
+    roots = [
+        repo_root / ".claude" / "skills",
+        repo_root / "templates",
+        repo_root / ".claude" / "agents",
+    ]
+    for root in roots:
+        if not root.is_dir():
+            continue
+        counts["scanned"] += 1
+        rel_root = root.relative_to(repo_root).as_posix()
+
+        for path in sorted(root.rglob("*")):
+            rel = path.relative_to(repo_root).as_posix()
+            if path.is_dir() and path.name == "history":
+                counts["state_found"] += 1
+                issues.append({
+                    "location": rel + "/",
+                    "message": (f"配布物（{rel_root}/）の中に history/ がある。"
+                                "配布先固有の状態を配布物に置くと、上書きで消えるか意図せず配られる"
+                                "（upgrade-spec-v6.17.0 §F3。skill 内 COUNCIL-LOG が実際に"
+                                "配布先 2 リポへ配られていた）"),
+                    "severity": "WARN",
+                })
+            elif path.is_file() and "LOG" in path.name and path.suffix == ".md":
+                counts["state_found"] += 1
+                issues.append({
+                    "location": rel,
+                    "message": (f"配布物（{rel_root}/）の中にログ実体 {path.name!r} がある。"
+                                "ログは配布先ごとに異なる状態であり、配布物に置いてはならない"
+                                "（upgrade-spec-v6.17.0 §F3）"),
+                    "severity": "WARN",
+                })
     return counts

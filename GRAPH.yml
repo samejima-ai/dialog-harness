@@ -24,7 +24,7 @@
 # 検査: harness-verifier/checks/execution_graph.py（G-1〜G-4 は FAIL / G-5 は WARN）
 
 graph_schema: 1
-version: "6.15.0"
+version: "6.17.0"
 
 # ---------------------------------------------------------------------------
 # nodes — kind はグラフ三分類（agent / tool / human）、role は philosophy 第 7 条の
