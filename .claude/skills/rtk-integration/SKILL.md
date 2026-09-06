@@ -1,5 +1,6 @@
 ---
 name: rtk-integration
+target_os: windows
 dimension: D4
 description: >
   Claude Code 用の rtk (Rust Token Killer) 統合スキル。

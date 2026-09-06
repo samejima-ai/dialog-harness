@@ -1,5 +1,6 @@
 ---
 name: layer0-reindex-librarian
+target_os: any
 dimension: D4
 description: >
   蓄積した history（episodic 層）を再蒸留して叡智層（罠/RL/SPEC/DOMAINS 等）へ結晶化し、

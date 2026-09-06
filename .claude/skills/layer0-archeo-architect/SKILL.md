@@ -1,5 +1,6 @@
 ---
 name: layer0-archeo-architect
+target_os: any
 dimension: D4
 description: >
   既に harness 上で稼働しているプロジェクトのリファクタ前段階で、忘却・暗黙化されたコードの意図を

@@ -1,5 +1,6 @@
 ---
 name: crosscut-verifier-philosophy
+target_os: any
 dimension: D4
 description: >
   **v5.0.0 では発動禁止 / DO NOT TRIGGER in v5.0.0**。

@@ -1,5 +1,6 @@
 ---
 name: layer0-onboarding
+target_os: any
 dimension: D4
 description: >
   既存プロジェクトから仕様書を抽出したい場合、または dialog-harness-layers を後付け導入して

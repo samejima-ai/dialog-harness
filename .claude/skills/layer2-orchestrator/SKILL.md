@@ -1,5 +1,6 @@
 ---
 name: layer2-orchestrator
+target_os: any
 dimension: D4
 description: >
   L2発動時のみトリガーされる統括指揮スキル（雛形）。

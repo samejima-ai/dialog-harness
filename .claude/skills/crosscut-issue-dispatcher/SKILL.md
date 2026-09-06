@@ -1,5 +1,6 @@
 ---
 name: crosscut-issue-dispatcher
+target_os: any
 dimension: D4
 description: >
   SPEC/ADR 差分から GitHub Issue を生成する横断機構（仕様1、v5.0.0 追加）。

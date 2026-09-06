@@ -1,5 +1,6 @@
 ---
 name: crosscut-council
+target_os: any
 dimension: D4
 description: >
   横断判定機構（crosscut prefix）。Layer 0/1/2 のいずれにも属さず、全 Layer から献上を受けて判定を返す。

@@ -1,6 +1,6 @@
 # upgrade-spec v6.17.0 — 宣言層の lock-step 清算（点検 (a)〜(h)）
 
-> **状態: 実装中（F1 / F2 / F6 / F7 / F8 済 / F3-F5 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
+> **状態: 実装中（F1 / F2 / F5 / F6 / F7 / F8 済 / F3 / F4 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
 > （`.claude/skills/crosscut-council/references/escalation-matrix.md:31`）に従い、人間レビュー通過後・
 > **実装前に Council 諮問**を経る。本 spec 自体の設計判断は Council 未諮問（起草時点で意図的に未実施 —
 > 諮問対象は §判断点に列挙した 5 点）。
@@ -45,7 +45,7 @@ upgrade-spec 状態行 / RL 索引 / 代謝 cursor）が実体から離れた 8 
 | (b) | GRAPH.yml に 4 skill 未登録 / edge source の実質乖離 | 実体→宣言、実質 | F2 | F2（網羅性検査 + source 実質検査） |
 | (c) | COUNCIL-LOG 二重管理 + 配布先への byte 一致配布 | 実体の二重定義 | F3 | F3（配布物に配布先固有状態を置かない検査） |
 | (d) | manifest 4 分類に `.mcp.json` / `.gitignore` / `.claude/agents/` が無い + Level B 同居 vs 置換の未調停 | 実体→宣言 | F4 | F4（分類の網羅検査） |
-| (e) | Level A checklist E-3 が Windows native を列挙しない | 規範と実態の不整合 | F5 | —（規範改変。Council 案件） |
+| (e) | Level A checklist E-3 が Windows native を列挙しない | 規範と実態の不整合 | F5 | F5（検査 1 に `target_os` を追加。起草時「無し」は撤回） |
 | (f) | RL が届くのに読込経路が無い + 現況索引 2 箇所 stale | 配線の欠落 | F6 | F6（RL 索引の被覆一致検査） |
 | (g) | `GH_REVIEW_PAT` 失効で全 PR の auto-merge が red / gemini-review が 4 ヶ月未起動 | 運用 + 検知の欠落 | F7 | F7（PAT 有効性検査 + workflow 沈黙検知） |
 | (h) | 情報代謝が 2026-06-07 で停止（cursor 記録時点から +2,417 行） | 鮮度 | F8 | F8（cursor 停滞の決定論検知） |
@@ -339,8 +339,24 @@ E-3 を「Linux / Mac / WSL / **Windows native**」に改める、または「�
 
 ### 再発防止機構
 
-無し（checklist は人間判断項目であり機械検証対象外 —`dev-env-spec.md` §検査機構との連携が A/E 系を「不可」と分類済み）。
-代わりに F2 の GRAPH 網羅性検査が「規格外のまま常駐する skill」の存在自体は可視化する。
+> **【2026-09-06 撤回】起草時は「無し（checklist は人間判断項目であり機械検証対象外）」と書いたが、
+> これは事実誤認だった**（Council D-5 で開発者軸が実測により反証）。`frontmatter.py:14` の
+> `REQUIRED_FIELDS` は汎用ループであり、`target_os` を足す 2 行の変更で検査 1 が宣言不在を
+> FAIL 化できる。**検証できないのは要求の性質であって項目の宿命ではない** — 旧 E-3「OS 非依存」は
+> 動作そのものを要求しており確かに検証できなかったが、「対象 OS を宣言せよ」に改めた結果、
+> 宣言の存在・値域・書式は決定論で検証可能になった。
+
+- **検査 1（frontmatter 整合性）を拡張**: `REQUIRED_FIELDS` に `target_os` を追加し、
+  宣言不在・値域外（`TARGET_OS_VALUES` = any / windows / macos / linux / wsl）・
+  書式不正（`+` 区切り以外）・`any` と個別 OS の混在を FAIL にする。
+  語彙を enum で固定するのは、windows / Windows / win32 の表記揺れが検証を空文化させるため
+  （3 軸すべてが独立に指摘した成立条件）
+- 併せて F2 の GRAPH 網羅性検査が「規格外のまま常駐する skill」の存在自体を可視化する
+
+**検証できない残り**: 宣言と実体の一致（`target_os: any` と書いた bash 専用 skill）は検出できない。
+検証しているのは「どこで動くと言ったか」であって「本当に動くか」ではない。
+また `scripts/` 配下は skills を対象とする検査 1 の射程外で、`test-council-*.sh` の bash 依存は
+本改訂では捕捉されない（minority_opinion に記録）。
 
 ### 規範メタデータ
 
