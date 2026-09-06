@@ -417,6 +417,25 @@ check("templates/ 配下のログ実体も検出（skills だけを見ている�
       any(i["severity"] == "WARN" and "CHANGELOG.md" in i["location"] for i in r), str(r))
 td.cleanup()
 
+print("== dict リテラルの重複キー（v6.18.0 で実際に F4 METRIC を消していた） ==")
+# 672 行に肥大した run() の中で、issues.append({...}) を機械的に連結した結果、
+# 1 つの dict に "location" / "message" が 2 度現れ、F4 の METRIC が F3 の値に
+# 上書きされて出力から消えていた。Python は重複キーを黙って後勝ちにするため、
+# 構文エラーにも実行時エラーにもならない。**型 A（宣言と実体の乖離）の一種**で、
+# ラベルには「F4 分類網羅」とあるのに計数行が無い状態が続いていた。
+import ast as _ast
+
+_src = (HERE / "harness-verifier" / "checks" / "declaration_coverage.py").read_text(encoding="utf-8")
+_dups = []
+for _node in _ast.walk(_ast.parse(_src)):
+    if isinstance(_node, _ast.Dict):
+        _keys = [k.value for k in _node.keys if isinstance(k, _ast.Constant)]
+        _d = {k for k in _keys if _keys.count(k) > 1}
+        if _d:
+            _dups.append((_node.lineno, _d))
+check("dict リテラルに重複キーが無い（後勝ちで値が黙って消える）",
+      _dups == [], str(_dups))
+
 print("== 常時発火しないこと（I-4）: 実リポで WARN / FAIL が 0 件 ==")
 real = m.run(skills_dir=HERE / ".claude" / "skills",
              glossary_path=HERE / "harness-verifier" / "glossary.yml")
