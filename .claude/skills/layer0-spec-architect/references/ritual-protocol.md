@@ -151,11 +151,19 @@ CTL（Council Trust Level）昇格の律速は record ではなく**事後評価
 メタ診断への応答。設計材料: `delivery/ANALYSIS-norm-lifecycle-metabolism-2026-08-05.md`）。
 新しい常駐機構は作らず、既存の儀式に寄生する。
 
-1. `review_trigger:` メタデータ（`dev-env-spec.md` §規範メタデータ）を持つ規範を grep で収集する
-   （rules / CLAUDE.md 常駐行 / センサー定義等。**LLM 判定を含まない機械列挙**）。
-2. 発火判定: `stage_transition`（REGIME の lifecycle_stage が前回儀式から遷移）/
-   `model_generation`（model-recommendations.md の参照世代が改訂）/ `cycles: N`（N サイクル経過）/
-   `measured: <条件>` / `date:` のいずれかに該当する規範を列挙する。
+1. **`scripts/norm-scan.py` を走らせる**（v6.13.0 F5 / v6.18.0 C-1 で着地）。存在すれば
+   `python3 scripts/norm-scan.py` を実行し、出力の「発火」節を読む（スクリプト不在なら
+   従来どおり手動 grep にフォールバック。利用者プロジェクトで壊れない）。
+   **本走査器は LLM 判定を含まない機械列挙**であり、判定は持たない（同 F5-3）。
+   > 手順書に「grep で収集する」と書くだけでは実行主体が無く空文化する。
+   > v6.1.0 の CTL 記録が同じ形で死んだ（発動 53 回に対し記録 1 件）。走査器はその再演を避ける配線である。
+2. 発火判定は走査器が行う: `date:`（期限超過）/ `cycles: N`（N cycle 相当の経過・日数近似）/
+   `stage_transition: Sx→Sy`（REGIME の lifecycle_stage が Sy に到達）/
+   `model_generation`（model-recommendations.md が当該規範より新しい）。
+   **`measured: <条件>` は機械判定しない** — 条件が自然文であり LLM 判定を要するため、
+   列挙して人に見せるに留める（I-3 検知は決定論）。
+   走査器は**未発火・判定不能も記録する**（黙って捨てない）。「発火 0 件」が空振りでないことを
+   出力の内訳（総トリガ数 = 発火 + 未発火 + 判定しない）で確かめられる。
 3. 発火ありなら人間に**まとめて 1 問**: 「時限規範 N 件が再審期です。残す / 降格 / 廃止？
    （一括残す / 個別に確認 / 後で）」。「後で」は保留可（強制しない）。
 4. **非対称原則**: 降格・廃止は軽い手続き（本ステップの一言承認）で実行してよい —
