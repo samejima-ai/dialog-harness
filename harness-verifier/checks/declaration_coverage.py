@@ -62,8 +62,12 @@ try:  # verify.py 経由（パッケージとして読み込まれる正規経�
 except ImportError:  # 単体ロード（scripts/test-declaration-coverage.py が spec_from_file_location で読む）
     import importlib.util as _ilu
 
-    _spec = _ilu.spec_from_file_location(
-        "_execution_graph", Path(__file__).with_name("execution_graph.py"))
+    _path = Path(__file__).with_name("execution_graph.py")
+    _spec = _ilu.spec_from_file_location("_execution_graph", _path)
+    # spec / loader は None を返しうる。ここで潰さないと後段が AttributeError になり、
+    # 「なぜ検査 7-9 が動かないのか」が読めない失敗になる。原因の分かる例外に変換する。
+    if _spec is None or _spec.loader is None:
+        raise ImportError(f"execution_graph.py を単体ロードできない: {_path}")
     _mod = _ilu.module_from_spec(_spec)
     _spec.loader.exec_module(_mod)
     parse_graph = _mod.parse_graph
@@ -361,7 +365,7 @@ def _mentions(body: str, node_id: str, impl: str) -> bool:
 
 
 def _check_f6(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
-    """F6: 共通 RL の実ファイル件数と README §common/ の現況 の列挙件数が一致するか（検査 10）。
+    """F6: 共通 RL の実ファイルと README §common/ の現況 の列挙が一致するか（検査 10）。
 
     `templates/rules/common/` の 6 本は配布先に byte 一致で届いているが、README の現況節が
     4 本しか列挙しておらず、どれが届いているのかを宣言側から知れない状態だった

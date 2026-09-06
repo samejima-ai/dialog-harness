@@ -46,7 +46,7 @@ upgrade-spec 状態行 / RL 索引 / 代謝 cursor）が実体から離れた 8 
 | (c) | COUNCIL-LOG 二重管理 + 配布先への byte 一致配布 | 実体の二重定義 | F3 | F3（配布物に配布先固有状態を置かない検査） |
 | (d) | manifest 4 分類に `.mcp.json` / `.gitignore` / `.claude/agents/` が無い + Level B 同居 vs 置換の未調停 | 実体→宣言 | F4 | F4（分類の網羅検査） |
 | (e) | Level A checklist E-3 が Windows native を列挙しない | 規範と実態の不整合 | F5 | —（規範改変。Council 案件） |
-| (f) | RL が届くのに読込経路が無い + 現況索引 2 箇所 stale | 配線の欠落 | F6 | F6（RL 索引の件数一致検査） |
+| (f) | RL が届くのに読込経路が無い + 現況索引 2 箇所 stale | 配線の欠落 | F6 | F6（RL 索引の被覆一致検査） |
 | (g) | `GH_REVIEW_PAT` 失効で全 PR の auto-merge が red / gemini-review が 4 ヶ月未起動 | 運用 + 検知の欠落 | F7 | F7（PAT 有効性検査 + workflow 沈黙検知） |
 | (h) | 情報代謝が 2026-06-07 で停止（cursor 記録時点から +2,417 行） | 鮮度 | F8 | F8（cursor 停滞の決定論検知） |
 
@@ -380,8 +380,10 @@ review_trigger:
 
 ### 再発防止機構（検査 8 の一部）
 
-- `ls templates/rules/common/*.md` の件数と README §common の列挙件数が一致すること（不一致 = FAIL）。
-  kakuman の `check-traps-sync.mjs` が「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用
+- `templates/rules/common/*.md` の実ファイルと README §common の列挙が一致すること（不一致 = FAIL）。
+  kakuman の `check-traps-sync.mjs` が「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用。
+  **実装は件数ではなくファイル名で突き合わせる**（PR-D。件数一致は名前が入れ替わっても通ってしまうため、
+  起草時の「件数一致」より厳密にした）
 
 ### 規範メタデータ
 
@@ -622,7 +624,7 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 | 1 | **PR-A** | F1（VERSION 規則 + 3 点の版整合 + 版整合検査） | 無し。**本 spec 自身の版番号確定を含むため最初** |
 | 2 | **PR-B** | F2（GRAPH 是正 + 網羅性検査 + source 実質検査 + G-5 計数） | PR-A（検査 8 の器を PR-A で作る） |
 | 3 | **PR-C** | F4（manifest 分類 + UPDATE.md 手順 + 分類網羅検査） | PR-A、D-4 の Council |
-| 4 | **PR-D** | F6（RL 配線 + README SSOT + 件数一致検査） | PR-A、D-6 |
+| 4 | **PR-D** | F6（RL 配線 + README SSOT + 被覆一致検査） | PR-A、D-6 |
 | 5 | **PR-E** | F7 + F8（`check_pat` 有効性 + signal-scan 検知器 (e)(f)） | 無し（並行可） |
 | 6 | **PR-F** | F3（COUNCIL-LOG 転記 + 配布除外 + 配布物 state 検査） | D-3 の Council |
 | 7 | **PR-G** | F5（E-3 改訂） | D-5 の Council |
