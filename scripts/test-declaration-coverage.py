@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""harness-verifier 検査 8（宣言被覆・F1 版整合 + F2 宣言網羅/source 実質）の回帰テスト。
+"""harness-verifier 検査 8（宣言被覆・F1 版整合 + F2 宣言網羅/source 実質 + F6 RL 被覆）の回帰テスト。
 
 合成リポジトリツリーに各欠陥を 1 つずつ仕込み、**検出することを実証する**。
 「実リポで PASS した」だけでは検査が空振りしていないことを示せない。
@@ -33,7 +33,8 @@ def check(name, cond, detail=""):
 
 def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
           specs=(), history=FROZEN_HISTORY, graph_body=None,
-          skill_dirs=(), script_files=(), source_docs=()):
+          skill_dirs=(), script_files=(), source_docs=(),
+          rules=(), rules_readme=None):
     """合成ツリーを組む。
 
     graph_body を渡すと GRAPH.yml の nodes / edges / graph_excluded を差し替える（F2 用）。
@@ -50,6 +51,13 @@ def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
         (root / "scripts").mkdir(exist_ok=True)
         for name in script_files:
             (root / "scripts" / name).write_text("# script\n", encoding="utf-8")
+    if rules or rules_readme is not None:
+        common = root / "templates" / "rules" / "common"
+        common.mkdir(parents=True, exist_ok=True)
+        for name, rl_body in rules:
+            (common / name).write_text(rl_body, encoding="utf-8")
+        if rules_readme is not None:
+            (root / "templates" / "rules" / "README.md").write_text(rules_readme, encoding="utf-8")
     for rel, doc_body in source_docs:
         dst = root / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -251,6 +259,46 @@ td, r = scenario(specs=OK_SPECS, graph_body=GRAPH_EDGE, source_docs=())
 check("source が不在なら検査 9 は黙る（パス実在は G-2 の担当）", r == [], str(r))
 td.cleanup()
 
+print("== 10. F6: 共通 RL の現況被覆 ==")
+RL_README = ("# rules\n\n"
+             "## common/ の現況\n\n"
+             "- `ui-baseline.rules.md`（v5.23.0）— UI Baseline RL。"
+             "利用者は `.dh/rules/common/ui-baseline.rules.md` で override 可\n"
+             "- `<lang>/`: 存在しない\n\n"
+             "## バージョン\n")
+
+td, r = scenario(specs=OK_SPECS,
+                 rules=(("ui-baseline.rules.md", "# UI\n"),
+                        ("telemetry-reflux.rules.md", "# TR\n")),
+                 rules_readme=RL_README)
+check("README に列挙されない RL を FAIL で検出",
+      any(i["severity"] == "FAIL" and "telemetry-reflux.rules.md" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 rules=(("ui-baseline.rules.md", "# UI\n"),),
+                 rules_readme=RL_README)
+check("実在と列挙が一致すれば通る（override 例の .dh/ パスを拾わない）", r == [], str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 rules=(),
+                 rules_readme=RL_README)
+check("README が実在しない RL を列挙 = FAIL（削除・改名への追随）",
+      any(i["severity"] == "FAIL" and "実在しない" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 rules=(("ui-baseline.rules.md", "# UI\n"),),
+                 rules_readme="# rules\n\n## 配置\n\nなし\n")
+check("§common/ の現況 が無い = FAIL（現況 SSOT の欠落）",
+      any(i["severity"] == "FAIL" and "見つからない" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS)
+check("RL を持たないツリーでは skip（配布先で壊れない）", r == [], str(r))
+td.cleanup()
+
 print("== 常時発火しないこと（I-4）: 実リポで WARN / FAIL が 0 件 ==")
 real = m.run(skills_dir=HERE / ".claude" / "skills",
              glossary_path=HERE / "harness-verifier" / "glossary.yml")
@@ -259,4 +307,4 @@ check("実リポで検出 0 件（是正済み）", graded == [], str(graded))
 
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")
-print("\nPASS: 検査 8（宣言被覆・F1 版整合）回帰テスト 全通過")
+print("\nPASS: 検査 8（宣言被覆・F1 版整合 / F2 宣言網羅・source 実質 / F6 RL 被覆）回帰テスト 全通過")

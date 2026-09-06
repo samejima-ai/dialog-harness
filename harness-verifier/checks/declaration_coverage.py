@@ -7,8 +7,8 @@
     - 宣言の鮮度: 宣言が現在の実体に追いついているか
     - 宣言の実質: 宣言が指す source が実際にその内容を持つか
 
-本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）分を実装済み**で、
-F4 / F6 分は後続 PR で本モジュールに追加する。
+本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/ F6（RL 現況の被覆）
+分を実装済み**で、F4 分は後続 PR で本モジュールに追加する。
 
 F1（版整合）の検査項目:
     1. VERSION == GRAPH.yml の version:（不一致 = FAIL）
@@ -18,6 +18,10 @@ F1（版整合）の検査項目:
     4. `実装済み` を名乗る spec の版 <= VERSION（超過 = FAIL）
     5. 状態行が `L0 起草` のまま本文が実装を名乗る（= WARN。file-local 判定）
     6. dev-env-spec.md §バージョン履歴 の凍結（マーカー欠落 / v4.2 超の追記 = FAIL）
+
+F6（RL 現況の被覆）の検査項目:
+    10. templates/rules/common/*.md ⇄ README §common/ の現況 の列挙が一致（不一致 = FAIL）
+        件数ではなくファイル名で突き合わせる（件数一致は名前が入れ替わっても通る）
 
 F2（宣言網羅・source 実質）の検査項目:
     7. .claude/skills/*/ ⊆ (nodes[].id ∪ graph_excluded[].id)（違反 = FAIL）
@@ -43,6 +47,8 @@ F2（宣言網羅・source 実質）の検査項目:
       - measured: 版整合 FAIL が 6 cycle 連続 0 件なら、状態行の値域固定のみ残して簡素化を検討
       - measured: source 実質検査（検査 9・WARN）が 6 cycle 連続 0 件なら FAIL 昇格を検討
         （G-5 と同じ昇格規律。upgrade-spec-v6.17.0 §F2 規範メタデータ）
+      - measured: 検査 10（F6）が 6 cycle 連続 0 件なら、RL の増減自体が止まっている可能性を疑い
+        配布の要否を再問（upgrade-spec-v6.17.0 §F6 規範メタデータ）
 """
 
 from __future__ import annotations
@@ -200,11 +206,14 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
     # --- 7-9. F2: 宣言の網羅性 + source の実質 ---
     f2_counts = _check_f2(repo_root, skills_dir, graph_path, issues)
 
+    # --- 10. F6: 共通 RL の現況被覆 ---
+    f6_counts = _check_f6(repo_root, issues)
+
     issues.append({
         "location": "VERSION",
         "message": (f"F1 版整合 — VERSION={version_txt} / "
                     f"upgrade-spec {len(list(spec_dir.glob('upgrade-spec-v*.md'))) if spec_dir.is_dir() else 0} 本を検査。"
-                    f"F4 / F6 分は後続 PR で本モジュールに追加予定"),
+                    f"F4 分は後続 PR で本モジュールに追加予定"),
         "severity": "METRIC",
     })
     issues.append({
@@ -214,6 +223,12 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                     f"script {f2_counts['scripts']} 件 "
                     f"(impl {f2_counts['script_impls']} / excluded {f2_counts['script_excluded']}) / "
                     f"source 実質検査 {f2_counts['sources_checked']} edge"),
+        "severity": "METRIC",
+    })
+    issues.append({
+        "location": "templates/rules/README.md",
+        "message": (f"F6 RL 現況被覆 — 実ファイル {f6_counts['rl_files']} 本 / "
+                    f"README 列挙 {f6_counts['rl_listed']} 本"),
         "severity": "METRIC",
     })
     return issues
@@ -343,3 +358,56 @@ def _mentions(body: str, node_id: str, impl: str) -> bool:
         return True
     basename = Path(impl).name if impl else ""
     return bool(basename and basename != "SKILL.md" and basename in body)
+
+
+def _check_f6(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
+    """F6: 共通 RL の実ファイル件数と README §common/ の現況 の列挙件数が一致するか（検査 10）。
+
+    `templates/rules/common/` の 6 本は配布先に byte 一致で届いているが、README の現況節が
+    4 本しか列挙しておらず、どれが届いているのかを宣言側から知れない状態だった
+    （upgrade-spec-v6.17.0 §F6 実測）。kakuman の `check-traps-sync.mjs` が
+    「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用。
+
+    件数ではなくファイル名で突き合わせる（件数一致は名前が入れ替わっても通ってしまう）。
+    """
+    counts = {"rl_files": 0, "rl_listed": 0}
+    common = repo_root / "templates" / "rules" / "common"
+    readme = repo_root / "templates" / "rules" / "README.md"
+    if not common.is_dir() or not readme.is_file():
+        return counts  # 配布先など RL を持たないツリーでは skip（後方互換）
+
+    actual = {f.name for f in common.glob("*.md")}
+    counts["rl_files"] = len(actual)
+
+    text = readme.read_text(encoding="utf-8")
+    m = re.search(r"^##\s*common/ の現況\s*$(.*?)(?=^##\s|\Z)", text, re.M | re.S)
+    if not m:
+        issues.append({
+            "location": "templates/rules/README.md",
+            "message": ("§common/ の現況 が見つからない。共通 RL の現況 SSOT はこの節であり、"
+                        "dev-env-spec 側は本 README を参照する（upgrade-spec-v6.17.0 §F6）"),
+            "severity": "FAIL",
+        })
+        return counts
+
+    # 各項目の**先頭**のバッククォート名だけを RL 名とみなす。本文中の説明パス
+    # （`.dh/rules/common/...` での override 例、他 skill の参照先等）を拾わないため、
+    # 「- `<name>.md`」という箇条書きの見出し位置に限定する。
+    listed = set(re.findall(r"^-\s+`([^`/]+\.md)`", m[1], re.M))
+    counts["rl_listed"] = len(listed)
+
+    for name in sorted(actual - listed):
+        issues.append({
+            "location": f"templates/rules/common/{name}",
+            "message": (f"共通 RL {name!r} が README §common/ の現況 に列挙されていない。"
+                        "配布はされるが宣言側から存在を知れない（F6 が塞いだ欠落の再発）"),
+            "severity": "FAIL",
+        })
+    for name in sorted(listed - actual):
+        issues.append({
+            "location": "templates/rules/README.md",
+            "message": (f"README §common/ の現況 が実在しない RL {name!r} を列挙している。"
+                        "削除・改名に追随する"),
+            "severity": "FAIL",
+        })
+    return counts

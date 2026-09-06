@@ -80,6 +80,8 @@ L0 spec-architect の `dialog-questions.md` に以下の質問が追加されて
 - `minimalism-ladder.rules.md`（v6.2.0、Council `pony01`）— 実装工芸の最小主義ラダー RL（外部 OSS [Ponytail](https://github.com/DietrichGebert/ponytail) の決定ラダーを DH 形式に再構成、可逆性尺度・REGIME 調律・品質ゲート `MUST`）。L1/L2 の実装フェーズに適用。観測経路は DH 側 `.claude/skills/layer0-spec-architect/references/observed-peers.md` §Ponytail
 - `ui-baseline.rules.md`（v5.23.0）— UI Baseline RL（相互作用層・常時適用、B-01〜B-25）。UI を伴うプロジェクトで共通 RL として読み込む。適用経路は DH 側 `.claude/skills/layer0-spec-architect/references/design-system-spec.md`「UI 相互作用層」
 - `ui-specialization.context.md`（v5.23.0）— UI 目的特化（S-01〜S-06 + 衝突解決）。利用者は `.dh/rules/common/ui-specialization.context.md` で override 可
+- `claude-md-purity.rules.md`（v6.x、Council `claude-md-purity`）— CLAUDE.md 純化 RL（常駐購読層の配置規範）。利用者プロジェクトの `CLAUDE.md` 編纂時に適用し、行数でなく**実体の二重定義**を禁じる
+- `telemetry-reflux.rules.md`（v6.15.0 F4）— テレメトリ逆流 RL。プロダクトが自らの逆流源（エラー監視・analytics・計算可能 UX 代理指標）と閾値を宣言する枠
 - `<lang>/`: 存在しない（L0 対話確定後に必要言語のみ生成）
 
 Wave 2 末振り返り儀式で「L0 対話で頻出した言語」を観測し、頻出する場合は **「推奨言語プリセット」を再諮問**（Council 諮問 w1qb03 の minority opinion 経営者 B: 3 言語先取り、`python / typescript / go`）。

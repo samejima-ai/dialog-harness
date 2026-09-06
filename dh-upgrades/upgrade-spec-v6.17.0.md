@@ -1,6 +1,6 @@
 # upgrade-spec v6.17.0 — 宣言層の lock-step 清算（点検 (a)〜(h)）
 
-> **状態: 実装中（F1 / F2 / F7 / F8 済 / F3-F6 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
+> **状態: 実装中（F1 / F2 / F6 / F7 / F8 済 / F3-F5 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
 > （`.claude/skills/crosscut-council/references/escalation-matrix.md:31`）に従い、人間レビュー通過後・
 > **実装前に Council 諮問**を経る。本 spec 自体の設計判断は Council 未諮問（起草時点で意図的に未実施 —
 > 諮問対象は §判断点に列挙した 5 点）。
@@ -660,6 +660,30 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 
 ## 履歴
 
+- 2026-09-06: **PR-D 実装**（F6）。D-6 の確定（配布先 CLAUDE.md に 1 行）に従い、
+  `dev-env-spec.md` に **G-RULES 標準行**を新設した（既存の G-MODEL 行と同型 —
+  「L0 は CLAUDE.md 生成時に正本参照を標準で 1 行含める」という先例をそのまま踏襲）。
+  L1 SKILL.md に配線しない理由（D-6 が (i) を採らなかった理由）を明記した:
+  DH 側の読込順序に足すと全 cycle で 6 本が常時購読対象になり購読量が増えるが、
+  RL が効くべきなのは配布先の実装時であり、配布先 CLAUDE.md の 1 行なら効く場所で確実に読まれる。
+  併せて現況の SSOT を `templates/rules/README.md` §common/ の現況 に一本化し、
+  `dev-env-spec.md` の配置 tree（3 本を落としていた）を README 参照 1 行に置換した（純化 RL §2 の自己適用）。
+  **実測で spec の数値を訂正**: spec は README の列挙を 3 本・欠落 3 本としていたが、
+  実際は列挙 4 本・欠落 2 本（`claude-md-purity.rules.md` / `telemetry-reflux.rules.md`）だった
+  — `agentshield-reference.md` は列挙済み。欠落を塞いで 6 本すべてを列挙した。
+  再発防止として検査 8 に **検査 10（F6 RL 現況被覆）** を追加。件数ではなく**ファイル名で突き合わせる**
+  （件数一致は名前が入れ替わっても通ってしまう）。初版は README 本文中のバッククォート付き `.md` を
+  すべて拾い、override 例の `.dh/rules/common/...` や他 skill の参照先まで RL 扱いして 4 件の偽陽性を
+  出したため、箇条書き見出し位置（`^- \`<name>.md\``）に限定して精度を上げた。
+  検証: 検査 10 の回帰テスト 5 ケース追加（列挙漏れ / 実在しない列挙 / 現況節の欠落を検出、
+  RL を持たないツリーでは skip = 配布先で壊れない、override 例の `.dh/` パスを拾わない）/
+  `harness-verifier --strict` 8 検査 PASS（実ファイル 6 本 = README 列挙 6 本）/
+  回帰テスト 5 本（declaration-coverage / execution-graph / signal-scan / hook-wiring /
+  council-axis-audit）全通過。
+  **申し送り**: `.dh/rules/` は L0 が環境構築時に配置する override 先として複数の RL が宣言するが
+  （`claude-md-purity.rules.md:75` / `minimalism-ladder.rules.md:89`）、`dh-manifest.yml` に
+  `rules` の記載は無い（配布は `templates/` の overwrite に含まれる形）。この配置経路の
+  manifest 明示は F4（PR-C・D-4 の Council 待ち）の分類網羅で扱う。
 - 2026-09-06: **PR-B 実装**（F2）。D-2 の確定に従い、GRAPH.yml に未登録だった 4 skill を処遇し
   （`crosscut-hook-observer` / `crosscut-continuous-learning` / `rtk-integration` を node 登録、
   `crosscut-verifier-philosophy` は発動禁止 placeholder ゆえ新設 `graph_excluded` に理由付きで宣言）、
