@@ -138,6 +138,10 @@ nodes:
     kind: tool
     role: support
     impl: scripts/council-axis-audit.py
+  - id: norm-scan
+    kind: tool
+    role: support
+    impl: scripts/norm-scan.py
   - id: council-performance
     kind: tool
     role: support
@@ -385,6 +389,11 @@ edges:
     to: council-log-sync
     type: conditional
     condition: "振り返り儀式 F1 の CTL 同期（取りこぼし回収）"
+    source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
+  - from: layer0-spec-architect
+    to: norm-scan
+    type: conditional
+    condition: "振り返り儀式 F2.6 の時限規範再審（スクリプト不在なら手動 grep へフォールバック）"
     source: .claude/skills/layer0-spec-architect/references/ritual-protocol.md
 
   # === ループエッジ（max_iterations 必須・G-1） ===

@@ -3730,10 +3730,10 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "auto_agree"
   human_escalated: false
   final_decision: null
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  agreed_at: null
-  modification_note: null
+  agreed_at: "2026-09-06T11:25:00Z"
+  modification_note: "PR #258 で recommended どおり実装。必須随伴条件 (a)(b)(c) をすべて同一 PR で満たし、独立検証で 3/3 充足を確認。転記対象は spec の 13 件でなく実測 12 件（1 件はテンプレート例）"
   escalation_reason: null
 
 - invocation_id: "council-2026-09-06T09:42:00Z-mfst04"
@@ -3781,10 +3781,10 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "auto_agree"
   human_escalated: false
   final_decision: null
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  agreed_at: null
-  modification_note: null
+  agreed_at: "2026-09-06T11:25:00Z"
+  modification_note: "PR #257 で recommended どおり実装。必須随伴条件 4 点のうち (c) の実装が独立検証で「宣言だけでコードが GRAPH を見ていない」と指摘され、同 PR 内で GRAPH 起点の三者突合に是正した"
   escalation_reason: null
 
 - invocation_id: "council-2026-09-06T09:45:00Z-osdcl5"
@@ -3832,8 +3832,8 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   consensus_mode: "auto_agree"
   human_escalated: false
   final_decision: null
-  implementer_consent: null
+  implementer_consent: "agreed_recommended"
   follow_up_questions_count: 0
-  agreed_at: null
-  modification_note: null
+  agreed_at: "2026-09-06T11:25:00Z"
+  modification_note: "PR #256 で recommended どおり実装。3 軸が挙げた frontmatter 機械可読キー化を成立条件として満たし、§F5「再発防止機構なし」の撤回も実施"
   escalation_reason: null
