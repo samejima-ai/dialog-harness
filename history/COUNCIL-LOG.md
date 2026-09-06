@@ -3837,3 +3837,60 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-09-06T11:25:00Z"
   modification_note: "PR #256 で recommended どおり実装。3 軸が挙げた frontmatter 機械可読キー化を成立条件として満たし、§F5「再発防止機構なし」の撤回も実施"
   escalation_reason: null
+
+- invocation_id: "council-2026-09-06T14:30:00Z-slnt01"
+  timestamp: "2026-09-06T14:30:00Z"
+  source_skill: "layer0-spec-architect"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C2"
+  question_to_answer: "「静かな失敗」の型 C（配線されているが通電していない = 原理的に決定論検知できない）に対し、どの対策を採るべきか。規範文書改変（.claude/skills/** の規格追加）ゆえ実装前諮問"
+  options:
+    - "(i) 提案 1 のみ（点検にリズムを与える）"
+    - "(ii) 提案 1 + 提案 2（儀式 F1 に「使わなかった配布物」を問う 1 ステップ追加）"
+    - "(iii) どちらも採らず受け入れる"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  personas:
+    - { persona: "経営者", stance: "(i)", confidence: 0.72, dimension: "ROI" }
+    - { persona: "開発者", stance: "(i)", confidence: 0.72, dimension: "保守性" }
+    - { persona: "哲学者", stance: "(i)", confidence: 0.72, dimension: "前提への問い" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(i) 提案 1 のみ（点検にリズムを与える）"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 7.92
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.72 }
+          - { persona: "開発者", weight: 4, confidence: 0.72 }
+          - { persona: "哲学者", weight: 3, confidence: 0.72 }
+      - stance: "(ii) 提案 1 + 提案 2"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+      - stance: "(iii) どちらも採らず受け入れる"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+    third_way_excluded: []
+    max_score_stance: "(i) 提案 1 のみ（点検にリズムを与える）"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(i) 提案 1 のみ（点検にリズムを与える）を採用する。ただし以下 4 条件を成立条件として本文に組み込むことを必須とする — (a) 賞味期限条項: 2〜3 サイクル実測し発見件数が閾値を割ったら儀式から降ろす（降ろす手続きは F2.6 非対称原則により一言承認で足る） (b) 期間ベース下限: minor 昇格が止まった期間に点検も止まるのを防ぐため N 日超で強制発火を併記し、REVIEW_TRIGGER_DAYS=90 が実質デッドコード化しない値域を選ぶ (c) 範囲の絞り込み規約: 点検 1 回 = 29 エージェント / 所見 113 件のコストを版の区切りごとに払えるよう対象範囲を同時に規定する (d) 非対称依存の明示: signal-scan は delivery/ を含み norm-scan は除外するという逆向きの扱いに提案 1 が依存する事実を本文に記載し、片方のみ修正されたら検知経路が黙って消える（それ自体が型 C）ことを警告として残す。提案 2 は棄却"
+  minority_opinion: "少数意見なし（stance 全会一致）。ただし棄却された提案 2 の動機（cycle 単位の短期不作動が次の版の区切りまで見えない露出期間）は経営者軸が明示的に「許容する判断であることを記録に残す必要がある」と述べており、これは判定に付随する記録義務として残す。また提案 2 は 1 サイクル分の点検実績を見てから再検討する余地がある"
+  weight_note: "経営者4/開発者4/哲学者3、ΣW=11 は council-weights.md 自認の既知宣言違反だが全会一致のため順位に影響なし"
+  reasoning: "stance は全会一致 (i)（weighted_score 7.92 / ΣW=11 の満点 7.92 に対し 100%）であり (ii)(iii) は支持ゼロ。判定の実質は「一致の質」の評価にある。本件は dimension 共有トークン 0 の reason_divergence であり、ROI・保守性・前提への問い の 3 軸が互いに独立した論拠で同一結論に到達している。これは同調ではなく収束であり confidence を減じる理由にならない。特筆すべきは 3 軸すべてが独立に「提案 1 に時限・降ろす条項が要る」を挙げた点（経営者=廃止の契機、開発者=閾値のデッドコード化、哲学者=賞味期限）。3 独立軸の一致は単一軸の指摘より強い証拠であり、これを推奨事項ではなく成立条件として扱う。加えて哲学者軸が議題文の TR-4 引用を一次情報（telemetry-reflux.rules.md:22）で訂正し、原文が禁止則ではなく形骸化則 +「実測 1 ヶ月で見直す」であると示した。この訂正により賞味期限を付さない提案 1 は TR-4 違反そのものになる。よって条件 (a) は装飾でなく遵守要件。提案 2 の棄却も 3 軸独立で支持される（ROI: 人間の注意という希少資源の毎 cycle 消費に対し効果は記憶依存 / 保守性: ritual-protocol.md:158-159 の CTL 53:1 実測の再演 / 認識論: 不使用は痕跡を持たず想起の対象にならないため空答が『点検した』証跡として機能し型 C の新発生源となる）"
+  judgment_confidence: 0.82
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  modification_note: null
+  escalation_reason: null
