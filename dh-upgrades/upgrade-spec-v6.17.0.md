@@ -613,6 +613,29 @@ review_trigger:
 | **D-6** | RL の読込経路 | (i) L1 SKILL.md へ配線（購読量増）/ (ii) 配布先 CLAUDE.md 1 行 / (iii) 随時 reference と再定義 | 人間 |
 | **D-7** | gemini-review の扱い | (i) 復旧させる / (ii) 停止を正として auto-merge 条件 4.5 から外す | 人間 |
 
+> **D-3 / D-4 / D-5 の Council 諮問を完了した（2026-09-06）**。3 件とも `consensus_mode: auto_agree`
+> で、判定は下表。諮問記録は `history/COUNCIL-LOG.md` の `council-2026-09-06T09:30:01Z-c575bb`（D-3）/
+> `council-2026-09-06T09:42:00Z-mfst04`（D-4）/ `council-2026-09-06T09:45:00Z-osdcl5`（D-5）。
+> **判定は判断であって決定ではない**（`final_decision` は 3 件とも null）。実装は合意プロセスを経る。
+
+| 決定 | Council 判定（2026-09-06） | jc | 必須随伴条件 | PR |
+|---|---|---|---|---|
+| **D-3** | **(ii) `history/` へ移送**。保守性軸（`council-log-sync.py:181` の `_ENTRY_START` が `^- invocation_id:` 固定ゆえ見出し形式は構造的にパース不能）と前提への問い軸（「最も秘匿すべきと宣言した場所が最も広く配られる場所だった」）が共有トークン 0 で収斂 | 0.71 | (a) skill 内ログ L11 の「社外秘ゆえ skill 内部に閉じる」記述の訂正 (b) 旧パス参照箇所（`SKILL.md` / `output-format.md` 等）の追随修正 (c) **`never_touch` と `overwrite` の優先順位規則の明文化** — 経営者軸「例外パスの解決規則が未定義」と開発者軸「`never_touch` を強制するコードが存在しない（`dh-manifest.yml:96` の自認）」が別次元から指した同一の構造的欠落で、どの選択肢を採っても残る | PR-F |
+| **D-4** | **(i) manifest に DH 所有 dir を明示列挙して選択同期を正典化**。ROI / 保守性 / 前提への問い の 3 次元が共有トークン 0 で全会一致（reason_divergence） | 0.85 | (a) **網羅性センサー**: DH 実在の `.claude/skills/` 直下 dir 集合 == manifest overwrite 列挙 の決定論突合（不一致 = FAIL）。3 軸独立で「無ければ問題の先送り」と指摘された成立条件 (b) **I-1 との整理を spec 本文に明記**: 列挙は「除外リスト（allowlist）」ではなく「所有の宣言（ownership declaration）」と語を分ける (c) 二重宣言の単一情報源を `GRAPH.yml` nodes 側に固定し manifest 列挙は導出／突合に位置づける (d) 同期手順は「列挙 dir 単位の `rm -rf && cp -r`」とし v5.21.0 の orphan 除去目的を dir 単位で保つ | PR-C |
+| **D-5** | **(ii) 宣言要求へ改訂**。ただし単なる文言差し替えではなく **frontmatter への機械可読キー化（`target_os`）を成立条件**とする。値の語彙を enum で固定し `frontmatter.py:14` の `REQUIRED_FIELDS` に追加して検査 1 で宣言不在を FAIL 化する | 0.82 | **§F5 の「再発防止機構: 無し」は事実誤認として撤回**（`frontmatter.py` の `REQUIRED_FIELDS` は汎用ループで 2 行の変更で機械検証できることを実測で確認）。3 軸すべてが独立に機械可読キー化を必須条件として挙げた — 伴わなければ「description 自由文への記載＝適合」の自己認証に堕し、E-3 は空文から**偽証可能な空文**へ移るだけ | PR-G |
+
+> **D-5 の非対称性の正当化**（哲学者軸の問いに対する判定の応答）: 本 spec は「宣言と実体の乖離を閉じる」
+> ものだが、E-3 だけは乖離を閉じる手段として実体側でなく**宣言側を動かしている**。判定はこれを
+> 非対称の例外ではなく**破綻した規範の誠実化**として正当化した — 他 7 項目は実体を規範に寄せれば
+> 閉じるが、E-3 の元の要求「OS 非依存」は機械検証不可かつ達成不能（`install.ps1` は PowerShell 専用、
+> `test-council-*.sh` は bash 専用が既存配布物に実在）という二重の破綻を抱えており、
+> **閉じる先が実体側に存在しない**。
+
+> **3 判定に共通して残った留保**（いずれも minority_opinion / 本文に記録済み）: 「静かな失敗」
+> — 配られない・動かない・記録されないという失敗が誰も困らせないまま持続する構造は、
+> どの判定でも解消されない。痛まない乖離を検知する経路は本 spec 完了後も未整備である。
+
+
 ---
 
 ## 実装順序と PR 分割
@@ -623,11 +646,11 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 |---|---|---|---|
 | 1 | **PR-A** | F1（VERSION 規則 + 3 点の版整合 + 版整合検査） | 無し。**本 spec 自身の版番号確定を含むため最初** |
 | 2 | **PR-B** | F2（GRAPH 是正 + 網羅性検査 + source 実質検査 + G-5 計数） | PR-A（検査 8 の器を PR-A で作る） |
-| 3 | **PR-C** | F4（manifest 分類 + UPDATE.md 手順 + 分類網羅検査） | PR-A、D-4 の Council |
+| 3 | **PR-C** | F4（manifest 分類 + UPDATE.md 手順 + 分類網羅検査） | PR-A（済）、D-4 の Council（**済 2026-09-06**） |
 | 4 | **PR-D** | F6（RL 配線 + README SSOT + 被覆一致検査） | PR-A、D-6 |
 | 5 | **PR-E** | F7 + F8（`check_pat` 有効性 + signal-scan 検知器 (e)(f)） | 無し（並行可） |
-| 6 | **PR-F** | F3（COUNCIL-LOG 転記 + 配布除外 + 配布物 state 検査） | D-3 の Council |
-| 7 | **PR-G** | F5（E-3 改訂） | D-5 の Council |
+| 6 | **PR-F** | F3（COUNCIL-LOG 転記 + 配布除外 + 配布物 state 検査） | D-3 の Council（**済 2026-09-06**） |
+| 7 | **PR-G** | F5（E-3 改訂 + target_os frontmatter 化） | D-5 の Council（**済 2026-09-06**） |
 
 **PR-A は他のすべてに先行する**。判断キット Q9-A（2026-09-04 にひでさんが「別 PR で先に揃える」を選択、未着手）が
 本 spec の PR-A に相当する。
@@ -639,7 +662,7 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 - **M2**（標準モード）。DH 本体の規範改変であり、L1 実装後に `layer1-independent-reviewer` の独立検証を通す
 - **dev_mode**: `autonomous`（DH 本体は既存どおり）。ただし **auto-merge は F7 の PAT 再発行まで機能しない**ため、
   本 spec 実装期間中の PR は人間 merge になる
-- **CTL**: 変更なし。D-3 / D-4 / D-5 の 3 諮問を要する
+- **CTL**: D-3 / D-4 / D-5 の 3 諮問を 2026-09-06 に完了（3 件とも `auto_agree`）。同期後の CTL は **CTL-2**（評価済み 144 件 / 一致 134 件 / rate 0.9306）。なお `.council-ctl.json` の投影は CTL-1 のままで更新経路が走っていない（申し送り）
 
 ---
 
