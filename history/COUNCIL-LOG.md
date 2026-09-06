@@ -3312,3 +3312,58 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: false
   final_decision: null
   implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+
+- invocation_id: "council-2026-09-05T23:40:00Z-vrsn01"
+  timestamp: "2026-09-05T23:40:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "dialog-harness の VERSION 昇格規則をどう定めるか。escalation-matrix.md:31（`.claude/skills/**` / `VERSION` / `templates/**` の改変は実装前 Council 諮問）に従い、upgrade-spec v6.17.0 PR-A の実装前に諮問した。"
+  council_type: "business"
+  category: "operation"
+  category_fallback: false
+  decision_category: "C3"
+  phase_reached: "phase_3"
+  execution_mode: "parallel_subagents"
+  degrade_reason: null
+  conflict_type: "reason_divergence"
+  options:
+    - "A 昇格契機（その版の critical が全部 master に入った時点・部分実装では上げない）を明文化 + 状態行の値域固定 + 版整合の機械検査"
+    - "B A に加えて「spec 番号は起草時の予約であって release 番号ではない」を明文化し、追い越された未実装 spec の番号付け替え規則も定める"
+    - "C 昇格契機を別方式にする（master に入るたびに patch / 配布のたびに）"
+    - "D 規則を明文化せず現状維持"
+  final_weights:
+    経営者: 4
+    開発者: 4
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "B（ただし遡及リネームは禁止し、番号付け替えは未実装かつ未参照の予約番号に限る）", confidence: 0.85, dimension: "配布資産の識別コストとサポート負債の累積", note: "D の請求書は L0 1 cycle と本 Council として既に一度払われた。A/B の追加費用は F2/F4/F6 で建てる検査群への相乗りで限界的に小さい。C は毎 merge に固定費を課すが消費側は major のみ比較（dh-manifest.yml:18）でその精度を読まないため投資が回収されない。遡及リネームは git 履歴・PR 本文の不変参照を壊し調査コストを増やす。" }
+    開発者: { stance: "B", confidence: 0.92, dimension: "版宣言の状態機械としての充足性 / 検査の決定可能性と誤検知率", note: "A 単独は状態機械が充足不能。VERSION=6.15.0 確定により未実装の v6.13.0 / v6.14.0 は A が固定する値域『実装済み（PR #N、VERSION x.y.z）』を満たす合法値を持たない（semver は戻せない）。規則は『無い』のではなく dev-env-spec.md:726 に既存で、欠けているのは lifecycle トリガと機械強制のみ。節を追加すると正典が二重化するため既存節の書き換えとして実装すべき。検査 4 の git log --grep 方式は v6.13.0 4 件 / v6.14.0 2 件 / v6.16.0 2 件を返し大半が当該 spec 自身の起草 commit ＝ I-4 違反。" }
+    哲学者: { stance: "B", confidence: 0.75, dimension: "名の意味と受け手（版番号は誰に何を約束するか）", note: "根は『起草時の意図の予約番号』と『受け手が今何を持つかの状態番号』という別種の名づけを同一名前空間に押し込んだこと。B はその二重性の分離＝止揚。ただし版番号が答えるべき問いは『実装がどこまで進んだか』ではなく『これを持つと何が違うか』であり、昇格の実行には意味を 1 行残す義務を併記すべき。版履歴が v4.2 で死んだまま VERSION は 6.11.0 まで来ており、数より先に意味が腐ることが既に起きている。" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "B"
+    scores:
+      - stance: "B"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 8.58
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.85 }
+          - { persona: "開発者", weight: 4, confidence: 0.92 }
+          - { persona: "哲学者", weight: 2, confidence: 0.75 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }
+  recommended: "B（「spec 番号 = 起草時の予約」と「VERSION = 受け手が今何を持つかの release 状態」を二層として明文化）。採用条件として 9 点の mitigation を規則本文・検査に同時に落とす: (1) 昇格の充足判定に「破棄（理由を記載）」を明示的に数える（v6.12.0 F4 のような意図的延期を抱えた版が永久に昇格できず状態行に嘘を書く圧力を作らない） (2) 番号付け替えは書き換えでなく追記で行い drafted_as を残す（I-8 不可逆削除禁止・COLD=archive≠delete と同型）。対象は未実装かつ未参照の予約番号に限定し、git 履歴 / PR 本文 / history への遡及リネームは禁止と規則本文に境界を書く (3) 検査 4 は git log --grep でなく file-local 判定に置換（真陽性 2 / 偽陽性 0、I-4 順守） (4) 検査を 1 本追加: dev-env-spec.md §バージョン履歴 末尾の `- vN.M:` == VERSION の決定論一致 (5) 新節を追加せず dev-env-spec.md:726 の既存規則を書き換える形で実装し正典の二重化を作らない (6) UPDATE.md に 6.11.0 → 6.15.0 の対応表 1 行を必須化し、以後は「merge 時に上げる・遡及しない」を規則本文に書いて一度限りの負債で閉じる (7) 規則本文の冒頭に「誰が何のためにこの数を読むか」を書き、昇格の実行時に「これを持つと何が違うか」を 1 行残す義務を併記する (8) 昇格 commit をリリース手順のチェックリストに 1 行として組み込み、未実装のまま滞留する spec の棚卸し契機を置く (9) WARN 検査は初期是正後 1 cycle で発火数を実測し、0 件に落ちなければ検査を削る判断を行う"
+  minority_opinion: "結論は一致するが観測次元は分離（経営者=配布資産の識別コストとサポート負債／開発者=版宣言の状態機械の充足性と検査の決定可能性／哲学者=名の意味と受け手）。dimension 語彙の共有トークンは 0 で、冗長ではなく異なる次元から同じ結論に達した全会一致。未被覆: 配布先の kakuman-platform-v3.0 は VERSION も dh-manifest.yml も持たず「配布先は版番号で自分を識別する」前提自体が半分虚構であり、規則より配布時の同梱規律が先という哲学者の問いは本判定の外に残る。C を退けた代償として「毎 merge の粒度」は得られない。UPDATE.md の commit SHA ピンが同一性の正本である点も規則本文で守ること。"
+  weight_note: "category=operation の situational_modifier 適用（経営者 4 / 開発者 4 / 哲学者 2、ΣW=10）。stance 一致のため重み配分は判定に影響しなかった。経営者の修飾付き B は接頭辞正規化で B に算入（third_way_excluded は空）。"
+  reasoning: "3 軸の dimension 語彙は共有トークン 0（Jaccard 0.000）で、独立した 3 次元が別々に B を支持した = 対立類型 B（異なる次元から同じ結論）であって冗長ではない。①識別コスト軸: D の請求書は既に一度払われ、A/B の増分は既存検査群への相乗りで小さい。C は消費側が major しか読まないため投資が回収されない。②状態機械の充足性軸: VERSION=6.15.0 確定により v6.13.0 / v6.14.0 は A の値域に合法値を持たず A 単独は充足不能。B の「spec 番号＝起草時予約」が唯一の最小穴埋め。③名の意味と受け手軸: 予約番号と状態番号を同一名前空間に押し込んだことが根であり B はその分離＝止揚。ただし 3 軸の concerns は互いに補完的で、素の B は 3 軸いずれの支持条件も満たさない（昇格条件の粒度・不可逆削除・常時発火 WARN・読み手不在）。ゆえに recommended を mitigation 込みで構成した。Orchestrator 決定論検算: B = 4×0.85 + 4×0.92 + 2×0.75 = 8.58、weight_sum 10、各 persona は 1 箇所のみ出現、recommended は max_score_stance と接頭辞一致、judgment_confidence 0.78 は band [0.60, 0.90] の内側 — すべて整合（retry 0）。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: "B を採用。recommended の mitigation 9 点のうち 8 点を PR #248 で実装し、(8)（昇格をリリース手順のチェックリストの 1 行として常設化）のみ未了として明示的に残した。人間（ひでさん）の「shipして」発話（2026-09-06）を合意成立とする。なお merge 前検証で mitigation (3) の実測値（真陽性 2 / 偽陽性 0）は同一 revision のファイル粒度では 3 件であることが判明したが、3 件目も真陽性であり偽陽性 0 の結論は変わらない。"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-09-06T02:00:00Z"
+  modification_note: null
+  escalation_reason: null

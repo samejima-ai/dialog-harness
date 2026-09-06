@@ -28,6 +28,7 @@ from typing import Any
 
 # 検査モジュール群
 from checks import (
+    declaration_coverage,
     dependency_graph,
     execution_graph,
     five_layer_structure,
@@ -46,6 +47,7 @@ CHECK_REGISTRY: list[tuple[str, Any]] = [
     ("用語辞書整合", glossary_check),
     ("hook 観測一貫性", hook_observations),
     ("実行グラフ整合", execution_graph),
+    ("宣言被覆（F1 版整合）", declaration_coverage),
 ]
 
 
