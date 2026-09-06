@@ -29,25 +29,38 @@ from typing import Any
 # 検査モジュール群
 from checks import (
     declaration_coverage,
+    declaration_freshness,
     dependency_graph,
+    distribution_state,
     execution_graph,
     five_layer_structure,
     frontmatter,
     glossary as glossary_check,
     hook_observations,
     references,
+    rules_index,
 )
 
 
-CHECK_REGISTRY: list[tuple[str, Any]] = [
-    ("frontmatter 整合性", frontmatter),
-    ("参照 path 有効性", references),
-    ("SK 間参照の健全性", dependency_graph),
-    ("5 層構造保全", five_layer_structure),
-    ("用語辞書整合", glossary_check),
-    ("hook 観測一貫性", hook_observations),
-    ("実行グラフ整合", execution_graph),
-    ("宣言被覆（F1 版整合 / F2 宣言網羅 / F3 配布物状態 / F4 分類網羅 / F6 RL 被覆）", declaration_coverage),
+# 検査レジストリ。**表示番号は登録順**であり、既存の記録（`reports/*.md` 等）が
+# 「検査 N」で参照しているため **1-7 の順序は変えない**（v6.18.0 C-2 / Council splt02 条件 1）。
+# 分割で増えたモジュールは末尾に追記する。過去の実行記録は書き換えない（改竄になる）。
+#
+# 各要素は (安定 ID, 表示名, モジュール)。安定 ID は順序に依存しない参照子で、
+# 将来 registry の順序を変えても意味が保たれるように置く。
+CHECK_REGISTRY: list[tuple[str, str, Any]] = [
+    ("frontmatter", "frontmatter 整合性", frontmatter),
+    ("references", "参照 path 有効性", references),
+    ("dependency-graph", "SK 間参照の健全性", dependency_graph),
+    ("five-layer", "5 層構造保全", five_layer_structure),
+    ("glossary", "用語辞書整合", glossary_check),
+    ("hook-observations", "hook 観測一貫性", hook_observations),
+    ("execution-graph", "実行グラフ整合", execution_graph),
+    # --- 以下 v6.18.0 C-2 で旧「検査 8: 宣言被覆」を欠落の型で分割したもの ---
+    ("declaration-coverage", "宣言の網羅（実体 → 宣言・宣言の実質）", declaration_coverage),
+    ("declaration-freshness", "宣言の鮮度", declaration_freshness),
+    ("distribution-state", "配布物の状態", distribution_state),
+    ("rules-index", "共通 RL の現況被覆", rules_index),
 ]
 
 
@@ -146,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
 
     results: list[dict[str, Any]] = []
     has_internal_error = False
-    for name, module in CHECK_REGISTRY:
+    for check_id, name, module in CHECK_REGISTRY:
         try:
             issues = module.run(skills_dir=skills_dir, glossary_path=glossary_path)
         except Exception as exc:  # noqa: BLE001 — 個別 check の障害を全体停止につなげない
@@ -170,7 +183,7 @@ def main(argv: list[str] | None = None) -> int:
             if sev == "WARN" and args.strict:
                 status = "FAIL"
                 break
-        results.append({"name": name, "status": status, "issues": issues})
+        results.append({"id": check_id, "name": name, "status": status, "issues": issues})
 
     overall_pass = all(r["status"] == "PASS" for r in results)
 

@@ -1,68 +1,30 @@
-"""検査 8: 宣言被覆（v6.17.0）
+"""検査: 宣言の網羅（実体 → 宣言）（v6.18.0 C-2 で検査 8 から分離）
 
-既存 7 検査は「宣言 → 実体」（宣言したものが在るか）だけを見ており、
-以下 3 種の欠落が構造的に検出できなかった（upgrade-spec v6.17.0 §0）:
+**欠落の型**: 実体→宣言 — 在るものが宣言されているか / 宣言の実質
 
-    - 実体 → 宣言: 在るものが宣言されているか
-    - 宣言の鮮度: 宣言が現在の実体に追いついているか
-    - 宣言の実質: 宣言が指す source が実際にその内容を持つか
+既存 7 検査は「宣言 → 実体」（宣言したものが在るか）だけを見ており、逆向きを見ていなかった。
+skill / script が `GRAPH.yml` に、実在パスが `dh-manifest.yml` に宣言されているかを見る。
+併せて `edge.source` が本当に `edge.to` を指しているか（宣言の実質）も見る —
+G-2 は source の**パス存在**しか見ないため、実体のない宣言が PASS を通過していた。
 
-本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/
-F3（配布物の状態）/ F4（manifest 分類網羅）/ F6（RL 現況の被覆）分を実装済み**で、
-v6.17.0 の受け皿はこれで揃った。
+## 分割の経緯
 
-F1（版整合）の検査項目:
-    1. VERSION == GRAPH.yml の version:（不一致 = FAIL）
-    2. upgrade-spec の状態行が値域内（値域外 = FAIL）
-    3. VERSION より大きい版の spec は状態行を持つ（欠落 = FAIL）
-       ※ VERSION 以下の歴史的 spec には遡及適用しない（I-4: 常時発火する検知を作らない）
-    4. `実装済み` を名乗る spec の版 <= VERSION（超過 = FAIL）
-    5. 状態行が `L0 起草` のまま本文が実装を名乗る（= WARN。file-local 判定）
-    6. dev-env-spec.md §バージョン履歴 の凍結（マーカー欠落 / v4.2 超の追記 = FAIL）
+Council `council-2026-09-06T15:00:00Z-splt02`（jc 0.85 / 3 軸全会一致）。
+検査 8 は v6.17.0 で 6 → 13 項目に増え **672 行**に肥大した。3 軸が独立に同一のバグ
+（dict 重複キーによる F4 METRIC の消失・PR #263 で是正）を発見し、
+**肥大が実際に見落としを生んだ実証**となったため分割した。
 
-F4（manifest 分類網羅）の検査項目:
-    11. リポジトリ直下 / `.claude/` 直下の実在パスが 4 分類 ∪ owned_skills ∪
-        unclassified_ok のいずれかに属す（属さない = WARN）
-    12. `paths.owned_skills` == `.claude/skills/` 実在 dir（不一致 = FAIL）
-        Council D-4 必須随伴条件 (a)。列挙漏れは「配布されないまま誰も困らない」静かな失敗になる
-F3（配布物の状態）の検査項目:
-    13. `overwrite:` 配下（skills / templates / agents）に history/ または *LOG*.md が
-        存在しない（存在 = WARN）。配布先固有の状態を配布物に置く型を封じる
-
-F6（RL 現況の被覆）の検査項目:
-    10. templates/rules/common/*.md ⇄ README §common/ の現況 の列挙が一致（不一致 = FAIL）
-        件数ではなくファイル名で突き合わせる（件数一致は名前が入れ替わっても通る）
-
-F2（宣言網羅・source 実質）の検査項目:
-    7. .claude/skills/*/ ⊆ (nodes[].id ∪ graph_excluded[].id)（違反 = FAIL）
-       prefix でフィルタしない（glossary.py:250 の managed_prefixes が rtk-integration を
-       落とした欠陥を持ち込まない）
-    8. scripts/*.py（test-* 除く）⊆ (nodes[].impl ∪ graph_excluded[].path)（違反 = WARN）
-    9. source 実質検査: edge.source が .md のとき、その本文に edge.to の impl basename
-       または node id が出現すること（不出現 = WARN）。パス存在しか見ない G-2 の補完であり、
-       意味は判定しない決定論検査
-
-検査 5 を `git log --grep` にしない理由（Council vrsn01 / 開発者軸の指摘を実測で確認）:
-    grep 方式は v6.13.0 に 4 件 / v6.14.0 に 2 件 / v6.16.0 に 2 件を返すが、
-    その大半は **当該 spec 自身の起草 commit** と個人名の一括匿名化 sweep である。
-    導入初日から非ゼロで、全 draft が実装されるまで 0 にならない
-    = 不変条件 I-4「常時発火する検知を作らない」に違反する。
-    file-local 判定は真陽性のみに発火し、かつ git 履歴に依存しないので配布先でも同じ判定ができる。
+分割基準は当初の申し送りにあった「1 検査器 = 1 宣言ファイル」**ではない**。
+F1 は 4 ファイル、F4 は 2 ファイルを読み、F3 は宣言を読まない（実体走査のみ）ため、
+宣言ファイル単位では切れないことが実測で判明した。採った基準は
+**「1 検査器 = 1 つの欠落の型」**（実体→宣言 / 鮮度 / 実質 / 実体の誤配置）である。
 
 規範メタデータ:
     stage: 全段階
     review_trigger:
-      - measured: 検査 5（WARN）が初期是正後 1 cycle で 0 件に落ちなければ、
-        誤検知率を再測定し、落ちないなら本検査を削る（Council vrsn01 mitigation 9）
-      - measured: 版整合 FAIL が 6 cycle 連続 0 件なら、状態行の値域固定のみ残して簡素化を検討
-      - measured: source 実質検査（検査 9・WARN）が 6 cycle 連続 0 件なら FAIL 昇格を検討
-        （G-5 と同じ昇格規律。upgrade-spec-v6.17.0 §F2 規範メタデータ）
-      - measured: 検査 10（F6）が 6 cycle 連続 0 件なら、RL の増減自体が止まっている可能性を疑い
-        配布の要否を再問（upgrade-spec-v6.17.0 §F6 規範メタデータ）
-      - stage_transition: DH が新しい配布面（新ディレクトリ）を持つとき、検査 11 の
-        unclassified_ok を見直す（upgrade-spec-v6.17.0 §F4 規範メタデータ）
-      - measured: 検査 11（WARN）が 6 cycle 連続 0 件なら降格候補
-      - measured: 検査 13（F3・WARN）が 6 cycle 連続 0 件なら降格候補
+      - measured: source 実質検査（WARN）が 6 cycle 連続 0 件なら FAIL 昇格を検討
+      - stage_transition: DH が新しい配布面（新ディレクトリ）を持つとき unclassified_ok を見直す
+      - measured: 分類網羅 WARN が 6 cycle 連続 0 件なら降格候補
 """
 
 from __future__ import annotations
@@ -72,200 +34,45 @@ from pathlib import Path
 from typing import Any
 
 try:  # verify.py 経由（パッケージとして読み込まれる正規経路）
-    from .execution_graph import parse_graph
-except ImportError:  # 単体ロード（scripts/test-declaration-coverage.py が spec_from_file_location で読む）
+    from ._declaration_util import read_graph, skill_ids_from_graph
+except ImportError:  # 単体ロード（scripts/test-*.py が spec_from_file_location で読む）
     import importlib.util as _ilu
 
-    _path = Path(__file__).with_name("execution_graph.py")
-    _spec = _ilu.spec_from_file_location("_execution_graph", _path)
-    # spec / loader は None を返しうる。ここで潰さないと後段が AttributeError になり、
-    # 「なぜ検査 7-9 が動かないのか」が読めない失敗になる。原因の分かる例外に変換する。
-    if _spec is None or _spec.loader is None:
-        raise ImportError(f"execution_graph.py を単体ロードできない: {_path}")
-    _mod = _ilu.module_from_spec(_spec)
-    _spec.loader.exec_module(_mod)
-    parse_graph = _mod.parse_graph
+    _p = Path(__file__).with_name("_declaration_util.py")
+    _s = _ilu.spec_from_file_location("_declaration_util", _p)
+    if _s is None or _s.loader is None:
+        raise ImportError(f"_declaration_util.py を単体ロードできない: {_p}")
+    _m = _ilu.module_from_spec(_s)
+    _s.loader.exec_module(_m)
+    read_graph, skill_ids_from_graph = _m.read_graph, _m.skill_ids_from_graph
 
-# 状態行の値域（dev-env-spec.md §状態行の値域 が正本。ここは機械表現）
-STATE_PATTERNS: tuple[tuple[str, str], ...] = (
-    ("draft", r"^L0 起草（人間レビュー待ち）$"),
-    ("council", r"^Council 諮問通過・人間の採否判定待ち$"),
-    ("in_progress", r"^実装中（.+?）$"),
-    ("done", r"^実装済み（PR #[\d\s/#]+、VERSION \d+\.\d+\.\d+）$"),
-    ("dropped", r"^破棄（.+?）$"),
-)
-
-STATE_LINE_RE = re.compile(r"^>\s*\*\*状態:\s*(.+?)\*\*", re.M)
-SPEC_NAME_RE = re.compile(r"^upgrade-spec-v(\d+)\.(\d+)\.(\d+)\.md$")
-# 本文が実装を名乗る行（検査 5 の file-local 判定）
-IMPL_CLAIM_RE = re.compile(r"実装済み（PR[\s#-]|実装（PR[\s#-]", re.M)
-HISTORY_FREEZE_MARKER = "凍結マーカー"
-HISTORY_ITEM_RE = re.compile(r"^- v(\d+)\.(\d+):", re.M)
+# 層 prefix（SKILL.md 本文では「L1（autonomous-dev）」のように略記される）
+_LAYER_PREFIX_RE = re.compile(r"^(?:layer[012]|crosscut)-")
 
 
-def _ver(text: str) -> tuple[int, int, int] | None:
-    m = re.match(r"^\s*(\d+)\.(\d+)\.(\d+)\s*$", text)
-    return (int(m[1]), int(m[2]), int(m[3])) if m else None
-
-
-def _classify(state: str) -> str | None:
-    for name, pat in STATE_PATTERNS:
-        if re.match(pat, state.strip()):
-            return name
-    return None
-
-
-def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
+def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # noqa: ARG001
     repo_root = skills_dir.parent.parent
+    graph_path = repo_root / "GRAPH.yml"
     issues: list[dict[str, Any]] = []
 
-    # --- 1. VERSION == GRAPH.yml version ---
-    version_path = repo_root / "VERSION"
-    graph_path = repo_root / "GRAPH.yml"
-    version_txt = version_path.read_text(encoding="utf-8").strip() if version_path.is_file() else ""
-    version = _ver(version_txt)
-    if version is None:
-        issues.append({
-            "location": "VERSION",
-            "message": f"VERSION が semver として読めない: {version_txt!r}",
-            "severity": "FAIL",
-        })
-        return issues  # 以降の比較基準が立たないので打ち切る
+    f2 = _check_f2(repo_root, skills_dir, graph_path, issues)
+    f4 = _check_f4(repo_root, skills_dir, graph_path, issues)
 
-    if graph_path.is_file():
-        gm = re.search(r'^version:\s*"?(\d+\.\d+\.\d+)"?', graph_path.read_text(encoding="utf-8"), re.M)
-        if not gm:
-            issues.append({
-                "location": "GRAPH.yml",
-                "message": "GRAPH.yml に version: 宣言が無い",
-                "severity": "FAIL",
-            })
-        elif gm[1] != version_txt:
-            issues.append({
-                "location": "GRAPH.yml",
-                "message": (f"GRAPH.yml version={gm[1]} が VERSION={version_txt} と不一致。"
-                            f"昇格は同一 commit で両方更新する（dev-env-spec §昇格の実行）"),
-                "severity": "FAIL",
-            })
-
-    # --- 2-5. upgrade-spec の状態行 ---
-    spec_dir = repo_root / "dh-upgrades"
-    for path in sorted(spec_dir.glob("upgrade-spec-v*.md")) if spec_dir.is_dir() else []:
-        nm = SPEC_NAME_RE.match(path.name)
-        if not nm:
-            continue
-        spec_ver = (int(nm[1]), int(nm[2]), int(nm[3]))
-        rel = f"dh-upgrades/{path.name}"
-        text = path.read_text(encoding="utf-8")
-        sm = STATE_LINE_RE.search(text)
-
-        if not sm:
-            # 3. VERSION より大きい版だけ状態行を必須にする（歴史的 spec に遡及しない）
-            if spec_ver > version:
-                issues.append({
-                    "location": rel,
-                    "message": ("未 release の spec（版 > VERSION）に状態行が無い。"
-                                "`> **状態: ...**` を置く（dev-env-spec §状態行の値域）"),
-                    "severity": "FAIL",
-                })
-            continue
-
-        state = sm[1].strip()
-        kind = _classify(state)
-        if kind is None:
-            issues.append({
-                "location": rel,
-                "message": f"状態行が値域外: {state!r}（dev-env-spec §状態行の値域 の 5 値のみ）",
-                "severity": "FAIL",
-            })
-            continue
-
-        # 4. 実装済みを名乗る版 <= VERSION
-        if kind == "done" and spec_ver > version:
-            issues.append({
-                "location": rel,
-                "message": (f"`実装済み` を名乗る spec の版 v{nm[1]}.{nm[2]}.{nm[3]} が "
-                            f"VERSION={version_txt} を超えている"),
-                "severity": "FAIL",
-            })
-
-        # 5. L0 起草のまま本文が実装を名乗る（file-local 判定）
-        if kind == "draft" and IMPL_CLAIM_RE.search(text):
-            issues.append({
-                "location": rel,
-                "message": ("状態行が `L0 起草` のまま本文が実装を名乗っている。"
-                            "状態行を実態に合わせる（実装中 / 実装済み）"),
-                "severity": "WARN",
-            })
-
-    # --- 6. dev-env-spec §バージョン履歴 の凍結 ---
-    dev_env = skills_dir / "layer0-spec-architect" / "references" / "dev-env-spec.md"
-    if dev_env.is_file():
-        text = dev_env.read_text(encoding="utf-8")
-        m = re.search(r"^###\s*バージョン履歴.*?$(.*?)(?=^###\s|\Z)", text, re.M | re.S)
-        if m:
-            body = m[1]
-            if HISTORY_FREEZE_MARKER not in body:
-                issues.append({
-                    "location": "dev-env-spec.md §バージョン履歴",
-                    "message": ("凍結マーカーが無い。v5 系以降の正本は dh-upgrades/ と history/CHANGELOG.md であり、"
-                                "ここに再掲すると実体の二重定義になる"),
-                    "severity": "FAIL",
-                })
-            late = [f"v{a}.{b}" for a, b in HISTORY_ITEM_RE.findall(body) if (int(a), int(b)) > (4, 2)]
-            if late:
-                issues.append({
-                    "location": "dev-env-spec.md §バージョン履歴",
-                    "message": (f"凍結後に v4.2 より後の項目が追記されている: {', '.join(late)}。"
-                                f"版ごとの内容は dh-upgrades/ が正本"),
-                    "severity": "FAIL",
-                })
-
-    # --- 7-9. F2: 宣言の網羅性 + source の実質 ---
-    f2_counts = _check_f2(repo_root, skills_dir, graph_path, issues)
-
-    # --- 11-12. F4: manifest 分類網羅 + owned_skills の実在一致 ---
-    f4_counts = _check_f4(repo_root, skills_dir, graph_path, issues)
-    # --- 13. F3: 配布物に配布先固有の状態を置かない ---
-    f3_counts = _check_f3(repo_root, issues)
-
-    # --- 10. F6: 共通 RL の現況被覆 ---
-    f6_counts = _check_f6(repo_root, issues)
-
-    issues.append({
-        "location": "VERSION",
-        "message": (f"F1 版整合 — VERSION={version_txt} / "
-                    f"upgrade-spec {len(list(spec_dir.glob('upgrade-spec-v*.md'))) if spec_dir.is_dir() else 0} 本を検査。"
-                    f"v6.17.0 の宣言被覆は F1/F2/F4/F6 で揃った"),
-        "severity": "METRIC",
-    })
     issues.append({
         "location": "GRAPH.yml",
-        "message": (f"F2 宣言網羅 — skill {f2_counts['skills']} 件 "
-                    f"(node {f2_counts['skill_nodes']} / excluded {f2_counts['skill_excluded']}) / "
-                    f"script {f2_counts['scripts']} 件 "
-                    f"(impl {f2_counts['script_impls']} / excluded {f2_counts['script_excluded']}) / "
-                    f"source 実質検査 {f2_counts['sources_checked']} edge"),
+        "message": (f"宣言網羅 — skill {f2['skills']} 件 "
+                    f"(node {f2['skill_nodes']} / excluded {f2['skill_excluded']}) / "
+                    f"script {f2['scripts']} 件 "
+                    f"(impl {f2['script_impls']} / excluded {f2['script_excluded']}) / "
+                    f"source 実質検査 {f2['sources_checked']} edge"),
         "severity": "METRIC",
     })
     issues.append({
         "location": "dh-manifest.yml",
-        "message": (f"F4 manifest 分類網羅 — 分類済み {f4_counts['classified']} パス / "
-                    f"未分類 {f4_counts['unclassified']} パス / "
-                    f"owned_skills {f4_counts['owned_skills']} 件"
-                    f"（GRAPH 宣言 {f4_counts['graph_skills']} 件と突合）"),
-        "severity": "METRIC",
-    })
-    issues.append({
-        "location": ".claude/skills/",
-        "message": (f"F3 配布物の状態 — overwrite 配下 {f3_counts['scanned']} 面を走査 / "
-                    f"状態実体 {f3_counts['state_found']} 件"),
-        "severity": "METRIC",
-    })
-    issues.append({
-        "location": "templates/rules/README.md",
-        "message": (f"F6 RL 現況被覆 — 実ファイル {f6_counts['rl_files']} 本 / "
-                    f"README 列挙 {f6_counts['rl_listed']} 本"),
+        "message": (f"分類網羅 — 分類済み {f4['classified']} パス / "
+                    f"未分類 {f4['unclassified']} パス / "
+                    f"owned_skills {f4['owned_skills']} 件"
+                    f"（GRAPH 宣言 {f4['graph_skills']} 件と突合）"),
         "severity": "METRIC",
     })
     return issues
@@ -286,9 +93,8 @@ def _check_f2(
     if not graph_path.is_file():
         return counts
 
-    try:
-        doc = parse_graph(graph_path.read_text(encoding="utf-8"))
-    except OSError:
+    doc = read_graph(graph_path)   # 共通ヘルパ経由（fallback の複製を作らない）
+    if not doc:
         return counts
 
     nodes = [n for n in doc.get("nodes", []) if isinstance(n, dict)]
@@ -376,10 +182,6 @@ def _check_f2(
     return counts
 
 
-# 層 prefix（SKILL.md 本文では「L1（autonomous-dev）」のように略記される）
-_LAYER_PREFIX_RE = re.compile(r"^(?:layer[012]|crosscut)-")
-
-
 def _mentions(body: str, node_id: str, impl: str) -> bool:
     """本文が node_id を指す記述を持つか（決定論・意味は判定しない）。
 
@@ -395,59 +197,6 @@ def _mentions(body: str, node_id: str, impl: str) -> bool:
         return True
     basename = Path(impl).name if impl else ""
     return bool(basename and basename != "SKILL.md" and basename in body)
-
-
-def _check_f6(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
-    """F6: 共通 RL の実ファイルと README §common/ の現況 の列挙が一致するか（検査 10）。
-
-    `templates/rules/common/` の 6 本は配布先に byte 一致で届いているが、README の現況節が
-    4 本しか列挙しておらず、どれが届いているのかを宣言側から知れない状態だった
-    （upgrade-spec-v6.17.0 §F6 実測）。kakuman の `check-traps-sync.mjs` が
-    「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用。
-
-    件数ではなくファイル名で突き合わせる（件数一致は名前が入れ替わっても通ってしまう）。
-    """
-    counts = {"rl_files": 0, "rl_listed": 0}
-    common = repo_root / "templates" / "rules" / "common"
-    readme = repo_root / "templates" / "rules" / "README.md"
-    if not common.is_dir() or not readme.is_file():
-        return counts  # 配布先など RL を持たないツリーでは skip（後方互換）
-
-    actual = {f.name for f in common.glob("*.md")}
-    counts["rl_files"] = len(actual)
-
-    text = readme.read_text(encoding="utf-8")
-    m = re.search(r"^##\s*common/ の現況\s*$(.*?)(?=^##\s|\Z)", text, re.M | re.S)
-    if not m:
-        issues.append({
-            "location": "templates/rules/README.md",
-            "message": ("§common/ の現況 が見つからない。共通 RL の現況 SSOT はこの節であり、"
-                        "dev-env-spec 側は本 README を参照する（upgrade-spec-v6.17.0 §F6）"),
-            "severity": "FAIL",
-        })
-        return counts
-
-    # 各項目の**先頭**のバッククォート名だけを RL 名とみなす。本文中の説明パス
-    # （`.dh/rules/common/...` での override 例、他 skill の参照先等）を拾わないため、
-    # 「- `<name>.md`」という箇条書きの見出し位置に限定する。
-    listed = set(re.findall(r"^-\s+`([^`/]+\.md)`", m[1], re.M))
-    counts["rl_listed"] = len(listed)
-
-    for name in sorted(actual - listed):
-        issues.append({
-            "location": f"templates/rules/common/{name}",
-            "message": (f"共通 RL {name!r} が README §common/ の現況 に列挙されていない。"
-                        "配布はされるが宣言側から存在を知れない（F6 が塞いだ欠落の再発）"),
-            "severity": "FAIL",
-        })
-    for name in sorted(listed - actual):
-        issues.append({
-            "location": "templates/rules/README.md",
-            "message": (f"README §common/ の現況 が実在しない RL {name!r} を列挙している。"
-                        "削除・改名に追随する"),
-            "severity": "FAIL",
-        })
-    return counts
 
 
 def _parse_manifest_paths(text: str) -> dict[str, list[str]]:
@@ -522,24 +271,9 @@ def _check_f4(repo_root: Path, skills_dir: Path, graph_path: Path,
 
     # (c) 単一情報源は GRAPH.yml nodes。まずそちらと突合する。
     if graph_path.is_file():
-        try:
-            doc = parse_graph(graph_path.read_text(encoding="utf-8"))
-        except OSError:
-            doc = {}
-
-        # skill node の判定は `impl` が `.claude/skills/<id>/SKILL.md` であること。
-        # prefix だけで絞ると human gate（impl が skill 配下の philosophy.md 等を指す）を
-        # 巻き込む — G-5 の prefix フィルタが rtk-integration を落としたのと同型の失敗。
-        declared = {
-            n["id"] for n in doc.get("nodes", [])
-            if isinstance(n, dict) and n.get("id")
-            and str(n.get("impl", "")) == f".claude/skills/{n['id']}/SKILL.md"
-        }
-        declared |= {
-            x["id"] for x in doc.get("graph_excluded", [])
-            if isinstance(x, dict) and x.get("id")
-            and str(x.get("path", "")) == f".claude/skills/{x['id']}/"
-        }
+        doc = read_graph(graph_path)
+        # skill node の判定は共通ヘルパに集約（prefix で絞らない理由も同ヘルパに記載）
+        declared = skill_ids_from_graph(doc)
         counts["graph_skills"] = len(declared)
 
         for name in sorted(declared - owned):
@@ -615,61 +349,4 @@ def _check_f4(repo_root: Path, skills_dir: Path, graph_path: Path,
                 "severity": "WARN",
             })
 
-    return counts
-
-
-def _check_f3(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
-    """F3: 配布物に「配布先固有になりうる状態」を置かない（検査 13）。
-
-    `overwrite:` 配下（`.claude/skills/` / `templates/` / `.claude/agents/`）に `history/`
-    ディレクトリまたは `*LOG*.md` が存在したら WARN。
-
-    これは (c) の一般形である。skill 内 COUNCIL-LOG は「社外秘ゆえ skill 内部に閉じて保管する」と
-    宣言しながら、`overwrite` 分類ゆえ配布先 2 リポへ byte 一致で配られていた
-    （実測 2026-09-06: kakuman 84,721 B / cc-cockpit 83,467 B）。
-    **最も秘匿すべきと宣言した場所が、最も広く配られる場所だった。**
-
-    同型の実害は SK-03 でも起きている（kakuman 固有 Council 2 件が上書きで消失）。
-    「skill 内に状態を置くと上書きで消える / 意図せず配られる」を型として封じる。
-
-    規範メタデータ:
-        stage: 全段階
-        review_trigger:
-          - measured: 配布物内 state 検査の WARN が 6 cycle 連続 0 件なら降格候補
-    """
-    counts = {"scanned": 0, "state_found": 0}
-    # overwrite 配下の実体（manifest を読まず固定するのは、manifest 自体が壊れていても
-    # この検査は動くべきだから。分類の網羅性は検査 11 が別途見る）
-    roots = [
-        repo_root / ".claude" / "skills",
-        repo_root / "templates",
-        repo_root / ".claude" / "agents",
-    ]
-    for root in roots:
-        if not root.is_dir():
-            continue
-        counts["scanned"] += 1
-        rel_root = root.relative_to(repo_root).as_posix()
-
-        for path in sorted(root.rglob("*")):
-            rel = path.relative_to(repo_root).as_posix()
-            if path.is_dir() and path.name == "history":
-                counts["state_found"] += 1
-                issues.append({
-                    "location": rel + "/",
-                    "message": (f"配布物（{rel_root}/）の中に history/ がある。"
-                                "配布先固有の状態を配布物に置くと、上書きで消えるか意図せず配られる"
-                                "（upgrade-spec-v6.17.0 §F3。skill 内 COUNCIL-LOG が実際に"
-                                "配布先 2 リポへ配られていた）"),
-                    "severity": "WARN",
-                })
-            elif path.is_file() and "LOG" in path.name and path.suffix == ".md":
-                counts["state_found"] += 1
-                issues.append({
-                    "location": rel,
-                    "message": (f"配布物（{rel_root}/）の中にログ実体 {path.name!r} がある。"
-                                "ログは配布先ごとに異なる状態であり、配布物に置いてはならない"
-                                "（upgrade-spec-v6.17.0 §F3）"),
-                    "severity": "WARN",
-                })
     return counts
