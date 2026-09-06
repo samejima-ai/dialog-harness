@@ -166,6 +166,19 @@ L0 は CLAUDE.md 生成時、モデル選定の正本参照を標準で 1 行含
 - lock-step 突合対象（純化 RL §4）: CLAUDE.md 本文にモデル ID パターン（`claude-*` / `gpt-*` / `gemini-*` 等）が出現しないこと（G-MODEL 行自身の正本参照を除く）
 - **G-AGENT（leaf worker 委譲行）は生成規格に含めない（凍結）**: 失敗モードが事故でなく枠浪費で純化 RL §3 到達可能性基準を満たさず、worker description マッチングが大半をカバー済みのため（同 Council 判定）。プロジェクト側の任意採用は可（行例: `templates/agents/README.md`）。**再評価条件**: 委譲漏れ（leaf 作業をメインモデルが直接実行する非効率）の実測が顕著、またはモデル世代交代で使い分け基準が改訂されたとき、L0 振り返り儀式で再諮問する
 
+### 標準行: 共通 RL の参照（G-RULES、v6.17.0 F6 追加）
+
+L0 は CLAUDE.md 生成時、DH 配布の共通 RL への参照を標準で 1 行含める（判断点 D-6 確定・人間判定 2026-09-05）:
+
+- ルーティング表型（M2 以上）: `| 実装工芸・UI 相互作用・常駐層配置・逆流宣言の規律 | G-RULES | templates/rules/common/（DH 配布の共通 RL。一覧は同階層 README §common/ の現況） | lock-step: 本文に RL 本体の規定を再掲しない |`
+- 罠索引型（M1）: 「G-RULES: 実装工芸・UI・常駐層配置の規律は `templates/rules/common/` の共通 RL を参照（一覧は `templates/rules/README.md`）。CLAUDE.md に RL 本文を再掲しない」の 1 行
+
+- 根拠: 共通 RL は 6 本すべてが `templates/` の overwrite 配布で配布先に byte 一致で届いているが、**読込経路がどこにも無く誰も読んでいなかった**（v6.17.0 §F6 実測。`layer1-autonomous-dev/SKILL.md` の読込順序に `templates/rules` が無く、配布先 CLAUDE.md からの参照も 0 件）。`minimalism-ladder.rules.md:87` は「L1 実装ステップで本 RL を読み込み」と宣言するが SKILL 側に配線が無い
+- **L1 SKILL.md に配線しない理由**（D-6 で (i) を採らなかった理由）: DH 側の読込順序に足すと全 cycle で 6 本が常時購読対象になり購読量が増える。RL が効くべきなのは配布先の実装時であり、配布先 CLAUDE.md の 1 行なら「効く場所で確実に読まれる」かつ DH 側の毎サイクル購読量を増やさない。純化 RL 自身の「常駐は grep 到達前に踏むものだけ」とも整合する
+- プロジェクトが RL を上書きする場合は `.dh/rules/common/<同名>` に置く（DH 更新で消えない。`templates/rules/README.md` §override 規約）。その場合も G-RULES 行は据え置きでよい — 参照先は「共通 RL の所在」であって個々のファイルではない
+- lock-step 突合対象（純化 RL §4）: CLAUDE.md 本文に RL 本体の規定（B-xx / S-xx / ラダー段名等）が再掲されていないこと（G-RULES 行自身の正本参照を除く）
+- **add-demote-check の対象**: 本行は常時規範に 1 項目足すため、同節の add-demote-check（既存項目に領域規範へ降格できるものがないか 1 回チェック）を経ること
+
 ### ゲート強制の 3 段（すべて実行主体ローカル）
 
 | 段 | 機構 | 発動条件 |
@@ -1018,13 +1031,14 @@ Council 諮問 `council-2026-05-11T05:00:00Z-w1qb02` の判決により、既存
 
 ```
 templates/rules/
-├── README.md             # 階層化規約 + override 規則 + 相対参照ルール
-└── common/               # 言語横断 rules
-    ├── .gitkeep
-    ├── agentshield-reference.md           # AgentShield 参照導入規約（Wave 2）
-    ├── ui-baseline.rules.md               # UI Baseline RL（v5.23.0、UI 相互作用層・常時適用）
-    └── ui-specialization.context.md       # UI 目的特化 S-01〜S-06（v5.23.0、.dh/rules/ で override 可）
+├── README.md             # 階層化規約 + override 規則 + 相対参照ルール + common/ の現況
+└── common/               # 言語横断 rules（個々の一覧は README §common/ の現況 が正本）
 ```
+
+> **現況の SSOT は `templates/rules/README.md` §common/ の現況**（v6.17.0 F6）。
+> ここに個々のファイルを再掲すると実体の二重定義になり、片方だけが更新されて乖離する
+> （実際 v6.17.0 起草時点で本節は 3 本を落としていた）。純化 RL §2 の自己適用。
+> 実ファイルと本節の列挙が一致することは `harness-verifier` 検査 8 が機械検査する（件数ではなくファイル名で突き合わせる — 件数一致は名前が入れ替わっても通ってしまう）。
 
 L0 対話で「多言語プロジェクトか?」「言語別 coding-standards を設けるか?」を確認後、必要な言語の `templates/rules/<lang>/` を生成。詳細は `dialog-questions.md` の「多言語プロジェクト判定」セクション参照。
 

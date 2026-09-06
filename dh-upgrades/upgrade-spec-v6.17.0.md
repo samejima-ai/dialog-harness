@@ -1,6 +1,6 @@
 # upgrade-spec v6.17.0 — 宣言層の lock-step 清算（点検 (a)〜(h)）
 
-> **状態: 実装中（F1 / F7 / F8 済 / F2-F6 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
+> **状態: 実装中（F1 / F2 / F6 / F7 / F8 済 / F3-F5 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
 > （`.claude/skills/crosscut-council/references/escalation-matrix.md:31`）に従い、人間レビュー通過後・
 > **実装前に Council 諮問**を経る。本 spec 自体の設計判断は Council 未諮問（起草時点で意図的に未実施 —
 > 諮問対象は §判断点に列挙した 5 点）。
@@ -46,7 +46,7 @@ upgrade-spec 状態行 / RL 索引 / 代謝 cursor）が実体から離れた 8 
 | (c) | COUNCIL-LOG 二重管理 + 配布先への byte 一致配布 | 実体の二重定義 | F3 | F3（配布物に配布先固有状態を置かない検査） |
 | (d) | manifest 4 分類に `.mcp.json` / `.gitignore` / `.claude/agents/` が無い + Level B 同居 vs 置換の未調停 | 実体→宣言 | F4 | F4（分類の網羅検査） |
 | (e) | Level A checklist E-3 が Windows native を列挙しない | 規範と実態の不整合 | F5 | —（規範改変。Council 案件） |
-| (f) | RL が届くのに読込経路が無い + 現況索引 2 箇所 stale | 配線の欠落 | F6 | F6（RL 索引の件数一致検査） |
+| (f) | RL が届くのに読込経路が無い + 現況索引 2 箇所 stale | 配線の欠落 | F6 | F6（RL 索引の被覆一致検査） |
 | (g) | `GH_REVIEW_PAT` 失効で全 PR の auto-merge が red / gemini-review が 4 ヶ月未起動 | 運用 + 検知の欠落 | F7 | F7（PAT 有効性検査 + workflow 沈黙検知） |
 | (h) | 情報代謝が 2026-06-07 で停止（cursor 記録時点から +2,417 行） | 鮮度 | F8 | F8（cursor 停滞の決定論検知） |
 
@@ -380,8 +380,10 @@ review_trigger:
 
 ### 再発防止機構（検査 8 の一部）
 
-- `ls templates/rules/common/*.md` の件数と README §common の列挙件数が一致すること（不一致 = FAIL）。
-  kakuman の `check-traps-sync.mjs` が「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用
+- `templates/rules/common/*.md` の実ファイルと README §common の列挙が一致すること（不一致 = FAIL）。
+  kakuman の `check-traps-sync.mjs` が「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用。
+  **実装は件数ではなくファイル名で突き合わせる**（PR-D。件数一致は名前が入れ替わっても通ってしまうため、
+  起草時の「件数一致」より厳密にした）
 
 ### 規範メタデータ
 
@@ -622,7 +624,7 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 | 1 | **PR-A** | F1（VERSION 規則 + 3 点の版整合 + 版整合検査） | 無し。**本 spec 自身の版番号確定を含むため最初** |
 | 2 | **PR-B** | F2（GRAPH 是正 + 網羅性検査 + source 実質検査 + G-5 計数） | PR-A（検査 8 の器を PR-A で作る） |
 | 3 | **PR-C** | F4（manifest 分類 + UPDATE.md 手順 + 分類網羅検査） | PR-A、D-4 の Council |
-| 4 | **PR-D** | F6（RL 配線 + README SSOT + 件数一致検査） | PR-A、D-6 |
+| 4 | **PR-D** | F6（RL 配線 + README SSOT + 被覆一致検査） | PR-A、D-6 |
 | 5 | **PR-E** | F7 + F8（`check_pat` 有効性 + signal-scan 検知器 (e)(f)） | 無し（並行可） |
 | 6 | **PR-F** | F3（COUNCIL-LOG 転記 + 配布除外 + 配布物 state 検査） | D-3 の Council |
 | 7 | **PR-G** | F5（E-3 改訂） | D-5 の Council |
@@ -660,6 +662,58 @@ I-1（是正と検査は同一 PR）を守りつつ、依存順に分ける。
 
 ## 履歴
 
+- 2026-09-06: **PR-D 実装**（F6）。D-6 の確定（配布先 CLAUDE.md に 1 行）に従い、
+  `dev-env-spec.md` に **G-RULES 標準行**を新設した（既存の G-MODEL 行と同型 —
+  「L0 は CLAUDE.md 生成時に正本参照を標準で 1 行含める」という先例をそのまま踏襲）。
+  L1 SKILL.md に配線しない理由（D-6 が (i) を採らなかった理由）を明記した:
+  DH 側の読込順序に足すと全 cycle で 6 本が常時購読対象になり購読量が増えるが、
+  RL が効くべきなのは配布先の実装時であり、配布先 CLAUDE.md の 1 行なら効く場所で確実に読まれる。
+  併せて現況の SSOT を `templates/rules/README.md` §common/ の現況 に一本化し、
+  `dev-env-spec.md` の配置 tree（3 本を落としていた）を README 参照 1 行に置換した（純化 RL §2 の自己適用）。
+  **実測で spec の数値を訂正**: spec は README の列挙を 3 本・欠落 3 本としていたが、
+  実際は列挙 4 本・欠落 2 本（`claude-md-purity.rules.md` / `telemetry-reflux.rules.md`）だった
+  — `agentshield-reference.md` は列挙済み。欠落を塞いで 6 本すべてを列挙した。
+  再発防止として検査 8 に **検査 10（F6 RL 現況被覆）** を追加。件数ではなく**ファイル名で突き合わせる**
+  （件数一致は名前が入れ替わっても通ってしまう）。初版は README 本文中のバッククォート付き `.md` を
+  すべて拾い、override 例の `.dh/rules/common/...` や他 skill の参照先まで RL 扱いして 4 件の偽陽性を
+  出したため、箇条書き見出し位置（`^- \`<name>.md\``）に限定して精度を上げた。
+  検証: 検査 10 の回帰テスト 5 ケース追加（列挙漏れ / 実在しない列挙 / 現況節の欠落を検出、
+  RL を持たないツリーでは skip = 配布先で壊れない、override 例の `.dh/` パスを拾わない）/
+  `harness-verifier --strict` 8 検査 PASS（実ファイル 6 本 = README 列挙 6 本）/
+  回帰テスト 5 本（declaration-coverage / execution-graph / signal-scan / hook-wiring /
+  council-axis-audit）全通過。
+  **申し送り**: `.dh/rules/` は L0 が環境構築時に配置する override 先として複数の RL が宣言するが
+  （`claude-md-purity.rules.md:75` / `minimalism-ladder.rules.md:89`）、`dh-manifest.yml` に
+  `rules` の記載は無い（配布は `templates/` の overwrite に含まれる形）。この配置経路の
+  manifest 明示は F4（PR-C・D-4 の Council 待ち）の分類網羅で扱う。
+- 2026-09-06: **PR-B 実装**（F2）。D-2 の確定に従い、GRAPH.yml に未登録だった 4 skill を処遇し
+  （`crosscut-hook-observer` / `crosscut-continuous-learning` / `rtk-integration` を node 登録、
+  `crosscut-verifier-philosophy` は発動禁止 placeholder ゆえ新設 `graph_excluded` に理由付きで宣言）、
+  未参照 script 4 本（`check_template_sync` / `pr-audit` / `reviewer-misjudgment` / `upstream-scan`）を
+  `graph_excluded` に「実行グラフの経路ではなく検査器・分析器」として宣言した。
+  検査 8 に F2 分（検査 7 skill 網羅 = FAIL / 検査 8 script 網羅 = WARN / 検査 9 source 実質 = WARN）を追加し、
+  `execution_graph.py` G-5 の **prefix フィルタを除去**（`startswith(("layer","crosscut"))` が
+  `rtk-integration` を黙って落としていた。`glossary.py:250` と同型の欠陥）+ 宣言外 dir の計数を追加した。
+  **HV-04 の是正は edge 削除を選んだ**: `layer0-spec-architect → council-performance` /
+  `→ harness-benchmark` の 2 edge は `source: ritual-protocol.md` を宣言するが、同 protocol の F1 手順が
+  実際に呼ぶのは `council-log-sync.py`（:88-89）と `council-axis-audit.py`（:94-95）のみで、
+  この 2 本を呼ぶ手順は存在しない（2026-09-06 実測。他の呼び出し元も `delivery/` の実行例のみで 0 件）。
+  I-2「実装が正・宣言が従」に従い宣言側を落とした。
+  副作用として prefix フィルタ除去で G-5 の検出が 0 → 3 件に増えたが、一次情報で確認して
+  **3 件とも誤検出**と判定し `g5_false_positives` に理由付きで記録した
+  （「auto-merge を有効化して」というユーザー発話例 / `council-axis-audit.py` の出力を人間に提示する
+  観測窓の記述 / 「auto-merge ラベル自動付与は廃止」という否定文脈）。
+  検査 9 は初版が実リポで 2 件の偽陽性を出したため、**層 prefix を落とした略記**（SKILL.md 本文の
+  「L1（autonomous-dev）」表記）を一致とみなし、**self-loop を対象外**にして精度を上げた
+  （I-4「常時発火する検知を作らない」の担保）。
+  併せて `harness-verifier/README.md` の検証項目表が見出し「8 検証項目」に対し 5 行しか無かったのを
+  8 行に是正した — **本 PR の主題である「実体 → 宣言」の欠落が README 自身にあった**。
+  検証: 検査 8 回帰テストに F2 分 11 ケースを追加（欠陥を仕込めば検出・健全なら 0 件を合成ツリーで実証）/
+  `harness-verifier --strict` 8 検査 PASS（検出 0 件・宣言外 dir 0 件）/
+  `test-execution-graph` / `test-signal-scan` / `test-hook-wiring` 全通過。
+  **申し送り**: edge 削除の結果 `council-performance` / `harness-benchmark` の 2 tool node は起動元を
+  持たなくなった。`graph_excluded` への移動が筋だが、D-2 の確定文言（source を実態に合わせる）を
+  超える判断のため本 PR では node を残した。次サイクルの判断対象。
 - 2026-09-05: **PR-E 実装**（ひでさん「マージして進める」）。F7（`check_pat` 有効性検査 + 検知器 (e) workflow_silence）と
   F8（検知器 (f) metabolism_stall）を実装。加えて実装中に発見した 2 件を同梱:
   (i) **signal-scan の dedup が毎日外れる欠陥**（タイトルに測定値を含むため。実害 = 重複 Issue 27 件）→ タイトルを同一性のみに是正。

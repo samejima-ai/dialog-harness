@@ -226,21 +226,33 @@ def _check_g4(nodes: list[dict[str, str]], edges: list[dict[str, str]]) -> list[
 
 def _check_g5(
     skills_dir: Path, nodes: list[dict[str, str]], edges: list[dict[str, str]],
-    false_positives: set[str],
-) -> tuple[list[dict[str, Any]], int, int]:
+    false_positives: set[str], excluded_ids: set[str],
+) -> tuple[list[dict[str, Any]], int, int, int]:
     """実装側の起動記述のうち GRAPH.yml に未宣言のものを WARN で列挙する。
 
-    返り値: (issues, 検出件数, 誤検出として除外した件数)
+    返り値: (issues, 検出件数, 誤検出として除外した件数, 宣言外 dir 数)
+
+    v6.17.0 F2: skill_ids の prefix フィルタ（startswith(("layer","crosscut"))）を外した。
+    prefix で絞ると rtk-integration のような命名規則外の skill が黙って走査対象から落ちる
+    （glossary.py:250 の managed_prefixes が同じ欠陥を持っていた）。宣言に載っているかどうかで
+    判定し、載っていない dir は捨てずに**数える**（v6.13.0 I-4「検出器は黙って捨てない」）。
     """
-    skill_ids = {n["id"] for n in nodes if n.get("id", "").startswith(("layer", "crosscut"))}
+    skill_ids = {n["id"] for n in nodes if n.get("id")}
     declared = {(e.get("from"), e.get("to")) for e in edges}
 
     issues: list[dict[str, Any]] = []
     detected = 0
     excluded = 0
+    undeclared_dirs = 0
 
     for skill_dir in sorted(skills_dir.iterdir()):
-        if not skill_dir.is_dir() or skill_dir.name not in skill_ids:
+        if not skill_dir.is_dir():
+            continue
+        if skill_dir.name not in skill_ids:
+            # F2-4: 走査対象外にする前に計数する。graph_excluded に理由付きで宣言された
+            # ものは「宣言済みの除外」なので数えない（黙って落ちているものだけを数える）。
+            if skill_dir.name not in excluded_ids:
+                undeclared_dirs += 1
             continue
         skill_md = skill_dir / "SKILL.md"
         if not skill_md.is_file():
@@ -275,7 +287,7 @@ def _check_g5(
                                "（誤検出なら GRAPH.yml の g5_false_positives に記録する）",
                     "severity": "WARN",
                 })
-    return issues, detected, excluded
+    return issues, detected, excluded, undeclared_dirs
 
 
 def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # noqa: ARG001
@@ -307,7 +319,13 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # no
     issues += _check_g2(repo_root, nodes, edges)
     issues += _check_g4(nodes, edges)
 
-    g5_issues, detected, excluded = _check_g5(skills_dir, nodes, edges, false_positives)
+    excluded_ids = {
+        x["id"] for x in doc.get("graph_excluded", [])
+        if isinstance(x, dict) and x.get("id")
+    }
+    g5_issues, detected, excluded, undeclared_dirs = _check_g5(
+        skills_dir, nodes, edges, false_positives, excluded_ids
+    )
     issues += g5_issues
 
     # F2-5: 計数を必ず出力する。「数えられない WARN は最初から飾りである」。
@@ -315,7 +333,8 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # no
     issues.append({
         "location": "GRAPH.yml g5-metrics",
         "message": f"G-5 計数 — 検出 {detected} 件 / 人間が誤検出と判定済み {excluded} 件 / "
-                   f"nodes {len(nodes)} / edges {len(edges)}。"
+                   f"nodes {len(nodes)} / edges {len(edges)} / "
+                   f"宣言外 dir {undeclared_dirs} 件（graph_excluded 宣言済みを除く。v6.17.0 F2）。"
                    "FAIL 昇格条件は「6 cycle 連続で検出 0 件」（誤検出除外後）",
         "severity": "METRIC",
     })

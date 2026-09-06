@@ -28,6 +28,9 @@ D5（人間）が最外殻として `harness-verifier/` の出力を判定する
 | 3 | SK 間参照の健全性 | 関連スキル参照の未知 skill 参照および直接自己参照の検出 |
 | 4 | 5 層構造保全 | `inferential-sensor-v2.md` 内の 5 層名と他 skill 引用の整合検査 |
 | 5 | 用語辞書整合 | `glossary.yml` 定義語が DH 全 skill で正しく使われているか |
+| 6 | hook 観測一貫性 | `.claude/settings.json` の hooks 登録と観測ログの整合検査 |
+| 7 | 実行グラフ整合 | `GRAPH.yml` の G-1〜G-5（loop 上限 / dead path / 条件 / DAG / 未宣言経路） |
+| 8 | 宣言被覆 | 実体 → 宣言の網羅性と宣言の鮮度・実質（版整合 / skill・script の登録 / edge source の実質） |
 
 ## 独立性原則
 

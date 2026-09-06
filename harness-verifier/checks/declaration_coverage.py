@@ -7,8 +7,8 @@
     - 宣言の鮮度: 宣言が現在の実体に追いついているか
     - 宣言の実質: 宣言が指す source が実際にその内容を持つか
 
-本モジュールはその受け皿である。**F1（版整合）分のみ実装済み**で、
-F2 / F4 / F6 分は後続 PR で本モジュールに追加する（器を先に置く）。
+本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/ F6（RL 現況の被覆）
+分を実装済み**で、F4 分は後続 PR で本モジュールに追加する。
 
 F1（版整合）の検査項目:
     1. VERSION == GRAPH.yml の version:（不一致 = FAIL）
@@ -18,6 +18,19 @@ F1（版整合）の検査項目:
     4. `実装済み` を名乗る spec の版 <= VERSION（超過 = FAIL）
     5. 状態行が `L0 起草` のまま本文が実装を名乗る（= WARN。file-local 判定）
     6. dev-env-spec.md §バージョン履歴 の凍結（マーカー欠落 / v4.2 超の追記 = FAIL）
+
+F6（RL 現況の被覆）の検査項目:
+    10. templates/rules/common/*.md ⇄ README §common/ の現況 の列挙が一致（不一致 = FAIL）
+        件数ではなくファイル名で突き合わせる（件数一致は名前が入れ替わっても通る）
+
+F2（宣言網羅・source 実質）の検査項目:
+    7. .claude/skills/*/ ⊆ (nodes[].id ∪ graph_excluded[].id)（違反 = FAIL）
+       prefix でフィルタしない（glossary.py:250 の managed_prefixes が rtk-integration を
+       落とした欠陥を持ち込まない）
+    8. scripts/*.py（test-* 除く）⊆ (nodes[].impl ∪ graph_excluded[].path)（違反 = WARN）
+    9. source 実質検査: edge.source が .md のとき、その本文に edge.to の impl basename
+       または node id が出現すること（不出現 = WARN）。パス存在しか見ない G-2 の補完であり、
+       意味は判定しない決定論検査
 
 検査 5 を `git log --grep` にしない理由（Council vrsn01 / 開発者軸の指摘を実測で確認）:
     grep 方式は v6.13.0 に 4 件 / v6.14.0 に 2 件 / v6.16.0 に 2 件を返すが、
@@ -32,6 +45,10 @@ F1（版整合）の検査項目:
       - measured: 検査 5（WARN）が初期是正後 1 cycle で 0 件に落ちなければ、
         誤検知率を再測定し、落ちないなら本検査を削る（Council vrsn01 mitigation 9）
       - measured: 版整合 FAIL が 6 cycle 連続 0 件なら、状態行の値域固定のみ残して簡素化を検討
+      - measured: source 実質検査（検査 9・WARN）が 6 cycle 連続 0 件なら FAIL 昇格を検討
+        （G-5 と同じ昇格規律。upgrade-spec-v6.17.0 §F2 規範メタデータ）
+      - measured: 検査 10（F6）が 6 cycle 連続 0 件なら、RL の増減自体が止まっている可能性を疑い
+        配布の要否を再問（upgrade-spec-v6.17.0 §F6 規範メタデータ）
 """
 
 from __future__ import annotations
@@ -39,6 +56,21 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import Any
+
+try:  # verify.py 経由（パッケージとして読み込まれる正規経路）
+    from .execution_graph import parse_graph
+except ImportError:  # 単体ロード（scripts/test-declaration-coverage.py が spec_from_file_location で読む）
+    import importlib.util as _ilu
+
+    _path = Path(__file__).with_name("execution_graph.py")
+    _spec = _ilu.spec_from_file_location("_execution_graph", _path)
+    # spec / loader は None を返しうる。ここで潰さないと後段が AttributeError になり、
+    # 「なぜ検査 7-9 が動かないのか」が読めない失敗になる。原因の分かる例外に変換する。
+    if _spec is None or _spec.loader is None:
+        raise ImportError(f"execution_graph.py を単体ロードできない: {_path}")
+    _mod = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    parse_graph = _mod.parse_graph
 
 # 状態行の値域（dev-env-spec.md §状態行の値域 が正本。ここは機械表現）
 STATE_PATTERNS: tuple[tuple[str, str], ...] = (
@@ -175,11 +207,211 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                     "severity": "FAIL",
                 })
 
+    # --- 7-9. F2: 宣言の網羅性 + source の実質 ---
+    f2_counts = _check_f2(repo_root, skills_dir, graph_path, issues)
+
+    # --- 10. F6: 共通 RL の現況被覆 ---
+    f6_counts = _check_f6(repo_root, issues)
+
     issues.append({
         "location": "VERSION",
         "message": (f"F1 版整合 — VERSION={version_txt} / "
                     f"upgrade-spec {len(list(spec_dir.glob('upgrade-spec-v*.md'))) if spec_dir.is_dir() else 0} 本を検査。"
-                    f"F2 / F4 / F6 分は後続 PR で本モジュールに追加予定"),
+                    f"F4 分は後続 PR で本モジュールに追加予定"),
+        "severity": "METRIC",
+    })
+    issues.append({
+        "location": "GRAPH.yml",
+        "message": (f"F2 宣言網羅 — skill {f2_counts['skills']} 件 "
+                    f"(node {f2_counts['skill_nodes']} / excluded {f2_counts['skill_excluded']}) / "
+                    f"script {f2_counts['scripts']} 件 "
+                    f"(impl {f2_counts['script_impls']} / excluded {f2_counts['script_excluded']}) / "
+                    f"source 実質検査 {f2_counts['sources_checked']} edge"),
+        "severity": "METRIC",
+    })
+    issues.append({
+        "location": "templates/rules/README.md",
+        "message": (f"F6 RL 現況被覆 — 実ファイル {f6_counts['rl_files']} 本 / "
+                    f"README 列挙 {f6_counts['rl_listed']} 本"),
         "severity": "METRIC",
     })
     return issues
+
+
+def _check_f2(
+    repo_root: Path, skills_dir: Path, graph_path: Path, issues: list[dict[str, Any]]
+) -> dict[str, int]:
+    """F2: 実体 → 宣言 の網羅性（検査 7/8）と source の実質（検査 9）。
+
+    GRAPH.yml 不在のリポジトリでは skip する（execution_graph.py F2-4 と同じ後方互換規律）。
+    """
+    counts = {
+        "skills": 0, "skill_nodes": 0, "skill_excluded": 0,
+        "scripts": 0, "script_impls": 0, "script_excluded": 0,
+        "sources_checked": 0,
+    }
+    if not graph_path.is_file():
+        return counts
+
+    try:
+        doc = parse_graph(graph_path.read_text(encoding="utf-8"))
+    except OSError:
+        return counts
+
+    nodes = [n for n in doc.get("nodes", []) if isinstance(n, dict)]
+    edges = [e for e in doc.get("edges", []) if isinstance(e, dict)]
+    excluded = [x for x in doc.get("graph_excluded", []) if isinstance(x, dict)]
+
+    node_ids = {n["id"] for n in nodes if n.get("id")}
+    node_impls = {n["impl"] for n in nodes if n.get("impl")}
+    excluded_ids = {x["id"] for x in excluded if x.get("id")}
+    excluded_paths = {x["path"] for x in excluded if x.get("path")}
+
+    # --- 検査 7: skill dir ⊆ (nodes ∪ graph_excluded)。prefix でフィルタしない ---
+    if skills_dir.is_dir():
+        for d in sorted(skills_dir.iterdir()):
+            if not d.is_dir() or not (d / "SKILL.md").is_file():
+                continue
+            counts["skills"] += 1
+            if d.name in node_ids:
+                counts["skill_nodes"] += 1
+            elif d.name in excluded_ids:
+                counts["skill_excluded"] += 1
+            else:
+                issues.append({
+                    "location": f".claude/skills/{d.name}/",
+                    "message": (f"skill {d.name!r} が GRAPH.yml の nodes にも graph_excluded にも無い。"
+                                "実体があるものは登録するか、理由付きで除外を宣言する"
+                                "（upgrade-spec-v6.17.0 §F2。黙って対象外にしない）"),
+                    "severity": "FAIL",
+                })
+
+    # --- 検査 8: scripts/*.py（test-* 除く）⊆ (nodes[].impl ∪ graph_excluded[].path) ---
+    scripts_dir = repo_root / "scripts"
+    if scripts_dir.is_dir():
+        for f in sorted(scripts_dir.glob("*.py")):
+            if f.name.startswith("test-"):
+                continue
+            counts["scripts"] += 1
+            rel = f"scripts/{f.name}"
+            if rel in node_impls:
+                counts["script_impls"] += 1
+            elif rel in excluded_paths:
+                counts["script_excluded"] += 1
+            else:
+                issues.append({
+                    "location": rel,
+                    "message": (f"script {f.name!r} が GRAPH.yml の nodes[].impl にも "
+                                "graph_excluded[].path にも無い。tool node 化するか除外理由を宣言する"),
+                    "severity": "WARN",
+                })
+
+    # --- 検査 9: source 実質検査 ---
+    # edge.source が .md のとき、その本文に edge.to の impl basename または node id が
+    # 出現することを見る。G-2 は source の**パス存在**しか見ないため、実体のない宣言
+    # （HV-04: ritual-protocol.md が呼んでいない council-performance への edge）が
+    # PASS を通過していた。意味は判定しない — 名前が本文にあるかだけを見る決定論検査。
+    impl_by_id = {n["id"]: n.get("impl", "") for n in nodes if n.get("id")}
+    for e in edges:
+        src, to, frm = e.get("source", ""), e.get("to", ""), e.get("from", "")
+        if not src.endswith(".md") or not to:
+            continue
+        # self-loop は「自分の中の繰り返し」であり、本文が自分の名を呼ぶ形にならない
+        # （例: circuit-breaker-spec.md は日次上限を述べるが skill 名は書かない）。
+        # 名前の出現で測る本検査の対象外にする。
+        if frm == to:
+            continue
+        src_path = repo_root / src
+        if not src_path.is_file():
+            continue  # パス実在は G-2 の担当（二重報告しない）
+        counts["sources_checked"] += 1
+        try:
+            body = src_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if _mentions(body, to, impl_by_id.get(to, "")):
+            continue
+        issues.append({
+            "location": src,
+            "message": (f"source 実質乖離: edge {frm}->{to} の出典に宣言されているが、"
+                        f"本文が {to!r} を指す記述を持たない。"
+                        "実装に無い経路を宣言していないか確認する"
+                        "（G-2 はパス存在しか見ない。upgrade-spec-v6.17.0 §F2 HV-04）"),
+            "severity": "WARN",
+        })
+
+    return counts
+
+
+# 層 prefix（SKILL.md 本文では「L1（autonomous-dev）」のように略記される）
+_LAYER_PREFIX_RE = re.compile(r"^(?:layer[012]|crosscut)-")
+
+
+def _mentions(body: str, node_id: str, impl: str) -> bool:
+    """本文が node_id を指す記述を持つか（決定論・意味は判定しない）。
+
+    3 通りの書かれ方を許容する:
+      1. node id そのもの（`layer1-autonomous-dev`）
+      2. 層 prefix を落とした略記（`autonomous-dev`）— SKILL.md 本文の通常表記
+      3. impl の basename（`verify.py` 等。skill の `SKILL.md` は識別子にならないので除く）
+    """
+    if node_id in body:
+        return True
+    short = _LAYER_PREFIX_RE.sub("", node_id)
+    if short and short != node_id and short in body:
+        return True
+    basename = Path(impl).name if impl else ""
+    return bool(basename and basename != "SKILL.md" and basename in body)
+
+
+def _check_f6(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
+    """F6: 共通 RL の実ファイルと README §common/ の現況 の列挙が一致するか（検査 10）。
+
+    `templates/rules/common/` の 6 本は配布先に byte 一致で届いているが、README の現況節が
+    4 本しか列挙しておらず、どれが届いているのかを宣言側から知れない状態だった
+    （upgrade-spec-v6.17.0 §F6 実測）。kakuman の `check-traps-sync.mjs` が
+    「常時索引 ⇄ 全文」で実装した被覆一意性検査の、DH 側 RL への転用。
+
+    件数ではなくファイル名で突き合わせる（件数一致は名前が入れ替わっても通ってしまう）。
+    """
+    counts = {"rl_files": 0, "rl_listed": 0}
+    common = repo_root / "templates" / "rules" / "common"
+    readme = repo_root / "templates" / "rules" / "README.md"
+    if not common.is_dir() or not readme.is_file():
+        return counts  # 配布先など RL を持たないツリーでは skip（後方互換）
+
+    actual = {f.name for f in common.glob("*.md")}
+    counts["rl_files"] = len(actual)
+
+    text = readme.read_text(encoding="utf-8")
+    m = re.search(r"^##\s*common/ の現況\s*$(.*?)(?=^##\s|\Z)", text, re.M | re.S)
+    if not m:
+        issues.append({
+            "location": "templates/rules/README.md",
+            "message": ("§common/ の現況 が見つからない。共通 RL の現況 SSOT はこの節であり、"
+                        "dev-env-spec 側は本 README を参照する（upgrade-spec-v6.17.0 §F6）"),
+            "severity": "FAIL",
+        })
+        return counts
+
+    # 各項目の**先頭**のバッククォート名だけを RL 名とみなす。本文中の説明パス
+    # （`.dh/rules/common/...` での override 例、他 skill の参照先等）を拾わないため、
+    # 「- `<name>.md`」という箇条書きの見出し位置に限定する。
+    listed = set(re.findall(r"^-\s+`([^`/]+\.md)`", m[1], re.M))
+    counts["rl_listed"] = len(listed)
+
+    for name in sorted(actual - listed):
+        issues.append({
+            "location": f"templates/rules/common/{name}",
+            "message": (f"共通 RL {name!r} が README §common/ の現況 に列挙されていない。"
+                        "配布はされるが宣言側から存在を知れない（F6 が塞いだ欠落の再発）"),
+            "severity": "FAIL",
+        })
+    for name in sorted(listed - actual):
+        issues.append({
+            "location": "templates/rules/README.md",
+            "message": (f"README §common/ の現況 が実在しない RL {name!r} を列挙している。"
+                        "削除・改名に追随する"),
+            "severity": "FAIL",
+        })
+    return counts
