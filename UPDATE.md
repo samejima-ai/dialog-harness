@@ -55,24 +55,76 @@ else
   git commit -m "pre-DH-update snapshot" || { echo "snapshot commit 失敗（git user.name/email 等を確認）。破壊的更新を中断。"; exit 1; }
 fi
 
-# (a) overwrite: DH 所有 → ディレクトリごと sync（置換）。
+# (a) overwrite: DH 所有 → **列挙された dir 単位**で sync（置換）。
 #     merge ではなく置換にするのは rename/削除（例 council→crosscut-council）を orphan にしないため。
-rm -rf .claude/skills && cp -r "$DH/.claude/skills" .claude/
+#     **`.claude/skills/` を丸ごと置換してはならない**（v6.17.0 F4 / Council D-4）。同 dir には
+#     利用者プロジェクトの固有 skill（Level B）が同居しており、丸ごと置換すると消える。
+#     置換する skill は dh-manifest.yml の `paths.owned_skills` が正典（prefix で判定しない —
+#     DH 配布の rtk-integration が layer/crosscut prefix を持たず破れる）。
+python3 - "$DH" <<'PY'
+import re, shutil, sys
+from pathlib import Path
+
+dh = Path(sys.argv[1])
+manifest = (dh / "dh-manifest.yml").read_text(encoding="utf-8")
+
+# paths.owned_skills を読む（インデント 2 の分類名 + インデント 4 以上の "- 値"）
+owned, cur = [], None
+in_paths = False
+for raw in manifest.splitlines():
+    if raw.startswith("paths:"):
+        in_paths = True; continue
+    if not in_paths: continue
+    if raw.strip() and not raw.startswith(" ") and not raw.startswith("#"): break
+    s = raw.strip()
+    if not s or s.startswith("#"): continue
+    indent = len(raw) - len(raw.lstrip(" "))
+    if indent == 2 and s.endswith(":"): cur = s[:-1]
+    elif indent >= 4 and s.startswith("- ") and cur == "owned_skills":
+        owned.append(s[2:].split("#", 1)[0].strip().strip('"').strip("'"))
+
+if not owned:
+    sys.exit("owned_skills が読めない。dh-manifest.yml を確認して中断")
+
+dst_root = Path(".claude/skills")
+dst_root.mkdir(parents=True, exist_ok=True)
+for name in owned:
+    src = dh / ".claude" / "skills" / name
+    if not src.is_dir():
+        print(f"  skip（DH 側に無い）: {name}"); continue
+    dst = dst_root / name
+    if dst.exists(): shutil.rmtree(dst)   # dir 単位の置換 = orphan を残さない
+    shutil.copytree(src, dst)
+    print(f"  synced: {name}")
+
+kept = sorted(d.name for d in dst_root.iterdir() if d.is_dir() and d.name not in owned)
+print(f"\nDH 所有 {len(owned)} dir を同期。プロジェクト固有 skill {len(kept)} dir は保全: {', '.join(kept) or '(なし)'}")
+PY
+
 rm -rf templates && cp -r "$DH/templates" ./
+
+#     `.claude/agents/` も DH 所有。改行コードが DH 側 CRLF / 配布先 LF で分かれるため、
+#     差分確認は改行を正規化してから行う（byte 比較は全ファイルを差分に見せる）。
+rm -rf .claude/agents && cp -r "$DH/.claude/agents" .claude/
 
 # (b) merge: プロジェクトがカスタムしうる → 差分を見て手動マージ（raw 上書き禁止）。
 #     diff は「差分なし=exit0 / 差分あり=exit1」。両分岐を明示:
 diff -u .claude/settings.json "$DH/.claude/settings.json" && echo "（差分なし・マージ不要）" || echo "↑ 上記差分を手動マージ（raw 上書き禁止。hooks キーは DH 提供、他キーは利用者固有）"
+diff -u .gitignore "$DH/.gitignore" && echo "（差分なし・マージ不要）" || echo "↑ 上記差分を手動マージ（追記マージ。上書きすると利用者の除外行が消える）"
 
 # (c) redeploy: placeholder を含む → raw コピー不可。crosscut-autonomous-drive で再展開。
 #     CC に「autonomous-drive で workflow を再 deploy（placeholder 再展開・衝突は確認）」と指示。
 
 # (d) never_touch: SPEC/DONT/REGIME/CLAUDE/history/delivery/.claude/disabled/ と自コードは触らない。
+#     **overwrite と never_touch が同一パスにマッチする場合は never_touch が勝つ**（v6.17.0 F3 / D-3）。
+#     例: `.claude/skills/crosscut-council/history/` は owned_skills 配下だが `history/` にも該当し、
+#     配布対象から外れる。迷ったら配らない・触らない。
 ```
 
-> `.claude/skills` を「置換」する際、プロジェクトが skills 内を独自カスタムしていたら失われる。
-> ただし正しい使い方なら skill 本体はプロジェクト不変（差異は SPEC/sensors 等の入力に閉じる）なので
-> 丸ごと置換してよい。カスタムがある場合のみ事前に退避・差分確認する。
+> **Level B（プロジェクト固有 skill）は規格上の同居である**（v5.0.0 の決定）。上記 (a) の選択同期は
+> `paths.owned_skills` に列挙された DH 所有 dir だけを置換するため、固有 skill は保全される。
+> v6.17.0 以前の手順（`rm -rf .claude/skills`）は固有 skill を消すため**使ってはならない**。
+> 実運用は同期 8 回すべて選択同期に逃げており、旧手順は一度も使われていなかった（D-4 がこれを正典化した）。
 
 ---
 

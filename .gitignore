@@ -47,3 +47,6 @@ Thumbs.db
 
 # 生 hook 観測はローカル L0 蓄積（Council hook 修理・案B）。リポジトリには蒸留物のみ
 harness-verifier/reports/hook-observations.jsonl
+
+# Claude Code が実行時に作るロック（v6.17.0 F4 で分類時に判明）
+.claude/scheduled_tasks.lock

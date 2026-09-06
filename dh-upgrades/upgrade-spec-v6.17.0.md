@@ -1,6 +1,6 @@
 # upgrade-spec v6.17.0 — 宣言層の lock-step 清算（点検 (a)〜(h)）
 
-> **状態: 実装中（F1 / F2 / F5 / F6 / F7 / F8 済 / F3 / F4 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
+> **状態: 実装中（F1 / F2 / F4 / F5 / F6 / F7 / F8 済 / F3 未）**。本仕様の実装は escalation-matrix「規範文書改変」行
 > （`.claude/skills/crosscut-council/references/escalation-matrix.md:31`）に従い、人間レビュー通過後・
 > **実装前に Council 諮問**を経る。本 spec 自体の設計判断は Council 未諮問（起草時点で意図的に未実施 —
 > 諮問対象は §判断点に列挙した 5 点）。
