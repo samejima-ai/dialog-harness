@@ -102,6 +102,11 @@ def extract_triggers(text: str) -> list[str]:
 
     インライン形とブロック形の両方を拾う。**意味は解釈しない**（decide が判定する）。
     """
+    # Markdown 引用（`> `）の中に規範メタデータを書く慣行があるため、行頭の引用記号を剥がす。
+    # 剥がさないとインデント計算に `> ` が混じり、ブロック形が認識されない
+    # （実測: v6.18.0 の点検規範を引用ブロックに書いたところ 1 件も拾えなかった）。
+    text = re.sub(r"^(\s*)>\s?", r"\1", text, flags=re.M)
+
     items: list[str] = []
     for m in INLINE_RE.finditer(text):
         for part in m.group(1).split(","):

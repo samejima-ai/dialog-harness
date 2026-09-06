@@ -57,6 +57,22 @@ check("継続行が別項目に割れていない",
 
 check("review_trigger が無ければ空", m.extract_triggers("# ただの文書\n") == [])
 
+quoted = "\n".join([
+    "> 規範メタデータ:",
+    "> ```yaml",
+    "> stage: 全段階",
+    "> review_trigger:",
+    ">   - measured: 点検を 3 回実施し 0 件なら降ろす候補",
+    ">   - date: 2027-03-06",
+    "> ```",
+    "",
+])
+got = m.extract_triggers(quoted)
+check("Markdown 引用ブロック内のメタデータも拾う（v6.18.0 で実測した欠陥）",
+      len(got) == 2, str(got))
+check("引用内の date が正しく読める",
+      any("2027-03-06" in g for g in got), str(got))
+
 print("== date: 期限超過を検出 ==")
 r = decide("date: 2026-08-01")
 check("期限を過ぎたら発火", r and r["fired"] is True, str(r))
