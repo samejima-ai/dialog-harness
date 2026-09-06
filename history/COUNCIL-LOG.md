@@ -3367,3 +3367,162 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: "2026-09-06T02:00:00Z"
   modification_note: null
   escalation_reason: null
+
+- invocation_id: "council-2026-09-06T09:30:01Z-c575bb"
+  timestamp: "2026-09-06T09:30:01Z"
+  source_skill: "layer0-spec-architect"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C3"
+  question_to_answer: "skill 内 COUNCIL-LOG（.claude/skills/crosscut-council/history/COUNCIL-LOG.md、21 件・84,721 B）の処遇。13 件を root へ転記した後、(i) .gitignore 化 / (ii) history/ へ移送 / (iii) manifest never_touch へ明示 のいずれか。削除はしない（I-8）"
+  options:
+    - "(i) .gitignore 化"
+    - "(ii) history/ へ移送"
+    - "(iii) manifest never_touch へ明示"
+  phase_reached: "1→3"
+  conflict_type: "simple_conflict"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  personas:
+    - { persona: "経営者", stance: "(iii) manifest never_touch へ明示", confidence: 0.78, dimension: "リスク" }
+    - { persona: "開発者", stance: "(ii) history/ へ移送", confidence: 0.82, dimension: "保守性" }
+    - { persona: "哲学者", stance: "(ii) history/ へ移送", confidence: 0.72, dimension: "前提への問い" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(ii) history/ へ移送"
+        supporters: ["開発者", "哲学者"]
+        weight_sum: 7
+        weighted_score: 5.44
+        components:
+          - { persona: "開発者", weight: 4, confidence: 0.82 }
+          - { persona: "哲学者", weight: 3, confidence: 0.72 }
+      - stance: "(iii) manifest never_touch へ明示"
+        supporters: ["経営者"]
+        weight_sum: 4
+        weighted_score: 3.12
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.78 }
+      - stance: "(i) .gitignore 化"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+    third_way_excluded: []
+    max_score_stance: "(ii) history/ へ移送"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(ii) COUNCIL-LOG.md を root の history/ 配下へ移送する。ただし単独では成立せず、同一 PR で次の 3 点を必須随伴とする: (a) skill 内ログ L11 の「社外秘ゆえ skill 内部に閉じる」記述の訂正（配布により前提が破綻済みであることの明記） (b) 旧パスを参照する箇所（SKILL.md / output-format.md 等）の追随修正 (c) dh-manifest.yml における never_touch と overwrite の優先順位規則の明文化。(c) は経営者軸が「例外パスの解決規則が未定義」として、開発者軸が「never_touch を強制するコードが存在しない（dh-manifest.yml:96 の自認）」として別次元から指した同一の構造的欠落であり、移送を選ぼうと never_touch を選ぼうと残る。ゆえに minority_opinion に退けず recommended 本文へ吸収する。なお配布済みの kakuman / cc-cockpit 側 84,721 B の扱いは本判定の射程外とし、配布先での削除は I-8 の射程外の不可逆操作として別途人間ゲートに委ねる"
+  minority_opinion: "リスク軸: 物理移送は 84KB の履歴移動と参照書換を伴い C3 の不可逆リスクを無用に増やす。移送を選ぶなら (b) 参照追随漏れが読み手を空ディレクトリへ導く実害が現実化しうるため、追随箇所の網羅確認を移送と同一 PR 内の必須検査とすべき。また cc-cockpit が古版で止まる事実は配布経路自体の不健全さを示し、本判断はその症状の一つを塞ぐに過ぎない"
+  weight_note: "base 3/4/3 × ethos 1.0、judgment 補正で経営者 +1。ΣW=11 は council-weights.md 自認の既知宣言違反（judgment カテゴリの補正合計が +1）"
+  reasoning: "保守性軸（w=4, conf 0.82）と前提への問い軸（w=3, conf 0.72）が共有トークン 0 のまま (ii) に収斂した。保守性軸は council-log-sync.py:181 の _ENTRY_START が `^- invocation_id:` 固定である以上、見出し形式の 13 件は構造的にパース不能であり、skill 内に第二の実体を残す (i)(iii) では再乖離が保存されると述べる。前提への問い軸は同じ結論に別経路で到達し、「最も秘匿すべきと宣言した場所が最も広く配られる場所だった」という宣言と配布経路の不突合が原因であり、(i) は git の問題、(iii) は配布の問題にしか答えず、(ii) だけが記憶の所在という本来の問いに答えると指摘する。リスク軸（w=4, conf 0.78）の (iii) 支持は工数最小・可逆という ROI 論として妥当だが、その論拠は「manifest 1 行追記＋検査 8 の WARN と同一機構で完結」に依存する。同じリスク軸自身が concerns で優先順位未定義を挙げ、保守性軸が強制コード不在を挙げたことで、この機構の完結性が成立していない。ゆえに (iii) の ROI 優位は前提が満たされていない。score gap 2.32 は決定的ではないが、方向の差ではなく成立条件の差である"
+  judgment_confidence: 0.71
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  modification_note: null
+  escalation_reason: null
+
+- invocation_id: "council-2026-09-06T09:42:00Z-mfst04"
+  timestamp: "2026-09-06T09:42:00Z"
+  source_skill: "layer0-spec-architect"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C4"
+  question_to_answer: "UPDATE.md:60 の rm -rf .claude/skills && cp -r（ディレクトリごと置換）と、利用者プロジェクトが同じ .claude/skills/ に持つ固有 skill（Level B）の同居の調停。併せて manifest 4 分類に .gitignore / .claude/agents/ の行が無く既定 never_touch に落ちている問題も同一 PR で扱う"
+  options:
+    - "(i) manifest に DH 所有 dir を明示列挙して選択同期を正典化"
+    - "(ii) Level B を別ディレクトリへ分離（major 級破壊）"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  personas:
+    - { persona: "経営者", stance: "(i)", confidence: 0.88, dimension: "ROI" }
+    - { persona: "開発者", stance: "(i)", confidence: 0.82, dimension: "保守性" }
+    - { persona: "哲学者", stance: "(i)", confidence: 0.78, dimension: "前提への問い" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(i) manifest に DH 所有 dir を明示列挙して選択同期を正典化"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 9.14
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.88 }
+          - { persona: "開発者", weight: 4, confidence: 0.82 }
+          - { persona: "哲学者", weight: 3, confidence: 0.78 }
+      - stance: "(ii) Level B を別ディレクトリへ分離"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+    third_way_excluded: []
+    max_score_stance: "(i) manifest に DH 所有 dir を明示列挙して選択同期を正典化"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(i) manifest に DH 所有 skill dir を明示列挙し、選択同期を正典化する。ただし以下 4 点を必須随伴条件とし、すべて同一 PR で満たすこと。(a) 網羅性センサー: DH 実在の .claude/skills/ 直下 dir 集合 == manifest overwrite 列挙 を決定論的に突合する検査を追加し、不一致を FAIL とする（3 軸独立で指摘された recommended の成立条件） (b) I-1 との整理を spec 本文に明記: manifest への列挙は「除外リスト（allowlist）」ではなく「所有の宣言（ownership declaration）」であると語を分け、I-1 の但し書き『除外が必要なら宣言側に明示行を書く』への該当理由を書き残す (c) 二重宣言の単一情報源を明示決定: GRAPH.yml nodes を単一情報源とし manifest 列挙をそこからの導出／突合として位置づける（両方に独立記述する形は採らない） (d) 同期手順は「列挙 dir 単位の rm -rf && cp -r」とし、v5.21.0 の orphan 除去目的を dir 単位で保つ。併せて .gitignore / .claude/agents/ を manifest 4 分類に明示行として追加し、.claude/agents/ は改行正規化方針（DH 側 CRLF）を同時に決定する。UPDATE.md:60 と :73-75 の注記も同一 PR で整合させる。検査 8 の分類網羅 WARN は削らず、初期是正後 0 件に落ちることを measured review_trigger に置く"
+  minority_opinion: "反対 stance は無い。ただし 3 軸共通で残る留保として、(i) は「静かな失敗（配られないまま誰も困らない）」の構造そのものを解消せず、痛まない乖離を検知する経路は本 spec 完了後も未整備である。prefix ベースの Level A/B 識別規約が rtk-integration で破綻している事実も同期経路を塞ぐだけでは温存される"
+  weight_note: "経営者4/開発者4/哲学者3、ΣW=11（council-weights.md 自認の既知宣言違反）。全会一致のため順位不変"
+  reasoning: "stance は 3 ペルソナ全会一致で (i)、weighted_score は (i)=9.14 / (ii)=0.00 と差が決定的。かつ conflict_type は reason_divergence であり、ROI / 保守性 / 前提への問い の 3 次元が共有トークン 0 で独立に同一結論へ到達している。これは被覆不足の疑われる次元重複型 unanimous とは逆に、多様性の質が担保された合意であり confidence を押し上げる。(ii) は v5.0.0:245,258 の物理分離撤回を調停記録なく覆す major 破壊で、配布先 2 リポの移設・参照書換え・再検証を強いながら得るものは (i) と同一（固有 skill を消さない）にとどまり採用理由が無い。哲学者の I-1 衝突指摘は判定本文へ吸収した（随伴条件 b）: 形式上 allowlist に見える列挙を語で分けて整理しない限り、後の保守者が I-1 違反と読んで剥がす経路が残り是正が無音で巻き戻る。3 軸が独立に挙げた「網羅性センサーが無ければ問題の先送り」は recommended の成立条件として (a) に格上げした。開発者の二重宣言問題は明示決定を要するため (c) で単一情報源を GRAPH.yml nodes 側に固定した"
+  judgment_confidence: 0.85
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  modification_note: null
+  escalation_reason: null
+
+- invocation_id: "council-2026-09-06T09:45:00Z-osdcl5"
+  timestamp: "2026-09-06T09:45:00Z"
+  source_skill: "layer0-spec-architect"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C1"
+  question_to_answer: "Level A checklist の E-3（OS 非依存）の改訂形。現行は「Linux/Mac/WSL のいずれでも動作する手順」で Windows native を列挙せず、DH 配布の rtk-integration が「Windows native のみ」と正面から反したまま常駐している。規範文書改変（escalation-matrix:31）"
+  options:
+    - "(i) Windows native を列挙に追加"
+    - "(ii) 対象 OS を SKILL.md に明示する宣言要求へ改訂"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  personas:
+    - { persona: "経営者", stance: "(ii)", confidence: 0.78, dimension: "リソース配分" }
+    - { persona: "開発者", stance: "(ii)", confidence: 0.78, dimension: "技術的実現性" }
+    - { persona: "哲学者", stance: "(ii)", confidence: 0.72, dimension: "前提への問い" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(ii) 対象 OS を SKILL.md に明示する宣言要求へ改訂"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.40
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.78 }
+          - { persona: "開発者", weight: 4, confidence: 0.78 }
+          - { persona: "哲学者", weight: 3, confidence: 0.72 }
+      - stance: "(i) Windows native を列挙に追加"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+    third_way_excluded: []
+    max_score_stance: "(ii) 対象 OS を SKILL.md に明示する宣言要求へ改訂"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(ii)「対象 OS を SKILL.md に明示すること」への改訂を採用する。ただし単なる文言差し替えではなく、frontmatter への機械可読キー化（target_os）を成立条件として本文に組み込む。E-3 改訂文は「SKILL.md frontmatter に target_os を記載すること」とし、値の語彙を enum で固定（windows / macos / linux / wsl / any の組み合わせ）、frontmatter.py:14 の REQUIRED_FIELDS に target_os を追加して検査 1 で宣言不在を FAIL 化する。あわせて spec §F5 の「再発防止機構: 無し」は事実誤認として撤回・上書きする"
+  minority_opinion: "採択されなかった留保: (ii) は「宣言と実体の一致」を検証できない（target_os: any と書いた bash 専用 skill を検出できない）。また scripts/ 配下は skills/*/SKILL.md を対象とする検査 1 の射程外で、test-council-*.sh の bash 依存は本改訂で捕捉されない。移植性圧力の消失に対し review_trigger（単一 OS 宣言が全 skill の N 割超）を置く価値も未処理"
+  weight_note: "経営者4/開発者4/哲学者3、ΣW=11 は council-weights.md の既知宣言違反。stance 全会一致のため weight 差は結論に影響せず"
+  reasoning: "stance は全会一致で (ii)、weighted_score は (ii)=8.40 対 (i)=0.00 と決定的。特筆すべきは dimension 共有トークン 0 の reason_divergence であり、リソース配分（規範文書再改変の単価が改訂単価を桁で上回る）・技術的実現性（install.ps1 は PowerShell 専用、test-council-*.sh:12-13/22-23 は bash 専用で (i) は達成不能）・前提への問い（列挙は網羅にしかならず「非依存」に永久に届かない）という独立した 3 経路が同一結論に収束した。三軸が独立に「frontmatter への機械可読キー化」を必須条件として挙げた点を判定は recommended の一部として吸収する。宣言要求は機械可読キーを伴わなければ「description 自由文への記載＝適合」という自己認証に堕し、E-3 は空文から偽証可能な空文へ移るだけである。spec §F5 の「再発防止機構: 無し」は開発者軸の実測（frontmatter.py:14 の REQUIRED_FIELDS は汎用ループ、2 行の変更で検査 1 が宣言不在を FAIL 化できる）により反証された。哲学者軸の「E-3 だけは実体側でなく宣言側を動かしており他 7 項目と非対称、その正当化が spec 内に無い」は判定本文で正当化する: E-3 の元の要求「OS 非依存」は機械検証不可かつ達成不能という二重の破綻を抱えており、他 7 項目は実体を規範に寄せれば閉じるが E-3 は規範側が最初から実行不能な約束だったため閉じる先が実体側に存在しない。よって宣言側を動かすのは非対称の例外ではなく破綻した規範の誠実化として正当である"
+  judgment_confidence: 0.82
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  modification_note: null
+  escalation_reason: null
