@@ -62,7 +62,12 @@ Level A スキル（または crosscut-* スキル）として配布する前に
 
 - [ ] **E-1 外部ライブラリ依存ゼロ**: SKILL.md の処理フローが Python 標準ライブラリ or 利用者の既存 stack（Node/pnpm 等）だけで動く
 - [ ] **E-2 認証情報不要**: GITHUB_TOKEN 等の secret を**要求する**記述は dev_mode = autonomous 専用 skill に限定
-- [ ] **E-3 OS 非依存**: Linux/Mac/WSL のいずれでも動作する手順（shell-specific な記法 (zsh/bash) を断り無く使わない）
+- [ ] **E-3 対象 OS の宣言**: SKILL.md の frontmatter に `target_os:` を持つ（v6.17.0 F5 / Council D-5）。
+  値域は `any` / `windows` / `macos` / `linux` / `wsl`、複数は `+` 区切り（例 `linux+macos+wsl`）。
+  `any` は単独で使う。**宣言があれば適合**であり、特定 OS 専用であること自体は違反ではない。
+  ただし単一 OS を宣言した skill は、その OS 以外では動かないことを利用者が事前に知れる形にすること
+  （shell-specific な記法を断り無く使わない、は `any` を宣言する場合に限り引き続き要求される）。
+  検査: `harness-verifier` 検査 1（frontmatter 整合性）が宣言不在・値域外を FAIL にする。
 
 #### F. メタ評価
 
@@ -86,9 +91,17 @@ Level A スキル（または crosscut-* スキル）として配布する前に
 | B-3 | 可 | harness-verifier 検査 1「frontmatter 整合性」 |
 | B-4 | 可 | harness-verifier 検査 5「用語辞書整合」 |
 | D-2 | 可 | harness-verifier 検査 3「SK 間参照の健全性」 |
+| **E-3**（対象 OS の宣言） | **可**（v6.17.0 F5 で不可から昇格） | harness-verifier 検査 1「frontmatter 整合性」が `target_os` の宣言不在・値域外・書式不正を FAIL にする |
 | 他項目 | 不可 | レビュー時の人間判断 |
 
 機械検証可能な項目は harness-verifier 全 PASS で自動充足、人間判断項目は PR レビューでカバーする。
+
+> **E-3 が「不可」から「可」へ移った経緯**（v6.17.0 F5 / Council D-5）: 旧 E-3「OS 非依存」は
+> 動作そのものを要求しており、それは確かに機械検証できなかった。しかし要求を「**対象 OS を宣言せよ**」に
+> 改めた結果、宣言の存在・値域・書式は決定論で検証できるようになった。
+> **検証できないのは要求の性質であって項目の宿命ではない** — 要求の書き方を変えれば検証可能になる例。
+> ただし**宣言と実体の一致は依然として検証できない**（`target_os: any` と書いた bash 専用 skill は
+> 検出できない）。検証しているのは「どこで動くと言ったか」であって「本当に動くか」ではない。
 
 ---
 

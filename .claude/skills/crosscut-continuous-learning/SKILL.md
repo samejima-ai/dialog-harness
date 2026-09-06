@@ -1,5 +1,6 @@
 ---
 name: crosscut-continuous-learning
+target_os: any
 dimension: D4
 origin: ECC-derived
 origin_source: "ecc:continuous-learning/"

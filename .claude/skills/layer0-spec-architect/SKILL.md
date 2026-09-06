@@ -1,5 +1,6 @@
 ---
 name: layer0-spec-architect
+target_os: any
 dimension: D4
 description: >
   人間のイメージ・ニュアンスを対話で具体化し SPEC/DONT/REGIME/CLAUDE 等の仕様ドキュメント群を生成、

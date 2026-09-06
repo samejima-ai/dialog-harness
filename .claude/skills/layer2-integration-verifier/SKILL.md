@@ -1,5 +1,6 @@
 ---
 name: layer2-integration-verifier
+target_os: any
 dimension: D4
 description: >
   L2発動時のみ起動される汎用統合検証スキル。

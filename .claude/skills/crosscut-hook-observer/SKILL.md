@@ -1,5 +1,6 @@
 ---
 name: crosscut-hook-observer
+target_os: any
 dimension: D4
 origin: ECC-derived
 origin_source: "ecc:hooks/hooks.json#PreToolUse,PostToolUse,Stop,SessionStart,SessionEnd,PreCompact"

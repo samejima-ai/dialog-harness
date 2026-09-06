@@ -1,5 +1,6 @@
 ---
 name: crosscut-autonomous-drive
+target_os: any
 dimension: D4
 description: >
   autonomous-drive 標準化の deployment ヘルパー。dialog-harness の workflow テンプレートを

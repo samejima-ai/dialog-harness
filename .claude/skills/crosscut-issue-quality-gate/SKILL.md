@@ -1,5 +1,6 @@
 ---
 name: crosscut-issue-quality-gate
+target_os: any
 dimension: D4
 description: >
   GitHub Issue の品質を 12 項目（A-E の 5 軸 + 7 ローマ数字補助軸）で機械検査 + AI 推論のハイブリッド検査する横断機構。

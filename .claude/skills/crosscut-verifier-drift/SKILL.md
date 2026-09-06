@@ -1,5 +1,6 @@
 ---
 name: crosscut-verifier-drift
+target_os: any
 dimension: D4
 description: >
   実装が SPEC/ADR から逸脱していないかを検証する横断機構（仕様3-drift、v5.0.0 追加）。

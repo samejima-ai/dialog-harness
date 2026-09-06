@@ -1,5 +1,6 @@
 ---
 name: crosscut-issue-implementer
+target_os: any
 dimension: D4
 description: >
   GitHub Issue を起点に Claude Code CLI で AI 実装を自動起動する横断機構。

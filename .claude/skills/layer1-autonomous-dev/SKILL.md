@@ -1,5 +1,6 @@
 ---
 name: layer1-autonomous-dev
+target_os: any
 dimension: D4
 description: >
   Layer 0（spec-architect）が構築した仕様ドキュメントと開発環境を受け取り、

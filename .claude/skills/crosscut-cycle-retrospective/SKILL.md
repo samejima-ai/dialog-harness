@@ -1,5 +1,6 @@
 ---
 name: crosscut-cycle-retrospective
+target_os: any
 dimension: D4
 description: >
   1 開発サイクル（cycle / LC ループ）の**完了時**に、その cycle の開発・実行結果を

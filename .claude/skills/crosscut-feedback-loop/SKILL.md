@@ -1,5 +1,6 @@
 ---
 name: crosscut-feedback-loop
+target_os: any
 dimension: D4
 description: >
   検証層（drift verifier / philosophy verifier / 5 層検出スタック）で発覚した問題を、

@@ -1,5 +1,6 @@
 ---
 name: layer1-independent-reviewer
+target_os: any
 dimension: D4
 description: >
   L1（autonomous-dev）の成果物を、実装コンテキストから隔離した状態で
