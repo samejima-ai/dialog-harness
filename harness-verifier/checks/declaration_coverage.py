@@ -245,7 +245,8 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
         "location": "dh-manifest.yml",
         "message": (f"F4 manifest 分類網羅 — 分類済み {f4_counts['classified']} パス / "
                     f"未分類 {f4_counts['unclassified']} パス / "
-                    f"owned_skills {f4_counts['owned_skills']} 件"),
+                    f"owned_skills {f4_counts['owned_skills']} 件"
+                    f"（GRAPH 宣言 {f4_counts['graph_skills']} 件と突合）"),
         "severity": "METRIC",
     })
     issues.append({
@@ -479,11 +480,16 @@ def _check_f4(repo_root: Path, skills_dir: Path, graph_path: Path,
         黙って不可侵に落ちる**事故（v6.17.0 が (d) として検出した `.claude/agents/`）を
         検出できない。
 
-    検査 12: `paths.owned_skills` == `.claude/skills/` 実在 dir（不一致 = FAIL）。
-        Council D-4 必須随伴条件 (a)。列挙漏れは「静かな失敗」（配布されないまま誰も困らない）
-        になるため、GRAPH.yml nodes を単一情報源として決定論で突合する（同 (c)）。
+    検査 12: `paths.owned_skills` を **GRAPH.yml nodes（単一情報源）と実在 dir の両方**へ
+        突合する（不一致 = FAIL）。Council D-4 必須随伴条件 (a) と (c)。
+
+        (c) が「単一情報源は GRAPH.yml nodes」と定めるため、owned_skills は第一に
+        GRAPH nodes（+ graph_excluded）と一致していなければならない。実在 dir との突合も
+        併せて行うのは、GRAPH 自体が実体から離れる可能性を検査 7 だけに委ねないため
+        （検査 7 は「実体 → GRAPH」を見る。ここは「GRAPH → manifest」を見る）。
+        三者が閉じることで、列挙漏れという「静かな失敗」（配布されないまま誰も困らない）を塞ぐ。
     """
-    counts = {"classified": 0, "unclassified": 0, "owned_skills": 0}
+    counts = {"classified": 0, "unclassified": 0, "owned_skills": 0, "graph_skills": 0}
     manifest = repo_root / "dh-manifest.yml"
     if not manifest.is_file():
         return counts  # 配布先など manifest を持たないツリーでは skip（I-6）
@@ -497,9 +503,49 @@ def _check_f4(repo_root: Path, skills_dir: Path, graph_path: Path,
         })
         return counts
 
-    # --- 検査 12: owned_skills ⇄ 実在 skill dir ---
+    # --- 検査 12: owned_skills ⇄ GRAPH nodes（単一情報源）⇄ 実在 skill dir ---
     owned = set(paths.get("owned_skills", []))
     counts["owned_skills"] = len(owned)
+
+    # (c) 単一情報源は GRAPH.yml nodes。まずそちらと突合する。
+    if graph_path.is_file():
+        try:
+            doc = parse_graph(graph_path.read_text(encoding="utf-8"))
+        except OSError:
+            doc = {}
+
+        # skill node の判定は `impl` が `.claude/skills/<id>/SKILL.md` であること。
+        # prefix だけで絞ると human gate（impl が skill 配下の philosophy.md 等を指す）を
+        # 巻き込む — G-5 の prefix フィルタが rtk-integration を落としたのと同型の失敗。
+        declared = {
+            n["id"] for n in doc.get("nodes", [])
+            if isinstance(n, dict) and n.get("id")
+            and str(n.get("impl", "")) == f".claude/skills/{n['id']}/SKILL.md"
+        }
+        declared |= {
+            x["id"] for x in doc.get("graph_excluded", [])
+            if isinstance(x, dict) and x.get("id")
+            and str(x.get("path", "")) == f".claude/skills/{x['id']}/"
+        }
+        counts["graph_skills"] = len(declared)
+
+        for name in sorted(declared - owned):
+            issues.append({
+                "location": "dh-manifest.yml",
+                "message": (f"GRAPH.yml が skill {name!r} を宣言しているのに "
+                            "paths.owned_skills に無い。列挙漏れは「配布されないまま誰も困らない」"
+                            "静かな失敗になる（Council D-4 必須随伴条件 a / 単一情報源は GRAPH nodes = 同 c）"),
+                "severity": "FAIL",
+            })
+        for name in sorted(owned - declared):
+            issues.append({
+                "location": "dh-manifest.yml",
+                "message": (f"paths.owned_skills の {name!r} が GRAPH.yml に無い。"
+                            "owned_skills は GRAPH nodes からの導出であり、単独で増やさない（同 c）"),
+                "severity": "FAIL",
+            })
+
+    # 実在 dir とも突合する（GRAPH 自体が実体から離れる可能性を検査 7 だけに委ねない）
     if skills_dir.is_dir():
         actual = {d.name for d in skills_dir.iterdir()
                   if d.is_dir() and (d / "SKILL.md").is_file()}

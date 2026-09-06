@@ -40,7 +40,9 @@ paths:
   #   「配布されない」= 不利益を被る側に落ちるため、免除の誘因が構造的に働かない。
   #
   # ※ **単一情報源は GRAPH.yml の nodes**（Council D-4 必須随伴条件 c）。owned_skills はそこからの
-  #   導出であり、両者の一致は harness-verifier 検査 8（F4 分類網羅）が決定論で突合する。
+  #   導出であり、harness-verifier 検査 12 が **GRAPH nodes ⇄ owned_skills ⇄ 実在 dir の三者**を
+  #   決定論で突合する（GRAPH との不一致・実体との不一致をそれぞれ FAIL）。
+  #   実在 dir とも突合するのは、GRAPH 自体が実体から離れる可能性を検査 7 だけに委ねないため。
   #   prefix 判定にしない理由: DH 配布の `rtk-integration` が layer/crosscut prefix を持たず破れるため
   #   （`glossary.py:250` の managed_prefixes / `execution_graph.py` G-5 と同型の欠陥。後者は F2 で除去済み）。
   overwrite:

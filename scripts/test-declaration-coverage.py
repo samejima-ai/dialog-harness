@@ -314,6 +314,7 @@ MANIFEST_OK = ("paths:\n"
                "    - \"history/\"\n"
                "  unclassified_ok:\n"
                "    - \"VERSION\"\n"
+               "    - \"GRAPH.yml\"\n"
                "    - \"dh-upgrades/\"\n"
                "    - \".claude/skills/\"\n"
                "    - \"dh-manifest.yml\"\n"
@@ -321,16 +322,22 @@ MANIFEST_OK = ("paths:\n"
 
 td, r = scenario(specs=OK_SPECS, manifest=MANIFEST_OK,
                  skill_dirs=("layer1-autonomous-dev", "rtk-integration"))
+# assertion は location と message の両方で切り分ける。message だけを見ると、同じ合成ツリーが
+# 検査 7（GRAPH 未登録）で出す "rtk-integration" 入りの FAIL に相乗りしてしまい、
+# **検査 12 を完全に無効化してもこのテストが通る**（独立検証 2026-09-06 で実測）。
 check("owned_skills 列挙漏れを FAIL で検出（静かな失敗を防ぐ）",
-      any(i["severity"] == "FAIL" and "rtk-integration" in i["message"] for i in r), str(r))
+      any(i["severity"] == "FAIL"
+          and i["location"].startswith(".claude/skills/rtk-integration")
+          and "owned_skills" in i["message"] for i in r), str(r))
 td.cleanup()
 
 td, r = scenario(specs=OK_SPECS,
                  manifest=MANIFEST_OK.replace('    - "layer1-autonomous-dev"\n',
                                               '    - "layer1-autonomous-dev"\n    - "rtk-integration"\n'),
+                 graph_body=("nodes:" + chr(10) + "  - id: layer1-autonomous-dev" + chr(10) + "    impl: .claude/skills/layer1-autonomous-dev/SKILL.md" + chr(10) + "  - id: rtk-integration" + chr(10) + "    impl: .claude/skills/rtk-integration/SKILL.md" + chr(10)),
                  skill_dirs=("layer1-autonomous-dev", "rtk-integration"))
 check("owned_skills が実在と一致すれば通る（prefix でフィルタしない）",
-      all("owned_skills" not in i["message"] for i in r), str(r))
+      r == [], str(r))
 td.cleanup()
 
 td, r = scenario(specs=OK_SPECS,
@@ -351,6 +358,39 @@ td.cleanup()
 td, r = scenario(specs=OK_SPECS, skill_dirs=("layer1-autonomous-dev",))
 check("manifest を持たないツリーでは skip（配布先で壊れない）",
       all("manifest" not in i["location"] for i in r), str(r))
+td.cleanup()
+
+# D-4 条件 (c): 単一情報源は GRAPH.yml nodes。owned_skills を GRAPH とも突合する。
+GRAPH_1SKILL = ("nodes:" + chr(10)
+                + "  - id: layer1-autonomous-dev" + chr(10)
+                + "    impl: .claude/skills/layer1-autonomous-dev/SKILL.md" + chr(10))
+td, r = scenario(specs=OK_SPECS, manifest=MANIFEST_OK, graph_body=GRAPH_1SKILL,
+                 skill_dirs=("layer1-autonomous-dev",))
+check("GRAPH / owned_skills / 実在 dir が揃えば通る（三者一致）", r == [], str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 manifest=MANIFEST_OK.replace('  owned_skills:' + chr(10), '  owned_skills:' + chr(10) + '    - "phantom"' + chr(10)),
+                 graph_body=GRAPH_1SKILL, skill_dirs=("layer1-autonomous-dev",))
+check("GRAPH に無い skill を owned_skills が持てば FAIL（単独で増やさない）",
+      any(i["severity"] == "FAIL" and "GRAPH.yml に無い" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS, manifest=MANIFEST_OK,
+                 graph_body=GRAPH_1SKILL + ("  - id: extra-skill" + chr(10)
+                                            + "    impl: .claude/skills/extra-skill/SKILL.md" + chr(10)),
+                 skill_dirs=("layer1-autonomous-dev", "extra-skill"))
+check("GRAPH が宣言する skill が owned_skills に無ければ FAIL",
+      any(i["severity"] == "FAIL" and "GRAPH.yml が skill" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS, manifest=MANIFEST_OK,
+                 graph_body=(GRAPH_1SKILL
+                             + "  - id: human-P1" + chr(10)
+                             + "    impl: .claude/skills/layer0-spec-architect/references/philosophy.md" + chr(10)),
+                 skill_dirs=("layer1-autonomous-dev",))
+check("human gate ノードを skill と誤認しない（prefix でなく SKILL.md 完全一致で判定）",
+      r == [], str(r))
 td.cleanup()
 
 print("== 常時発火しないこと（I-4）: 実リポで WARN / FAIL が 0 件 ==")
