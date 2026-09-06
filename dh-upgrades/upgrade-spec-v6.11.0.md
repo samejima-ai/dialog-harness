@@ -1,6 +1,6 @@
 # upgrade-spec v6.11.0 — エージェントオーケストレーション実行基盤（Workflow 背骨 + 議論型協調層）
 
-> **状態: 実装済み（PR #186 / #187、VERSION 6.15.0）**。本仕様の実装は escalation-matrix「規範文書改変」行に従い、
+> **状態: 実装済み（PR #186 / #187、VERSION 6.11.0）**。本仕様の実装は escalation-matrix「規範文書改変」行に従い、
 > 人間レビュー通過後・実装前に Council 諮問を経る。
 > 起点: L0 前ブレスト成果 `delivery/ANALYSIS-agent-orchestration-2026-08-14.md`（PR #184 merged）+
 > L0 対話決定（2026-08-15）: 全層同時 1 リリース / Teams は抽象契約 + 時限付き随時層 / 記録 teeth 含む。

@@ -29,11 +29,10 @@
 #      で対象外、その場合は条件クリア扱い）
 #   6. reviewDecision が CHANGES_REQUESTED でない
 #   7. PR state が OPEN
-#   4.5（zero-check 防止）. harness-verify が SUCCESS で走っていること
-#       （未実行の paths filter 外 PR を防ぐ）。DH v6.17.0 D-7 で gemini-review を
-#       本条件から外した（4 ヶ月沈黙し「最低 1 verifier」の実体が既に harness-verify のみ
-#       だったため、宣言を実態に合わせた）。条件 5 は残す（復旧時に自動で効き、
-#       走らない限り no-op）
+#   4.5（zero-check 防止）. harness-verify / review の最低どちらか 1 つが
+#       SUCCESS で走っていること（両方未実行の paths filter 外 PR を防ぐ）
+#       ※ DH v6.17.0 D-7（gemini-review を外す）は撤回。配布先には harness-verify が
+#         配布されないため、$HV 単独条件にすると条件 4.5 が恒久的に不成立になる
 #
 # 非該当 PR は notice 出力で skip（red CI にしない）。
 #
@@ -350,12 +349,12 @@ jobs:
             exit 0
           fi
 
-          # 条件 4.5: independent verifier が SUCCESS で走っていること
-          # paths filter 外で zero-check 状態の PR を auto-merge してしまうのを防ぐ
-          # DH v6.17.0 D-7: 沈黙した verifier を OR の片側に残すと条件が 2 本あるように
-          # 見えて実質 1 本という誤読を招くため、gemini-review を外して実体に合わせた
-          if [ -z "$HV" ]; then
-            echo "::notice::PR #$PR_NUMBER に harness-verify が走っていない（paths filter 外）。skip（independent verifier の SUCCESS 必須）。"
+          # 条件 4.5: 最低 1 つの independent verifier が SUCCESS で走っていること
+          # 両方 paths filter 外で zero-check 状態の PR を auto-merge してしまうのを防ぐ
+          # ※ $HV 単独条件にしてはいけない。harness-verify.yml は DH 本体専用で配布されず、
+          #   配布先には `verify` という名の check が存在しないため恒久的に不成立になる
+          if [ -z "$HV" ] && [ -z "$GR" ]; then
+            echo "::notice::PR #$PR_NUMBER に harness-verify / review いずれも走っていない（paths filter 外）。skip（最低 1 verifier の SUCCESS 必須）。"
             exit 0
           fi
 

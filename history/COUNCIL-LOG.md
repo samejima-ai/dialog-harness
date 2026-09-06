@@ -3361,5 +3361,9 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   reasoning: "3 軸の dimension 語彙は共有トークン 0（Jaccard 0.000）で、独立した 3 次元が別々に B を支持した = 対立類型 B（異なる次元から同じ結論）であって冗長ではない。①識別コスト軸: D の請求書は既に一度払われ、A/B の増分は既存検査群への相乗りで小さい。C は消費側が major しか読まないため投資が回収されない。②状態機械の充足性軸: VERSION=6.15.0 確定により v6.13.0 / v6.14.0 は A の値域に合法値を持たず A 単独は充足不能。B の「spec 番号＝起草時予約」が唯一の最小穴埋め。③名の意味と受け手軸: 予約番号と状態番号を同一名前空間に押し込んだことが根であり B はその分離＝止揚。ただし 3 軸の concerns は互いに補完的で、素の B は 3 軸いずれの支持条件も満たさない（昇格条件の粒度・不可逆削除・常時発火 WARN・読み手不在）。ゆえに recommended を mitigation 込みで構成した。Orchestrator 決定論検算: B = 4×0.85 + 4×0.92 + 2×0.75 = 8.58、weight_sum 10、各 persona は 1 箇所のみ出現、recommended は max_score_stance と接頭辞一致、judgment_confidence 0.78 は band [0.60, 0.90] の内側 — すべて整合（retry 0）。"
   consensus_mode: "escalate_to_human"
   human_escalated: false
-  final_decision: null
-  implementer_consent: null  # 合意プロセス完了時に単方向埋め込み
+  final_decision: "B を採用。recommended の mitigation 9 点のうち 8 点を PR #248 で実装し、(8)（昇格をリリース手順のチェックリストの 1 行として常設化）のみ未了として明示的に残した。人間（ひでさん）の「shipして」発話（2026-09-06）を合意成立とする。なお merge 前検証で mitigation (3) の実測値（真陽性 2 / 偽陽性 0）は同一 revision のファイル粒度では 3 件であることが判明したが、3 件目も真陽性であり偽陽性 0 の結論は変わらない。"
+  implementer_consent: "agreed_recommended"
+  follow_up_questions_count: 0
+  agreed_at: "2026-09-06T02:00:00Z"
+  modification_note: null
+  escalation_reason: null
