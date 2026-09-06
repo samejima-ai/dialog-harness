@@ -97,9 +97,14 @@ Judgment Agent の規定逸脱頻度を可視化する。設計契機: COUNCIL-L
 
 ### 監査手順
 
-1. `.claude/skills/crosscut-council/history/COUNCIL-LOG.md` を対象に、
-   F1 期間（週次、直近 7 日）のエントリを抽出
-   （`history/COUNCIL-LOG.md` 等のリポジトリルート COUNCIL-LOG が存在する場合はそれも対象に追加）
+1. **リポジトリルートの `history/COUNCIL-LOG.md`** を対象に、
+   F1 期間（週次、直近 7 日）のエントリを抽出する。
+   これが Council 発動の単一情報源（`crosscut-council/SKILL.md` §ログ要件 /
+   `scripts/council-log-sync.py:76`）。
+   > v6.17.0 F3（Council D-3）以前は skill 内 `.claude/skills/crosscut-council/history/COUNCIL-LOG.md`
+   > を主対象としていたが、同ファイルは見出し形式で `council-log-sync.py` のパーサが読めず、
+   > そこにしか無い 12 件が CTL 統計から脱落していた。現在は `history/` へ移送済み
+   > （`history/council-log-skill-archive.md`・追記されないアーカイブ）。
 2. 各エントリの `weight_calculation.scores` を `weighted_score` 降順で並べ替え、
    上位 2 件の差分から最大 stance を再計算する
    （例: `sorted(scores, key=lambda s: s["weighted_score"], reverse=True)` を用い、

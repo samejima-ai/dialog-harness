@@ -94,11 +94,13 @@ paths:
   #
   # ※ **overwrite との優先順位**（v6.17.0 F3 / Council D-3 必須随伴条件 c）:
   #   同一パスが overwrite と never_touch の両方にマッチしうる場合、**never_touch が勝つ**。
-  #   例: `.claude/skills/crosscut-council/history/` は owned_skills（crosscut-council）配下だが
-  #   `history/` にもマッチする。この規則が未定義だったため、「社外秘ゆえ skill 内部に閉じる」と
-  #   宣言された COUNCIL-LOG が配布先 2 リポへ配られていた（F3 が是正）。
+  #   例: `.claude/skills/crosscut-council/history/` は owned_skills（crosscut-council）配下＝
+  #   `.claude/skills/`（overwrite）の一部だが、`history/` にもマッチする。この規則が未定義だったため、
+  #   「社外秘ゆえ skill 内部に閉じる」と宣言された COUNCIL-LOG が配布先 2 リポへ byte 一致で
+  #   配られていた（実測 2026-09-06: kakuman 84,721 B / cc-cockpit 83,467 B。F3 が是正）。
   #   **判定は「より不可侵な側を採る」**: 迷ったら配らない・触らない。
-  #   なお本規則を強制するコードは未実装（下記 §未実装の宣言 参照）。
+  #   なお本規則を強制するコードは未実装（本ファイル末尾の注記どおり harness-verifier 側の
+  #   実装余地。検査 13 は「配布物に状態を置かない」側から同じ事故を検出する）。
   never_touch:
     - "SPEC.md"
     - "DONT.md"

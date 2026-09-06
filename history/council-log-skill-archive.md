@@ -1,4 +1,25 @@
-# COUNCIL-LOG
+# COUNCIL-LOG（skill 内ログのアーカイブ・2026-09-06 移送）
+
+> **本ファイルは追記されない。** v6.17.0 F3 / Council D-3 の判定により
+> `.claude/skills/crosscut-council/history/COUNCIL-LOG.md` から本パスへ移送したアーカイブである。
+> Council 発動の記録先は `history/COUNCIL-LOG.md` ただ 1 つ（`SKILL.md` §ログ要件 /
+> `council-log-sync.py:76` が定める単一情報源）。
+>
+> **移送の理由**: 本ファイルは見出し形式（`## council-<id>` + JSON）で書かれており、
+> `council-log-sync.py:181` の `_ENTRY_START`（`^- invocation_id:`）が読めないため、
+> ここにしか無かった 12 件が **5 ヶ月にわたり CTL 統計から脱落していた**。
+> 12 件は同日 `history/COUNCIL-LOG.md` へ YAML list 形式で転記済み（`transcribed_from` で辿れる）。
+> 転記対象が 13 件でなく 12 件なのは、1 件（`council-2026-04-21T12:34:56Z-a1b2c3`）が
+> 実エントリではなく**テンプレート例**だったため。
+>
+> **削除しない理由**: 合意プロセス記録の散文は転記時に 1 行へ畳んだため、全文は本ファイルにしか無い
+> （I-8 不可逆な削除をしない / COLD = archive ≠ delete）。
+
+---
+
+## 旧・運用ルール（歴史的記録・現行の規範ではない）
+
+以下は移送前の記述をそのまま残したもの。**現行の規範は `crosscut-council/SKILL.md` §ログ要件**。
 
 Council 発動の append-only ログ。
 
@@ -8,7 +29,15 @@ Council 発動の append-only ログ。
 - **記録タイミング**: Judgment Agent の出力取得時点で 1 エントリを append する。実装者の合意確定時点で下記の「合意プロセス後追記フィールド」を **null → 値** に埋め込む
 - **粒度**: 1 invocation = 1 エントリ（follow-up 質問は同じエントリ内に追記）
 - **監査用途**: F1（週次）/ F2（月次）/ F3（四半期）儀式で集計し、傾向分析に使用
-- **プライバシー**: 社外秘情報が含まれ得るため、skill 内部に閉じて保管する
+- ~~**プライバシー**: 社外秘情報が含まれ得るため、skill 内部に閉じて保管する~~
+  **【2026-09-06 訂正 / v6.17.0 F3】この記述は前提が破綻していた。** `.claude/skills/` は
+  `dh-manifest.yml` の `overwrite` 分類であり、skill 内部に置いたものは配布先へ byte 一致で
+  配られる。実測で kakuman-platform-v3.0（84,721 B）と cc-cockpit（83,467 B）の 2 リポに
+  本ファイルが配布済みであることを確認した。**最も秘匿すべきと宣言した場所が、最も広く
+  配られる場所だった。** 現在は `history/`（`never_touch`）へ移送して配布対象から外している。
+  なお `overwrite` と `never_touch` が同一パスにマッチする場合は `never_touch` が勝つという
+  優先順位規則を、同 PR で `dh-manifest.yml` に明文化した（この規則が未定義だったことが
+  本件の直接の原因である）
 
 ### append-only の例外条項（合意プロセスの後追記）
 
