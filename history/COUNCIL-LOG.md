@@ -3894,3 +3894,60 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: null
   modification_note: null
   escalation_reason: null
+
+- invocation_id: "council-2026-09-06T15:00:00Z-splt02"
+  timestamp: "2026-09-06T15:00:00Z"
+  source_skill: "layer0-spec-architect"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C2"
+  question_to_answer: "harness-verifier の検査 8（checks/declaration_coverage.py）が 672 行・13 検査項目に肥大した。分割すべきか、するならどの基準で切るか。規範文書改変（harness-verifier の構造変更 + 申し送りの分割基準の改訂）"
+  options:
+    - "(i) 分割しない"
+    - "(ii) 分割する・基準「1 検査器 = 1 宣言ファイル」を維持"
+    - "(iii) 分割する・基準を実態に合う形へ改める"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  personas:
+    - { persona: "経営者", stance: "(iii)", confidence: 0.82, dimension: "リスク" }
+    - { persona: "開発者", stance: "(iii)", confidence: 0.82, dimension: "保守性" }
+    - { persona: "哲学者", stance: "(iii)", confidence: 0.72, dimension: "前提への問い" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(iii) 分割する・基準を実態に合う形へ改める"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 11
+        weighted_score: 8.72
+        components:
+          - { persona: "経営者", weight: 4, confidence: 0.82 }
+          - { persona: "開発者", weight: 4, confidence: 0.82 }
+          - { persona: "哲学者", weight: 3, confidence: 0.72 }
+      - stance: "(i) 分割しない"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+      - stance: "(ii) 基準を維持して分割"
+        supporters: []
+        weight_sum: 0
+        weighted_score: 0.0
+        components: []
+    third_way_excluded: []
+    max_score_stance: "(iii) 分割する・基準を実態に合う形へ改める"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(iii) 分割する・基準を実態に合う形へ改める。基準は「1 検査器 = 1 つの欠落の型」（実体→宣言 / 鮮度 / 実質）とし、以下 5 点を分割の受入条件として同時に満たす。(1) 検査番号は付け替えない — CHECK_REGISTRY を明示 id 付き tuple（F1/F2 等の安定 ID）に改め、分割モジュールは追記順に登録して既存 1-7 の番号を不変に保つ。reports/*.md 5 本は過去の実行記録として一切書き換えない (2) parse_graph の ImportError fallback を共通ヘルパモジュール（checks/_graph_util.py 等）へ 1 箇所に集約し複製を禁ずる (3) 回帰テストの件数の前後一致を受入条件とし、テスト側にも共通 fixture モジュールを設ける (4) 基準改訂の理由（「1 宣言ファイル」が F1=4 ファイル / F3=宣言なしで実態不整合であるという実測）を spec に明記する (5) 分割と同一 PR で 13 項目の発火実績の棚卸しを行い、検出実績ゼロの項目には measured trigger を付すか削除候補として記録する（順序は「棚卸し 1 サイクル後に分割」ではなく「分割と同時に棚卸し」）"
+  minority_opinion: "哲学者軸の「分割は症状の移動になりうる — 真の問いは規範の肥大が検査の肥大として影を落としているか」および「harness-verifier を検査するものは何かという再帰の底が未宣言」は本判定の射程外として保留。分割完了後の独立議題とすべき。経営者軸の「F1 単体が 100 行超で残り再肥大の起点になる」懸念も未解消"
+  weight_note: "経営者 4 / 開発者 4 / 哲学者 3（ΣW=11 は council-weights.md 自認の既知宣言違反）"
+  reasoning: "stance は 3 軸全会一致で (iii)、weighted_score 8.72 対 0.00 と支配的であり選択肢レベルの争点は存在しない。判定の実質は dimension 共有トークン 0 の reason_divergence が積み上げた随伴条件の統合にある。決定的根拠は行数ではなく、3 軸が独立に同一のバグ（重複キーによる F4 METRIC の消失）を発見した事実である。異なる 3 つの探索経路が同じ見落としに到達したことは、672 行が読解の全体像保持を破壊しているという主張を行数論より上位の実証として成立させる。開発者軸の実測（共有ヘルパ実質ゼロ・結合は parse_graph のみ）が分割コストの低さを裏づけ、経営者軸の 6→13 の増加実績と spec の「新規範 7 つ追加」予告が先送りコストの上昇を裏づける。番号付け替えについては開発者軸の「reports/*.md は改竄不可」が最も強い制約であり、番号を動かす案は選択肢から外れる。哲学者軸の発火実績棚卸しは TR-4 の対偶という独立した論拠を持つが、「分割前に 1 サイクル置く」順序を採ると分割が再び先送りされ、予約を先送りの正当化に使う DH の既知の失敗様式を再演する。よって内容は採用し順序のみ同時実行へ改めた"
+  judgment_confidence: 0.85
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  modification_note: null
+  escalation_reason: null
