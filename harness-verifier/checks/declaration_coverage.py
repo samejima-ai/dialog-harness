@@ -254,6 +254,9 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                     f"未分類 {f4_counts['unclassified']} パス / "
                     f"owned_skills {f4_counts['owned_skills']} 件"
                     f"（GRAPH 宣言 {f4_counts['graph_skills']} 件と突合）"),
+        "severity": "METRIC",
+    })
+    issues.append({
         "location": ".claude/skills/",
         "message": (f"F3 配布物の状態 — overwrite 配下 {f3_counts['scanned']} 面を走査 / "
                     f"状態実体 {f3_counts['state_found']} 件"),
