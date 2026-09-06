@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""harness-verifier 検査 8（宣言被覆・F1 版整合 + F2 宣言網羅/source 実質 + F6 RL 被覆）の回帰テスト。
+"""harness-verifier 検査 8（宣言被覆・F1 / F2 / F4 / F6）の回帰テスト。
 
 合成リポジトリツリーに各欠陥を 1 つずつ仕込み、**検出することを実証する**。
 「実リポで PASS した」だけでは検査が空振りしていないことを示せない。
@@ -34,7 +34,7 @@ def check(name, cond, detail=""):
 def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
           specs=(), history=FROZEN_HISTORY, graph_body=None,
           skill_dirs=(), script_files=(), source_docs=(),
-          rules=(), rules_readme=None):
+          rules=(), rules_readme=None, manifest=None):
     """合成ツリーを組む。
 
     graph_body を渡すと GRAPH.yml の nodes / edges / graph_excluded を差し替える（F2 用）。
@@ -62,6 +62,8 @@ def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
         dst = root / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(doc_body, encoding="utf-8")
+    if manifest is not None:
+        (root / "dh-manifest.yml").write_text(manifest, encoding="utf-8")
     if graph_version is not None:
         gb = graph_body if graph_body is not None else "nodes: []\n"
         (root / "GRAPH.yml").write_text(gb + f'version: "{graph_version}"\n', encoding="utf-8")
@@ -299,6 +301,58 @@ td, r = scenario(specs=OK_SPECS)
 check("RL を持たないツリーでは skip（配布先で壊れない）", r == [], str(r))
 td.cleanup()
 
+print("== 11-12. F4: manifest 分類網羅 + owned_skills の実在一致 ==")
+MANIFEST_OK = ("paths:\n"
+               "  overwrite:\n"
+               "    - \"templates/\"\n"
+               "  owned_skills:\n"
+               "    - \"layer1-autonomous-dev\"\n"
+               "  merge:\n"
+               "    - \".claude/settings.json\"\n"
+               "  redeploy: []\n"
+               "  never_touch:\n"
+               "    - \"history/\"\n"
+               "  unclassified_ok:\n"
+               "    - \"VERSION\"\n"
+               "    - \"dh-upgrades/\"\n"
+               "    - \".claude/skills/\"\n"
+               "    - \"dh-manifest.yml\"\n"
+               "    - \".claude/\"\n")
+
+td, r = scenario(specs=OK_SPECS, manifest=MANIFEST_OK,
+                 skill_dirs=("layer1-autonomous-dev", "rtk-integration"))
+check("owned_skills 列挙漏れを FAIL で検出（静かな失敗を防ぐ）",
+      any(i["severity"] == "FAIL" and "rtk-integration" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 manifest=MANIFEST_OK.replace('    - "layer1-autonomous-dev"\n',
+                                              '    - "layer1-autonomous-dev"\n    - "rtk-integration"\n'),
+                 skill_dirs=("layer1-autonomous-dev", "rtk-integration"))
+check("owned_skills が実在と一致すれば通る（prefix でフィルタしない）",
+      all("owned_skills" not in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 manifest=MANIFEST_OK.replace('    - "layer1-autonomous-dev"\n',
+                                              '    - "layer1-autonomous-dev"\n    - "ghost-skill"\n'),
+                 skill_dirs=("layer1-autonomous-dev",))
+check("実在しない skill の列挙を FAIL で検出（削除・改名への追随）",
+      any(i["severity"] == "FAIL" and "ghost-skill" in i["message"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS,
+                 manifest=MANIFEST_OK.replace('    - "dh-upgrades/"\n', ""),
+                 skill_dirs=("layer1-autonomous-dev",))
+check("未分類パスを WARN で検出（黙って never_touch に落ちるのを防ぐ）",
+      any(i["severity"] == "WARN" and "dh-upgrades" in i["location"] for i in r), str(r))
+td.cleanup()
+
+td, r = scenario(specs=OK_SPECS, skill_dirs=("layer1-autonomous-dev",))
+check("manifest を持たないツリーでは skip（配布先で壊れない）",
+      all("manifest" not in i["location"] for i in r), str(r))
+td.cleanup()
+
 print("== 常時発火しないこと（I-4）: 実リポで WARN / FAIL が 0 件 ==")
 real = m.run(skills_dir=HERE / ".claude" / "skills",
              glossary_path=HERE / "harness-verifier" / "glossary.yml")
@@ -307,4 +361,4 @@ check("実リポで検出 0 件（是正済み）", graded == [], str(graded))
 
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")
-print("\nPASS: 検査 8（宣言被覆・F1 版整合 / F2 宣言網羅・source 実質 / F6 RL 被覆）回帰テスト 全通過")
+print("\nPASS: 検査 8（宣言被覆・F1 / F2 / F4 / F6）回帰テスト 全通過")

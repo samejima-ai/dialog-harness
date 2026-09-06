@@ -21,18 +21,67 @@ min_same_major_from: "5.0.0"  # v5.0.0 以降からの更新は同一メジャ�
                               # v4.x 以前からは major 跨ぎ → 個別移行（UPDATE.md §メジャー跨ぎ参照）
 
 paths:
-  # overwrite: DH 所有。更新で「ディレクトリごと sync（置換）」してよい。
+  # overwrite: DH 所有。更新で「その dir 単位で sync（置換）」してよい。
+  #
   # ※ merge ではなく sync（置換）にする理由: skill の rename / 削除（例 v5.0.0 の council→crosscut-council）が
   #   起きたとき、置換なら旧ファイルが orphan として残らない。rsync --delete 相当 or rm -rf && cp -r。
+  #
+  # ※ **置換の単位は「列挙された dir 1 つ」であって `.claude/skills/` 全体ではない**（v6.17.0 F4 / Council D-4）。
+  #   `.claude/skills/` を丸ごと置換すると、利用者プロジェクトが同じ dir に持つ固有 skill（Level B）が消える。
+  #   v5.0.0 が「Level B は同じ `.claude/skills/` に命名規則で論理分離」と定め、v5.21.0 が「overwrite は
+  #   ディレクトリごと置換」と定めたが、両者を調停した記録が無かった。実運用は同期 8 回すべて選択同期に
+  #   逃げており、正典手順は一度も使われていない。D-4 はその実運用を正典へ昇格させた。
+  #
+  # ※ **owned_skills は allowlist ではなく「所有の宣言」である**（Council D-4 必須随伴条件 b）。
+  #   本 spec の不変条件 I-1 は「allowlist / 除外リストを作らない」と定めるが、それが禁じているのは
+  #   「検査に引っかかるものを個別に免除する除外リスト」である。owned_skills は逆で、
+  #   **DH が所有し配布する対象を過不足なく数え上げる宣言**であり、I-1 の但し書き
+  #   「除外が必要なら宣言側に明示行を書く」に該当する。列挙から漏れた skill は「免除される」のではなく
+  #   「配布されない」= 不利益を被る側に落ちるため、免除の誘因が構造的に働かない。
+  #
+  # ※ **単一情報源は GRAPH.yml の nodes**（Council D-4 必須随伴条件 c）。owned_skills はそこからの
+  #   導出であり、両者の一致は harness-verifier 検査 8（F4 分類網羅）が決定論で突合する。
+  #   prefix 判定にしない理由: DH 配布の `rtk-integration` が layer/crosscut prefix を持たず破れるため
+  #   （`glossary.py:250` の managed_prefixes / `execution_graph.py` G-5 と同型の欠陥。後者は F2 で除去済み）。
   overwrite:
-    - ".claude/skills/"
     - "templates/"
+    # v6.17.0 F4: `.claude/agents/` は DH と配布先で内容同一（実測。改行コードのみ CRLF/LF 差）だが
+    # 分類行が無く既定 never_touch に落ちていた = **DH が配っても更新経路を持たない**状態だった。
+    # 改行正規化: DH 側は CRLF、配布先は LF。同期時は**改行を正規化してから比較する**
+    # （byte 比較すると全ファイルが差分に見え、ノイズ diff で本当の変更が埋もれる）
+    - ".claude/agents/"
+  # owned_skills: `.claude/skills/` 配下で DH が所有する dir の明示列挙（上記の注記を参照）。
+  # ここに無い skill dir は利用者プロジェクトの所有（Level B）であり、DH 更新は触れない。
+  owned_skills:
+    - "crosscut-autonomous-drive"
+    - "crosscut-continuous-learning"
+    - "crosscut-council"
+    - "crosscut-cycle-retrospective"
+    - "crosscut-feedback-loop"
+    - "crosscut-hook-observer"
+    - "crosscut-issue-dispatcher"
+    - "crosscut-issue-implementer"
+    - "crosscut-issue-quality-gate"
+    - "crosscut-verifier-drift"
+    - "crosscut-verifier-philosophy"
+    - "layer0-archeo-architect"
+    - "layer0-onboarding"
+    - "layer0-reindex-librarian"
+    - "layer0-spec-architect"
+    - "layer1-autonomous-dev"
+    - "layer1-independent-reviewer"
+    - "layer2-integration-verifier"
+    - "layer2-orchestrator"
+    - "rtk-integration"
 
   # merge: DH 提供だがプロジェクトがカスタムしうる。raw 上書き不可。差分を提示して人間がマージ。
   merge:
     # v6.15.x hook 配線修理: Claude Code が読むのは settings 系のみ（hooks.json は読まれない・公式仕様）。
     # settings.json は hooks の他に利用者固有設定（permissions 等）を持ちうるため raw 上書き不可の merge 分類
     - ".claude/settings.json"
+    # v6.17.0 F4: DH は `.gitignore` に配布物由来の除外行を持つが、利用者プロジェクトも自分の除外行を持つ。
+    # 追記マージであり raw 上書き不可（上書きすると利用者の除外が消え、意図しないファイルが git に入る）
+    - ".gitignore"
 
   # redeploy: placeholder（${ALLOWED_AUTHORS} 等）を含むため raw コピー不可。
   # crosscut-autonomous-drive 経由で placeholder 再展開（冪等でない・衝突は明示確認）。
@@ -40,15 +89,50 @@ paths:
     - ".github/workflows/"
 
   # never_touch: プロジェクト所有。DH 更新は絶対に書き換え・削除しない（独立性保護）。
+  #
+  # ※ **overwrite との優先順位**（v6.17.0 F3 / Council D-3 必須随伴条件 c）:
+  #   同一パスが overwrite と never_touch の両方にマッチしうる場合、**never_touch が勝つ**。
+  #   例: `.claude/skills/crosscut-council/history/` は owned_skills（crosscut-council）配下だが
+  #   `history/` にもマッチする。この規則が未定義だったため、「社外秘ゆえ skill 内部に閉じる」と
+  #   宣言された COUNCIL-LOG が配布先 2 リポへ配られていた（F3 が是正）。
+  #   **判定は「より不可侵な側を採る」**: 迷ったら配らない・触らない。
+  #   なお本規則を強制するコードは未実装（下記 §未実装の宣言 参照）。
   never_touch:
     - "SPEC.md"
     - "DONT.md"
     - "REGIME.md"
     - "CLAUDE.md"          # プロジェクト側の CLAUDE.md（DH は配布しない）
-    - "history/"           # episodic + 叡智 + 情報代謝（COLD/HOT/cursor 含む）
+    - "history/"           # episodic + 叡智 + 情報代謝（COLD/HOT/cursor 含む）。**任意の階層で有効**
     - "delivery/"
     - ".claude/disabled/"  # モード判定で退避された要素（プロジェクト状態）
     # 上記以外のプロジェクト固有コード・資産はすべて never_touch（明示列挙しない＝既定で不可侵）
+
+  # unclassified_ok: 上記 4 分類のいずれにも属さないが、**それが正しい**と宣言するもの（v6.17.0 F4）。
+  # 検査 8 の分類網羅検査はここに載っていない未分類パスを WARN する。
+  # 「既定で never_touch に落ちる」運用自体は維持するが、**DH が配布したいものが黙って不可侵に落ちる**
+  # 事故（本 v6.17.0 が (d) として検出した `.claude/agents/`）を検出できるようにするのが本節の役割。
+  unclassified_ok:
+    - "README.md"            # DH 本体の説明。配布しない
+    - "README.en.md"
+    - "UPDATE.md"            # 更新手順そのもの。読まれるが配られない
+    - "VERSION"              # DH 本体の版。配布は §3 の REGIME.md 記録で行う
+    - "GRAPH.yml"            # DH 自己の実行グラフ宣言。配布しない
+    - "dh-manifest.yml"      # 本ファイル
+    - "dh-upgrades/"         # 版ごとの移行仕様。読まれるが配られない
+    - "docs/"                # DH 本体の移行ガイド
+    - "harness-verifier/"    # DH 自己検査。配布しない（BOUNDARY.md / DECL-16）
+    - "scripts/"             # DH 自己の検査器・分析器
+    - "delivery/"            # never_touch と重複するが DH 本体側の献上物置き場
+    - "skill-audit-workspace/"
+    - ".git"
+    - ".gitattributes"
+    - ".github/"             # DH 本体の CI。配布分は redeploy の `.github/workflows/` が担う
+    - ".council-ctl.json"    # CTL の投影（user-scope council-data が実体）。配布しない
+    # `.claude/skills/` dir そのもの: 中身は owned_skills（DH 所有）と Level B（利用者所有）の
+    # 同居であり、dir 単位では一つの分類に落とせない。判定は owned_skills が担う
+    - ".claude/skills/"
+    # Claude Code が実行時に作るロックファイル。git 管理外（.gitignore 済み）
+    - ".claude/scheduled_tasks.lock"
 
 # ---------------------------------------------------------------------------
 # upstream — 逆流路（v7 Phase 1・Council council-2026-08-26T01:53:40Z-v7ord1）

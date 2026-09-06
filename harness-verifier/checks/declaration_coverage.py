@@ -7,8 +7,8 @@
     - 宣言の鮮度: 宣言が現在の実体に追いついているか
     - 宣言の実質: 宣言が指す source が実際にその内容を持つか
 
-本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/ F6（RL 現況の被覆）
-分を実装済み**で、F4 分は後続 PR で本モジュールに追加する。
+本モジュールはその受け皿である。**F1（版整合）/ F2（宣言網羅・source 実質）/ F4（manifest 分類網羅）/
+F6（RL 現況の被覆）分を実装済み**で、v6.17.0 の受け皿はこれで揃った。
 
 F1（版整合）の検査項目:
     1. VERSION == GRAPH.yml の version:（不一致 = FAIL）
@@ -18,6 +18,12 @@ F1（版整合）の検査項目:
     4. `実装済み` を名乗る spec の版 <= VERSION（超過 = FAIL）
     5. 状態行が `L0 起草` のまま本文が実装を名乗る（= WARN。file-local 判定）
     6. dev-env-spec.md §バージョン履歴 の凍結（マーカー欠落 / v4.2 超の追記 = FAIL）
+
+F4（manifest 分類網羅）の検査項目:
+    11. リポジトリ直下 / `.claude/` 直下の実在パスが 4 分類 ∪ owned_skills ∪
+        unclassified_ok のいずれかに属す（属さない = WARN）
+    12. `paths.owned_skills` == `.claude/skills/` 実在 dir（不一致 = FAIL）
+        Council D-4 必須随伴条件 (a)。列挙漏れは「配布されないまま誰も困らない」静かな失敗になる
 
 F6（RL 現況の被覆）の検査項目:
     10. templates/rules/common/*.md ⇄ README §common/ の現況 の列挙が一致（不一致 = FAIL）
@@ -49,6 +55,9 @@ F2（宣言網羅・source 実質）の検査項目:
         （G-5 と同じ昇格規律。upgrade-spec-v6.17.0 §F2 規範メタデータ）
       - measured: 検査 10（F6）が 6 cycle 連続 0 件なら、RL の増減自体が止まっている可能性を疑い
         配布の要否を再問（upgrade-spec-v6.17.0 §F6 規範メタデータ）
+      - stage_transition: DH が新しい配布面（新ディレクトリ）を持つとき、検査 11 の
+        unclassified_ok を見直す（upgrade-spec-v6.17.0 §F4 規範メタデータ）
+      - measured: 検査 11（WARN）が 6 cycle 連続 0 件なら降格候補
 """
 
 from __future__ import annotations
@@ -210,6 +219,9 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
     # --- 7-9. F2: 宣言の網羅性 + source の実質 ---
     f2_counts = _check_f2(repo_root, skills_dir, graph_path, issues)
 
+    # --- 11-12. F4: manifest 分類網羅 + owned_skills の実在一致 ---
+    f4_counts = _check_f4(repo_root, skills_dir, graph_path, issues)
+
     # --- 10. F6: 共通 RL の現況被覆 ---
     f6_counts = _check_f6(repo_root, issues)
 
@@ -217,7 +229,7 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
         "location": "VERSION",
         "message": (f"F1 版整合 — VERSION={version_txt} / "
                     f"upgrade-spec {len(list(spec_dir.glob('upgrade-spec-v*.md'))) if spec_dir.is_dir() else 0} 本を検査。"
-                    f"F4 分は後続 PR で本モジュールに追加予定"),
+                    f"v6.17.0 の宣言被覆は F1/F2/F4/F6 で揃った"),
         "severity": "METRIC",
     })
     issues.append({
@@ -227,6 +239,13 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                     f"script {f2_counts['scripts']} 件 "
                     f"(impl {f2_counts['script_impls']} / excluded {f2_counts['script_excluded']}) / "
                     f"source 実質検査 {f2_counts['sources_checked']} edge"),
+        "severity": "METRIC",
+    })
+    issues.append({
+        "location": "dh-manifest.yml",
+        "message": (f"F4 manifest 分類網羅 — 分類済み {f4_counts['classified']} パス / "
+                    f"未分類 {f4_counts['unclassified']} パス / "
+                    f"owned_skills {f4_counts['owned_skills']} 件"),
         "severity": "METRIC",
     })
     issues.append({
@@ -414,4 +433,127 @@ def _check_f6(repo_root: Path, issues: list[dict[str, Any]]) -> dict[str, int]:
                         "削除・改名に追随する"),
             "severity": "FAIL",
         })
+    return counts
+
+
+def _parse_manifest_paths(text: str) -> dict[str, list[str]]:
+    """dh-manifest.yml の `paths:` 配下を {分類名: [値, ...]} で返す。
+
+    GRAPH.yml 用の parse_graph はネストされた dict を読めないため、manifest 専用の
+    最小パーサを持つ。読むのは「`paths:` の直下 2 段」だけで、それ以上の構造は扱わない
+    （I-3 決定論・LLM 不使用。正規表現とインデント数えのみ）。
+    """
+    out: dict[str, list[str]] = {}
+    in_paths = False
+    current: str | None = None
+    for raw in text.splitlines():
+        if raw.startswith("paths:"):
+            in_paths = True
+            continue
+        if not in_paths:
+            continue
+        # インデント 0 の非空行で paths ブロックは終わり
+        if raw.strip() and not raw.startswith(" ") and not raw.startswith("#"):
+            break
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        indent = len(raw) - len(raw.lstrip(" "))
+        if indent == 2 and stripped.endswith(":"):
+            current = stripped[:-1]
+            out[current] = []
+        elif indent >= 4 and stripped.startswith("- ") and current:
+            val = stripped[2:].split("#", 1)[0].strip().strip('"').strip("'")
+            if val:
+                out[current].append(val)
+    return out
+
+
+def _check_f4(repo_root: Path, skills_dir: Path, graph_path: Path,
+              issues: list[dict[str, Any]]) -> dict[str, int]:
+    """F4: dh-manifest の分類網羅（検査 11）と owned_skills の GRAPH 一致（検査 12）。
+
+    検査 11: リポジトリ直下および `.claude/` 直下の実在パスが 4 分類 ∪ owned_skills ∪
+        unclassified_ok のいずれかに属すること（属さない = WARN）。
+        「明示列挙しない = 既定で不可侵」は運用として成立するが、**DH が配布したいものが
+        黙って不可侵に落ちる**事故（v6.17.0 が (d) として検出した `.claude/agents/`）を
+        検出できない。
+
+    検査 12: `paths.owned_skills` == `.claude/skills/` 実在 dir（不一致 = FAIL）。
+        Council D-4 必須随伴条件 (a)。列挙漏れは「静かな失敗」（配布されないまま誰も困らない）
+        になるため、GRAPH.yml nodes を単一情報源として決定論で突合する（同 (c)）。
+    """
+    counts = {"classified": 0, "unclassified": 0, "owned_skills": 0}
+    manifest = repo_root / "dh-manifest.yml"
+    if not manifest.is_file():
+        return counts  # 配布先など manifest を持たないツリーでは skip（I-6）
+
+    paths = _parse_manifest_paths(manifest.read_text(encoding="utf-8"))
+    if not paths:
+        issues.append({
+            "location": "dh-manifest.yml",
+            "message": "paths: 配下の分類が読めない（4 分類の宣言が失われている可能性）",
+            "severity": "FAIL",
+        })
+        return counts
+
+    # --- 検査 12: owned_skills ⇄ 実在 skill dir ---
+    owned = set(paths.get("owned_skills", []))
+    counts["owned_skills"] = len(owned)
+    if skills_dir.is_dir():
+        actual = {d.name for d in skills_dir.iterdir()
+                  if d.is_dir() and (d / "SKILL.md").is_file()}
+        for name in sorted(actual - owned):
+            issues.append({
+                "location": f".claude/skills/{name}/",
+                "message": (f"skill {name!r} が dh-manifest.yml の paths.owned_skills に無い。"
+                            "列挙漏れは「配布されないまま誰も困らない」静かな失敗になる"
+                            "（upgrade-spec-v6.17.0 §F4 / Council D-4 必須随伴条件 a）"),
+                "severity": "FAIL",
+            })
+        for name in sorted(owned - actual):
+            issues.append({
+                "location": "dh-manifest.yml",
+                "message": (f"paths.owned_skills が実在しない skill {name!r} を列挙している。"
+                            "削除・改名に追随する"),
+                "severity": "FAIL",
+            })
+
+    # --- 検査 11: 分類網羅 ---
+    classified: set[str] = set()
+    for key in ("overwrite", "merge", "redeploy", "never_touch", "unclassified_ok"):
+        classified.update(paths.get(key, []))
+
+    def _covered(rel: str) -> bool:
+        """rel（"docs/" や ".claude/agents/" 形式）がいずれかの分類に含まれるか。"""
+        if rel in classified or rel.rstrip("/") in classified:
+            return True
+        # never_touch の "history/" のような dir 宣言は任意の階層で有効
+        return any(c.endswith("/") and rel.startswith(c) for c in classified)
+
+    targets: list[str] = []
+    for entry in sorted(repo_root.iterdir()):
+        if entry.name == ".git":
+            continue
+        targets.append(entry.name + ("/" if entry.is_dir() else ""))
+    claude_dir = repo_root / ".claude"
+    if claude_dir.is_dir():
+        for entry in sorted(claude_dir.iterdir()):
+            targets.append(".claude/" + entry.name + ("/" if entry.is_dir() else ""))
+
+    for rel in targets:
+        if rel in (".claude/",):
+            continue  # .claude/ 自体は直下の各要素で判定する
+        if _covered(rel):
+            counts["classified"] += 1
+        else:
+            counts["unclassified"] += 1
+            issues.append({
+                "location": rel,
+                "message": (f"{rel!r} が dh-manifest.yml の 4 分類にも unclassified_ok にも属さない。"
+                            "既定 never_touch に落ちるため、DH が配布したいものが黙って不可侵になる"
+                            "（upgrade-spec-v6.17.0 §F4）"),
+                "severity": "WARN",
+            })
+
     return counts

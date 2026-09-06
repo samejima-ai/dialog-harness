@@ -47,7 +47,7 @@ CHECK_REGISTRY: list[tuple[str, Any]] = [
     ("用語辞書整合", glossary_check),
     ("hook 観測一貫性", hook_observations),
     ("実行グラフ整合", execution_graph),
-    ("宣言被覆（F1 版整合 / F2 宣言網羅 / F6 RL 被覆）", declaration_coverage),
+    ("宣言被覆（F1 版整合 / F2 宣言網羅 / F4 分類網羅 / F6 RL 被覆）", declaration_coverage),
 ]
 
 
