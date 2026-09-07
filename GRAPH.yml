@@ -229,6 +229,11 @@ graph_excluded:
   - id: upstream-scan
     path: scripts/upstream-scan.py
     reason: 配布先からの還流候補の走査器。実行グラフ上の起動関係を持たない分析専用
+  - id: _verifier_fixture
+    path: scripts/_verifier_fixture.py
+    reason: >-
+      回帰テストの共通 fixture（v6.18.0 C-2）。test-* から import される道具であって
+      実行グラフの経路ではない。test-* 自体が検査対象外なのと同じ理由
 
 # ---------------------------------------------------------------------------
 # edges — type は standard / conditional / loop。
