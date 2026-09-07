@@ -46,6 +46,10 @@
 
 ## 判断待ち — 残る 4 件
 
+> **HTML 判断キット**（採用/保留 を押して回答まとめをコピーできる）:
+> https://claude.ai/code/artifact/2d296ef6-ade6-43d0-bfdf-92fe495aa8a2
+> 正本 `delivery/DECISION-KIT-upstream-reflux-2026-09-07.md` / spec `delivery/decision-kits/2026-09-07-upstream-reflux.json`
+
 順位は付けない（初版の順位が実装順と一致しなかったため）。各カードは独立に答えられる。
 
 ### 設問 1. 領域ゲートの述語化 — `check-routing-gates.mjs`
