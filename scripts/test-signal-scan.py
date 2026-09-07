@@ -318,6 +318,37 @@ finally:
     for n, f in _saved.items():
         setattr(m, n, f)
 
+print("== review_trigger の母集合が norm-scan と拡張子で一致する（v6.18.0 C-3 随伴条件 5） ==")
+# C-1 で norm-scan が *.py を足した際に signal-scan が取り残され、検査モジュール 7 件の
+# 期限宣言が滞留検知の死角に落ちていた。**同じ宣言を 2 機構が別の母集合で読む状態は型 A** である。
+# ここでは「両者が同じ拡張子リストを使うこと」を実装から機械的に取り出して突き合わせる。
+import ast as _ast
+
+
+def _globs(path, func):
+    """指定関数の中の git grep 呼び出しから、`*.` で始まる引数リテラルを集める。"""
+    tree = _ast.parse(Path(path).read_text(encoding="utf-8"))
+    for node in _ast.walk(tree):
+        if isinstance(node, _ast.FunctionDef) and node.name == func:
+            return {n.value for n in _ast.walk(node)
+                    if isinstance(n, _ast.Constant) and isinstance(n.value, str)
+                    and n.value.startswith("*.")}
+    raise KeyError(f"{func} が {path} に無い")
+
+
+_sig = _globs("scripts/signal-scan.py", "fetch_review_trigger_files")
+_norm = _globs("scripts/norm-scan.py", "find_files")
+check("拡張子リストが norm-scan と一致", _sig == _norm, f"signal={sorted(_sig)} norm={sorted(_norm)}")
+check("*.py を含む（検査モジュールが死角に落ちない）", "*.py" in _sig, str(sorted(_sig)))
+
+# 除外規則は**意図的に異なる**。norm-scan は現行規範を読むので delivery/ を除外するが、
+# signal-scan は滞留を見るので除外しない。共通化すると決定待ち文書が再び死角に落ちる。
+_ns = Path("scripts/norm-scan.py").read_text(encoding="utf-8")
+check("norm-scan は delivery/ を除外している", '"delivery/"' in _ns)
+_ss = Path("scripts/signal-scan.py").read_text(encoding="utf-8")
+check("signal-scan は除外規則を持たない（滞留は献上物にも起きる）",
+      "EXCLUDE_PREFIXES" not in _ss)
+
 print("== 検知器 6 本の固定（F1-1 + v6.17.0 F7/F8） ==")
 names = {"decide_red_ci", "decide_stale_prs", "decide_review_trigger", "decide_pending",
          "decide_workflow_silence", "decide_metabolism_stall"}
