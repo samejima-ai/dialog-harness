@@ -1,0 +1,171 @@
+{
+  "key": "dh-upstream-reflux-0907",
+  "title": "還流採否キット 0907",
+  "eyebrow": "dialog-harness · UPSTREAM 還流 · 残り 4 件 + cron 1 件 · 2026-09-07",
+  "lede": "kakuman から DH へ還流させる候補 7 機構のうち、<b>3 件は既にこのシートを読まれないまま別経路で着地した</b>。残る 4 件を、順位表ではなく 1 件 1 問で問う。各カードに 採用 / 保留 を押して「回答まとめ」を貼れば確定する。4 問・約 10 分。",
+  "meta": [
+    "<span>起点 <b>UPSTREAM-DECISION-2026-08-26.md の記入欄が 12 日間空欄</b></span>",
+    "<span>実測 <b>2026-09-07 · GRAPH.yml / scripts/ / .claude/settings.json / signal-scan.yml を再走査</b></span>",
+    "<span>判定 <b>Council upst03（jc 0.78 / dimension 重複なし）</b></span>",
+    "<span>局面 <b>人間専管。AI は代筆しない</b></span>"
+  ],
+  "phase": "human_only",
+  "source_documents": [
+    "delivery/UPSTREAM-DECISION-2026-08-26.md（正本・改訂版）",
+    "delivery/UPSTREAM-CANDIDATES-2026-08-26.md（機械出力・存在差分 26 件）",
+    "dh-upgrades/upgrade-spec-v6.18.0.md §C-3",
+    "history/COUNCIL-LOG.md council-2026-09-07T12:00:00Z-upst03"
+  ],
+  "upstream_repo": "samejima-ai/kakuman-platform-v3.0 @ 9bbc642",
+  "why_reshaped": {
+    "before": "順位表 + カットライン 1 問（「上から何件採るか」）",
+    "after": "1 件 1 問の採否（順位なし）",
+    "evidence": [
+      "初版の 1 問は 12 日間答えられなかった",
+      "同じ 12 日の間に 7 件中 3 件が別経路で実装された",
+      "着地したのは推奨順の下位（項目 3 / 4）で、1 位の項目 1 が残った",
+      "初版が Council 実測由来で注記した「項目 2 は項目 1 に依存する」は実装で反証された"
+    ],
+    "conclusion": "順位は出来事を比較可能な量に還元する操作であり、比較した瞬間に「なぜそれが必要だったか」が剥落する。1 問への圧縮は判断コストを下げず、7 つの出来事を 1 つのスカラーに潰して判断を不可能にした。"
+  },
+  "already_refluxed": [
+    {
+      "rank": 2,
+      "name": "規範の分割不変条件 — check-traps-sync.mjs",
+      "incident": "2026-08-05 cycle X-L0-CLAUDE-SLIM → 統括者モデル第 1 段",
+      "problem": "罠が「常時索引」と「ルーティング表」の二重被覆または宙吊りになり、降格漏れが drift として蓄積した",
+      "route": "v6.17.0 F6 として harness-verifier/checks/rules_index.py に着地（PR #258）。v6.18.0 C-2 で独立モジュール化（PR #264）",
+      "note": "初版が「1 に依存する」と注記した依存は成立しなかった。F6 は母集合を templates/rules/common/*.md の glob で機械定義しており、項目 1 の述語化を前提としない"
+    },
+    {
+      "rank": 3,
+      "name": "観測層の非ゲート化 — observe.yml",
+      "incident": "2026-06 罠 X-CI-A（課金ブロックで全 run fail → PR コメント汚染 → Actions 無効化に至った）",
+      "problem": "観測層が赤や bot コメントを出すと、それ自体が購読セッションの wake event になり自律実行を食い潰す",
+      "route": ".github/workflows/signal-scan.yml として着地（v6.15.0 F1）",
+      "note": "思想がそのまま同ファイル冒頭に書かれている —「出力は候補のみ。signal-detected ラベルを付け ready-for-ai は付けない」「候補の昇格は人間の判断」"
+    },
+    {
+      "rank": 4,
+      "name": "配置と武装の分離 — schedule: コメントアウト運用",
+      "incident": "事故なし（2026-08-20 の設計判断「Actions の消費枠に直結する判断は人間側に残す」）",
+      "problem": "AI が cron を有効化すると消費枠の意思決定が AI 側に移ってしまう",
+      "route": "思想のみ未採用。signal-scan.yml は実装されたが cron は日次で有効化されている",
+      "note": "設問 4 に統合して問う"
+    }
+  ],
+  "questions_section": {
+    "eyebrow": "設問",
+    "h2": "残る 4 件",
+    "sub": "順位は付けない（初版の順位が実装順と一致しなかったため）。各カードは独立に答えられる。事故の日付・解いた問題は kakuman のソースコメントおよび delivery/ 文書からの転記であり、AI の推定を含まない（U-5）。"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "title": "領域ゲートの述語化 — check-routing-gates.mjs",
+      "short": "領域ゲートの述語化",
+      "time": "3 分",
+      "initial_rank": 1,
+      "incident_date": "2026-08-05",
+      "incident": "G-FEED が feedback に誤反応。ソースコメント曰く「初の実地 false positive」",
+      "problem": "変更 path が規範の該当領域なのに「通過ゲート記録」が無い献上を、機械検出できなかった",
+      "dh_value": "F-01 の直接解。GRAPH.yml の edge に predicate を与える設計原型。機械検出できない 2 gate を空配列で明示宣言する形が、v7 構想の unmechanizable そのもの",
+      "local_dependency": "なし（移すのは形式のみ。GATE_PATTERNS の中身は kakuman 業務語彙なので持ち込まない）",
+      "dh_state_measured": "未着手。GRAPH.yml に predicate の語は 0 件（2026-09-07 実測）",
+      "note": "ソースコメントに残る「依存追加のたびに常時発火して gate が形骸化する」は、DH のどの規範にも無い知恵。ただし DH 側には同型の TR-4「常時発火する検知は形骸化する」がある",
+      "source": "scripts/check-routing-gates.mjs L1-14, L22",
+      "options": ["採用", "保留"]
+    },
+    {
+      "id": "Q2",
+      "title": "武装解除の明示 fail — rls-drift.yml",
+      "short": "武装解除の明示 fail",
+      "time": "2 分",
+      "initial_rank": 5,
+      "incident_date": "2026-06-11",
+      "incident": "本番 RLS ドリフト。24 テーブルで RLS 無効。migration 外の手動 DDL 由来で schema_migrations に痕跡が残らず、静的 lint では原理的に検出不能だった",
+      "problem": "secret 不在でセンサーが武装解除されたまま、静かに green を装う",
+      "dh_value": "規範として立てる価値はある。ただし upstream-scan.py に自己適用済み（配布先不在・manifest 不読・gate≠human で exit 1）なので、追加で得るのは「規範化」の分だけ",
+      "local_dependency": "検出器本体は Supabase Management API 依存。移すのは規律のみ",
+      "dh_state_measured": "機構は自己適用済み。規範化のみ未（2026-09-07 実測）",
+      "note": "本キットで唯一「機構は既にあり、言葉だけが無い」型",
+      "source": "scripts/check-prod-rls-drift.mjs L1-6 / .github/workflows/rls-drift.yml L1-15",
+      "options": ["採用", "保留"]
+    },
+    {
+      "id": "Q3",
+      "title": "購読量の CI 強制 — check-spec-size.mjs / check-claude-md-size.mjs",
+      "short": "購読量の CI 強制",
+      "time": "3 分",
+      "initial_rank": 6,
+      "incident_date": "2026-08-20",
+      "incident": "docs/SCALE-ASSESSMENT-2026-08-20.html §R1。CLAUDE.md 25KB には size センサーがあるのに、その 40 倍の SPEC.md 1.02MB には同等の機構が無かった",
+      "problem": "購読量の上限が convention 止まりで、実際の肥大を機械が止められない",
+      "dh_value": "DH の代謝機構（HOT/WARM/COLD）は自認どおり「convention レベル・glob 強制ではない」。これを exit 1 に変えられる",
+      "local_dependency": "なし（閾値はプロジェクト固有だが機構は不変）",
+      "dh_state_measured": "未着手。scripts/ に size 検査は無い（2026-09-07 実測）",
+      "note": "check-claude-md-size のコメント「byte 値は規範でなく配置違反の代理指標。対処は量を削るでなく配置を直す」は、DH の純化 RL 由来の概念が現地で実装された形 = 既に一度 DH → kakuman を下った思想の、実装だけの還流",
+      "source": "scripts/check-spec-size.mjs L1-5 / scripts/check-claude-md-size.mjs L1-4",
+      "options": ["採用", "保留"]
+    },
+    {
+      "id": "Q4",
+      "title": "不可逆操作の deny 強制 — .claude/settings.json",
+      "short": "不可逆操作の deny 強制",
+      "time": "3 分",
+      "initial_rank": 7,
+      "incident_date": "事故なし",
+      "incident": "rm -rf / db reset / push --force / git clean 等 14 件を予防的に deny（2026-08-20 の設計判断）",
+      "problem": "philosophy 第 9 条 L-GATE（不可逆操作は事前ゲート）が宣言だけで機械強制されていない",
+      "dh_value": "F-04 の一部。宣言した委譲レベルを自分に適用していない状態",
+      "local_dependency": "Supabase コマンドは kakuman 固有。汎用分（git / rm / gh）のみ移す",
+      "dh_state_measured": "初版の「DH 本体には .claude/settings.json が存在しない」は誤り — ファイルは PR #209 で新設済み。ただし hooks 節のみで permissions 節が無いため、指摘の実体は今も成立する（2026-09-07 実測）",
+      "distribution_impact": "dh-manifest.yml:81-83 が本ファイルを merge 分類（overwrite ではない）と宣言しているため、配布先へ raw 上書きされない。I-6 と衝突しない",
+      "note": "本設問には初版の項目 4（配置と武装の分離）を統合した。signal-scan.yml の cron は現在日次で有効化されており、Actions 消費枠の意思決定が AI 側に移った状態にある",
+      "source": ".claude/settings.json permissions.deny / CLAUDE.md L50",
+      "options": ["採用", "保留"],
+      "sub_question": {
+        "id": "Q4b",
+        "title": "signal-scan の cron",
+        "context": "初版が項目 4 に与えた価値は「F-03 を安全に着地させる唯一の形。discover.yml を schedule: 無効で出荷し、武装は人間が行う。philosophy 第 6 条を崩さずに『発見』を自動化できる」であった。DH には discover.yml は無いが、signal-scan.yml が同じ位置を占めている",
+        "options": ["現状維持（日次有効）", "無効化して人間が武装する"]
+      }
+    }
+  ],
+  "council": {
+    "invocation_id": "council-2026-09-07T12:00:00Z-upst03",
+    "judgment_confidence": 0.78,
+    "conflict_type": "reason_divergence",
+    "final_weights": { "経営者": 4, "開発者": 4, "哲学者": 3 },
+    "personas": [
+      { "persona": "経営者", "stance": "B", "confidence": 0.82, "dimension": "機会損失 / 律速資源配分" },
+      { "persona": "開発者", "stance": "B", "confidence": 0.82, "dimension": "可逆性 / 配布境界の整合" },
+      { "persona": "哲学者", "stance": "第3の道", "confidence": 0.72, "dimension": "前提への問い" }
+    ],
+    "weighted_score": { "B": 6.56, "third_way": 2.16 },
+    "recommended_not_taken": "weighted_score は B（Q4 の permissions.deny を AI が先行実装する）が支配的だったが採らなかった",
+    "reason_not_taken": "開発者軸は B の技術的前提を実測で確認した（settings.json は merge 分類ゆえ配布先へ raw 上書きされず I-6 と衝突しない。可逆性も最高）。しかし哲学者軸がその前提を否定した —「7 件中 3 件が既に別経路で消えている以上、残りも AI が削れば、人間が答えるべき問いは消滅によって解決されたことになる。それは第 6 条の充足ではなく回避である」。可逆なのは実装であって、問いの消滅は可逆ではない",
+    "option_d_rejected": "D（決定シートを廃し signal-scan の検知対象へ移す）は 3 軸が独立に否定。signal-scan.yml ヘッダ自身が記録する F8 事故（日次 cron の dedup 破れで 2026-08-28〜09-05 に 27 件の重複 Issue）が I-4 / TR-4 違反を実証し、dh-manifest.yml U-4 が upstream 走査に「優劣判定はしない」を課している"
+  },
+  "institutional_finding": {
+    "title": "決定待ち文書は制度の外に落ちる",
+    "detail": "scripts/norm-scan.py:58 が delivery/ を「分析・献上物。規範ではない」として時限走査から除外しており、本シートは検知の死角に置かれていた。ANALYSIS-silent-failure-2026-09-06.md §7 が「本分析も静かに失われうる」と書いた予言は、同じディレクトリの隣のファイルで既に成就していた。",
+    "split_found": {
+      "norm-scan.py": { "ext": [".md", ".py", ".yml", ".yaml"], "exclude": ["dh-upgrades/", "history/", "delivery/"] },
+      "signal-scan.py(before)": { "ext": [".md", ".yml", ".yaml"], "exclude": [] },
+      "impact": "C-1 で norm-scan に *.py を足した際に signal-scan が取り残され、検査モジュール 7 件（#264 で分割した 4 本を含む）の期限宣言が滞留検知の死角にあった"
+    },
+    "fixed_in": "PR #268（母集合 23 → 31 ファイル）",
+    "not_unified": "除外規則は意図的に共通化しない。norm-scan は「現行規範の時限」を読むので delivery/ を除外し、signal-scan は「滞留」を見るので除外しない。決定待ち文書は規範ではないが腐る — これが第三のカテゴリである",
+    "fourth_type": "空欄 12 日は静かな失敗の型 A/B/C のいずれでもない。型 A-C はすべて機構の側の不作動を見ているが、本件は機構が正常に動作し、正しく人間に届き、それでも動かない。原因は不作動ではなく問いの形式の誤りであり、検知器では原理的に拾えない"
+  },
+  "after_answer": {
+    "procedure": "scripts/upstream-scan.py --prev で UPSTREAM-CANDIDATES-2026-08-26.md の採否欄へ反映する",
+    "scope": "採用分が Phase 2 / Phase 3 のスコープを確定させる（Council council-2026-08-26T01:53:40Z-v7ord1 の完了条件）",
+    "version": "C-3 完了時に VERSION を 6.18.0 へ昇格（現在 6.17.0 に据え置き）"
+  },
+  "review_trigger": [
+    { "date": "2026-10-07" },
+    { "measured": "設問形式を改めた後も 30 日以上記入されなければ、順位表に代わる形式（1 件 = 1 出来事カードの Issue 化）を再問する" }
+  ]
+}
