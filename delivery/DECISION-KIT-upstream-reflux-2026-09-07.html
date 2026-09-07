@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>還流採否キット 0907</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+</head>
+<body>
+<style>
+:root{
+  --paper:#EEF0EF; --surface:#F8FAF9; --sunk:#E2E6E5;
+  --ink:#141C22; --ink2:#4C5A61; --ink3:#7E8B90;
+  --rule:#C8D0D2; --rule-soft:#DBE1E2;
+  --flow:#1E6B7A; --flow-wash:#DBEBED;
+  --hold:#8A6A2F; --hold-wash:#F0E7D4;
+  --void:#8E4636; --void-wash:#F3E0DB;
+  --shadow:0 1px 0 rgba(20,28,34,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1417; --surface:#151D20; --sunk:#1C2528;
+    --ink:#E4EBED; --ink2:#A3B1B6; --ink3:#748187;
+    --rule:#2A3437; --rule-soft:#212A2D;
+    --flow:#4FB6C6; --flow-wash:#0F2B2F;
+    --hold:#C9A055; --hold-wash:#2A2213;
+    --void:#D4826D; --void-wash:#2C1915;
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1417; --surface:#151D20; --sunk:#1C2528;
+  --ink:#E4EBED; --ink2:#A3B1B6; --ink3:#748187;
+  --rule:#2A3437; --rule-soft:#212A2D;
+  --flow:#4FB6C6; --flow-wash:#0F2B2F;
+  --hold:#C9A055; --hold-wash:#2A2213;
+  --void:#D4826D; --void-wash:#2C1915;
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px 110px}
+@media(max-width:600px){.wrap{padding:0 16px 72px}body{font-size:15px}}
+.mono{font-family:var(--mono);font-size:.88em}
+
+/* masthead */
+.masthead{padding:60px 0 32px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,6vw,56px);
+  line-height:1.18;margin:0 0 20px;letter-spacing:.01em;text-wrap:balance}
+.lede{font-size:17px;color:var(--ink2);max-width:64ch;margin:0}
+.lede b{color:var(--ink);font-weight:700}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;
+  font-size:12.5px;color:var(--ink3);font-family:var(--mono)}
+.meta b{color:var(--ink2);font-weight:600}
+
+/* section */
+section{margin-top:56px}
+.sec-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--flow);margin-bottom:10px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(23px,3.4vw,31px);
+  margin:0 0 8px;line-height:1.32;text-wrap:balance}
+.sub{color:var(--ink2);font-size:15px;margin:0 0 26px;max-width:70ch}
+
+/* the void panel */
+.void-panel{background:var(--void-wash);border:1px solid var(--void);
+  border-radius:3px;padding:26px 28px;margin:30px 0 0}
+.void-panel h3{font-family:var(--display);font-size:20px;margin:0 0 14px;color:var(--void)}
+.void-stat{display:flex;flex-wrap:wrap;gap:26px 40px;margin:18px 0 6px}
+.vs{min-width:96px}
+.vs .n{font-family:var(--display);font-size:38px;font-weight:900;line-height:1;color:var(--void)}
+.vs .l{font-size:12.5px;color:var(--ink2);margin-top:6px;font-family:var(--mono)}
+
+/* refluxed table */
+.tbl-wrap{overflow-x:auto;margin:20px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+th{background:var(--sunk);text-align:left;padding:11px 14px;font-weight:700;
+  font-size:12px;letter-spacing:.06em;color:var(--ink2);border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top;line-height:1.7}
+tr:last-child td{border-bottom:none}
+td b{font-weight:700}
+.rank{font-family:var(--mono);font-weight:600;color:var(--ink3);white-space:nowrap}
+
+/* question cards */
+.qcard{border:1px solid var(--rule);border-radius:3px;background:var(--surface);
+  margin-bottom:22px;overflow:hidden;box-shadow:var(--shadow)}
+.qhead{display:flex;align-items:flex-start;gap:14px;padding:20px 24px 16px;
+  border-bottom:1px solid var(--rule-soft);flex-wrap:wrap}
+.qid{font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.1em;
+  color:var(--flow);background:var(--flow-wash);padding:4px 9px;border-radius:2px;white-space:nowrap}
+.qtitle{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.4;flex:1;min-width:240px}
+.qtime{font-family:var(--mono);font-size:11.5px;color:var(--ink3);white-space:nowrap;padding-top:4px}
+.qbody{padding:20px 24px 4px}
+.frow{display:grid;grid-template-columns:8.5em 1fr;gap:6px 16px;margin-bottom:13px;
+  font-size:14.3px;line-height:1.75}
+@media(max-width:560px){.frow{grid-template-columns:1fr;gap:2px}}
+.fk{font-family:var(--mono);font-size:11.5px;color:var(--ink3);letter-spacing:.05em;padding-top:5px}
+.fv{color:var(--ink2)}
+.fv b{color:var(--ink);font-weight:700}
+.fv.state{color:var(--ink);background:var(--sunk);padding:9px 12px;border-radius:2px;
+  border-left:2px solid var(--flow)}
+.fv.note{font-size:13.6px;color:var(--ink3);font-style:normal}
+.src{font-family:var(--mono);font-size:11.5px;color:var(--ink3);
+  padding:12px 24px 16px;border-top:1px dashed var(--rule-soft);margin-top:6px}
+
+/* answer control */
+.ans{display:flex;gap:10px;padding:16px 24px 20px;flex-wrap:wrap;align-items:center;
+  border-top:1px solid var(--rule-soft);background:var(--sunk)}
+.ans-label{font-family:var(--mono);font-size:11.5px;color:var(--ink3);
+  letter-spacing:.08em;margin-right:4px}
+.opt{font-family:var(--body);font-size:14px;font-weight:500;padding:8px 18px;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink2);
+  border-radius:2px;cursor:pointer;transition:.13s}
+.opt:hover{border-color:var(--flow);color:var(--ink)}
+.opt:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.opt[aria-pressed="true"]{background:var(--flow);border-color:var(--flow);color:#fff;font-weight:700}
+.opt.hold[aria-pressed="true"]{background:var(--hold);border-color:var(--hold)}
+.subq{border-top:1px solid var(--rule-soft);background:var(--sunk);padding:4px 24px 20px}
+.subq .sq-ctx{font-size:13.4px;color:var(--ink3);line-height:1.72;padding:14px 0 4px;max-width:72ch}
+
+/* council */
+.council{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:24px 26px}
+.axes{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0 22px}
+.axis{background:var(--sunk);border-radius:2px;padding:14px 16px}
+.axis .ax-n{font-family:var(--display);font-weight:700;font-size:16px;margin-bottom:5px}
+.axis .ax-s{font-family:var(--mono);font-size:12px;color:var(--flow);font-weight:600}
+.axis .ax-d{font-size:12.5px;color:var(--ink3);margin-top:6px;line-height:1.6}
+blockquote{margin:16px 0;padding:14px 20px;border-left:3px solid var(--flow);
+  background:var(--flow-wash);font-size:14.6px;line-height:1.8;color:var(--ink);border-radius:0 2px 2px 0}
+blockquote p{margin:0}
+
+/* copy box */
+.copybar{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--ink);
+  padding:14px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  margin:0 -24px -110px;box-shadow:0 -2px 12px rgba(20,28,34,.06)}
+@media(max-width:600px){.copybar{margin:0 -16px -72px;padding:12px 16px}}
+.copy-status{font-family:var(--mono);font-size:12.5px;color:var(--ink3);flex:1;min-width:180px}
+.copy-status b{color:var(--flow);font-weight:600}
+.btn{font-family:var(--body);font-size:14px;font-weight:700;padding:10px 22px;
+  border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  border-radius:2px;cursor:pointer;transition:.13s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink2);border-color:var(--rule)}
+.out{margin-top:18px;font-family:var(--mono);font-size:12.5px;line-height:1.9;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:2px;
+  padding:16px 18px;white-space:pre-wrap;word-break:break-word;color:var(--ink2)}
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:11.5px;color:var(--ink3);line-height:1.9}
+</style>
+
+<div class="wrap">
+
+<div class="masthead">
+  <div class="eyebrow">
+    <span>dialog-harness</span><span>UPSTREAM 還流</span>
+    <span>残り 4 件 + cron 1 件</span><span>2026-09-07</span>
+  </div>
+  <h1>還流採否キット 0907</h1>
+  <p class="lede">kakuman から DH へ還流させる候補 7 機構のうち、<b>3 件は既にこのシートを読まれないまま別経路で着地した</b>。残る 4 件を、順位表ではなく 1 件 1 問で問う。各カードに 採用 / 保留 を押して「回答まとめ」を貼れば確定する。4 問・約 10 分。</p>
+  <div class="meta">
+    <span>起点 <b>記入欄が 12 日間空欄</b></span>
+    <span>実測 <b>2026-09-07 再走査</b></span>
+    <span>判定 <b>Council upst03（jc 0.78）</b></span>
+    <span>局面 <b>人間専管・AI は代筆しない</b></span>
+  </div>
+</div>
+
+<section>
+  <div class="sec-eyebrow">01 · なぜ形式を変えたか</div>
+  <h2>1 問に圧縮したら、答えられなくなった</h2>
+  <p class="sub">初版は「人間が答えるのは 1 問だけ」を設計意図とし、順位表 + カットラインに圧縮した。その 1 問は 12 日間答えられず、同じ 12 日の間に 7 件中 3 件がこのシートを読まれないまま実装された。</p>
+
+  <div class="void-panel">
+    <h3>順位という前提が成立していなかった</h3>
+    <div class="void-stat">
+      <div class="vs"><div class="n">12</div><div class="l">日間 空欄</div></div>
+      <div class="vs"><div class="n">3/7</div><div class="l">迂回して着地</div></div>
+      <div class="vs"><div class="n">3・4</div><div class="l">先に着地した順位</div></div>
+      <div class="vs"><div class="n">1</div><div class="l">残った推奨 1 位</div></div>
+    </div>
+    <p style="margin:14px 0 0;font-size:14.5px;line-height:1.8;color:var(--ink2)">実装が進んだのは推奨順ではない。<b style="color:var(--ink)">下位の項目 3 / 4 が先に着地し、1 位の項目 1 が残った。</b>初版が Council 実測由来で注記した「項目 2 は項目 1 に依存する」も、実装で反証された — F6 は母集合を glob で機械定義しており、項目 1 の述語化を前提としない。</p>
+    <p style="margin:12px 0 0;font-size:14.5px;line-height:1.8;color:var(--ink2)">順位は出来事同士を比較可能な量に還元する操作であり、比較した瞬間に「なぜそれが必要だったか」が剥落する。1 問への圧縮は判断コストを下げたのではなく、<b style="color:var(--ink)">7 つの出来事を 1 つのスカラーに潰して判断を不可能にした</b>。</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">02 · 還流済み</div>
+  <h2>このシートを迂回して着地した 3 件</h2>
+  <p class="sub">訂正ではなく、還流が順位表を迂回した記録として残す。初版が「未着手」として順位付けした 7 件のうち 3 件は、既に DH に入っている。</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>初版順位</th><th>機構</th><th>どの経路で還流したか</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="rank">2</td>
+          <td><b>規範の分割不変条件</b><br><span class="mono">check-traps-sync.mjs</span></td>
+          <td>v6.17.0 F6 として <span class="mono">harness-verifier/checks/rules_index.py</span> に着地（PR #258）。v6.18.0 C-2 で独立モジュール化（PR #264）。<b>初版の「1 に依存する」は成立しなかった</b></td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td><b>観測層の非ゲート化</b><br><span class="mono">observe.yml</span></td>
+          <td><span class="mono">.github/workflows/signal-scan.yml</span> として着地（v6.15.0 F1）。<b>思想がそのまま同ファイル冒頭に書かれている</b> —「出力は候補のみ」「昇格は人間の判断」</td>
+        </tr>
+        <tr>
+          <td class="rank">4</td>
+          <td><b>配置と武装の分離</b><br><span class="mono">schedule: コメントアウト</span></td>
+          <td><b>思想のみ未採用。</b>signal-scan.yml は実装されたが cron は日次で有効化されている。→ 設問 4 に統合して問う</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">03 · 設問</div>
+  <h2>残る 4 件</h2>
+  <p class="sub">順位は付けない（初版の順位が実装順と一致しなかったため）。各カードは独立に答えられる。事故の日付・解いた問題は kakuman のソースコメントおよび delivery/ 文書からの転記であり、AI の推定を含まない（U-5）。</p>
+  <div id="questions"></div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">04 · 判定</div>
+  <h2>weighted_score に従わなかった</h2>
+  <p class="sub">Council <span class="mono">upst03</span> · jc 0.78 · dimension 重複なし（reason_divergence）</p>
+  <div class="council">
+    <div class="axes">
+      <div class="axis"><div class="ax-n">経営者</div><div class="ax-s">B · conf 0.82 · W4</div><div class="ax-d">機会損失 / 律速資源配分</div></div>
+      <div class="axis"><div class="ax-n">開発者</div><div class="ax-s">B · conf 0.82 · W4</div><div class="ax-d">可逆性 / 配布境界の整合</div></div>
+      <div class="axis"><div class="ax-n">哲学者</div><div class="ax-s">第3の道 · conf 0.72 · W3</div><div class="ax-d">前提への問い</div></div>
+    </div>
+    <p style="margin:0 0 6px;font-size:14.6px;line-height:1.8;color:var(--ink2)"><b style="color:var(--ink)">B（Q4 の <span class="mono">permissions.deny</span> を AI が先行実装する）が 6.56 対 2.16 で支配的だったが、採らなかった。</b>開発者軸は B の技術的前提を実測で確認している — <span class="mono">dh-manifest.yml:81-83</span> が <span class="mono">.claude/settings.json</span> を <b>merge 分類</b>と宣言しているため配布先へ raw 上書きされず、I-6 と衝突しない。可逆性も最高である。</p>
+    <p style="margin:12px 0 0;font-size:14.6px;line-height:1.8;color:var(--ink2)">しかし哲学者軸がその前提を否定した。</p>
+    <blockquote><p>7 件中 3 件が既に別経路で消えている以上、残りも AI が削れば、人間が答えるべき問いは消滅によって解決されたことになる。それは第 6 条の充足ではなく回避である。</p></blockquote>
+    <p style="margin:12px 0 0;font-size:14.6px;line-height:1.8;color:var(--ink)"><b>可逆なのは実装であって、問いの消滅は可逆ではない。</b></p>
+    <p style="margin:14px 0 0;font-size:13.8px;line-height:1.78;color:var(--ink3)">D（決定シートを廃し signal-scan の検知対象へ移す）は 3 軸が独立に否定した。signal-scan.yml ヘッダ自身が記録する F8 事故（日次 cron の dedup 破れで 2026-08-28〜09-05 に同一 3 PR で 27 件の重複 Issue）が I-4 / TR-4 違反を実証し、dh-manifest.yml U-4 が upstream 走査に「優劣判定はしない」を課している。</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">05 · 副産物</div>
+  <h2>決定待ち文書は制度の外に落ちる</h2>
+  <p class="sub">本件の調査で見つかった制度の穴。C-3 単体より重い。</p>
+  <div class="void-panel">
+    <h3>予言は隣のファイルで既に成就していた</h3>
+    <p style="margin:0;font-size:14.5px;line-height:1.8;color:var(--ink2)"><span class="mono">scripts/norm-scan.py:58</span> が <span class="mono">delivery/</span> を「分析・献上物。規範ではない」として時限走査から除外しており、<b style="color:var(--ink)">本シートは検知の死角に置かれていた</b>。<span class="mono">ANALYSIS-silent-failure-2026-09-06.md</span> §7 が「本分析も静かに失われうる」と書いた予言は、同じディレクトリの隣のファイルで既に成就していた。</p>
+    <div class="tbl-wrap" style="margin-top:18px">
+      <table>
+        <thead><tr><th></th><th>norm-scan.py</th><th>signal-scan.py（修正前）</th></tr></thead>
+        <tbody>
+          <tr><td><b>拡張子</b></td><td class="mono">.md .py .yml .yaml</td><td class="mono">.md .yml .yaml</td></tr>
+          <tr><td><b>除外</b></td><td class="mono">dh-upgrades/ history/ delivery/</td><td class="mono">なし</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin:14px 0 0;font-size:14.5px;line-height:1.8;color:var(--ink2)">C-1 で norm-scan に <span class="mono">*.py</span> を足した際に signal-scan が取り残され、<b style="color:var(--ink)">検査モジュール 7 件（#264 で分割した 4 本を含む）の期限宣言が滞留検知の死角</b>にあった。PR #268 で是正（母集合 23 → 31 ファイル）。</p>
+    <p style="margin:12px 0 0;font-size:14.5px;line-height:1.8;color:var(--ink2)"><b style="color:var(--ink)">除外規則は意図的に共通化しない。</b>norm-scan は「現行規範の時限」を読むので delivery/ を除外し、signal-scan は「滞留」を見るので除外しない。決定待ち文書は規範ではないが腐る — これが第三のカテゴリである。</p>
+    <p style="margin:14px 0 0;font-size:13.8px;line-height:1.78;color:var(--ink3)"><b style="color:var(--void)">空欄 12 日は静かな失敗の型 A/B/C のいずれでもない。</b>型 A-C はすべて機構の側の不作動を見ているが、本件は機構が正常に動作し、正しく人間に届き、それでも動かない。原因は不作動ではなく問いの形式の誤りであり、検知器では原理的に拾えない。</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">06 · 回答</div>
+  <h2>回答まとめ</h2>
+  <p class="sub">4 件すべてに答えると下のボックスが埋まる。コピーして貼れば、正本 <span class="mono">delivery/UPSTREAM-DECISION-2026-08-26.md</span> の記入欄へ反映できる。</p>
+  <div class="out" id="out">まだ回答がありません。</div>
+</section>
+
+<footer>
+  正本 delivery/UPSTREAM-DECISION-2026-08-26.md ／ spec delivery/decision-kits/2026-09-07-upstream-reflux.json<br>
+  上流 samejima-ai/kakuman-platform-v3.0 @ 9bbc642 ／ 判定 history/COUNCIL-LOG.md council-2026-09-07T12:00:00Z-upst03<br>
+  記入後 scripts/upstream-scan.py --prev で UPSTREAM-CANDIDATES-2026-08-26.md の採否欄へ反映 ／ C-3 完了時に VERSION を 6.18.0 へ昇格<br>
+  review_trigger date: 2026-10-07 ／ measured: 設問形式を改めた後も 30 日以上記入されなければ、順位表に代わる形式を再問する
+</footer>
+
+<div class="copybar">
+  <div class="copy-status" id="status">未回答 <b>4</b> / 4</div>
+  <button class="btn ghost" id="reset" type="button">クリア</button>
+  <button class="btn" id="copy" type="button" disabled>回答まとめをコピー</button>
+</div>
+
+</div>
+
+<script>
+const QS = [
+  {
+    id:"Q1", title:"領域ゲートの述語化 — check-routing-gates.mjs", time:"3 分", rank:1,
+    date:"2026-08-05",
+    incident:"G-FEED が feedback に誤反応。ソースコメント曰く「初の実地 false positive」",
+    problem:"変更 path が規範の該当領域なのに「通過ゲート記録」が無い献上を、機械検出できなかった",
+    value:"<b>F-01 の直接解</b>。GRAPH.yml の edge に predicate を与える設計原型。機械検出できない 2 gate を空配列で<b>明示宣言</b>する形が、v7 構想の unmechanizable そのもの",
+    dep:"なし（移すのは形式のみ。GATE_PATTERNS の中身は kakuman 業務語彙なので持ち込まない）",
+    state:"<b>未着手。</b>GRAPH.yml に predicate の語は <b>0 件</b>",
+    note:"ソースコメントに残る「依存追加のたびに常時発火して gate が形骸化する」は、DH のどの規範にも無い知恵。ただし DH 側には同型の TR-4「常時発火する検知は形骸化する」がある",
+    src:"scripts/check-routing-gates.mjs L1-14, L22"
+  },
+  {
+    id:"Q2", title:"武装解除の明示 fail — rls-drift.yml", time:"2 分", rank:5,
+    date:"2026-06-11",
+    incident:"本番 RLS ドリフト。24 テーブルで RLS 無効。migration 外の手動 DDL 由来で schema_migrations に痕跡が残らず、静的 lint では原理的に検出不能だった",
+    problem:"secret 不在でセンサーが武装解除されたまま、静かに green を装う",
+    value:"規範として立てる価値はある。ただし <b>upstream-scan.py に自己適用済み</b>（配布先不在・manifest 不読・gate≠human で exit 1）なので、追加で得るのは「規範化」の分だけ",
+    dep:"検出器本体は Supabase Management API 依存。<b>移すのは規律のみ</b>",
+    state:"<b>機構は自己適用済み。規範化のみ未</b>",
+    note:"本キットで唯一「機構は既にあり、言葉だけが無い」型",
+    src:"scripts/check-prod-rls-drift.mjs L1-6 / .github/workflows/rls-drift.yml L1-15"
+  },
+  {
+    id:"Q3", title:"購読量の CI 強制 — check-spec-size.mjs / check-claude-md-size.mjs", time:"3 分", rank:6,
+    date:"2026-08-20",
+    incident:"SCALE-ASSESSMENT §R1。CLAUDE.md 25KB には size センサーがあるのに、<b>その 40 倍の SPEC.md 1.02MB には同等の機構が無かった</b>",
+    problem:"購読量の上限が convention 止まりで、実際の肥大を機械が止められない",
+    value:"DH の代謝機構（HOT/WARM/COLD）は自認どおり「convention レベル・glob 強制ではない」。これを exit 1 に変えられる",
+    dep:"なし（閾値はプロジェクト固有だが機構は不変）",
+    state:"<b>未着手。</b>scripts/ に size 検査は無い",
+    note:"「byte 値は規範でなく<b>配置違反の代理指標</b>。対処は量を削るでなく配置を直す」というコメントは、DH の純化 RL 由来の概念が現地で実装された形 = 既に一度 DH → kakuman を下った思想の、実装だけの還流",
+    src:"scripts/check-spec-size.mjs L1-5 / scripts/check-claude-md-size.mjs L1-4"
+  },
+  {
+    id:"Q4", title:"不可逆操作の deny 強制 — .claude/settings.json", time:"3 分", rank:7,
+    date:"事故なし",
+    incident:"rm -rf / db reset / push --force / git clean 等 14 件を予防的に deny（2026-08-20 の設計判断）",
+    problem:"philosophy 第 9 条 L-GATE（不可逆操作は事前ゲート）が宣言だけで機械強制されていない",
+    value:"<b>F-04 の一部</b>。宣言した委譲レベルを自分に適用していない状態",
+    dep:"Supabase コマンドは kakuman 固有。<b>汎用分（git / rm / gh）のみ移す</b>",
+    state:"初版の「DH 本体には .claude/settings.json が存在しない」は<b>誤り</b> — ファイルは PR #209 で新設済み。ただし hooks 節のみで <b>permissions 節が無い</b>ため、指摘の実体は今も成立する",
+    extra:{k:"配布への影響", v:"dh-manifest.yml:81-83 が本ファイルを <b>merge 分類</b>（overwrite ではない）と宣言しているため、配布先へ raw 上書きされない。I-6 と衝突しない"},
+    note:"本設問には初版の項目 4（配置と武装の分離）を統合した。signal-scan.yml の cron は現在日次で有効化されており、Actions 消費枠の意思決定が AI 側に移った状態にある",
+    src:".claude/settings.json permissions.deny / CLAUDE.md L50",
+    sub:{
+      id:"Q4b", label:"signal-scan の cron",
+      ctx:"初版が項目 4 に与えた価値は「<b>F-03 を安全に着地させる唯一の形</b>。discover.yml を schedule: 無効で出荷し、武装は人間が行う。philosophy 第 6 条を崩さずに『発見』を自動化できる」であった。DH には discover.yml は無いが、signal-scan.yml が同じ位置を占めている。",
+      opts:["現状維持（日次有効）","無効化して人間が武装する"]
+    }
+  }
+];
+
+const answers = {};
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+
+function row(k, v, cls){
+  return '<div class="frow"><div class="fk">'+k+'</div><div class="fv '+(cls||"")+'">'+v+'</div></div>';
+}
+
+function render(){
+  const host = document.getElementById("questions");
+  host.innerHTML = QS.map(q => {
+    let body = "";
+    body += row("事故の日付", "<b>"+esc(q.date)+"</b>");
+    body += row("事故", q.incident);
+    body += row("解いた問題", q.problem);
+    body += row("DH での価値", q.value);
+    body += row("固有依存", q.dep);
+    body += row("DH の現況", q.state + ' <span class="mono">（2026-09-07 実測）</span>', "state");
+    if(q.extra) body += row(q.extra.k, q.extra.v);
+    body += row("注記", q.note, "note");
+
+    let sub = "";
+    if(q.sub){
+      sub = '<div class="subq"><div class="sq-ctx">'+q.sub.ctx+'</div>'
+          + '<div class="ans" style="border-top:none;padding-left:0;padding-right:0;background:transparent">'
+          + '<span class="ans-label">'+esc(q.sub.label)+'</span>'
+          + q.sub.opts.map((o,i) =>
+              '<button class="opt'+(i===0?"":" hold")+'" type="button" data-q="'+q.sub.id+'" data-v="'+esc(o)+'" aria-pressed="false">'+esc(o)+'</button>'
+            ).join("")
+          + '</div></div>';
+    }
+
+    return '<div class="qcard">'
+      + '<div class="qhead"><span class="qid">'+q.id+'</span>'
+      + '<span class="qtitle">'+esc(q.title)+'</span>'
+      + '<span class="qtime">初版順位 '+q.rank+' · '+q.time+'</span></div>'
+      + '<div class="qbody">'+body+'</div>'
+      + '<div class="src">出典 '+esc(q.src)+'</div>'
+      + '<div class="ans"><span class="ans-label">採否</span>'
+      + '<button class="opt" type="button" data-q="'+q.id+'" data-v="採用" aria-pressed="false">採用</button>'
+      + '<button class="opt hold" type="button" data-q="'+q.id+'" data-v="保留" aria-pressed="false">保留</button>'
+      + '</div>' + sub + '</div>';
+  }).join("");
+
+  host.querySelectorAll(".opt").forEach(b => {
+    b.addEventListener("click", () => {
+      const q = b.dataset.q, v = b.dataset.v;
+      const group = b.parentElement.querySelectorAll('.opt[data-q="'+q+'"]');
+      if(answers[q] === v){
+        delete answers[q];
+        group.forEach(x => x.setAttribute("aria-pressed","false"));
+      } else {
+        answers[q] = v;
+        group.forEach(x => x.setAttribute("aria-pressed", x.dataset.v === v ? "true" : "false"));
+      }
+      update();
+    });
+  });
+}
+
+function update(){
+  const main = QS.map(q => q.id);
+  const done = main.filter(id => answers[id]).length;
+  const left = main.length - done;
+  document.getElementById("status").innerHTML =
+    left === 0 ? '<b>4 / 4 回答済み</b>' : '未回答 <b>'+left+'</b> / 4';
+  document.getElementById("copy").disabled = left !== 0;
+
+  const out = document.getElementById("out");
+  if(done === 0){ out.textContent = "まだ回答がありません。"; return; }
+  out.textContent = buildText();
+}
+
+function buildText(){
+  const L = ["# UPSTREAM 還流 採否回答（2026-09-07 キット）",""];
+  QS.forEach(q => {
+    const a = answers[q.id];
+    L.push("設問 " + q.id.slice(1) + ". " + q.title.split(" — ")[0] + ": " + (a || "（未回答）"));
+  });
+  if(answers["Q4b"]) L.push("signal-scan の cron: " + answers["Q4b"]);
+  else L.push("signal-scan の cron: （未回答）");
+  L.push("");
+  L.push("反映先: delivery/UPSTREAM-DECISION-2026-08-26.md の記入欄");
+  L.push("手順: scripts/upstream-scan.py --prev で UPSTREAM-CANDIDATES-2026-08-26.md へ反映");
+  return L.join("\n");
+}
+
+document.getElementById("copy").addEventListener("click", async () => {
+  const btn = document.getElementById("copy");
+  try{
+    await navigator.clipboard.writeText(buildText());
+    const t = btn.textContent; btn.textContent = "コピーしました";
+    setTimeout(() => { btn.textContent = t; }, 1600);
+  }catch(e){
+    const r = document.createRange(); r.selectNodeContents(document.getElementById("out"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = "下のテキストを選択しました";
+    setTimeout(() => { btn.textContent = "回答まとめをコピー"; }, 2200);
+  }
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll(".opt").forEach(b => b.setAttribute("aria-pressed","false"));
+  update();
+});
+
+render();
+update();
+</script>
+
+</body>
+</html>
