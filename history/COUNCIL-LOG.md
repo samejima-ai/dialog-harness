@@ -3951,3 +3951,53 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: null
   modification_note: null
   escalation_reason: null
+
+- invocation_id: "council-2026-09-07T12:00:00Z-upst03"
+  timestamp: "2026-09-07T12:00:00Z"
+  source_skill: "layer0-spec-architect"
+  council_type: "business"
+  category: "judgment"
+  decision_category: "C2"
+  question_to_answer: "C-3『配布先検査の還流』をどう扱うべきか。delivery/UPSTREAM-DECISION-2026-08-26.md の記入欄『採用件数: 上から ___ 件』が 12 日間空欄のまま、7 件中 3 件が別経路で実装された。規範文書改変（決定シートの改訂 + 還流規律の規範化）"
+  options:
+    - "(A) 決定シートを実測で更新し、採用件数の記入は人間に残して停止する"
+    - "(B) 更新に加え、固有依存が無く可逆な項目（項目 7 の permissions.deny 汎用分）を先行実装する"
+    - "(C) C-3 全体を人間判断待ちとして凍結し、他の残作業へ移る"
+    - "(D) 決定シートを廃し、還流候補を signal-scan の検知対象へ移して常時観測に載せる"
+  phase_reached: "1→3"
+  conflict_type: "reason_divergence"
+  final_weights: { 経営者: 4, 開発者: 4, 哲学者: 3 }
+  personas:
+    - { persona: "経営者", stance: "(B)", confidence: 0.82, dimension: "機会損失 / 律速資源配分" }
+    - { persona: "開発者", stance: "(B)", confidence: 0.82, dimension: "可逆性 / 配布境界の整合" }
+    - { persona: "哲学者", stance: "第3の道（D 寄り・A を含む段階移行）", confidence: 0.72, dimension: "前提への問い（形式が意味を運べるか）" }
+  weight_calculation:
+    method: "weight_times_confidence"
+    scores:
+      - stance: "(B)"
+        supporters: ["経営者", "開発者"]
+        weight_sum: 8
+        weighted_score: 6.56
+        components: ["経営者 4×0.82=3.28", "開発者 4×0.82=3.28"]
+      - stance: "第3の道（順位表を出来事カードへ解体・A を第一歩とする）"
+        supporters: ["哲学者"]
+        weight_sum: 3
+        weighted_score: 2.16
+        components: ["哲学者 3×0.72=2.16"]
+    third_way_excluded: []
+    max_score_stance: "(B)"
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  recommended: "(A) を骨格とし、B の先行実装部分は人間が採否を答えた後へ回す。3 軸が一致する『決定シートを実測で更新し、記入欄への代筆はしない』を実行し、以下 5 点を必須随伴条件とする。(1) 設問形式を『上から何件』→『項目ごとに 採用/保留/還流済み』へ改める — 実測で順位下位の項目 3/4 が先に実装され上位の項目 1 が残っており、順位という前提自体が成立していない (2) 項目 2/3/4 を『還流済み』として表から抜き、どの経路で還流したかを 1 行残す。これは訂正ではなく還流が順位表を迂回した記録である (3) 決定シートに規範メタデータ（stage / review_trigger）を付与する — 現在まったく無く、人間の判断待ちという最も期限管理を要する文書が期限宣言を持っていない (4) norm-scan.py の delivery/ 一律除外を見直す。『規範ではないから除外』の線引きは正しいが、決定待ち文書は規範ではないのに腐る (5) signal-scan.py の review_trigger 母集合に *.py を追加する — norm-scan は .md/.py/.yml/.yaml、signal-scan は .md/.yml/.yaml で分裂しており、検査モジュール 7 件の期限宣言が監視の死角にある"
+  minority_opinion: "哲学者軸の『順位表を廃し 1 件 = 1 出来事カードへ解体する』本体は本判定の射程外として保留。判断コストは 1 問から 4 問へ増えるが、4 問はいずれも答えられる問いであり答えられない 1 問より安い、という主張は決定シート更新後の実測（人間が新設問に答えるか）で検証すべき独立議題。経営者軸の『記入欄の空欄 12 日を signal-scan の滞留判定に載せて督促だけ自動化する』案は、随伴条件 (3) の review_trigger 付与で部分的に達成されるが、90 日閾値との整合は未検証。開発者軸の『還流一般に適用できる規律として規範化する価値がある』も未着手"
+  weight_note: "経営者 4 / 開発者 4 / 哲学者 3（ΣW=11 は council-weights.md 自認の既知宣言違反）"
+  reasoning: "weighted_score は B が 6.56 対 2.16 で支配的だが、判定は B をそのまま採らない。3 軸は『決定シートを実測で更新し記入欄は人間に残す』という骨格では完全に一致しており、争点は『項目 7 の permissions.deny を先行実装するか』の一点に絞られる。開発者軸は実測で B の技術的前提を確認した — dh-manifest.yml:81-83 が settings.json を merge 分類（overwrite ではない）と宣言しているため配布先へ raw 上書きされず I-6 と衝突しない、deny の追加は単一 JSON キーで削除により完全復旧する最高可逆性の変更である。この検証は正しい。しかし開発者軸自身が notes で『B は A の上位互換』と述べた根拠は『先行実装が問いの分母を減らさない』という暗黙の前提に立っており、哲学者軸はその前提を正面から否定した — 7 件中 3 件が既に別経路で消えている以上、残りも AI が削れば人間が答えるべき問いは消滅によって解決されたことになり、それは philosophy 第 6 条の充足ではなく回避である。この反論は技術的可逆性では反駁できない層にある。可逆なのは実装であって、問いの消滅は可逆ではない。よって B の実装部分のみを人間の採否回答後へ繰り延べた。D は 3 軸が独立に否定した。開発者軸は signal-scan.yml ヘッダ自身が記録する F8 事故（日次 cron で dedup が外れ 2026-08-28〜09-05 に同一 3 PR で 27 件の重複 Issue）を挙げて I-4 / TR-4 違反を、また dh-manifest.yml U-4 が upstream 走査に『存在差分の列挙に閉じる・優劣判定はしない』を課している点から順位を検知器へ移すこと自体の U-4 違反を指摘した。哲学者軸は『還流候補は信号ではなく記憶であり、常時観測に載せると毎日思い出させられることで摩耗する』と述べ、シート冒頭が転記した kakuman の知恵『依存追加のたびに常時発火して gate が形骸化する』と同じことを言っている。C は開発者軸が『既に実態と乖離した文書を乖離したまま次サイクルへ持ち越す』として保守性の観点から最も避けたいと明示した。随伴条件は 3 軸の concerns から導出した。特に (4)(5) は本判定の副産物として最も重い — 哲学者軸が独立に norm-scan.py:58 の delivery/ 除外を発見し、決定シートが時限走査の死角に置かれていることを 12 日放置の制度的原因として名指した。これは ANALYSIS-silent-failure §7 が『本分析も静かに失われうる』と自ら書いた予言が同じディレクトリの隣のファイルで既に成就していたことを意味し、v6.18.0 の有効期限条項が自己適用されていないことの実証である。C-3 単体より重い"
+  judgment_confidence: 0.78
+  consensus_mode: "auto_agree"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: null
+  follow_up_questions_count: 0
+  agreed_at: null
+  modification_note: null
+  escalation_reason: null

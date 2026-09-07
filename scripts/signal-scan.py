@@ -87,9 +87,19 @@ def fetch_open_prs() -> list[dict]:
 
 
 def fetch_review_trigger_files() -> list[dict]:
-    """review_trigger を宣言するファイルと、その最終 commit 時刻（epoch 秒）。"""
+    """review_trigger を宣言するファイルと、その最終 commit 時刻（epoch 秒）。
+
+    **拡張子は `scripts/norm-scan.py` の `find_files` と一致させる**（v6.18.0 C-3 随伴条件 5）。
+    C-1 で norm-scan が `*.py` を足した際に本関数が取り残され、検査モジュール 7 件
+    （#264 で分割した 4 本を含む）の期限宣言が滞留検知の死角に落ちていた。
+    同じ `review_trigger` 宣言を 2 機構が別の母集合で読む状態は、それ自体が型 A である。
+
+    **除外規則は意図的に norm-scan と異なる**（共通化しない）。norm-scan は「現行規範の時限」を
+    読むので `delivery/` を除外するが、本検知器は「滞留」を見るので除外しない — 決定待ち文書
+    （記入欄を持つ献上物）は規範ではないが腐る、というのが C-3 で見つかった第三のカテゴリである。
+    """
     ls = _run(["git", "grep", "-l", "review_trigger", "--",
-               "*.md", "*.yml", "*.yaml"]).split()
+               "*.md", "*.py", "*.yml", "*.yaml"]).split()
     out = []
     for f in ls:
         ts = _run(["git", "log", "-1", "--format=%ct", "--", f]).strip()
