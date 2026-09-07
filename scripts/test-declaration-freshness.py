@@ -99,11 +99,25 @@ td, r = scenario(specs=(("upgrade-spec-v6.16.0.md", "実装中（F5 済 / F1-F4 
 check("状態行を実態に直せば消える", r == [], str(r))
 td.cleanup()
 
-# 偽陽性を出さない条件（緩い正規表現だと拾ってしまうもの）
+# 着地語 3 種すべてを拾う（docstring と実装の一致。PR #270 Copilot 指摘の回帰）。
+# 初版は否定先読みと同時に「で実装」も削ってしまい、真の着地主張を取り落としていた。
+for label, body in (
+    ("着地", '"""走査器（v6.16.0 F5 / v6.18.0 C-1 で着地）。"""\n'),
+    ("で実装", '# v6.16.0 F5 を norm-scan.py で実装した\n'),
+    ("実装済", '# v6.16.0 F5 は実装済み（PR #261）\n'),
+):
+    td, r = scenario(specs=DRAFT, source_docs=(("scripts/x.py", body),))
+    check(f"着地語を拾う: {label}",
+          any(i["severity"] == "WARN" and "着地を名乗っている" in i["message"] for i in r), str(r))
+    td.cleanup()
+
+# 偽陽性は語を削るのではなく後続の否定先読みで潰す
 for label, body in (
     ("単なる引用（同旨）", '# v6.16.0 F2 公開安全と同旨\n'),
     ("項番の引用のみ", '    lines.append("判定はしない（v6.16.0 F5-3）")\n'),
     ("予定の記述", '# v6.16.0 F5 は次サイクルで実装する予定\n'),
+    ("願望（したい）", '# v6.16.0 F5 を後で実装したい\n'),
+    ("当為（すべき）", '# v6.16.0 F5 は今期で実装すべき\n'),
 ):
     td, r = scenario(specs=DRAFT, source_docs=(("scripts/x.py", body),))
     check(f"偽陽性を出さない: {label}", r == [], str(r))
