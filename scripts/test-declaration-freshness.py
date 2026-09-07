@@ -80,6 +80,85 @@ check("v4.2 より後の追記 = FAIL（宣言の二重定義を防ぐ）",
       any("v4.2 より後" in i["message"] for i in r), str(r))
 td.cleanup()
 
+print("== 5b. 実装側の着地主張 ⇄ spec の状態行（v6.18.0 C-4） ==")
+# 検査 5 は spec 自身の本文しか見ないため、着地の主張が実装側にあると素通りする。
+# 実測（2026-09-07）: v6.13.0 F5 は norm-scan.py として着地済みなのに状態行は `L0 起草` のままで、
+# 既存 11 検査のどれも検出しなかった。
+
+DRAFT = (("upgrade-spec-v6.16.0.md", "L0 起草（人間レビュー待ち）", "本文"),)
+LANDED = ("scripts/norm-scan.py", '"""走査器（v6.16.0 F5 / v6.18.0 C-1 で着地）。"""\n')
+
+td, r = scenario(specs=DRAFT, source_docs=(LANDED,))
+check("draft の spec の着地を実装側が名乗ったら WARN",
+      any(i["severity"] == "WARN" and "着地を名乗っている" in i["message"] for i in r), str(r))
+td.cleanup()
+
+# 状態行を実態に直せば消える（= 是正で 0 になる。I-1「是正と検査は同一 PR」が成立する形）
+td, r = scenario(specs=(("upgrade-spec-v6.16.0.md", "実装中（F5 済 / F1-F4 未）", "本文"),),
+                 source_docs=(LANDED,))
+check("状態行を実態に直せば消える", r == [], str(r))
+td.cleanup()
+
+# 偽陽性を出さない条件（緩い正規表現だと拾ってしまうもの）
+for label, body in (
+    ("単なる引用（同旨）", '# v6.16.0 F2 公開安全と同旨\n'),
+    ("項番の引用のみ", '    lines.append("判定はしない（v6.16.0 F5-3）")\n'),
+    ("予定の記述", '# v6.16.0 F5 は次サイクルで実装する予定\n'),
+):
+    td, r = scenario(specs=DRAFT, source_docs=(("scripts/x.py", body),))
+    check(f"偽陽性を出さない: {label}", r == [], str(r))
+    td.cleanup()
+
+# 設計文書側の記述は対象外（dh-upgrades / delivery / history では参照が正常に現れる）
+td, r = scenario(specs=DRAFT,
+                 source_docs=(("delivery/ANALYSIS-x.md", "v6.16.0 F5 で着地した\n"),))
+check("設計文書（delivery/）の記述は対象外", r == [], str(r))
+td.cleanup()
+
+# 状態行が draft でない版の着地主張は無視する
+td, r = scenario(version="6.16.0", graph_version="6.16.0",
+                 specs=(("upgrade-spec-v6.16.0.md", "実装済み（PR #1、VERSION 6.16.0）", "本文"),),
+                 source_docs=(LANDED,))
+check("実装済みを名乗る spec には発火しない", r == [], str(r))
+td.cleanup()
+
+print("== 走査面の欠落を「静かな PASS」にしない（v6.18.0 C-4） ==")
+# 実測（2026-09-07）: DH 本体で GRAPH.yml を消すと 6 検査が 1 件も出さずに --strict が
+# exit 0 で通っていた。検査が守っているはずのものを消しても緑になるなら、その緑は
+# 何も保証していない。v6.13.0 I-4「検出器は黙って捨てない」の自己適用。
+#
+# 一方 I-6（配布先など機構を持たないツリーで壊れない）は維持する必要がある。
+# ゆえに DH 本体では FAIL、配布先では METRIC skip、という二段で検証する。
+
+for what, kw in (
+    ("GRAPH.yml", dict(graph_version=None, specs=OK_SPECS)),
+    ("dh-upgrades/", dict(upgrades_dir=False)),
+):
+    td, r = scenario(dh_core=True, **kw)
+    check(f"DH 本体で {what} が無ければ FAIL",
+          any(i["severity"] == "FAIL" and "走査面を確保できなかった" in i["message"] for i in r), str(r))
+    td.cleanup()
+    td, r = scenario(dh_core=False, **kw)
+    check(f"配布先で {what} が無くても誤検知しない（I-6 維持）", r == [], str(r))
+    td.cleanup()
+
+# §バージョン履歴 のアンカーが外れる 3 経路。見出しレベル変更・改名・節削除のいずれでも
+# 旧実装は黙って PASS していた（凍結が守られているかを一切見ないまま緑）。
+for label, hist in (
+    ("見出しレベルを ## に変更", FROZEN_HISTORY.replace("### バージョン履歴", "## バージョン履歴", 1)),
+    ("見出しを改名（履歴 → 沿革）", FROZEN_HISTORY.replace("バージョン履歴", "バージョン沿革", 1)),
+    ("節ごと削除", "## 別の節\n\n本文\n"),
+):
+    td, r = scenario(dh_core=True, specs=OK_SPECS, history=hist)
+    check(f"アンカーが外れたら FAIL: {label}",
+          any(i["severity"] == "FAIL" and "走査面を確保できなかった" in i["message"] for i in r), str(r))
+    td.cleanup()
+
+# 走査面が在るのに検査自身が黙るのを防ぐ = 健全ツリーでは余計な FAIL を出さない
+td, r = scenario(dh_core=True, specs=OK_SPECS)
+check("DH 本体の健全ツリーでは走査面 FAIL を出さない（偽陽性 0）", r == [], str(r))
+td.cleanup()
+
 print("== 常時発火しないこと（I-4）: 実リポで WARN / FAIL が 0 件 ==")
 graded = _fx.real()
 check("実リポで検出 0 件（是正済み）", graded == [], str(graded))

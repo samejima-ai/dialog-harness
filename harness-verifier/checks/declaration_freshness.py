@@ -30,7 +30,21 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+
 from typing import Any
+
+try:  # verify.py 経由（パッケージとして読み込まれる正規経路）
+    from ._declaration_util import surface_missing
+except ImportError:  # 単体ロード（scripts/test-*.py が spec_from_file_location で読む）
+    import importlib.util as _ilu
+
+    _p = Path(__file__).with_name("_declaration_util.py")
+    _s = _ilu.spec_from_file_location("_declaration_util", _p)
+    if _s is None or _s.loader is None:
+        raise ImportError(f"_declaration_util.py を単体ロードできない: {_p}")
+    _m = _ilu.module_from_spec(_s)
+    _s.loader.exec_module(_m)
+    surface_missing = _m.surface_missing
 
 
 # 状態行の値域（dev-env-spec.md §状態行の値域 が正本。ここは機械表現）
@@ -48,6 +62,20 @@ SPEC_NAME_RE = re.compile(r"^upgrade-spec-v(\d+)\.(\d+)\.(\d+)\.md$")
 
 # 本文が実装を名乗る行（検査 5 の file-local 判定）
 IMPL_CLAIM_RE = re.compile(r"実装済み（PR[\s#-]|実装（PR[\s#-]", re.M)
+
+# 検査 5b: 実装側（live 面）が「この版のこの項目は着地した」と名乗っているのに、
+# 当の spec の状態行が起草のままである、を捕まえる。
+# 検査 5 は spec **自身の本文**しか見ないので、着地の主張が実装側にあると素通りする
+# （実測 2026-09-07: v6.13.0 F5 は norm-scan.py として着地済みなのに状態行は `L0 起草` のままだった）。
+#
+# 語を「着地 / 実装済」に絞り、さらに後続の「予定 / 候補 / したい / すべき / する」で打ち消す。
+# 緩めると `observe.py`「v6.14.0 F2 と同旨」のような単なる引用や、
+# 「次サイクル**で実装**する予定」のような未来形まで拾い、
+# I-4（常時発火する検知を作らない）に抵触する（実測: 緩い版は偽陽性を出した）。
+LANDED_CLAIM_RE = re.compile(
+    r"v(\d+)\.(\d+)\.(\d+)\s+F\d+[^\n]*?(?:着地|実装済)(?!.*(?:予定|候補|したい|すべき|する))")
+# live 面 = 実装の側。設計文書（dh-upgrades / delivery / history）と test-* は除く。
+LIVE_DIRS = ("scripts", ".claude", "harness-verifier", "templates")
 
 HISTORY_FREEZE_MARKER = "凍結マーカー"
 
@@ -71,7 +99,9 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
         })
         return issues  # 以降の比較基準が立たないので打ち切る
 
-    if graph_path.is_file():
+    if not graph_path.is_file():
+        surface_missing(issues, repo_root, "GRAPH.yml", "GRAPH.yml")
+    else:
         gm = re.search(r'^version:\s*"?(\d+\.\d+\.\d+)"?', graph_path.read_text(encoding="utf-8"), re.M)
         if not gm:
             issues.append({
@@ -88,7 +118,10 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
             })
 
     # --- 2-5. upgrade-spec の状態行 ---
+    draft_specs: dict[tuple[int, int, int], str] = {}
     spec_dir = repo_root / "dh-upgrades"
+    if not spec_dir.is_dir():
+        surface_missing(issues, repo_root, "dh-upgrades/", "dh-upgrades/（upgrade-spec の置き場）")
     for path in sorted(spec_dir.glob("upgrade-spec-v*.md")) if spec_dir.is_dir() else []:
         nm = SPEC_NAME_RE.match(path.name)
         if not nm:
@@ -128,6 +161,9 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                 "severity": "FAIL",
             })
 
+        if kind in ("draft", "council"):
+            draft_specs[spec_ver] = state
+
         # 5. L0 起草のまま本文が実装を名乗る（file-local 判定）
         if kind == "draft" and IMPL_CLAIM_RE.search(text):
             issues.append({
@@ -137,12 +173,32 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:
                 "severity": "WARN",
             })
 
+    # --- 5b. 実装側の着地主張 ⇄ spec の状態行 ---
+    if draft_specs:
+        for ver_key, rel in _scan_landed_claims(repo_root):
+            if ver_key in draft_specs:
+                issues.append({
+                    "location": rel,
+                    "message": (f"実装側が v{'.'.join(map(str, ver_key))} の項目の着地を名乗っているが、"
+                                f"`dh-upgrades/upgrade-spec-v{'.'.join(map(str, ver_key))}.md` の状態行は "
+                                f"`{draft_specs[ver_key]}` のまま。状態行を実態に合わせる"
+                                f"（値域は dev-env-spec §状態行の値域）"),
+                    "severity": "WARN",
+                })
+
     # --- 6. dev-env-spec §バージョン履歴 の凍結 ---
     dev_env = skills_dir / "layer0-spec-architect" / "references" / "dev-env-spec.md"
-    if dev_env.is_file():
+    if not dev_env.is_file():
+        surface_missing(issues, repo_root, "dev-env-spec.md", "dev-env-spec.md")
+    else:
         text = dev_env.read_text(encoding="utf-8")
         m = re.search(r"^###\s*バージョン履歴.*?$(.*?)(?=^###\s|\Z)", text, re.M | re.S)
-        if m:
+        # アンカーが外れたら黙って skip しない。見出しに空白 1 個を入れるだけで
+        # この検査が無効化し --strict が緑で通ることを実測した（2026-09-07）。
+        if not m:
+            surface_missing(issues, repo_root, "dev-env-spec.md §バージョン履歴",
+                            "§バージョン履歴 の見出し（`### バージョン履歴...`）")
+        else:
             body = m[1]
             if HISTORY_FREEZE_MARKER not in body:
                 issues.append({
@@ -179,3 +235,31 @@ def _classify(state: str) -> str | None:
         if re.match(pat, state.strip()):
             return name
     return None
+
+
+def _scan_landed_claims(repo_root: Path):
+    """live 面から「vX.Y.Z F<n> ... 着地/実装済/で実装」の主張を拾う。
+
+    返すのは (版 tuple, 相対パス) の列。設計文書と test-* は対象外 —
+    そこでは「v6.14.0 F2 と同旨」のような参照が正常に現れるため。
+    """
+    seen = set()
+    for d in LIVE_DIRS:
+        base = repo_root / d
+        if not base.is_dir():
+            continue
+        for path in base.rglob("*"):
+            if not path.is_file() or path.suffix not in (".py", ".md", ".yml", ".yaml"):
+                continue
+            if path.name.startswith("test-"):
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, ValueError):
+                continue
+            for a, b, c in ((m[1], m[2], m[3]) for m in LANDED_CLAIM_RE.finditer(text)):
+                key = (int(a), int(b), int(c))
+                rel = path.relative_to(repo_root).as_posix()
+                if (key, rel) not in seen:
+                    seen.add((key, rel))
+                    yield key, rel
