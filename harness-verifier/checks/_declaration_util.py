@@ -30,7 +30,8 @@ except ImportError:  # 単体ロード（scripts/test-*.py が spec_from_file_lo
     _spec.loader.exec_module(_mod)
     parse_graph = _mod.parse_graph
 
-__all__ = ["parse_graph", "read_graph", "skill_ids_from_graph"]
+__all__ = ["parse_graph", "read_graph", "skill_ids_from_graph",
+           "is_dh_core", "surface_missing"]
 
 
 def read_graph(graph_path: Path) -> dict:
@@ -62,3 +63,55 @@ def skill_ids_from_graph(doc: dict) -> set[str]:
         and str(x.get("path", "")) == f".claude/skills/{x['id']}/"
     }
     return ids
+
+
+# --- 走査面の欠落を「静かな PASS」にしないための道具（v6.18.0 C-4） -------------
+#
+# 宣言系検査は「入力が無ければ skip」で書かれている。これは I-6（配布先など機構自体を
+# 持たないツリーで壊れない）のための正当な分岐である。**問題は skip が不可視なこと**。
+#
+# 実測（2026-09-07）: DH 本体で `GRAPH.yml` を消すと 6 検査が 1 件も出さずに
+# `--strict` が exit 0 で通る。`dev-env-spec.md` §バージョン履歴 の見出しに半角空白を
+# 1 個入れるだけでも検査 6 が黙って無効化し、やはり exit 0 になる。
+# 検査が守っているはずのものを消しても緑になるなら、その緑は何も保証していない。
+#
+# 方針（v6.13.0 I-4「検出器は黙って捨てない」の自己適用）:
+#   - **DH 本体**（走査面が在るはずのツリー）で入力が欠けたら **FAIL**
+#   - それ以外（配布先など）では **METRIC で skip を可視化**して続行（I-6 を壊さない）
+
+
+def is_dh_core(repo_root: Path) -> bool:
+    """このツリーが DH 本体か。
+
+    マーカーは `harness-verifier/checks/`（**検査の実体そのもの**）1 つに絞る。理由は 2 つ:
+
+    - 配布先はこれを持たない。`harness-verifier/reports/` だけを持つ配布先（cc-cockpit 実例）を
+      本体と誤認しない。
+    - **このマーカーを消すと検査自体が動かなくなる**ので、「マーカーを消して走査面の
+      欠落判定だけ黙らせる」という抜け道が原理的に作れない。
+      `dh-upgrades/` のような被検査対象をマーカーにすると、それを消すだけで
+      「消えたことを検出する仕組み」も一緒に黙る（自己参照の穴）。
+    """
+    return (repo_root / "harness-verifier" / "checks").is_dir()
+
+
+def surface_missing(issues: list, repo_root: Path, location: str, what: str) -> None:
+    """走査面が取れなかったことを必ず記録する。
+
+    DH 本体なら FAIL（在るはずのものが無い）、配布先なら METRIC（skip したと明示）。
+    どちらでも「黙って PASS」にはしない。
+    """
+    if is_dh_core(repo_root):
+        issues.append({
+            "location": location,
+            "message": (f"{what} が見つからず、この検査は走査面を確保できなかった。"
+                        f"DH 本体では在るはずのものなので FAIL とする"
+                        f"（走査面の欠落を静かな PASS にしない = v6.13.0 I-4 の自己適用）"),
+            "severity": "FAIL",
+        })
+    else:
+        issues.append({
+            "location": location,
+            "message": f"skip — {what} が無いツリーのため本検査は走らなかった（配布先では正常・I-6）",
+            "severity": "METRIC",
+        })

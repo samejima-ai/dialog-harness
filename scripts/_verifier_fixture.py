@@ -75,12 +75,22 @@ class Fixture:
 def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
           specs=(), history=FROZEN_HISTORY, graph_body=None,
           skill_dirs=(), script_files=(), source_docs=(),
-          rules=(), rules_readme=None, manifest=None, state_in_dist=()):
+          rules=(), rules_readme=None, manifest=None, state_in_dist=(),
+          dh_core=False, upgrades_dir=True):
     """合成ツリーを組む。
 
     graph_body を渡すと GRAPH.yml の nodes / edges / graph_excluded を差し替える（F2 用）。
     skill_dirs / script_files は「実体」を、source_docs は edge.source の中身を作る。
+
+    dh_core=True で `harness-verifier/checks/` を置き **DH 本体を模す**。
+    走査面の欠落を FAIL にするか METRIC skip にするかがこの判定で分かれる
+    （`_declaration_util.is_dh_core`）。**既定は False（配布先を模す）** —
+    True にすると top-level に `harness-verifier/` が生えて F4 の分類網羅検査を揺らすため、
+    走査面の欠落を試すテストだけが明示的に True にする。
+    upgrades_dir=False で `dh-upgrades/` 自体を作らない（走査面の欠落を試す用）。
     """
+    if dh_core:
+        (root / "harness-verifier" / "checks").mkdir(parents=True, exist_ok=True)
     skills = root / ".claude" / "skills"
     (skills / "layer0-spec-architect" / "references").mkdir(parents=True)
     (root / "VERSION").write_text(version + "\n", encoding="utf-8")
@@ -115,6 +125,8 @@ def build(root: Path, *, version="6.15.0", graph_version="6.15.0",
     (skills / "layer0-spec-architect" / "references" / "dev-env-spec.md").write_text(
         "# dev-env-spec\n\n" + history, encoding="utf-8")
     up = root / "dh-upgrades"
+    if not upgrades_dir:
+        return
     up.mkdir()
     for name, state, body in specs:
         head = f"> **状態: {state}**。\n\n" if state is not None else ""
