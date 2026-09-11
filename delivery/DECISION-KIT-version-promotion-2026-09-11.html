@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>版番号の昇格キット</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+</head>
+<body>
+<style>
+:root{
+  --paper:#EEF0EF; --surface:#F8FAF9; --sunk:#E2E6E5;
+  --ink:#141C22; --ink2:#4C5A61; --ink3:#7E8B90;
+  --rule:#C8D0D2; --rule-soft:#DBE1E2;
+  --flow:#1E6B7A; --flow-wash:#DBEBED;
+  --hold:#8A6A2F; --hold-wash:#F0E7D4;
+  --void:#8E4636; --void-wash:#F3E0DB;
+  --done:#2E7D5B; --done-wash:#DCEBE3;
+  --draft:#3B464C; --draft-wash:#E4E8E9;
+  --shadow:0 1px 0 rgba(20,28,34,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1417; --surface:#151D20; --sunk:#1C2528;
+    --ink:#E4EBED; --ink2:#A3B1B6; --ink3:#748187;
+    --rule:#2A3437; --rule-soft:#212A2D;
+    --flow:#4FB6C6; --flow-wash:#0F2B2F;
+    --hold:#C9A055; --hold-wash:#2A2213;
+    --void:#D4826D; --void-wash:#2C1915;
+    --done:#5FBE91; --done-wash:#112620;
+    --draft:#9FAEB4; --draft-wash:#1A2225;
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1417; --surface:#151D20; --sunk:#1C2528;
+  --ink:#E4EBED; --ink2:#A3B1B6; --ink3:#748187;
+  --rule:#2A3437; --rule-soft:#212A2D;
+  --flow:#4FB6C6; --flow-wash:#0F2B2F;
+  --hold:#C9A055; --hold-wash:#2A2213;
+  --void:#D4826D; --void-wash:#2C1915;
+  --done:#5FBE91; --done-wash:#112620;
+  --draft:#9FAEB4; --draft-wash:#1A2225;
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding-block:0 110px;padding-inline:24px}
+@media(max-width:600px){.wrap{padding-block:0 72px;padding-inline:16px}body{font-size:15px}}
+.mono{font-family:var(--mono);font-size:.88em}
+
+.masthead{padding-block:60px 32px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,6vw,56px);
+  line-height:1.18;margin:0 0 20px;letter-spacing:.01em;text-wrap:balance}
+.lede{font-size:17px;color:var(--ink2);max-width:64ch;margin:0}
+.lede b{color:var(--ink);font-weight:700}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;
+  font-size:12.5px;color:var(--ink3);font-family:var(--mono)}
+.meta b{color:var(--ink2);font-weight:600}
+
+section{margin-top:56px}
+.sec-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--flow);margin-bottom:10px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(23px,3.4vw,31px);
+  margin:0 0 8px;line-height:1.32;text-wrap:balance}
+.sub{color:var(--ink2);font-size:15px;margin:0 0 26px;max-width:70ch}
+
+/* 先に潰す事実 */
+.gaps{display:flex;flex-direction:column;gap:16px}
+.gap{background:var(--void-wash);border:1px solid var(--void);border-radius:3px;padding:20px 24px}
+.gap.ok{background:var(--done-wash);border-color:var(--done)}
+.gap .gh{font-family:var(--display);font-size:18.5px;font-weight:700;color:var(--void);margin:0 0 10px;line-height:1.4}
+.gap.ok .gh{color:var(--done)}
+.gap .grow{display:grid;grid-template-columns:5.5em 1fr;gap:4px 14px;font-size:14.3px;line-height:1.75}
+@media(max-width:560px){.gap .grow{grid-template-columns:1fr;gap:1px}}
+.gap .gk{font-family:var(--mono);font-size:11.5px;color:var(--ink3);letter-spacing:.05em;padding-top:5px}
+.gap .gv{color:var(--ink2)}
+.gap .gv b{color:var(--ink);font-weight:700}
+
+/* spec 台帳 */
+.ledger{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule);
+  border-radius:3px;background:var(--surface);overflow:hidden}
+.lrow{display:grid;grid-template-columns:9.5em 6.5em 1fr;gap:0 16px;align-items:baseline;
+  padding:13px 20px 13px 17px;border-bottom:1px solid var(--rule-soft);border-left:3px solid transparent}
+.lrow:last-child{border-bottom:none}
+.lrow.done{border-left-color:var(--done)}
+.lrow.prog{border-left-color:var(--hold)}
+.lrow.draft{border-left-color:var(--draft)}
+.lrow.subject{background:var(--flow-wash);border-left-color:var(--flow)}
+@media(max-width:640px){.lrow{grid-template-columns:1fr;gap:3px;padding-block:14px}}
+.lspec{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+.lstate{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;white-space:nowrap}
+.lstate.done{color:var(--done)} .lstate.prog{color:var(--hold)} .lstate.draft{color:var(--draft)}
+.ldetail{font-size:13.6px;color:var(--ink2);line-height:1.7}
+.ldetail b{color:var(--ink);font-weight:700}
+.ledger-note{font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-top:12px;line-height:1.8}
+
+/* 充足判定 */
+.rule-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:22px 0}
+.rc{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:18px 20px}
+.rc.pass{border-left:3px solid var(--done)}
+.rc.blocked{border-left:3px solid var(--void)}
+.rc .rcn{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.07em;
+  color:var(--ink3);margin-bottom:8px}
+.rc .rcv{font-family:var(--display);font-size:16.5px;font-weight:700;line-height:1.45;margin-bottom:8px}
+.rc.pass .rcv{color:var(--done)} .rc.blocked .rcv{color:var(--void)}
+.rc .rcd{font-size:13.2px;color:var(--ink3);line-height:1.72}
+.rc .rcd b{color:var(--ink2);font-weight:600}
+
+.tbl-wrap{overflow-x:auto;margin:20px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:600px}
+th{background:var(--sunk);text-align:left;padding:11px 14px;font-weight:700;
+  font-size:12px;letter-spacing:.06em;color:var(--ink2);border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top;line-height:1.7}
+tr:last-child td{border-bottom:none}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td b{font-weight:700}
+
+/* 設問カード */
+.qcard{border:1px solid var(--rule);border-radius:3px;background:var(--surface);
+  margin-bottom:22px;overflow:hidden;box-shadow:var(--shadow)}
+.qhead{display:flex;align-items:flex-start;gap:14px;padding:20px 24px 16px;
+  border-bottom:1px solid var(--rule-soft);flex-wrap:wrap}
+.qid{font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.1em;
+  color:var(--flow);background:var(--flow-wash);padding:4px 9px;border-radius:2px;white-space:nowrap}
+.qtitle{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.4;flex:1;min-width:240px}
+.qtag{font-family:var(--mono);font-size:11px;color:var(--hold);background:var(--hold-wash);
+  padding:4px 9px;border-radius:2px;white-space:nowrap;font-weight:600}
+.qbody{padding:20px 24px 4px}
+.frow{display:grid;grid-template-columns:8.5em 1fr;gap:6px 16px;margin-bottom:13px;
+  font-size:14.3px;line-height:1.75}
+@media(max-width:560px){.frow{grid-template-columns:1fr;gap:2px}}
+.fk{font-family:var(--mono);font-size:11.5px;color:var(--ink3);letter-spacing:.05em;padding-top:5px}
+.fv{color:var(--ink2)}
+.fv.state{color:var(--ink);background:var(--sunk);padding:9px 12px;border-radius:2px;
+  border-left:2px solid var(--flow)}
+.opts-detail{margin:4px 0 14px;display:flex;flex-direction:column;gap:10px}
+.od{display:grid;grid-template-columns:2.2em 1fr;gap:0 12px;font-size:14px;line-height:1.72}
+.od .ol{font-family:var(--mono);font-weight:600;color:var(--flow);padding-top:2px}
+.od .ot{color:var(--ink2)}
+.od .ot b{color:var(--ink);font-weight:700}
+.od .oc{display:block;font-size:13px;color:var(--ink3);margin-top:3px}
+.src{font-family:var(--mono);font-size:11.5px;color:var(--ink3);
+  padding:12px 24px 16px;border-top:1px dashed var(--rule-soft);margin-top:6px}
+.ans{display:flex;gap:10px;padding:16px 24px 20px;flex-wrap:wrap;align-items:center;
+  border-top:1px solid var(--rule-soft);background:var(--sunk)}
+.ans-label{font-family:var(--mono);font-size:11.5px;color:var(--ink3);letter-spacing:.08em;margin-right:4px}
+.opt{font-family:var(--body);font-size:14px;font-weight:500;padding:8px 18px;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink2);
+  border-radius:2px;cursor:pointer;transition:.13s}
+.opt:hover{border-color:var(--flow);color:var(--ink)}
+.opt:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.opt[aria-pressed="true"]{background:var(--flow);border-color:var(--flow);color:#fff;font-weight:700}
+
+.impact{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:24px 26px}
+.impact h3{font-family:var(--display);font-size:18px;margin:0 0 14px;font-weight:700}
+.impact ol{margin:0;padding-left:1.4em;font-size:14.4px;color:var(--ink2);line-height:1.85}
+.impact li{margin-bottom:7px}
+.impact li b{color:var(--ink)}
+blockquote{margin:16px 0;padding:14px 20px;border-left:3px solid var(--flow);
+  background:var(--flow-wash);font-size:14.6px;line-height:1.8;color:var(--ink);border-radius:0 2px 2px 0}
+blockquote p{margin:0}
+
+.copybar{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--ink);
+  padding:14px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  margin:0 -24px -110px;box-shadow:0 -2px 12px rgba(20,28,34,.06)}
+@media(max-width:600px){.copybar{margin:0 -16px -72px;padding:12px 16px}}
+.copy-status{font-family:var(--mono);font-size:12.5px;color:var(--ink3);flex:1;min-width:180px}
+.copy-status b{color:var(--flow);font-weight:600}
+.btn{font-family:var(--body);font-size:14px;font-weight:700;padding:10px 22px;
+  border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  border-radius:2px;cursor:pointer;transition:.13s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink2);border-color:var(--rule)}
+.out{margin-top:18px;font-family:var(--mono);font-size:12.5px;line-height:1.9;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:2px;
+  padding:16px 18px;white-space:pre-wrap;word-break:break-word;color:var(--ink2)}
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:11.5px;color:var(--ink3);line-height:1.9}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<div class="masthead">
+  <div class="eyebrow">
+    <span>dialog-harness VERSION 6.17.0</span><span>判断点 D-6</span>
+    <span>設問 5 問</span><span>2026-09-11</span>
+  </div>
+  <h1>版番号の昇格キット</h1>
+  <p class="lede">v6.19.0 の F1〜F5 はすべて master に入った。しかし <b><span class="mono">VERSION</span> は 6.17.0 のまま</b>で、<span class="mono">実装済み</span> を名乗れない — 昇格は人間専管だからである。調べたところ、<b>昇格をいま塞いでいるのは v6.19.0 側ではなく v6.18.0 側の記述漏れ</b>だった。5 問・約 8 分。</p>
+  <div class="meta">
+    <span>規則 <b>dev-env-spec.md §バージョニング規則</b></span>
+    <span>実測 <b>2026-09-11 · upgrade-spec 15 本の状態行を全走査</b></span>
+    <span>局面 <b>人間専管。AI は記録のみ</b></span>
+    <span>常設チェックリスト <b>まだ無い（vrsn01 条件 (8) 未了）</b></span>
+  </div>
+</div>
+
+<section>
+  <div class="sec-eyebrow">先に潰す · 3 件</div>
+  <h2>私の前回の問いの立て方が不正確だった</h2>
+  <p class="sub">「6.19.0 に飛ぶか、6.18.0 を経由するか」と訊いたが、規則を読み直すとこの二択自体が成り立たない。</p>
+
+  <div class="gaps">
+    <div class="gap">
+      <p class="gh">1. spec 番号は release 番号ではない — 先例が 2 件ある</p>
+      <div class="grow">
+        <div class="gk">規則</div><div class="gv"><span class="mono">dev-env-spec.md</span> は「<b>spec 番号 = 起草時の予約 ≠ release 番号</b>」を明文化している。追い越された未実装 spec は番号を付け替えず <span class="mono">drafted_as:</span> の追記で扱う。</div>
+        <div class="gk">先例</div><div class="gv"><span class="mono">v6.12.0</span> の状態行は <b>「実装済み（PR #191、VERSION 6.15.0）」</b> — spec 番号と release 番号が違う実例。<span class="mono">v6.13.0 F5</span> は <b><span class="mono">v6.18.0 C-1</span> として着地</b>（<span class="mono">drafted_as</span> の初適用）。</div>
+        <div class="gk">帰結</div><div class="gv">「6.18.0 を経由する」という経路は<b>そもそも存在しない</b>。上げる番号は spec の並び順ではなく、<b>どの spec の critical が揃ったか</b>で決まる。私の前回の言い方は訂正する。</div>
+      </div>
+    </div>
+
+    <div class="gap ok">
+      <p class="gh">2. v6.19.0 は昇格条件を充足している</p>
+      <div class="grow">
+        <div class="gk">規則</div><div class="gv">「<b>その版の upgrade-spec の critical 機能がすべて master に入った時点で昇格する。部分実装では上げない</b>」。standard / cosmetic の未実装は昇格を妨げない。</div>
+        <div class="gk">実測</div><div class="gv">v6.19.0 の <span class="mono">priority: critical</span> は <b>F1・F2 の 2 件</b>（#278 / #280）。両方 master。<span class="mono">priority: high</span> の F3・F4・F5 も全部 master（#282 / #283 / #284）。<b>critical の未実装は 0 件</b>。</div>
+        <div class="gk">残件</div><div class="gv">D-3（外部呼び出し元・未特定）と D-4（<span class="mono">runtime_profile</span>・未実測）は<b>判断点であって F ではない</b>。規則は critical の実装状況しか見ないため、これらは昇格を妨げない。</div>
+      </div>
+    </div>
+
+    <div class="gap">
+      <p class="gh">3. 昇格を塞いでいるのは v6.18.0 の記述漏れ</p>
+      <div class="grow">
+        <div class="gk">実測</div><div class="gv"><span class="mono">upgrade-spec-v6.18.0.md</span> の 7 項目（F0 / C-1 / B-1 / B-3 / C-2 / C-4 / C-3）には <b><span class="mono">priority:</span> の表記が 1 件も無い</b>。v6.19.0 は F1〜F5 の全項目に付いている。</div>
+        <div class="gk">意味</div><div class="gv">v6.18.0 について「critical がすべて master に入ったか」を<b>機械的にも人間的にも判定できない</b>。唯一未着地の <span class="mono">C-3</span>（配布先検査の還流）が critical なのか standard なのかが、どこにも書かれていない。</div>
+        <div class="gk">影響</div><div class="gv">v6.19.0 だけ上げると v6.18.0 が<b>永久に判定不能なまま追い越される</b>。規則が警戒している「状態行に嘘を書く圧力」がここで生まれる。<b>Q2 がこのキットの実質的な主問</b>。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">台帳 · 実測</div>
+  <h2>upgrade-spec 15 本の現況</h2>
+  <p class="sub">状態行をそのまま読んだ結果。<span class="mono">VERSION</span> 6.17.0 を超える番号の spec は 4 本あり、うち 1 本だけが充足している。</p>
+
+  <div class="ledger">
+    <div class="lrow subject">
+      <div class="lspec">v6.19.0</div>
+      <div class="lstate prog">実装中</div>
+      <div class="ldetail"><b>F1〜F5 済 / VERSION 昇格は人間判定待ち</b> — critical 2 件とも master。<b>充足している唯一の spec</b></div>
+    </div>
+    <div class="lrow prog">
+      <div class="lspec">v6.18.0</div>
+      <div class="lstate prog">実装中</div>
+      <div class="ldetail">C-1 / B-1 / B-3 / C-2 / C-4 済、<b>C-3 起草中</b> — <b>priority 表記が無く critical 判定不能</b></div>
+    </div>
+    <div class="lrow draft">
+      <div class="lspec">v6.16.0</div>
+      <div class="lstate draft">L0 起草</div>
+      <div class="ldetail">人間レビュー待ち。実装着手前</div>
+    </div>
+    <div class="lrow draft">
+      <div class="lspec">v6.14.0</div>
+      <div class="lstate draft">L0 起草</div>
+      <div class="ldetail">人間レビュー待ち。実装着手前</div>
+    </div>
+    <div class="lrow prog">
+      <div class="lspec">v6.13.0</div>
+      <div class="lstate prog">実装中</div>
+      <div class="ldetail">F5 済（PR #261、<b>v6.18.0 C-1 として着地</b>）/ F1-F4 未 — <span class="mono">drafted_as</span> の初適用先</div>
+    </div>
+    <div class="lrow done">
+      <div class="lspec">v6.17.0</div>
+      <div class="lstate done">実装済み</div>
+      <div class="ldetail">PR #248 / #253 / #256 / #257 / #258、<b>VERSION 6.17.0</b> ← 現在地</div>
+    </div>
+    <div class="lrow done">
+      <div class="lspec">v6.15.0</div>
+      <div class="lstate done">実装済み</div>
+      <div class="ldetail">PR #203 / #206 / #207、VERSION 6.15.0</div>
+    </div>
+    <div class="lrow done">
+      <div class="lspec">v6.12.0</div>
+      <div class="lstate done">実装済み</div>
+      <div class="ldetail">PR #191、<b>VERSION 6.15.0</b> — spec 番号 ≠ release 番号の実例</div>
+    </div>
+    <div class="lrow done">
+      <div class="lspec">v6.11.0</div>
+      <div class="lstate done">実装済み</div>
+      <div class="ldetail">PR #186 / #187、VERSION 6.11.0</div>
+    </div>
+    <div class="lrow draft">
+      <div class="lspec">v6.1.0 他 6 本</div>
+      <div class="lstate draft">状態行なし</div>
+      <div class="ldetail">v5.0.0 / v5.8.0 / v5.16.0 / v5.21.0 / v5.22.0 / v6.1.0 — VERSION 以下の歴史的 spec。値域規定は遡及適用しない</div>
+    </div>
+  </div>
+  <p class="ledger-note">実測コマンド: 各 <span class="mono">dh-upgrades/upgrade-spec-v*.md</span> の 1 行目 <span class="mono">&gt; **状態: …**</span> を抽出（15 本）。<span class="mono">VERSION</span> = 6.17.0 / <span class="mono">GRAPH.yml version:</span> = "6.17.0"（一致）。</p>
+</section>
+
+<section>
+  <div class="sec-eyebrow">規則 · 充足判定</div>
+  <h2>昇格の実行は 4 点を同一 commit で行う</h2>
+  <p class="sub">1 つでも欠けると宣言間の drift になる、と規則が明記している。現時点の充足状況を並べる。</p>
+
+  <div class="rule-grid">
+    <div class="rc pass">
+      <div class="rcn">契機 · critical の充足</div>
+      <div class="rcv">v6.19.0 は満たす</div>
+      <div class="rcd">critical <b>F1 / F2</b> がともに master。破棄も部分実装も無い</div>
+    </div>
+    <div class="rc blocked">
+      <div class="rcn">契機 · v6.18.0 の判定</div>
+      <div class="rcv">判定できない</div>
+      <div class="rcd"><b>priority 表記が 0 件</b>。C-3 が critical か standard か不明</div>
+    </div>
+    <div class="rc blocked">
+      <div class="rcn">時点 · 遡及の禁止</div>
+      <div class="rcv">厳密には遡及になる</div>
+      <div class="rcd">規則は「<b>merge 時に上げる。遡及しない</b>」。F5 は既に merge 済み</div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>昇格 commit で同時に書き換える 4 点</th><th>現状</th><th>昇格後</th></tr></thead>
+      <tbody>
+        <tr><td><span class="mono">VERSION</span>（正本）</td><td class="num">6.17.0</td><td class="num"><b>Q1 の回答</b></td></tr>
+        <tr><td><span class="mono">GRAPH.yml</span> の <span class="mono">version:</span></td><td class="num">"6.17.0"</td><td class="num"><b>同値</b></td></tr>
+        <tr><td>当該 spec の状態行</td><td>実装中（F1〜F5 済 / …）</td><td>実装済み（PR #278 / #280 / #282 / #283 / #284、VERSION x.y.z）</td></tr>
+        <tr><td><span class="mono">history/CHANGELOG.md</span></td><td>各 F の節はあるが<b>版としての節が無い</b></td><td>「この版を持つと何が違うか」を 1 節</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <blockquote><p>版番号が答えるべき問いは「実装がどこまで進んだか」ではなく「<b>これを持つと何が違うか</b>」であり、これを省くと正確だが空虚な数だけが残る。<br><span class="mono">— dev-env-spec.md §昇格の実行</span></p></blockquote>
+</section>
+
+<section>
+  <div class="sec-eyebrow">設問 · 5 問</div>
+  <h2>問い</h2>
+  <p class="sub">Q1〜Q3 が昇格そのもの、Q4〜Q5 が v6.19.0 の残件。<b>Q2 は Q1 の前提</b>なので、迷ったら Q2 から読んでいただきたい。</p>
+  <div id="qs"></div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">波及</div>
+  <h2>回答後に私がやること</h2>
+  <div class="impact">
+    <h3>Q1 で番号が決まったら、1 commit で 4 点を書き換える</h3>
+    <ol>
+      <li><b>昇格 commit</b>: <span class="mono">VERSION</span> / <span class="mono">GRAPH.yml version:</span> / 当該 spec の状態行 / <span class="mono">CHANGELOG.md</span> の版節 — 規則が定める 4 点を同一 commit に入れる</li>
+      <li><b>Q2 が A / B なら v6.18.0 の状態行も同時に整える</b>（critical 判定が確定するため）。C なら先に priority 表記を 7 項目へ追記する PR を立てる</li>
+      <li><b>Q3 の扱いを <span class="mono">history/REGIME-LOG.md</span> に記録</b>。過去の昇格記録はすべて判定日・判定者・昇格根拠・モード判定を人間名義で持つため、同じ形で残す</li>
+      <li><b>Q4 が B / C なら検出器に手を入れる</b>（テスト追加込み）。A なら「実害が出るまで足さない」判断を <span class="mono">review_trigger</span> の <span class="mono">measured</span> 条件として書き留めるだけにする</li>
+      <li><b>Q5 に沿って D-3 / D-4 を処理</b>。Issue 化するなら <span class="mono">crosscut-issue-dispatcher</span> 経由</li>
+    </ol>
+    <blockquote><p><b>この昇格は <span class="mono">auto-merge-boundary.md</span> の opt-in 領域に該当しない</b>（<span class="mono">.claude/skills/</span> を触らない）。ただし版番号は配布先の人間が「あの機能が入っているか」を照会なしに判断する数であり、間違えると読み手が黙って誤る。ゆえに人間判定を経る。</p></blockquote>
+  </div>
+</section>
+
+<footer>
+  dialog-harness · 判断点 D-6（<span class="mono">dh-upgrades/upgrade-spec-v6.19.0.md</span> §判断点）<br>
+  規則の正本: <span class="mono">.claude/skills/layer0-spec-architect/references/dev-env-spec.md</span> §バージョニング規則<br>
+  実測日 2026-09-11 · 状態行 15 本 / <span class="mono">VERSION</span> / <span class="mono">GRAPH.yml</span> を走査<br>
+  兄弟キット: <span class="mono">DECISION-KIT-deploy-target-2026-09-11.html</span> / <span class="mono">DECISION-KIT-upstream-reflux-2026-09-07.html</span>
+</footer>
+
+<div class="copybar">
+  <span class="copy-status" id="status">未回答 <b>5</b> / 5</span>
+  <button class="btn ghost" type="button" id="reset">選択を消す</button>
+  <button class="btn" type="button" id="copy" disabled>回答まとめをコピー</button>
+</div>
+
+<div class="out" id="out">まだ回答がありません。</div>
+
+</div>
+
+<script>
+var QS = [
+  {
+    id: "Q1",
+    title: "VERSION をどの番号に上げるか",
+    tag: "主問",
+    state: "VERSION = 6.17.0 / GRAPH.yml version: = \"6.17.0\"。v6.19.0 の critical（F1 / F2）は両方 master で、規則上の昇格条件を満たしている。",
+    opts: [
+      {l:"A", t:"<b>6.19.0 に上げる</b>", c:"充足している spec の番号をそのまま採る。v6.18.0 は追い越され、C-3 は drafted_as で後続の版に振り直す（v6.13.0 F5 → v6.18.0 C-1 と同じ扱い）。先例どおりで一貫するが、v6.18.0 の判定を棚上げする。"},
+      {l:"B", t:"<b>6.18.0 に上げる</b>", c:"v6.18.0 の C-3 を standard 相当と見て先に閉じ、v6.19.0 の内容は 6.18.0 の中身として数える。連番は保たれるが、v6.19.0 の状態行に「VERSION 6.18.0」と書くことになる（v6.12.0 の先例と同型）。"},
+      {l:"C", t:"<b>いま上げない</b>", c:"v6.18.0 の priority 表記を直し C-3 を着地させてから、まとめて上げる。番号の意味は最も正確になるが、v6.19.0 の内容は「入っているのに番号が示さない」期間を持つ。"}
+    ],
+    src: "規則: dev-env-spec.md §昇格の契機「critical がすべて master に入った時点で昇格。部分実装では上げない」"
+  },
+  {
+    id: "Q2",
+    title: "v6.18.0 の critical 判定 — priority 表記が無い",
+    tag: "Q1 の前提",
+    state: "upgrade-spec-v6.18.0.md の 7 項目に priority: 表記が 1 件も無い。未着地は C-3（配布先検査の還流）1 件。critical かどうかがどこにも書かれていない。",
+    opts: [
+      {l:"A", t:"<b>C-3 を critical と見る</b>", c:"v6.18.0 は未充足のまま据え置き、Q1 は A（6.19.0）になる。C-3 は決定待ち文書の制度化で、12 日空欄のシートが 3 件を素通りさせた実害を起点にしている — 軽くはない。"},
+      {l:"B", t:"<b>C-3 を standard と見る</b>", c:"v6.18.0 も充足扱いになり Q1 の B が開く。ただし「起草中」の項目を standard と後から決めるのは、規則が警戒する『状態行に嘘を書く圧力』そのものになりうる。"},
+      {l:"C", t:"<b>判定の前に priority 表記を補う</b>", c:"7 項目へ priority を追記する PR を先に立てる。v6.18.0 は自分の存在しなさを是正した spec（F0）なので、記述漏れの自己是正は筋が通る。1 サイクル遅れる。"}
+    ],
+    src: "実測: v6.18.0 の見出し 7 件を走査 — priority 表記 0 件。v6.19.0 は F1〜F5 の全 5 件に付与"
+  },
+  {
+    id: "Q3",
+    title: "「遡及しない」規則と、既に merge 済みという事実",
+    tag: "手続き",
+    state: "規則は「merge 時に上げる。遡及しない」と定める。理由は、既配布ツリーが古い番号のまま新しい内容を含むと番号が内容集合を一意に指さなくなるため。F5 は 11:50 に merge 済み。",
+    opts: [
+      {l:"A", t:"<b>昇格 PR を 1 本立て、その merge を昇格時点とする</b>", c:"「昇格 commit」が独立して存在し、時点が一意に決まる。UPDATE.md の SHA ピンとも整合する。番号の切り替わり位置が git 上で明確になる。"},
+      {l:"B", t:"<b>遡及として扱い、ズレを UPDATE.md に記載する</b>", c:"v6.11.0 → 6.15.0 の昇格で実際に採られた形（「一度きりの負債」として UPDATE.md §既知の番号のズレ に記載）。先例があるが、規則は同時に「以後は再発しない」と書いている。"},
+      {l:"C", t:"<b>規則側を直す</b>", c:"「F の merge と昇格 commit は分かれる」を規則に書き足す。実態に合わせる正攻法だが、dev-env-spec.md の改訂は opt-in 領域（複数 SPEC ファイル横断）に触れる可能性がある。"}
+    ],
+    src: "規則: dev-env-spec.md §昇格の契機 / §昇格の実行。先例: CHANGELOG「VERSION 6.11.0 → 6.15.0」節の『一度きりの負債』"
+  },
+  {
+    id: "Q4",
+    title: "KV 書込の検出死角 — 埋めるか",
+    tag: "v6.19.0 残件",
+    state: "実測: minna-no-ai-bbs-state が KV 書込 288/日（無料枠 1,000/日 の 28.8%、変動係数 ~2%、288 = 1440÷5 分）。観測機構は検出していない。threshold は 70% 未満で正しく黙り、flat 検出は rows_written にしか掛かっていない。",
+    opts: [
+      {l:"A", t:"<b>いま足さない</b>", c:"罠カタログの規律「罠は実害からのみ増やす」と I-7「常時発火する検知を作らない」に従う。死角の存在だけ review_trigger の measured 条件に書き留める。同型ツールをあと 3 つ作ると枠が埋まる点は量産判断の材料として残る。"},
+      {l:"B", t:"<b>flat 検出を kv_writes にも掛ける</b>", c:"アカウント単位の日次系列にも平坦性検査を適用する。5 分 cron の形が検出できるようになる。テスト追加込みで小さい変更だが、v6.19.0 の spec 範囲外なので別 spec か軽微改修として扱う。"},
+      {l:"C", t:"<b>KV の閾値を下げる</b>", c:"70% → 25% 程度に。最も狭い枠なので早期警戒には合う。ただし現状 28.8% が定常なので即座に常時発火し、I-7 に正面から反する。"}
+    ],
+    src: "実測: kvOperationsAdaptiveGroups（actionType: write）2026-09-05〜11。288 / 288 / 288 / 288 / 288 / 290 / 142(部分日)"
+  },
+  {
+    id: "Q5",
+    title: "D-3 / D-4 の扱い",
+    tag: "v6.19.0 残件",
+    state: "D-3: 暴走案件の外部呼び出し元は未特定。Worker 削除により Cloudflare 側の書込は 54,339/日 → 345/日（削除前の残り）へ落ちたが、呼び出し元は今もエラーを受けている。Cloudflare 側からは原理的に辿れない。D-4: Stack 12 の runtime_profile は未実測（local-reproducible は仮置き）。",
+    opts: [
+      {l:"A", t:"<b>D-4 は次の実案件で実測、D-3 は打ち切る</b>", c:"D-4 は Stack 12 を実際に使う最初の案件の §7.4 自己検証で確定する（そこでしか実測できない）。D-3 は Cloudflare 側から辿れず、被害も止まっているため未特定のまま記録として閉じる。"},
+      {l:"B", t:"<b>両方 Issue 化して追う</b>", c:"crosscut-issue-dispatcher で Issue を立て、期限つきで追跡する。忘却を防げるが、D-3 は解けない可能性が高く open Issue が居座る。"},
+      {l:"C", t:"<b>D-3 を優先して追う</b>", c:"心当たり（GAS / 外部 cron / ローカルスクリプト等）を人間側から棚卸しして特定する。エラーを撒き続けている呼び出し元を止められる。AI 側からは調べる手段が無いため人間の作業になる。"}
+    ],
+    src: "実測: d1AnalyticsAdaptiveGroups 2026-09-05〜11。削除済み DB 81d3ca1a… の書込 50,899〜54,339/日 → 09-11 は 345"
+  }
+];
+
+var answers = {};
+var host = document.getElementById("qs");
+
+function render(){
+  host.innerHTML = QS.map(function(q){
+    var opts = q.opts.map(function(o){
+      return '<div class="od"><div class="ol">' + o.l + '</div>'
+           + '<div class="ot">' + o.t + '<span class="oc">' + o.c + '</span></div></div>';
+    }).join("");
+    var btns = q.opts.map(function(o){
+      return '<button class="opt" type="button" id="' + q.id + '-' + o.l + '" data-q="' + q.id + '" data-v="' + o.l + '" aria-pressed="false">' + o.l + '</button>';
+    }).join("");
+    return '<div class="qcard">'
+      + '<div class="qhead"><span class="qid">' + q.id + '</span>'
+      + '<span class="qtitle">' + q.title + '</span>'
+      + '<span class="qtag">' + q.tag + '</span></div>'
+      + '<div class="qbody">'
+      + '<div class="frow"><div class="fk">現状</div><div class="fv state">' + q.state + '</div></div>'
+      + '<div class="opts-detail">' + opts + '</div>'
+      + '</div>'
+      + '<div class="src">' + q.src + '</div>'
+      + '<div class="ans"><span class="ans-label">選択</span>' + btns + '</div>'
+      + '</div>';
+  }).join("");
+
+  host.querySelectorAll(".opt").forEach(function(b){
+    b.addEventListener("click", function(){
+      var q = b.dataset.q, v = b.dataset.v;
+      var group = b.parentElement.querySelectorAll('.opt[data-q="' + q + '"]');
+      if(answers[q] === v){
+        delete answers[q];
+        group.forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      } else {
+        answers[q] = v;
+        group.forEach(function(x){ x.setAttribute("aria-pressed", x.dataset.v === v ? "true" : "false"); });
+      }
+      update();
+    });
+  });
+}
+
+function update(){
+  var done = QS.filter(function(q){ return answers[q.id]; }).length;
+  var left = QS.length - done;
+  document.getElementById("status").innerHTML =
+    left === 0 ? '<b>5 / 5 回答済み</b>' : '未回答 <b>' + left + '</b> / 5';
+  document.getElementById("copy").disabled = left !== 0;
+  var out = document.getElementById("out");
+  if(done === 0){ out.textContent = "まだ回答がありません。"; return; }
+  out.textContent = buildText();
+}
+
+function buildText(){
+  var L = ["# 版番号の昇格キット 回答（D-6 / 2026-09-11）", ""];
+  QS.forEach(function(q){
+    var a = answers[q.id];
+    var label = "（未回答）";
+    if(a){
+      var hit = q.opts.filter(function(o){ return o.l === a; })[0];
+      label = a + ". " + hit.t.replace(/<[^>]+>/g, "");
+    }
+    L.push(q.id + " " + q.title.split(" — ")[0] + ": " + label);
+  });
+  L.push("");
+  L.push("反映先: VERSION + GRAPH.yml version: + upgrade-spec の状態行 + history/CHANGELOG.md（同一 commit・4 点）");
+  L.push("記録先: history/REGIME-LOG.md（判定日・判定者・昇格根拠・モード判定を人間名義で）");
+  L.push("Q2=C の場合: v6.18.0 の 7 項目へ priority を追記する PR が先行する");
+  L.push("Q4=B/C の場合: quota-observer.py の改修 + テスト追加（v6.19.0 の範囲外・別扱い）");
+  return L.join("\n");
+}
+
+document.getElementById("copy").addEventListener("click", function(){
+  var btn = document.getElementById("copy");
+  navigator.clipboard.writeText(buildText()).then(function(){
+    var t = btn.textContent; btn.textContent = "コピーしました";
+    setTimeout(function(){ btn.textContent = t; }, 1600);
+  }).catch(function(){
+    var r = document.createRange(); r.selectNodeContents(document.getElementById("out"));
+    var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = "下のテキストを選択しました";
+    setTimeout(function(){ btn.textContent = "回答まとめをコピー"; }, 2200);
+  });
+});
+
+document.getElementById("reset").addEventListener("click", function(){
+  Object.keys(answers).forEach(function(k){ delete answers[k]; });
+  document.querySelectorAll(".opt").forEach(function(b){ b.setAttribute("aria-pressed","false"); });
+  update();
+});
+
+render();
+update();
+</script>
+
+</body>
+</html>
