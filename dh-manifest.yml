@@ -64,6 +64,7 @@ paths:
     - "crosscut-issue-dispatcher"
     - "crosscut-issue-implementer"
     - "crosscut-issue-quality-gate"
+    - "crosscut-quota-observer"
     - "crosscut-verifier-drift"
     - "crosscut-verifier-philosophy"
     - "layer0-archeo-architect"
