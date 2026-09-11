@@ -1,9 +1,9 @@
 # upgrade-spec v6.19.0 — 供給元の既定を Stack 層で持つ（Cloudflare 吸収 + 共有枠の観測）
 
-> **状態: 実装中（F1 済 / F2 済 / F3 済、F4・F5 未着手）**。Council 諮問通過
+> **状態: 実装中（F1 済 / F2 済 / F3 済 / F4 済、F5 未着手）**。Council 諮問通過
 > （`council-2026-09-11T03:07:42Z-dt0911` / implementer_consent: agreed / 2026-09-11 人間判定）。
 > spec 起草は PR #277、F1 の実装は PR #278、F2 の実装は PR #280。
-> F4・F5 は後続（実装順序は I-4 に従う）。着地の PR 番号は `history/CHANGELOG.md` の各節が持つ。
+> F5 は後続。着地の PR 番号は `history/CHANGELOG.md` の各節が持つ。
 >
 > **起点**: 利用者発話（2026-09-11、L0 ブレスト）「cloudフレア MCP を繋げたのでデプロイ先を選べる
 > ようにしたい。Supabase の無料枠は使い切っているので、サーバーも含めて cloudフレアをデフォルトに
@@ -291,6 +291,33 @@ review_trigger:
 - **L0 対話への配線**: 本 stack を選んだ場合、F2 の観測 skill で**現在の枠消費率を提示する**
   （新規質問は増やさない。I-3 に従い規範は観測を参照するだけ）
 
+### 実装時の訂正（2026-09-11・F4 着地時に記録）
+
+本節の記述のうち、一次情報の確認で **2 点が既に事実と異なっていた**。書いたとおりに実装すると、
+着地した時点で陳腐化している状態になる。
+
+- **`vitest`（miniflare 環境）のパッケージ名**: 本節が想定した `@cloudflare/vitest-pool-workers` は
+  **2026-08-19 に `@cloudflare/vitest-plugin`（v1）へ改称**されている（設定 API は不変。
+  公式 codemod あり）。Stack 12 には新名で記載した
+- **`wrangler.toml`**: 現行ドキュメントは `wrangler.jsonc` を先行表記する。`.toml` も有効なため
+  **両方を認める**形にし、必須生成ファイルは `wrangler.jsonc` を第一候補とした
+
+**これは spec が悪いのではなく、spec に書いた時点で腐り始める種類の情報**である（I-3 が
+無料枠の数値について言っていることが、パッケージ名にも同じく当てはまる）。
+stack カタログは「実体ファイル一覧 + smoke コマンド」の決定論的記述に限る、という
+§追加 stack カタログ の保守責務規定はこの腐敗を前提にしている。**本件はその規定が
+実際に機能した 1 例**であり、L0 §7.4 自己検証で現行 CLI を通す運用の根拠が 1 つ増えた。
+
+### 層分離を必須にした理由が Stack 11 と異なる（記録）
+
+本節は「Stack 11 = GAS で最低要件化した規約を継承」とだけ書いたが、**継承したのは規約であって
+理由ではない**。GAS はローカル実行できないため分離が検出力の前提だった。Workers は Miniflare で
+ローカル実行できるので、同じ理由は成り立たない。
+
+それでも必須にしたのは別の理由による: **binding に触る面はテストが重く、かつ供給元交代時に
+書き換わる面でもある**。ロジックが binding から独立していれば第 1 層（型 / lint / unit test）が
+速いまま保たれ、供給元交代の影響面も接触層に閉じる。I-1（供給元非依存）を stack 内部で実装した形。
+
 ### 規範メタデータ
 
 ```yaml
@@ -339,7 +366,7 @@ review_trigger:
 | D-1 | $5/月（Workers Paid）への昇格 | **人間決定済み（2026-09-11）: 当面無料を維持**。経営者軸の異見（「無料枠の閾値管理は無料ではない。注意コスト月 1 時間 > $5。有料は観測作業の買取費」）は minority として温存し、F2 の観測 skill が実測を出した時点で再判断する |
 | D-2 | 観測 skill の prefix・命名・配置 | **人間追認済み（2026-09-11）: `crosscut-quota-observer` で確定**（`crosscut-` prefix / Level A / D4 / scripts・adapters を skill 配下に同梱。checklist 評価結果は同 SKILL.md §未充足項目）。PR #280 は追認前に merge されたため（`history/REGIME-LOG.md` AI 判定漏れ記録 #2）、本追認は**事後追認**である。F4 の配線先はこの名前で確定 |
 | D-3 | `news-collector` の外部呼び出し元 | **未特定**。cron schedules は空だったのに日次 5.4 万行の書込があった ＝ 呼び出し元が Cloudflare の外にある。Worker 削除済みのため呼び出し元はエラーを受け続ける。特定と停止が必要 |
-| D-4 | Stack 12 の runtime_profile | `local-reproducible` を仮置き。miniflare での決定論 smoke が認証なしに exit 0 まで通るかを実測して確定（開発者 premise） |
+| D-4 | Stack 12 の runtime_profile | **未実測のまま F4 に着地**。`local-reproducible` は仮置きであり、`scaffold-checklist.md` §Stack 12 に「仮置きである」旨を明記した。確定には実プロジェクトで smoke（`tsc --noEmit` / lint / `d1 migrations apply --local` / vitest / `wrangler dev` 到達）が**認証を一切要求せず** exit 0 まで通ることの実測が要る。認証を要求するなら `cloud-managed` へ訂正し ADR を起こす |
 | D-5 | Judgment Agent の `weight_note` が規格から 2 点逸脱する | **(a) カテゴリの誤記**: 本 spec の諮問（dt0911）で `category: "conception"` に対し `weight_note` が「カテゴリ: implementation」と書いた（PR #277 で Copilot が検出）。**判定への影響はない** — `final_weights` 3/3/5 は `council-weights.md` の conception 補正（base 3/4/3 に 経営者 0 / 開発者 −1 / 哲学者 +2）の適用結果と一致し、過去の conception エントリ（`claude-md-purity`）も 3/3/5、implementation なら 2/6/2 になるため（ブリーフ §7.3）。**(b) 字数規定の超過**: `output-format.md:89` は `weight_note` を「100 字以内」と規定するが、dt0911 の実値は **186 字**。これは本追記固有ではなく機構の恒常的逸脱で、COUNCIL-LOG 全体の `weight_note` 44 件中 **29 件（66%）が 100 字超**（2026-09-11 実測）。(a)(b) いずれも COUNCIL-LOG は append-only ゆえ当該記録は改変せず事実として保存する。再演を防ぐなら `judgment-agent.md` の prompt または `council-fanout.workflow.mjs` で、カテゴリを args の `category` から機械代入し、字数を schema 強制する（本 spec の範囲外・別 PR）。なお `persona_summary.note` には字数規定が無く（§8 に該当行なし）、`council-log-skill-archive.md` の 360 字畳み込みルールは **archive → COUNCIL-LOG への転記時**に限った規約である（同ファイル冒頭「転記時の畳み方」。COUNCIL-LOG の `note` 124 件中 50 件が 360 字超という実測もこれを裏づける） |
 
 ---

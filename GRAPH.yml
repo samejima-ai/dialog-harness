@@ -255,6 +255,17 @@ graph_excluded:
 # ---------------------------------------------------------------------------
 edges:
   # === escalation-matrix の配線（F1-7・最優先で描く） ===
+  # === 共有枠の観測の配線（v6.19.0 F4） ===
+  - from: layer0-spec-architect
+    to: crosscut-quota-observer
+    type: conditional
+    condition: "Stack 12（Cloudflare Workers）選択時 / 新規 DB 作成前に枠消費率を提示"
+    source: .claude/skills/layer0-spec-architect/references/scaffold-checklist.md#stack-12-cloudflare-workers--hono--d1r2v6190-f4-追加
+  - from: crosscut-quota-observer
+    to: quota-observer
+    type: standard
+    condition: "正規化 JSON を渡して検出（決定論・判定なし）"
+    source: .claude/skills/crosscut-quota-observer/SKILL.md#3-観測と検出
   - from: layer0-spec-architect
     to: human-H-専管判断
     type: conditional

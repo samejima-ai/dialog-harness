@@ -500,7 +500,9 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 | Supabase | `references/supabase-local-dev.md` | **既存プロジェクトを持つ案件のみ**（同ファイル §適用範囲 を参照） |
 | Cloudflare Workers | `references/cloudflare-workers-dev.md` | Workers / D1 / KV / R2 を使う案件（同ファイル §適用範囲 を参照）。**数値表を持たず観測記録を参照する構成**（v6.19.0 F3） |
 
-**新規案件の供給元選択に既定は置かない。** stack カタログ（`references/scaffold-checklist.md`）は stack 軸（言語 / FW / ランタイム）を扱うもので、**hosted DB / BaaS の供給元選択は含まない**（例外は Stack 11 = GAS で、実行基盤とデータ層が Google に束縛される）。したがって現時点では L0 対話で人間に委ねる。
+**新規案件の供給元選択に既定は置かない。** stack カタログ（`references/scaffold-checklist.md`）は stack 軸（言語 / FW / ランタイム）を扱うもので、**hosted DB / BaaS の供給元選択は含まない**。例外は 2 つ — **Stack 11（GAS）** と **Stack 12（Cloudflare Workers、v6.19.0 F4 追加）** で、いずれも実行基盤とデータ層が単一供給元に束縛される stack である。**この 2 つは「供給元を選ぶ軸」ではなく「束縛を受け入れた stack」として並ぶ**ため、Stack 12 の追加は Cloudflare を既定にしない。供給元選択は L0 対話で人間に委ねる。
+
+**枠の観測（v6.19.0 F4 配線）**: Stack 12 を選んだ場合、**新規に DB を作る前に `crosscut-quota-observer` で現在の枠消費率を提示する**。日次枠はアカウント単位で共有されるため、1 案件の追加が無関係な既存プロジェクトを止めうる。**新規質問は増やさない** — 提示するのは観測結果であって規範ではない。観測 skill 不在・未認証なら degrade し、「観測できなかった」をそのまま伝える（「枠に余裕がある」と読み替えない）。
 
 ### 7. 出力
 

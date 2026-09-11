@@ -48,7 +48,7 @@ DH には供給元アカウントの枠残量を観測する経路が無かっ�
 
 | 契機 | 内容 |
 |---|---|
-| L0 対話 | 新規ツールの立ち上げ時に現在の枠消費率を提示する（**配線は v6.19.0 F4 で実施予定。現時点は人間の明示起動のみ**） |
+| L0 対話 | Stack 12（Cloudflare Workers）選択時、**新規に DB を作る前**に現在の枠消費率を提示する（v6.19.0 F4 で配線済み。`scaffold-checklist.md` §Stack 12） |
 | 量産フェーズ | 定期確認（「あと何個作れるか」の判断材料） |
 | 人間の明示 | 「枠の残量を見て」「書き込みが多すぎないか」等 |
 
@@ -154,10 +154,11 @@ python3 .claude/skills/crosscut-quota-observer/scripts/test-quota-observer.py
 - **E-2 認証情報不要**: アダプタは供給元の認証を要求する。ただし認証不在は degrade であり、
   DH の動作条件ではない（I-5）
 - **B-4 用語辞書整合**: `harness-verifier/glossary.yml` の `crosscut_prefix.members` に登録済み（解消）
-- **GRAPH.yml の edge がゼロ**: 本 skill と tool node はいずれも起動元 node を持たない。
-  SKILL.md §起動条件 の「L0 対話で新規ツール立ち上げ時に枠消費率を提示する」経路は
-  **v6.19.0 F4 で配線予定**であり現時点では未配線。
-  同型の先例は `GRAPH.yml` の `council-performance` / `harness-benchmark`
+- **GRAPH.yml の edge**: v6.19.0 F4 で配線済み（解消）。
+  `layer0-spec-architect → crosscut-quota-observer`（Stack 12 選択時・conditional）と
+  `crosscut-quota-observer → quota-observer`（invokes）の 2 本。
+  **F2 着地時点では edge ゼロだった** — skill を足して起動元を描かないと、
+  在るのに誰も呼ばない機構になる（v6.17.0 が宣言層で清算した乖離と同型）
 
 ## 参照
 

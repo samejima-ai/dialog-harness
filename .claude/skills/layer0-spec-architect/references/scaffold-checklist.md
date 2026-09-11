@@ -83,9 +83,9 @@ DESIGN.md の規格・対話プロトコル詳細は `references/design-system-s
 
 ---
 
-## 追加 stack カタログ（v6.1.0 追加 / v6.2.0 Expo / v6.3.0 GAS 追加）
+## 追加 stack カタログ（v6.1.0 追加 / v6.2.0 Expo / v6.3.0 GAS / v6.19.0 Cloudflare Workers 追加）
 
-上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **10 の追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
+上記 Vite+TS+React+PWA を標準 stack とし、本セクションで **11 の追加 stack** を DH 形式（必須生成ファイル表 + smoke test）で規定する。stack を選ぶ際の判定軸は `references/regime-assessment.md` の「ARC + dev_mode + チーム軸」と整合させる。
 
 > **出典・観測経路の明示（Council `council-2026-06-18T11:50:01Z-cw0rld` 条件②）**
 > 本カタログの stack 選定・標準コマンド構成は、外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT License）の framework 別 CLAUDE.md テンプレを **観測** し、DH の scaffold-checklist 形式（必須生成ファイル + smoke 手順）に **再構成** したものである。原典の散文テンプレを丸ごと転記したものではない。観測事例としての位置づけは `references/observed-peers.md` を参照。各 stack の必須生成ファイル一覧・最低要件・smoke 手順は DH 固有の規約であり、原典には存在しない。
@@ -375,9 +375,47 @@ Google Workspace（Sheets / Drive / Gmail / Calendar 等）を実行基盤とす
 
 ---
 
+### Stack 12: Cloudflare Workers + Hono + D1/R2（v6.19.0 F4 追加）
+
+edge ランタイム（`workerd`）上の API / 小規模 Web アプリ stack。**Stack 11（GAS）と同じく、実行基盤とデータ層が単一供給元に束縛される** stack である（ゆえに §Supabase ローカル開発 の blockquote が言う「stack カタログは供給元を含まない」の 2 つ目の例外）。
+
+**ローカル開発フロー・枠・設計上の罠は `cloudflare-workers-dev.md` が一次情報源**。本節は scaffold（何が実体として揃うか）に責務を絞る。無料枠の数値は本節にも同ファイルにも置かない（観測記録が正本 — `upgrade-spec-v6.19.0.md` I-3）。
+
+| # | パス | 役割 | 最低要件 |
+|---|---|---|---|
+| 1 | `wrangler.jsonc` | Worker 設定 | `compatibility_date` を**明示して固定**。`d1_databases` / `r2_buckets` 等の binding 宣言。`.toml` でも可だが現行ドキュメントは `.jsonc` 先行 |
+| 2 | `package.json` | 依存・scripts | devDependencies に `wrangler`（v4+）/ `typescript` / `vitest` / `@cloudflare/vitest-plugin`。dependencies に `hono`。`scripts` に `dev` / `build`（= `tsc --noEmit`）/ `lint` / `test` / `migrate:local` |
+| 3 | `src/logic/` | 純粋ロジック層 | Cloudflare binding（`env.DB` 等）を参照しない純 TypeScript（層分離規約・下記） |
+| 4 | `src/adapters/` | binding 接触層 | D1 / R2 / KV への接触をここに集約（薄く保つ） |
+| 5 | `src/index.ts` | エントリポイント | `export default` で `fetch` ハンドラ（Hono の `app.fetch`）を公開 |
+| 6 | `migrations/0001_init.sql` | 初期スキーマ | `wrangler d1 migrations create` の出力形式。**コミットする** |
+| 7 | `tsconfig.json` | TS 設定 | `strict: true`。`types` に `@cloudflare/vitest-plugin/types`（テスト用 tsconfig を分ける場合はそちら） |
+| 8 | unit test | ロジック検証 | `src/logic/` は binding 無しで exit 0。binding を触る面は `@cloudflare/vitest-plugin`（Workers ランタイム内で実行）で検証 |
+| 9 | `.dev.vars.example` | 秘匿値の雛形 | 実値は `.dev.vars`（gitignore）。**`.dev.vars` は commit 厳禁** |
+| 10 | `public/` | 静的アセット | Worker を呼ばない経路を確保する（§課金境界・`cloudflare-workers-dev.md`） |
+| 11 | `.gitignore` | git 除外 | `node_modules/` / `dist/` / **`.dev.vars`** / **`.wrangler/`（ローカル D1 の実体。実データが入りうる）** / `.env*` |
+
+**層分離規約（本 stack の最低要件）**: 純粋ロジック層（#3）と binding 接触層（#4）の分離は任意でなく**必須**。Stack 11（GAS）で最低要件化した規約の継承だが、**理由は異なる**。GAS はローカル実行できないため分離が検出力の前提だったのに対し、Workers は Miniflare でローカル実行できる。それでも分離を必須にするのは、**binding に触る面はテストが重く、供給元交代時に書き換わる面でもある**ため。ロジックが binding から独立していれば、第 1 層（型 / lint / unit test）が速いまま保たれ、供給元交代の影響面も #4 に閉じる。
+
+**Smoke test（`runtime_profile: local-reproducible`）**: `npm install` → `npm run build`（`tsc --noEmit` exit 0）→ `npm run lint` → `npx wrangler d1 migrations apply <db> --local`（exit 0）→ `npm run test`（vitest exit 0）→ `npx wrangler dev` が `Ready on http://127.0.0.1:8787` まで到達。**すべてローカル・認証不要**で通ること。
+
+> **D-4（`runtime_profile` の確定）は未実測**。`local-reproducible` は仮置きである。上記 smoke が認証を一切要求せずに exit 0 まで通ることを実プロジェクトで確認して確定する。認証を要求するなら `cloud-managed` へ訂正し ADR を起こす（`upgrade-spec-v6.19.0.md` §判断点 D-4）。
+
+**`--local` / `--remote` の明示（本 stack の規律）**: `wrangler dev` は既定でローカルだが、**`d1 execute` は既定でリモート ＝ 本番に当たる**。既定がサブコマンドごとに違うため、scripts・CI・手順書では**常に明示**する。根拠と全体像は `cloudflare-workers-dev.md`。
+
+**L0 対話への配線（v6.19.0 F4）**: 本 stack を選んだ場合、**新規に DB を作る前に `crosscut-quota-observer` で現在の枠消費率を提示する**。日次枠はアカウント単位で共有されるため、1 案件の追加が**無関係な既存プロジェクトを止めうる**（罠 C1）。**新規質問は増やさない** — 提示するのは観測結果であって規範ではない（I-3 / I-6）。観測 skill が無い・認証が無い場合は degrade し、「観測できなかった」をそのまま伝える（「枠に余裕がある」と読み替えない）。
+
+**DESIGN.md 連携**: `public/` に UI を持つ構成でのみ対象（API 専用構成では生成しない）。判定は §追加 stack カタログ 共通規約の「UI を含む stack」に従う。
+
+**人間専管事項（環境設定）**: Cloudflare アカウント作成 / `wrangler login`（OAuth）/ API トークンのスコープ設定 / `wrangler secret put` による本番シークレット投入 / 有料プランへの昇格判断。
+
+**罠**: 設計上の罠カタログ（C1〜C11）は `cloudflare-workers-dev.md` §設計上の罠カタログ が正本。scaffold 時に DONT.md へ転記する候補は **C1（アカウント共有枠）/ C3（DB 間 JOIN 不可）/ C5（PG 固有機能を持ち込めない）/ C7（削除で Time Travel 無効）** の 4 件。いずれも**後から直すのが高い**（境界設計・スキーマ・復旧可能性に効く）。
+
+---
+
 ### stack 未収載時の扱い
 
-上記 11 stack（標準 + 追加 10）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
+上記 12 stack（標準 + 追加 11）に該当しない構成（SvelteKit / 純 Node.js CLI / Rust 等）は、本カタログの **表形式（必須生成ファイル + 最低要件 + smoke test）に倣って L0 が当該プロジェクト用の一時チェックリストを `delivery/` 配下に起こす**。汎用化して本ファイルへ昇格するかは観測 → 候補化 → 人間承認（philosophy 第 8 条 3 段階モデル）を経る。
 
 ---
 
@@ -385,10 +423,13 @@ Google Workspace（Sheets / Drive / Gmail / Calendar 等）を実行基盤とす
 
 > **本節は既存の Supabase プロジェクトを持つ案件のみに適用する。新規案件の供給元既定ではない**
 > （v6.19.0 F1）。適用範囲と根拠は `supabase-local-dev.md` §適用範囲 が一次情報源。
-> 上の stack カタログ（Stack 1〜11）は **stack 軸（言語 / FW / ランタイム）** を扱うものであり、
+> 上の stack カタログ（Stack 1〜12）は **stack 軸（言語 / FW / ランタイム）** を扱うものであり、
 > フロント／アプリ層と API・バックエンド層の双方を含む（Stack 5〜9 は後者）。一方で
 > **hosted DB / BaaS をどこから借りるかという供給元の選択肢は含まない**。
-> 例外は Stack 11（GAS）で、これは実行基盤とデータ層が Google に束縛される stack である。
+> 例外は 2 つ。**Stack 11（GAS）**と **Stack 12（Cloudflare Workers）**で、いずれも
+> 実行基盤とデータ層が単一供給元に束縛される stack である。
+> **この 2 つは「供給元を選ぶ軸」ではなく「束縛を受け入れた stack」として並ぶ。**
+> したがって Stack 12 の追加は Cloudflare を既定にしない（v6.19.0 F4）。
 > 新規案件の供給元選択は L0 対話で人間に委ねる。
 
 上記 stack はフロント／アプリ層と API・バックエンド層の scaffold を扱う（供給元は含まない。上記 blockquote 参照）。バックエンドに **hosted Postgres / BaaS** を使い、本番に消失 NG の私的データを持つプロジェクトでは、本番を汚さないための**ローカル優先開発フロー**を推奨オプションとして提示する。**推奨対象は開発フローであって供給元ではない。** 既存 Supabase 案件向けの詳細プロトコル（適用範囲 / 前提確認 / 7 ステップワークフロー / セキュリティ規律）は `supabase-local-dev.md` を参照。
