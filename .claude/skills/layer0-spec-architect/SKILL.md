@@ -491,13 +491,15 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 - **sensors/** — センサー定義（計算的＋推論的）
 - **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）
 
-**推奨開発オプション（v5.18.0 追加 / v6.19.0 で供給元中立化）**: S1 で DB 使用ありと判定され、本番に **hosted Postgres / BaaS** を使い消失 NG の私的データを持つ構成では、本番を汚さないローカル優先開発（ローカルスタック + migration 経由の本番反映）を推奨提示する。**推奨しているのは開発フローであって供給元ではない** — 供給元の選択は `references/scaffold-checklist.md` の stack カタログに従う。強制ではなく推奨（philosophy 第 6 条）。
+**推奨開発オプション（v5.18.0 追加 / v6.19.0 で供給元中立化）**: S1 で DB 使用ありと判定され、本番に **hosted Postgres / BaaS** を使い消失 NG の私的データを持つ構成では、本番を汚さないローカル優先開発（ローカルスタック + migration 経由の本番反映）を推奨提示する。**推奨しているのは開発フローであって供給元ではない。** 強制ではなく推奨（philosophy 第 6 条）。
 
-供給元別のプレイブックは該当時のみロードする（progressive disclosure）:
+供給元別のプレイブックは該当時のみロードする（progressive disclosure）。**適用範囲と根拠の数値は各プレイブックの §適用範囲 が一次情報源**であり、本表には複製しない（供給元が単独で書き換えられる値を規範側に固定しないため）:
 
 | 供給元 | プレイブック | 適用範囲 |
 |---|---|---|
-| Supabase | `references/supabase-local-dev.md` | **既存プロジェクトを持つ案件のみ**（無料枠 2 アクティブ上限・ユーザー単位で全 org 合算のため。詳細は同ファイル §適用範囲） |
+| Supabase | `references/supabase-local-dev.md` | **既存プロジェクトを持つ案件のみ**（同ファイル §適用範囲 を参照） |
+
+**新規案件の供給元選択に既定は置かない。** stack カタログ（`references/scaffold-checklist.md`）はフロントエンド／アプリ層のみを扱い供給元の選択肢を含まないため、現時点では L0 対話で人間に委ねる。
 
 ### 7. 出力
 
@@ -614,7 +616,7 @@ project-root/
 - `references/arc-patterns/realtime-pubsub.md` — リアルタイム pub/sub パターン（社内版LINE型、大量同時接続）
 - `references/arc-patterns/event-sourcing.md` — イベントソーシング（監査必須、時系列復元、スキーマ進化完全準拠）
 - `references/schema-evolution.md` — データモデル進化プロトコル（互換性ポリシー / デプロイ戦略 / upcasting）
-- `references/supabase-local-dev.md` — Supabase ローカル開発環境（v5.18.0 追加、推奨開発オプション。本番保護のローカル優先フロー / migration 経由の本番反映 / セキュリティ規律。S1 = DB 使用あり + hosted Postgres/Supabase 構成でのみロード）
+- `references/supabase-local-dev.md` — Supabase ローカル開発環境（v5.18.0 追加 / v6.19.0 で適用範囲を限定。本番保護のローカル優先フロー / migration 経由の本番反映 / セキュリティ規律。**S1 = DB 使用あり + 既存の Supabase プロジェクトがある案件でのみロード**。新規案件の供給元既定としては用いない — 同ファイル §適用範囲）
 - `references/permission-delegation.md` — 段階的権限委譲（L0-2/L0-3、介入チャネル C1/C2/C3、判断献上 5 カテゴリ）
 - `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
 - `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）

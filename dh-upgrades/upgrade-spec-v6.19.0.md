@@ -31,9 +31,20 @@
 
 | 供給元 | DH 内の出現 | 実効性 |
 |---|---:|---|
-| Supabase | **67 箇所**（`supabase-local-dev.md` 35 / `spec-architect/SKILL.md` 11 / `schema-evolution.md` 9 / `scaffold-checklist.md` 8 / `dialog-questions.md` 3 / `subphase-l02-domain.md` 1） | 無料枠 2 アクティブプロジェクト上限（ユーザー単位・全 org 合算）が**既に満杯**。新規案件は必ず行き止まりに当たる |
+| Supabase | **67 行**（内訳は下記注） | 無料枠 2 アクティブプロジェクト上限（ユーザー単位・全 org 合算）が**既に満杯**。新規案件は必ず行き止まりに当たる |
 | Vercel | 4 箇所（`supabase-local-dev.md` 3 / `regime-assessment.md` 1） | Hobby は**商用不可**。業務ツールの置き場として不適格 |
 | Cloudflare | **0 箇所** | stack / runtime_profile / プレイブックのいずれにも不在 |
+
+> **計数方法の注（v6.19.0 F1 の独立検証 P7 を受けて明記）**: 上表の Supabase「67」は
+> `grep -ric "supabase" .claude/skills/*/SKILL.md .claude/skills/*/references/*.md templates -r` の
+> 結果、すなわち **大小無視でマッチした「行数」**（出現回数ではない）。内訳は
+> `supabase-local-dev.md` 35 / `spec-architect/SKILL.md` 11 / `schema-evolution.md` 9 /
+> `scaffold-checklist.md` 8 / `dialog-questions.md` 3 / `subphase-l02-domain.md` 1。
+> **このワイルドカードは `references/arc-patterns/` 等のサブディレクトリを含まない**ため、
+> `arc-patterns/realtime-pubsub.md`（配信ゲートウェイの選択肢列挙 1 件・無害）を取りこぼしている。
+> 単位と対象を変えると値も変わる: `.claude/skills/` 全体の**出現回数**は大小区別ありで 34、
+> 大小無視で 97（`supabase start` 等の CLI コマンドを含むため）。
+> 数値を引用する際は計数方法を添えること（I-3 が要求する観測記録の質）。
 
 利用者アカウント（`c2d8bea9`）の実測: 本セッション開始時は D1 2 個で `news-collector` が
 **日次 5.3 万行書込 = 無料枠 10 万行/日の 53% を単体消費**していた。利用者承認のもと
@@ -88,8 +99,14 @@ F2〜F5 の結論に依存しない。
 2. `spec-architect/SKILL.md` §6 の推奨開発オプション 1 ブロックに、供給元中立の書き方へ改める
    （「hosted Postgres / BaaS を使う構成では」を主語にし、Supabase を例示の 1 つに降格）
 3. `dialog-questions.md` S1 フォローアップの Supabase 前提を同様に中立化する
-4. **既存 2 枠は凍結**する。削除・移行を促す記述は書かない（Supabase は PG そのもので移行不要という
-   価値が残るため、`deprecation-protocol` は発動しない）
+4. **既存 2 枠は現状のまま使い続ける**（新規追加をしないという意味で、Supabase の `paused` 化ではない）。
+   削除・移行を促す記述は書かない（Supabase は PG そのもので移行不要という価値が残るため、
+   `deprecation-protocol` は発動しない）
+5. **`scaffold-checklist.md` §Supabase ローカル開発 にも適用範囲を明記する**（独立検証 P1 を受けて追加）。
+   同節の見出しが「推奨バックエンド開発オプション」であり、上記 1〜3 で中立化した 3 ファイルから
+   委譲された読み手がここに到達すると**降格が循環して打ち消される**ため。あわせて、stack カタログ
+   （Stack 1〜11）がフロントエンド／アプリ層のみで**供給元の選択肢を含まない**ことを明示し、
+   新規案件の供給元選択は「既定を置かず L0 対話で人間に委ねる」と書く（F4 で Stack 12 が入るまでの正直な状態）
 
 `schema-evolution.md`（9 箇所）と `subphase-l02-domain.md`（1 箇所）は **PG の話として正しい**ため
 触らない（Supabase 固有ではなく hosted Postgres 一般の記述）。
