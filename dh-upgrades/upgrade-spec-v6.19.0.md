@@ -1,8 +1,9 @@
 # upgrade-spec v6.19.0 — 供給元の既定を Stack 層で持つ（Cloudflare 吸収 + 共有枠の観測）
 
-> **状態: 実装中（F1 済 = PR #278、F2〜F5 未着手）**。Council 諮問通過（`council-2026-09-11T03:07:42Z-dt0911` /
-> implementer_consent: agreed / 2026-09-11 人間判定）。spec 起草は PR #277、F1 の実装は PR #278。
-> F2〜F5 は後続（実装順序は I-4 に従い F2 → F3 → F4/F5）。
+> **状態: 実装中（F1 済 = PR #278 / F2 済 = PR #280、F3〜F5 未着手）**。Council 諮問通過
+> （`council-2026-09-11T03:07:42Z-dt0911` / implementer_consent: agreed / 2026-09-11 人間判定）。
+> spec 起草は PR #277、F1 の実装は PR #278、F2 の実装は PR #280。
+> F3〜F5 は後続（実装順序は I-4 に従い F3 → F4/F5）。
 >
 > **起点**: 利用者発話（2026-09-11、L0 ブレスト）「cloudフレア MCP を繋げたのでデプロイ先を選べる
 > ようにしたい。Supabase の無料枠は使い切っているので、サーバーも含めて cloudフレアをデフォルトに
