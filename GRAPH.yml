@@ -153,7 +153,7 @@ nodes:
   - id: quota-observer
     kind: tool
     role: support
-    impl: scripts/quota-observer.py
+    impl: .claude/skills/crosscut-quota-observer/scripts/quota-observer.py
   - id: harness-benchmark
     kind: tool
     role: support

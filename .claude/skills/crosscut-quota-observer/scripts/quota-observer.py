@@ -45,6 +45,7 @@ exit code: 常に 0（検出は FAIL ではない。I-6「観測は判定を持�
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import json
 import statistics
 import sys
@@ -161,17 +162,28 @@ def detect_flat_daily_writes(daily, resources) -> list[dict]:
 
 
 def _consecutive_exceed(values: list[tuple[str, float]], limit: float, ratio: float) -> list[tuple[str, float]]:
-    """閾値超過が CONSECUTIVE_DAYS 日連続した最後の並びを返す。無ければ空。"""
+    """閾値超過が CONSECUTIVE_DAYS **日** 連続した最後の並びを返す。無ければ空。
+
+    「連続」は**日付の隣接**で判定する。要素の並びだけを見ると 9/01・9/15・9/30 の 3 点が
+    「3 日連続」になり、観測の空白を跨いで誤検出する。
+    """
     threshold = limit * ratio
     run: list[tuple[str, float]] = []
     best: list[tuple[str, float]] = []
+    prev = None
     for date, v in values:
-        if v >= threshold:
-            run.append((date, v))
-            if len(run) >= CONSECUTIVE_DAYS:
-                best = list(run)
-        else:
-            run = []
+        try:
+            d = _dt.date.fromisoformat(date)
+        except (ValueError, TypeError):
+            run, prev = [], None
+            continue
+        if v < threshold:
+            run, prev = [], d
+            continue
+        run = run + [(date, v)] if (prev is not None and (d - prev).days == 1 and run) else [(date, v)]
+        prev = d
+        if len(run) >= CONSECUTIVE_DAYS:
+            best = list(run)
     return best
 
 
@@ -222,25 +234,116 @@ def detect_threshold(observation: dict) -> list[dict]:
                 totals[d][key] += row[key]
     ordered = sorted(totals.items())
 
-    for key, limit_key in (
-        ("rows_written", "rows_written_daily"),
-        ("rows_read", "rows_read_daily"),
-        ("kv_writes", "kv_writes_daily"),
+    for key, limit_key, needs_streak in (
+        ("rows_written", "rows_written_daily", True),
+        ("rows_read", "rows_read_daily", True),
+        # KV は spec 表が「700/日」＝単日基準。3 日連続を課すと最も狭い枠（1,000/日）で検出漏れする
+        ("kv_writes", "kv_writes_daily", False),
     ):
         if limit_key not in limits:
             continue
-        series = [(d, v[key]) for d, v in ordered if v[key] > 0]
-        hit = _consecutive_exceed(series, limits[limit_key], THRESHOLDS[limit_key])
+        # 0 の日も系列に残す。落とすと「0 を挟んでも連続扱い」になる
+        series = [(d, v[key]) for d, v in ordered]
+        if needs_streak:
+            hit = _consecutive_exceed(series, limits[limit_key], THRESHOLDS[limit_key])
+        else:
+            th = limits[limit_key] * THRESHOLDS[limit_key]
+            hit = [(d, v) for d, v in series if v >= th]
         if hit:
             findings.append({
                 "pattern": f"threshold_{key}",
                 "limit": limits[limit_key],
-                "consecutive_days": len(hit),
+                ("consecutive_days" if needs_streak else "exceeded_days"): len(hit),
                 "sample": [{"date": d, "value": v} for d, v in hit[-CONSECUTIVE_DAYS:]],
                 "usage_ratio": round(hit[-1][1] / limits[limit_key], 3),
                 "note": "アカウント単位の共有枠。超過すると同一アカウントの全プロジェクトが巻き込まれる",
             })
     return findings
+
+
+
+def summarize_usage(observation: dict) -> dict:
+    """枠の消費率を出す。**検出の有無に関わらず常に出す**。
+
+    SPEC §F2「出力」は「databaseId 別の日次消費と、アカウント合計の枠消費率」と定める。
+    検出だけを出していると「無料枠あとどれくらい残ってる？」「DB をあと何個作れる？」に
+    答えられない。これは判定ではなく事実の提示である（I-6 と両立）。
+    """
+    limits = observation.get("limits") or {}
+    resources = observation.get("resources") or []
+    daily = observation.get("daily") or []
+
+    account: dict = {}
+    warnings: list[str] = []
+
+    # 個数（headroom = あと何個作れるか）
+    if "databases" in limits:
+        typed = [r for r in resources if r.get("kind")]
+        if len(typed) < len(resources):
+            # N6: kind 欠落を黙って 0 と数えない。「観測不能をそのまま伝える」
+            warnings.append(
+                f"resources {len(resources) - len(typed)} 件に kind が無く個数に数えていない（過小計数の恐れ）")
+        count = sum(1 for r in resources if r.get("kind") == "db")
+        account["databases"] = {
+            "observed": count, "limit": limits["databases"],
+            "ratio": round(count / limits["databases"], 3),
+            "headroom": limits["databases"] - count,
+        }
+
+    # 日次の合算（最新日と期間ピークの両方。ピークだけだと今が分からず、最新だけだと事故を見落とす）
+    totals: dict[str, dict[str, float]] = defaultdict(lambda: {"rows_read": 0.0, "rows_written": 0.0, "kv_writes": 0.0})
+    for row in daily:
+        d = row.get("date", "")
+        for key in ("rows_read", "rows_written", "kv_writes"):
+            if key in row:
+                totals[d][key] += row[key]
+    ordered = sorted(totals.items())
+
+    for key, limit_key in (("rows_written", "rows_written_daily"),
+                           ("rows_read", "rows_read_daily"),
+                           ("kv_writes", "kv_writes_daily")):
+        if limit_key not in limits or not ordered:
+            continue
+        lim = limits[limit_key]
+        series = [(d, v[key]) for d, v in ordered]
+        latest_date, latest = series[-1]
+        peak_date, peak = max(series, key=lambda x: x[1])
+        account[key] = {
+            "latest": latest, "latest_date": latest_date, "latest_ratio": round(latest / lim, 4),
+            "peak": peak, "peak_date": peak_date, "peak_ratio": round(peak / lim, 4),
+            "limit": lim,
+        }
+
+    # 単一リソースの容量
+    sized = [r for r in resources if r.get("size_bytes") is not None]
+    if sized and "bytes_per_database" in limits:
+        biggest = max(sized, key=lambda r: r["size_bytes"])
+        account["largest_resource"] = {
+            "name": biggest.get("name"), "size_bytes": biggest["size_bytes"],
+            "limit": limits["bytes_per_database"],
+            "ratio": round(biggest["size_bytes"] / limits["bytes_per_database"], 4),
+        }
+
+    # resource 別の日次消費（SPEC の「databaseId 別の日次消費」）
+    per_resource = []
+    for rid, rows in _by_resource(daily).items():
+        writes = [r.get("rows_written", 0) for r in rows]
+        reads = [r.get("rows_read", 0) for r in rows]
+        per_resource.append({
+            "resource_id": rid,
+            "resource_name": _name_of(resources, rid),
+            "resource_known": _is_known(resources, rid),
+            "days": len(rows),
+            "rows_written_latest": writes[-1] if writes else 0,
+            "rows_written_peak": max(writes) if writes else 0,
+            "rows_read_latest": reads[-1] if reads else 0,
+            "rows_read_peak": max(reads) if reads else 0,
+        })
+    per_resource.sort(key=lambda x: x["rows_written_peak"], reverse=True)
+
+    if not limits:
+        warnings.append("limits が無いため消費率を出せない（枠が見えない＝枠が空いている、ではない）")
+    return {"account": account, "per_resource": per_resource, "warnings": warnings}
 
 
 def observe(observation: dict) -> dict:
@@ -251,11 +354,13 @@ def observe(observation: dict) -> dict:
         + detect_flat_daily_writes(daily, resources)
         + detect_threshold(observation)
     )
+    usage = summarize_usage(observation)
     return {
         "observed_at": observation.get("observed_at"),
         "provider": observation.get("provider"),
         "plan": observation.get("plan"),
         "resource_count": len(resources),
+        "usage": usage,
         "findings": findings,
         "finding_count": len(findings),
         "judgment": None,  # I-6: 観測は判定を持たない。是正は人間または L0
@@ -271,9 +376,52 @@ def render(result: dict) -> str:
         f"- 検出: {result['finding_count']} 件",
         "",
     ]
+
+    # 枠の消費率（検出の有無に関わらず常に出す）
+    usage = result.get("usage") or {}
+    acc = usage.get("account") or {}
+    if acc:
+        lines.append("## 枠の消費率")
+        db = acc.get("databases")
+        if db:
+            lines.append(f"- DB 個数: {db['observed']} / {db['limit']}"
+                         f"（{db['ratio']:.0%}）— **あと {db['headroom']} 個**")
+        label = {"rows_written": "日次 行書込", "rows_read": "日次 行読込", "kv_writes": "日次 KV 書込"}
+        for key in ("rows_written", "rows_read", "kv_writes"):
+            u = acc.get(key)
+            if not u:
+                continue
+            lines.append(
+                f"- {label[key]}: 直近 {u['latest']:,.0f}（{u['latest_ratio']:.1%} / {u['latest_date']}）"
+                f", 期間ピーク {u['peak']:,.0f}（{u['peak_ratio']:.1%} / {u['peak_date']}）"
+                f", limit {u['limit']:,}")
+        big = acc.get("largest_resource")
+        if big:
+            lines.append(f"- 最大リソース: {big['name']} {big['size_bytes']:,} B"
+                         f"（{big['ratio']:.1%} / limit {big['limit']:,} B）")
+        lines.append("")
+
+    per = usage.get("per_resource") or []
+    if per:
+        lines.append("## リソース別の日次消費（書込ピーク順）")
+        for r in per[:10]:
+            mark = "" if r["resource_known"] else "（削除済み / 観測範囲外）"
+            lines.append(
+                f"- {r['resource_name']}{mark}: 書込 直近 {r['rows_written_latest']:,} / ピーク {r['rows_written_peak']:,}"
+                f", 読込 直近 {r['rows_read_latest']:,} / ピーク {r['rows_read_peak']:,}（{r['days']} 日分）")
+        lines.append("")
+
+    for w in usage.get("warnings") or []:
+        lines.append(f"> ⚠ {w}")
+    if usage.get("warnings"):
+        lines.append("")
+
     if not result["findings"]:
         lines.append("検出なし（定常状態）。")
+        lines.append("")
+        lines.append("**本出力は観測であって判定ではない**（I-6）。是正の要否は人間または L0 が決める。")
         return "\n".join(lines)
+    lines.append("## 検出")
     for f in result["findings"]:
         head = f["pattern"]
         if f.get("resource_name"):
@@ -308,7 +456,13 @@ def main() -> int:
         print(f"入力が JSON として読めない: {e}", file=sys.stderr)
         return 2
 
-    result = observe(observation)
+    try:
+        result = observe(observation)
+    except (TypeError, ValueError) as e:
+        # N7: 型不正な観測データでトレースバックを出さない。観測不能をそのまま伝える
+        print(f"観測データの型が不正で処理できない: {e}", file=sys.stderr)
+        print("（観測不能であって「枠に余裕がある」ではない）", file=sys.stderr)
+        return 2
     print(json.dumps(result, ensure_ascii=False, indent=2) if args.json else render(result))
     return 1 if (args.strict and result["finding_count"]) else 0
 

@@ -15,8 +15,9 @@ import importlib.util
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location("quota_observer", HERE / "scripts" / "quota-observer.py")
+sys.dont_write_bytecode = True  # N12: ステールな .pyc で変異前のコードが読まれるのを防ぐ
+HERE = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location("quota_observer", HERE / "quota-observer.py")
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 
@@ -181,10 +182,68 @@ def main():
     check("note に「現在の是正対象ではない」が入る",
           any("是正対象ではない" in f["note"] for f in gone), str([f["note"] for f in gone]))
     check("render の見出しに削除済みが出る", "削除済み / 観測範囲外" in m.render(r))
-    # 存在するリソースは True
-    live = [f for f in r["findings"] if f.get("resource_id") == "0c8b"]
-    check("存在するリソースには False を立てない",
-          all(f.get("resource_known") is not False for f in live), str(live))
+    # 存在するリソースは True。findings は空になりうるので per_resource で見る（N8: vacuous 回避）
+    per = {x["resource_id"]: x for x in r["usage"]["per_resource"]}
+    check("per_resource は両方の id を必ず含む", set(per) == {"81d3", "0c8b"}, str(set(per)))
+    check("存在するリソースは resource_known: True", per["0c8b"]["resource_known"] is True, str(per["0c8b"]))
+    check("削除済みは resource_known: False", per["81d3"]["resource_known"] is False, str(per["81d3"]))
+
+    print("== 閾値: 行読込（S3: 両方向の変異が生存していた空振り箇所） ==")
+    hi = 2_600_000  # 上限 500 万の 52% > 50%
+    rows = [("2026-09-01", hi, 0), ("2026-09-02", hi, 0), ("2026-09-03", hi, 0)]
+    r = m.observe(obs([{"id": "x", "name": "x", "kind": "db"}], daily("x", rows)))
+    check("行読込 52% が 3 日連続で検出", "threshold_rows_read" in patterns(r), str(patterns(r)))
+    lo = 2_400_000  # 48% < 50%
+    rows = [("2026-09-01", lo, 0), ("2026-09-02", lo, 0), ("2026-09-03", lo, 0)]
+    r = m.observe(obs([{"id": "x", "name": "x", "kind": "db"}], daily("x", rows)))
+    check("行読込 48% では検出しない", "threshold_rows_read" not in patterns(r), str(patterns(r)))
+
+    print("== N3: 連続は日付の隣接で判定する ==")
+    over = 60_000
+    far = [("2026-09-01", 0, over), ("2026-09-15", 0, over), ("2026-09-30", 0, over)]
+    r = m.observe(obs([{"id": "x", "name": "x", "kind": "db"}], daily("x", far)))
+    check("日付が飛んでいれば 3 点でも検出しない",
+          "threshold_rows_written" not in patterns(r), str(patterns(r)))
+    gap = [("2026-09-01", 0, over), ("2026-09-02", 0, 0), ("2026-09-03", 0, over), ("2026-09-04", 0, over)]
+    r = m.observe(obs([{"id": "x", "name": "x", "kind": "db"}], daily("x", gap)))
+    check("0 の日を挟めば連続が切れる", "threshold_rows_written" not in patterns(r), str(patterns(r)))
+    adj = [("2026-09-01", 0, over), ("2026-09-02", 0, over), ("2026-09-03", 0, over)]
+    r = m.observe(obs([{"id": "x", "name": "x", "kind": "db"}], daily("x", adj)))
+    check("日付が隣接していれば検出", "threshold_rows_written" in patterns(r), str(patterns(r)))
+
+    print("== N4: KV は単日基準（3 日連続を要求しない） ==")
+    kv1 = [{"date": "2026-09-01", "resource_id": "k", "kv_writes": 900}]
+    r = m.observe(obs([{"id": "k", "name": "kv", "kind": "kv"}], kv1))
+    check("KV 単日 90% で検出（最も狭い枠の検出漏れを防ぐ）",
+          "threshold_kv_writes" in patterns(r), str(patterns(r)))
+    kv2 = [{"date": "2026-09-01", "resource_id": "k", "kv_writes": 600}]
+    r = m.observe(obs([{"id": "k", "name": "kv", "kind": "kv"}], kv2))
+    check("KV 単日 60% では検出しない", "threshold_kv_writes" not in patterns(r), str(patterns(r)))
+
+    print("== N9: flat の下限が効いているか ==")
+    tiny_flat = [("2026-09-0%d" % i, 9_000, 500) for i in range(1, 8)]
+    r = m.observe(obs([{"id": "x", "name": "tiny", "kind": "db"}], daily("x", tiny_flat)))
+    check("平均が下限未満なら一定でも検出しない",
+          "flat_daily_writes" not in patterns(r), str(patterns(r)))
+
+    print("== S2: 消費率は検出の有無に関わらず常に出る ==")
+    r = m.observe(obs([{"id": "0c8b", "name": "minna-no-ai-bbs", "kind": "db", "size_bytes": 61_440}],
+                      daily("0c8b", BBS)))
+    check("検出 0 件でも usage が出る", r["finding_count"] == 0 and bool(r["usage"]["account"]))
+    db = r["usage"]["account"]["databases"]
+    check("headroom（あと何個作れるか）が出る", db["headroom"] == 9, str(db))
+    check("日次書込の消費率が出る", "rows_written" in r["usage"]["account"], str(r["usage"]["account"].keys()))
+    text = m.render(r)
+    check("render に「あと N 個」が出る", "あと 9 個" in text, text[:200])
+    check("render に消費率セクションが出る", "## 枠の消費率" in text)
+
+    print("== N6: kind 欠落を黙って 0 と数えない ==")
+    r = m.observe(obs([{"id": "x", "name": "no-kind"}, {"id": "y", "name": "db", "kind": "db"}], []))
+    check("kind 欠落があれば warning を出す",
+          any("kind" in w for w in r["usage"]["warnings"]), str(r["usage"]["warnings"]))
+    r = m.observe({"resources": [{"id": "x", "name": "x", "kind": "db"}], "daily": []})
+    check("limits が無ければ「枠が見えない」と伝える",
+          any("枠が見えない" in w for w in r["usage"]["warnings"]), str(r["usage"]["warnings"]))
 
     print("== I-6: 観測は判定を持たない ==")
     r = m.observe(obs([{"id": "81d3", "name": "news-collector", "kind": "db"}],

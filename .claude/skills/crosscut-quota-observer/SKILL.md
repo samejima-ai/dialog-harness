@@ -48,7 +48,7 @@ DH には供給元アカウントの枠残量を観測する経路が無かっ�
 
 | 契機 | 内容 |
 |---|---|
-| L0 対話 | 新規ツールの立ち上げ時に現在の枠消費率を提示する |
+| L0 対話 | 新規ツールの立ち上げ時に現在の枠消費率を提示する（**配線は v6.19.0 F4 で実施予定。現時点は人間の明示起動のみ**） |
 | 量産フェーズ | 定期確認（「あと何個作れるか」の判断材料） |
 | 人間の明示 | 「枠の残量を見て」「書き込みが多すぎないか」等 |
 
@@ -75,11 +75,23 @@ DH には供給元アカウントの枠残量を観測する経路が無かっ�
 アダプタは**正規化 JSON** を出力する。スキーマは `scripts/quota-observer.py` の docstring が正本。
 要点は「limits（枠の上限）」「resources（個数と容量）」「daily（日次消費）」の 3 つ。
 
-### 3. 検出
+### 3. 観測と検出
+
+**出力は 2 つある。検出が 0 件でも消費率は必ず出る**（`dh-upgrades/upgrade-spec-v6.19.0.md` §F2「出力」）。
+
+| 出力 | 内容 |
+|---|---|
+| **枠の消費率** | 個数と **headroom（あと何個作れるか）**、日次枠の直近値と期間ピーク、最大リソースの容量 |
+| **リソース別の日次消費** | resource ごとの書込・読込（直近 / ピーク）。削除済みは明示 |
+| **検出** | 下表のパターンと閾値超過 |
+
+消費率があるから「無料枠あとどれくらい残ってる？」「DB をあと何個作れる？」に答えられる。
+**これは判定ではなく事実の提示**であり I-6 と両立する。
 
 ```bash
-python3 scripts/quota-observer.py --input observation.json
-cat observation.json | python3 scripts/quota-observer.py --json
+# 本 skill に同梱。利用者プロジェクトへも skill ごと配布される（リポジトリ直下の scripts/ は配布対象外）
+python3 .claude/skills/crosscut-quota-observer/scripts/quota-observer.py --input observation.json
+cat observation.json | python3 .claude/skills/crosscut-quota-observer/scripts/quota-observer.py --json
 ```
 
 検出するもの：
@@ -115,10 +127,11 @@ cat observation.json | python3 scripts/quota-observer.py --json
 ## 検出力の実証
 
 ```bash
-python3 scripts/test-quota-observer.py
+python3 .claude/skills/crosscut-quota-observer/scripts/test-quota-observer.py
 ```
 
-24 項目。**陽性ケースの中核は 2026-09-11 の実測データ**（合成値ではない）で、
+**47 項目**（`grep -c '^  ok:'` で実測。この数は増える — 書き換えるときは数えること）。
+**陽性ケースの中核は 2026-09-11 の実測データ**（合成値ではない）で、
 陰性ケースには削除後の実際のベースラインを使う。「実リポで 0 件」は検出器が空振りでも
 同じ表示になるため、それだけでは動作の証拠にならない（v6.17.0 の規律）。
 
@@ -140,10 +153,15 @@ python3 scripts/test-quota-observer.py
   本体の中立性と供給元交代への耐性を確保する形を採った
 - **E-2 認証情報不要**: アダプタは供給元の認証を要求する。ただし認証不在は degrade であり、
   DH の動作条件ではない（I-5）
+- **B-4 用語辞書整合**: `harness-verifier/glossary.yml` の `crosscut_prefix.members` に登録済み（解消）
+- **GRAPH.yml の edge がゼロ**: 本 skill と tool node はいずれも起動元 node を持たない。
+  SKILL.md §起動条件 の「L0 対話で新規ツール立ち上げ時に枠消費率を提示する」経路は
+  **v6.19.0 F4 で配線予定**であり現時点では未配線。
+  同型の先例は `GRAPH.yml` の `council-performance` / `harness-benchmark`
 
 ## 参照
 
 - `scripts/quota-observer.py` — 検出ロジック（決定論・LLM 不使用・判定なし）
-- `scripts/test-quota-observer.py` — 検出力の実証 24 項目
+- `scripts/test-quota-observer.py` — 検出力の実証 47 項目
 - `references/adapters/cloudflare.md` — Cloudflare アダプタ（観測日付つき）
 - `../layer0-spec-architect/references/scaffold-checklist.md` — stack カタログ（供給元は含まない）

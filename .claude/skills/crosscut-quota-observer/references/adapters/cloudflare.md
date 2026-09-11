@@ -11,7 +11,7 @@
 | 資源 | 無料枠 | 備考 |
 |---|---|---|
 | D1 データベース数 | **10** | 有料 $5/月 で 50,000 |
-| D1 単一 DB 容量 | **500 MB** | 有料で 10 GB |
+| D1 単一 DB 容量 | **500 MB** | 有料で 10 GB。正規化 JSON では 524,288,000 B（= 500 MiB）として扱う。公称が十進 500 MB なら枠を約 4.9% 過大評価し**検出が遅れる方向**に効く（公称の基数は 2026-09-11 時点で未確認） |
 | D1 アカウント合計容量 | 5 GB | 有料で 1 TB |
 | D1 日次行読込 | **500 万 / 日** | **アカウント単位で共有** |
 | D1 日次行書込 | **10 万 / 日** | **アカウント単位で共有** |
@@ -36,13 +36,32 @@ query($a:String!,$from:Date!,$to:Date!){
   viewer{ accounts(filter:{accountTag:$a}){
     d1AnalyticsAdaptiveGroups(limit:100, filter:{date_geq:$from,date_leq:$to}, orderBy:[date_DESC]){
       dimensions{ date databaseId }
-      sum{ readQueries writeQueries rowsRead rowsWritten }
+      sum{ rowsRead rowsWritten }   # readQueries / writeQueries は正規化スキーマに無い（取るなら未使用と明記すること）
     }}}
 }
 ```
 
 variables は `{a: <accountId>, from: <YYYY-MM-DD>, to: <YYYY-MM-DD>}`。7 日分を目安に取る
 （`flat_daily_writes` の検出に最低 5 日必要）。
+
+### 1-b. KV 書込（GraphQL・`kvOperationsAdaptiveGroups`）
+
+`daily[].kv_writes` の供給元。**これが無いと `threshold_kv_writes` は永久に発火しない**
+（この経路が無いと閾値は「配線されているが通電していない」状態になる）。
+
+```graphql
+query($a:String!,$from:Date!,$to:Date!){
+  viewer{ accounts(filter:{accountTag:$a}){
+    kvOperationsAdaptiveGroups(limit:100, filter:{date_geq:$from,date_leq:$to}){
+      dimensions{ date namespaceId actionType }
+      sum{ requests }
+    }}}
+}
+```
+
+`actionType` が `"write"` の行だけを拾い、`date` ごとに合算して `daily[].kv_writes` に入れる
+（2026-09-11 に実 API で応答を確認済み。`actionType` は `read` / `write` / `list` / `delete`）。
+保存量が要るときは `kvStorageAdaptiveGroups`（`max{ keyCount byteCount }`）。
 
 ### 2. リソース一覧（REST）
 
@@ -93,6 +112,7 @@ variables は `{a: <accountId>, from: <YYYY-MM-DD>, to: <YYYY-MM-DD>}`。7 日�
 | `resources[].size_bytes` | D1 の `file_size` |
 | `daily[].resource_id` | GraphQL の `dimensions.databaseId` |
 | `daily[].rows_read` / `rows_written` | GraphQL の `sum.rowsRead` / `sum.rowsWritten` |
+| `daily[].kv_writes` | `kvOperationsAdaptiveGroups` の `actionType: "write"` を date で合算（§1-b） |
 
 ## 罠
 
