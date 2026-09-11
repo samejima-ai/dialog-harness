@@ -116,6 +116,10 @@ query($a:String!,$from:Date!,$to:Date!){
 
 ## 罠
 
+以下は**観測に効く罠**に絞る。設計判断に効く罠カタログ（DB 間 JOIN 不可 / PG 固有機能 /
+課金境界など C1〜C11）は `../../../layer0-spec-architect/references/cloudflare-workers-dev.md`
+§設計上の罠カタログ が正本。**同じ罠を二重に育てない**。
+
 | # | 内容 |
 |---|---|
 | C1 | 日次枠は**アカウント共有**。1 案件の暴走で全 D1 クエリが止まる |

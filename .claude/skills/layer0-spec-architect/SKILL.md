@@ -498,6 +498,7 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 | 供給元 | プレイブック | 適用範囲 |
 |---|---|---|
 | Supabase | `references/supabase-local-dev.md` | **既存プロジェクトを持つ案件のみ**（同ファイル §適用範囲 を参照） |
+| Cloudflare Workers | `references/cloudflare-workers-dev.md` | Workers / D1 / KV / R2 を使う案件（同ファイル §適用範囲 を参照）。**数値表を持たず観測記録を参照する構成**（v6.19.0 F3） |
 
 **新規案件の供給元選択に既定は置かない。** stack カタログ（`references/scaffold-checklist.md`）は stack 軸（言語 / FW / ランタイム）を扱うもので、**hosted DB / BaaS の供給元選択は含まない**（例外は Stack 11 = GAS で、実行基盤とデータ層が Google に束縛される）。したがって現時点では L0 対話で人間に委ねる。
 
@@ -617,6 +618,7 @@ project-root/
 - `references/arc-patterns/event-sourcing.md` — イベントソーシング（監査必須、時系列復元、スキーマ進化完全準拠）
 - `references/schema-evolution.md` — データモデル進化プロトコル（互換性ポリシー / デプロイ戦略 / upcasting）
 - `references/supabase-local-dev.md` — Supabase ローカル開発環境（v5.18.0 追加 / v6.19.0 で適用範囲を限定。本番保護のローカル優先フロー / migration 経由の本番反映 / セキュリティ規律。**S1 = DB 使用あり + 既存の Supabase プロジェクトがある案件でのみロード**。新規案件の供給元既定としては用いない — 同ファイル §適用範囲）
+- `references/cloudflare-workers-dev.md` — Cloudflare Workers 開発環境（v6.19.0 F3 追加。ローカル優先フロー（`wrangler dev` は既定でローカル・Docker 不要）/ 設計上の罠カタログ C1〜C11 / 静的と動的の課金境界 / smoke test。**Workers・D1 を使う案件でのみロード**。**無料枠の数値表を持たない** — 正本は `crosscut-quota-observer/references/adapters/cloudflare.md`）
 - `references/permission-delegation.md` — 段階的権限委譲（L0-2/L0-3、介入チャネル C1/C2/C3、判断献上 5 カテゴリ）
 - `references/domain-context-dialog.md` — ドメイン文脈対話プロトコル（DOMAIN-CONTEXT.md、機密分離、5 対話カテゴリ）
 - `references/design-system-spec.md` — DESIGN.md 規格と対話プロトコル（v5.15.0 追加、UI プロジェクトのみ起動。Google Labs 公式仕様準拠、Do's and Don'ts によるアンカリング正方向活用、3 問プロトコル DG2〜DG4）
