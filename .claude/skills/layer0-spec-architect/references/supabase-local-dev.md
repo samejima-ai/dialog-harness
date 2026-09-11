@@ -1,4 +1,4 @@
-# Supabase ローカル開発環境（推奨開発オプション、v5.18.0 追加）
+# Supabase ローカル開発環境（**既存プロジェクト向け**・v5.18.0 追加 / v6.19.0 で適用範囲を限定）
 
 本番 Supabase プロジェクト（無料枠・私的データ格納用など、**消失 NG** の実データを持つインスタンス）を汚さずに、アプリ開発・スキーマ変更・データ実験を行うための**ローカル優先（local-first）開発フロー**。本番への反映は **マイグレーションファイル経由でのみ** 明示的に行う運用を推奨する。
 
@@ -19,7 +19,8 @@ L0 §6「開発環境の設計・構築」で、対象プロジェクトが下�
   Supabase の `paused` 状態にすることではない）。移行・削除を促す記述は本ファイルに置かない
   （Supabase は Postgres そのもので移行が不要という価値が残るため、`deprecation-protocol` は発動しない）
 - **新規案件の供給元選択に既定は置かない。** stack カタログ（`scaffold-checklist.md`）は
-  フロントエンド／アプリ層のみを扱い供給元を含まないため、現時点では L0 対話で人間に委ねる
+  stack 軸（言語 / FW / ランタイム）を扱うもので **hosted DB / BaaS の供給元選択は含まない**
+  （例外は Stack 11 = GAS。実行基盤とデータ層が Google に束縛される）。現時点では L0 対話で人間に委ねる
 
 **限定しているのは「Supabase を新規に選ぶこと」であって、本ファイルの開発規律ではない。** 中身の大半
 （本番を直接編集しない / migration 一方向 / `.env.local` を gitignore）は**供給元非依存の叡智**であり、
@@ -190,7 +191,7 @@ supabase db diff          # 差分なし（migration とローカルスキーマ
 | `subphase-selection.md` | S1（DB 使用判定）が本フローの推奨発動条件の起点 |
 | `subphase-l02-domain.md` | 論理モデル（`spec/domain.ts`）→ 物理モデル（migration SQL）の橋渡し。3 階層整合の物理層を Supabase migration が担う |
 | `schema-evolution.md` | 本番反映時の互換性ポリシー・デプロイ戦略。`db push` の安全規律 |
-| `scaffold-checklist.md` | バックエンド開発オプションとして smoke test / 生成物を整合 |
+| `scaffold-checklist.md` | 既存 Supabase 案件の smoke test / 生成物を整合（同ファイル §Supabase ローカル開発 も適用範囲が限定済み） |
 | `dialog-questions.md` | S1 フォローアップで非技術語彙の推奨提示 |
 
 ---

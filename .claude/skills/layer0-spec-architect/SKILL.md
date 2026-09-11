@@ -499,7 +499,7 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 |---|---|---|
 | Supabase | `references/supabase-local-dev.md` | **既存プロジェクトを持つ案件のみ**（同ファイル §適用範囲 を参照） |
 
-**新規案件の供給元選択に既定は置かない。** stack カタログ（`references/scaffold-checklist.md`）はフロントエンド／アプリ層のみを扱い供給元の選択肢を含まないため、現時点では L0 対話で人間に委ねる。
+**新規案件の供給元選択に既定は置かない。** stack カタログ（`references/scaffold-checklist.md`）は stack 軸（言語 / FW / ランタイム）を扱うもので、**hosted DB / BaaS の供給元選択は含まない**（例外は Stack 11 = GAS で、実行基盤とデータ層が Google に束縛される）。したがって現時点では L0 対話で人間に委ねる。
 
 ### 7. 出力
 
