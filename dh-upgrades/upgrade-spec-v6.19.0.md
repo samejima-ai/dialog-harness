@@ -43,8 +43,14 @@
 > 上表の Supabase「67」は次のコマンドの結果、すなわち **大小無視でマッチした「行数」**（出現回数ではない）:
 >
 > ```
-> grep -ric "supabase" .claude/skills/*/SKILL.md .claude/skills/*/references/*.md templates -r
+> grep -ricr "supabase" .claude/skills/*/SKILL.md .claude/skills/*/references/*.md templates
 > ```
+>
+> **初版は `-r` を末尾に置いていた**（PR #278 で Copilot が指摘）。GNU grep のデフォルトでは
+> オプションを引数の後に置いても解釈されるため実測では exit 0 で 67 を返したが、
+> `POSIXLY_CORRECT=1` を立てると `grep: -r: No such file or directory` で失敗する
+> （いずれも本セッションで実測）。**再現可能性を主題にした注が環境依存のコマンドを載せていては
+> 自己矛盾**なので、オプションを前方へ移した（値は同じ 67）。
 >
 > 内訳は `supabase-local-dev.md` 35 / `spec-architect/SKILL.md` 11 / `schema-evolution.md` 9 /
 > `scaffold-checklist.md` 8 / `dialog-questions.md` 3 / `subphase-l02-domain.md` 1。
