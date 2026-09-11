@@ -5,7 +5,9 @@
 >
 > **起点**: 利用者発話（2026-09-11、L0 ブレスト）「cloudフレア MCP を繋げたのでデプロイ先を選べる
 > ようにしたい。Supabase の無料枠は使い切っているので、サーバーも含めて cloudフレアをデフォルトに
-> したい」。判断材料は `delivery/DECISION-KIT-deploy-target-2026-09-11.html`（PR #276）。
+> したい」（引用中の「cloudフレア」は **Cloudflare**。発話の原文表記を保存し、以降の本文では
+> 固有名詞として `Cloudflare` に統一する）。判断材料は
+> `delivery/DECISION-KIT-deploy-target-2026-09-11.html`（PR #276）。
 >
 > **Council 判定**: recommended **C（新軸を作らず Stack 層で吸収）＋ 必須 4 条件**。
 > judgment_confidence 0.35 で `escalate_to_human`、人間が `agreed` で確定。最重量軸
@@ -266,6 +268,7 @@ review_trigger:
 | D-2 | 観測 skill の prefix・命名・配置 | 未判断。`dev-env-spec.md` §Level A 配布性 checklist（6 軸 21 項目）で評価してから確定 |
 | D-3 | `news-collector` の外部呼び出し元 | **未特定**。cron schedules は空だったのに日次 5.4 万行の書込があった ＝ 呼び出し元が Cloudflare の外にある。Worker 削除済みのため呼び出し元はエラーを受け続ける。特定と停止が必要 |
 | D-4 | Stack 12 の runtime_profile | `local-reproducible` を仮置き。miniflare での決定論 smoke が認証なしに exit 0 まで通るかを実測して確定（開発者 premise） |
+| D-5 | Judgment Agent の `weight_note` がカテゴリを誤記する | 本 spec の諮問（dt0911）で、`category: "conception"` に対し `weight_note` が「カテゴリ: implementation」と書いた（PR #277 で Copilot が検出）。**判定への影響はない** — `final_weights` 3/3/5 は `council-weights.md` の conception 補正（base 3/4/3 に 経営者 0 / 開発者 −1 / 哲学者 +2）の適用結果と一致し、過去の conception エントリ（`claude-md-purity`）も 3/3/5、implementation なら 2/6/2 になるため（ブリーフ §7.3）。COUNCIL-LOG は append-only ゆえ当該記録は改変せず事実として保存する。再演を防ぐなら `judgment-agent.md` の prompt または `council-fanout.workflow.mjs` で `weight_note` のカテゴリを args の `category` から機械代入する（本 spec の範囲外・別 PR） |
 
 ---
 
