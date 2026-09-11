@@ -108,6 +108,10 @@ nodes:
     kind: agent
     role: support
     impl: .claude/skills/crosscut-hook-observer/SKILL.md
+  - id: crosscut-quota-observer
+    kind: agent
+    role: support
+    impl: .claude/skills/crosscut-quota-observer/SKILL.md
   - id: crosscut-continuous-learning
     kind: agent
     role: support
@@ -146,6 +150,10 @@ nodes:
     kind: tool
     role: support
     impl: scripts/council-performance.py
+  - id: quota-observer
+    kind: tool
+    role: support
+    impl: scripts/quota-observer.py
   - id: harness-benchmark
     kind: tool
     role: support
