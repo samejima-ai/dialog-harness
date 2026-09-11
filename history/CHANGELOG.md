@@ -2,6 +2,55 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## 在るのに誰も呼ばない機構だった — Stack 12 と観測の配線（v6.19.0 F4、2026-09-11）
+
+**この版を持つと何が違うか**: Cloudflare Workers の scaffold が stack カタログから引け、
+**Stack 12 を選ぶと新規 DB を作る前に枠の消費率が出る**。F2 で作った観測機構は F3 の時点で
+`GRAPH.yml` の edge がゼロ、つまり**在るのに誰も呼ばない状態**だった。本版でそれが繋がる。
+
+- `scaffold-checklist.md` に **Stack 12: Cloudflare Workers + Hono + D1/R2** を追加（11 → 12 stack）
+- `GRAPH.yml` に edge 2 本: `layer0-spec-architect → crosscut-quota-observer`（Stack 12 選択時・
+  conditional）と `crosscut-quota-observer → quota-observer`（standard）。edges 41 → 43
+- L0 SKILL.md §6 と Stack 12 節に「**新規に DB を作る前に枠消費率を提示する**」を配線。
+  **新規質問は増やしていない** — 提示するのは観測結果であって規範ではない（I-3 / I-6）
+
+**Stack 12 の追加は Cloudflare を既定にしない。** stack カタログが供給元を含まない原則の
+例外は Stack 11（GAS）と Stack 12 の 2 つになったが、**どちらも「供給元を選ぶ軸」ではなく
+「束縛を受け入れた stack」として並ぶ**。Council `dt0911` が `deploy_target` 新軸を退けた
+「共有枠は cross-project state でありper-project 軸に押し込むのはカテゴリエラー」が効き続けている。
+
+### spec の記述が着地前に 2 箇所腐っていた
+
+一次情報の確認で、spec F4 の指示どおり書くと**着地時点で陳腐化する**箇所が 2 件あった。
+
+- **`@cloudflare/vitest-pool-workers` は 2026-08-19 に `@cloudflare/vitest-plugin`（v1）へ改称**
+  （設定 API は不変・公式 codemod あり）。新名で記載した
+- **`wrangler.toml`** は現行ドキュメントが `wrangler.jsonc` を先行表記。両方を認め `.jsonc` を第一候補に
+
+**spec が悪いのではなく、spec に書いた時点で腐り始める種類の情報**である。I-3 が無料枠の数値に
+ついて言っていることは、パッケージ名にも同じく当てはまる。stack カタログを「実体ファイル一覧 +
+smoke コマンド」の決定論的記述に限る保守責務規定（v6.1.0）が**実際に機能した 1 例**。
+
+### 層分離を必須にした理由は Stack 11 と違う
+
+spec は「Stack 11 = GAS の規約を継承」とだけ書いたが、**継承したのは規約であって理由ではない**。
+GAS はローカル実行できないため分離が検出力の前提だった。Workers は Miniflare でローカル実行できる
+ので同じ理由は成り立たない。それでも必須にしたのは、**binding に触る面はテストが重く、かつ
+供給元交代時に書き換わる面でもある**ため。I-1（供給元非依存）を stack 内部で実装した形になる。
+
+### 検査が規格外の edge を捕まえた
+
+`GRAPH.yml` に `type: invokes` と書いたところ、検査 7（実行グラフ整合）が
+「type が不正: 'invokes'（standard / conditional / loop のいずれか）」で FAIL した。
+**新しい語を勝手に増やそうとして止められた**。`standard` に訂正して PASS。
+
+### 未実測のまま着地させたもの
+
+**D-4（Stack 12 の `runtime_profile`）は `local-reproducible` の仮置きのまま**。実プロジェクトで
+smoke が**認証を一切要求せず** exit 0 まで通ることの実測が要る。認証を要求するなら
+`cloud-managed` へ訂正して ADR を起こす。**仮置きである旨を Stack 12 節に明記した**
+（黙って確定したことにしない）。
+
 ## 「この表は腐る」と書く代わりに、腐る表を作らなかった — Cloudflare プレイブック（v6.19.0 F3、2026-09-11）
 
 **この版を持つと何が違うか**: Cloudflare Workers / D1 を使う案件で、ローカル優先の開発フローと
