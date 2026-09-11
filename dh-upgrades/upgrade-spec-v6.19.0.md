@@ -1,12 +1,19 @@
 # upgrade-spec v6.19.0 — 供給元の既定を Stack 層で持つ（Cloudflare 吸収 + 共有枠の観測）
 
-> **状態: 実装中（F1〜F5 済 / VERSION 昇格は人間判定待ち）**。Council 諮問通過
+> **状態: 実装中（F1〜F5 済 / 内容は VERSION 6.18.0 に含まれる・6.19.0 への昇格は未実施）**。Council 諮問通過
 > （`council-2026-09-11T03:07:42Z-dt0911` / implementer_consent: agreed / 2026-09-11 人間判定）。
 > spec 起草は PR #277。着地の PR 番号は `history/CHANGELOG.md` の各節が持つ。
 >
-> **F は全て着地したが `実装済み` を名乗らない。** 同値は `dev-env-spec.md` §状態行の値域 が
-> 「VERSION も昇格した」状態と定めており、VERSION 昇格は人間専管（§判断点 D-6）。
-> AI が状態行だけ先に `実装済み` にすると、**宣言が実態を追い越す**（v6.18.0 C-4 が塞いだ乖離の逆向き）。
+> **F は全て着地したが `実装済み` を名乗らない。** 人間判定（2026-09-11）により `VERSION` は
+> **6.18.0** へ昇格し、**本 spec の内容はその 6.18.0 に含まれている**。しかし
+> `実装済み（…、VERSION x.y.z）` を名乗るには自版 ≤ `VERSION` が要る（検査 9）。
+> 6.19.0 > 6.18.0 ゆえ名乗れない。**実測で確認済み** — `VERSION=6.18.0` の状態で
+> 本 spec に `実装済み` を書くと検査 9 が
+> 「`実装済み` を名乗る spec の版 v6.19.0 が VERSION=6.18.0 を超えている」で FAIL する。
+>
+> つまり本 spec は **spec 番号が release 番号を追い越した状態**にある
+> （`dev-env-spec.md` §spec 番号は起草時の予約 が想定する形）。
+> `VERSION` が 6.19.0 に達した時点で状態行を `実装済み` に改める。
 >
 > **未解決として残るのは判断点 D-3（暴走案件の外部呼び出し元・未特定）/ D-4（Stack 12 の
 > `runtime_profile`・未実測）/ D-6（VERSION 昇格）の 3 件**。D-3・D-4 は実装ではなく観測を待つ項目。
@@ -401,7 +408,7 @@ review_trigger:
 | D-2 | 観測 skill の prefix・命名・配置 | **人間追認済み（2026-09-11）: `crosscut-quota-observer` で確定**（`crosscut-` prefix / Level A / D4 / scripts・adapters を skill 配下に同梱。checklist 評価結果は同 SKILL.md §未充足項目）。PR #280 は追認前に merge されたため（`history/REGIME-LOG.md` AI 判定漏れ記録 #2）、本追認は**事後追認**である。F4 の配線先はこの名前で確定 |
 | D-3 | `news-collector` の外部呼び出し元 | **未特定**。cron schedules は空だったのに日次 5.4 万行の書込があった ＝ 呼び出し元が Cloudflare の外にある。Worker 削除済みのため呼び出し元はエラーを受け続ける。特定と停止が必要 |
 | D-4 | Stack 12 の runtime_profile | **未実測のまま F4 に着地**。`local-reproducible` は仮置きであり、`scaffold-checklist.md` §Stack 12 に「仮置きである」旨を明記した。確定には実プロジェクトで smoke（`tsc --noEmit` / lint / `d1 migrations apply --local` / vitest / `wrangler dev` 到達）が**認証を一切要求せず** exit 0 まで通ることの実測が要る。認証を要求するなら `cloud-managed` へ訂正し ADR を起こす |
-| D-6 | `VERSION` 6.17.0 → 6.19.0 の昇格 | **未判定（人間専管）**。F1〜F5 はすべて master に入ったが、`VERSION` は 6.17.0 のまま。`dev-env-spec.md` §状態行の値域 は `実装済み` を「その版の critical がすべて master に入り、**VERSION も昇格した**」状態と定めるため、本 spec の状態行は `実装中（F1〜F5 済 / VERSION 昇格は人間判定待ち）` に留めた。昇格の可否・minor/major の別・`history/REGIME-LOG.md` への根拠記載は人間が判定する（過去の昇格記録はすべて判定日・判定者・昇格根拠・モード判定を人間名義で持つ）。**なお v6.18.0 spec の着地状況と合わせて判定する必要がある**（6.17.0 → 6.19.0 の飛び越しになるか、6.18.0 を経由するか） |
+| D-6 | `VERSION` 6.17.0 → 6.18.0 の昇格 | **人間判定済み（2026-09-11）: 6.18.0 へ昇格**。判断キット `delivery/DECISION-KIT-version-promotion-2026-09-11.html` の Q1=B / Q2=B による（C-3 を `priority: standard` と判定し v6.18.0 を充足扱いにした）。本 spec の内容は 6.18.0 に含まれるが、自版 > VERSION ゆえ `実装済み` は名乗れない（検査 9）。記録は `history/REGIME-LOG.md`。以下は判定前の記述（削除せず保存）: F1〜F5 はすべて master に入ったが、`VERSION` は 6.17.0 のまま。`dev-env-spec.md` §状態行の値域 は `実装済み` を「その版の critical がすべて master に入り、**VERSION も昇格した**」状態と定めるため、本 spec の状態行は `実装中（F1〜F5 済 / VERSION 昇格は人間判定待ち）` に留めた。昇格の可否・minor/major の別・`history/REGIME-LOG.md` への根拠記載は人間が判定する（過去の昇格記録はすべて判定日・判定者・昇格根拠・モード判定を人間名義で持つ）。**なお v6.18.0 spec の着地状況と合わせて判定する必要がある**（6.17.0 → 6.19.0 の飛び越しになるか、6.18.0 を経由するか） |
 | D-5 | Judgment Agent の `weight_note` が規格から 2 点逸脱する | **(a) カテゴリの誤記**: 本 spec の諮問（dt0911）で `category: "conception"` に対し `weight_note` が「カテゴリ: implementation」と書いた（PR #277 で Copilot が検出）。**判定への影響はない** — `final_weights` 3/3/5 は `council-weights.md` の conception 補正（base 3/4/3 に 経営者 0 / 開発者 −1 / 哲学者 +2）の適用結果と一致し、過去の conception エントリ（`claude-md-purity`）も 3/3/5、implementation なら 2/6/2 になるため（ブリーフ §7.3）。**(b) 字数規定の超過**: `output-format.md:89` は `weight_note` を「100 字以内」と規定するが、dt0911 の実値は **186 字**。これは本追記固有ではなく機構の恒常的逸脱で、COUNCIL-LOG 全体の `weight_note` 44 件中 **29 件（66%）が 100 字超**（2026-09-11 実測）。(a)(b) いずれも COUNCIL-LOG は append-only ゆえ当該記録は改変せず事実として保存する。再演を防ぐなら `judgment-agent.md` の prompt または `council-fanout.workflow.mjs` で、カテゴリを args の `category` から機械代入し、字数を schema 強制する（本 spec の範囲外・別 PR）。なお `persona_summary.note` には字数規定が無く（§8 に該当行なし）、`council-log-skill-archive.md` の 360 字畳み込みルールは **archive → COUNCIL-LOG への転記時**に限った規約である（同ファイル冒頭「転記時の畳み方」。COUNCIL-LOG の `note` 124 件中 50 件が 360 字超という実測もこれを裏づける） |
 
 ---
