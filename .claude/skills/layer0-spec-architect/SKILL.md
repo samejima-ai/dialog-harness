@@ -491,7 +491,13 @@ deployment ロジックは `crosscut-autonomous-drive` skill が担う（spec-ar
 - **sensors/** — センサー定義（計算的＋推論的）
 - **テスト基盤** — ビルド・テスト・リンターの設定（1分以内制約）
 
-**推奨開発オプション（v5.18.0 追加）**: S1 で DB 使用ありと判定され、本番に hosted Postgres / BaaS（特に Supabase）を使い消失 NG の私的データを持つ構成では、本番を汚さないローカル優先開発（Docker 上のローカルスタック + migration 経由の本番反映）を推奨提示する。推奨発動条件・前提確認・ワークフロー・セキュリティ規律は `references/supabase-local-dev.md` を参照。強制ではなく推奨（philosophy 第 6 条）。
+**推奨開発オプション（v5.18.0 追加 / v6.19.0 で供給元中立化）**: S1 で DB 使用ありと判定され、本番に **hosted Postgres / BaaS** を使い消失 NG の私的データを持つ構成では、本番を汚さないローカル優先開発（ローカルスタック + migration 経由の本番反映）を推奨提示する。**推奨しているのは開発フローであって供給元ではない** — 供給元の選択は `references/scaffold-checklist.md` の stack カタログに従う。強制ではなく推奨（philosophy 第 6 条）。
+
+供給元別のプレイブックは該当時のみロードする（progressive disclosure）:
+
+| 供給元 | プレイブック | 適用範囲 |
+|---|---|---|
+| Supabase | `references/supabase-local-dev.md` | **既存プロジェクトを持つ案件のみ**（無料枠 2 アクティブ上限・ユーザー単位で全 org 合算のため。詳細は同ファイル §適用範囲） |
 
 ### 7. 出力
 
