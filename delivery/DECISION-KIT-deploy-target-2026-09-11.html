@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>デプロイ先の選択キット</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+</head>
+<body>
+<style>
+:root{
+  --paper:#EEF0EF; --surface:#F8FAF9; --sunk:#E2E6E5;
+  --ink:#141C22; --ink2:#4C5A61; --ink3:#7E8B90;
+  --rule:#C8D0D2; --rule-soft:#DBE1E2;
+  --flow:#1E6B7A; --flow-wash:#DBEBED;
+  --hold:#8A6A2F; --hold-wash:#F0E7D4;
+  --void:#8E4636; --void-wash:#F3E0DB;
+  --cf:#B4561E; --cf-wash:#F5E4D7;
+  --sb:#2E7D5B; --sb-wash:#DCEBE3;
+  --vc:#3B464C; --vc-wash:#E4E8E9;
+  --shadow:0 1px 0 rgba(20,28,34,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1417; --surface:#151D20; --sunk:#1C2528;
+    --ink:#E4EBED; --ink2:#A3B1B6; --ink3:#748187;
+    --rule:#2A3437; --rule-soft:#212A2D;
+    --flow:#4FB6C6; --flow-wash:#0F2B2F;
+    --hold:#C9A055; --hold-wash:#2A2213;
+    --void:#D4826D; --void-wash:#2C1915;
+    --cf:#E08A4E; --cf-wash:#2C1C11;
+    --sb:#5FBE91; --sb-wash:#112620;
+    --vc:#9FAEB4; --vc-wash:#1A2225;
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1417; --surface:#151D20; --sunk:#1C2528;
+  --ink:#E4EBED; --ink2:#A3B1B6; --ink3:#748187;
+  --rule:#2A3437; --rule-soft:#212A2D;
+  --flow:#4FB6C6; --flow-wash:#0F2B2F;
+  --hold:#C9A055; --hold-wash:#2A2213;
+  --void:#D4826D; --void-wash:#2C1915;
+  --cf:#E08A4E; --cf-wash:#2C1C11;
+  --sb:#5FBE91; --sb-wash:#112620;
+  --vc:#9FAEB4; --vc-wash:#1A2225;
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px 110px}
+@media(max-width:600px){.wrap{padding:0 16px 72px}body{font-size:15px}}
+.mono{font-family:var(--mono);font-size:.88em}
+
+.masthead{padding:60px 0 32px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,6vw,56px);
+  line-height:1.18;margin:0 0 20px;letter-spacing:.01em;text-wrap:balance}
+.lede{font-size:17px;color:var(--ink2);max-width:64ch;margin:0}
+.lede b{color:var(--ink);font-weight:700}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:26px;
+  font-size:12.5px;color:var(--ink3);font-family:var(--mono)}
+.meta b{color:var(--ink2);font-weight:600}
+
+section{margin-top:56px}
+.sec-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--flow);margin-bottom:10px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(23px,3.4vw,31px);
+  margin:0 0 8px;line-height:1.32;text-wrap:balance}
+.sub{color:var(--ink2);font-size:15px;margin:0 0 26px;max-width:70ch}
+
+/* 認識ズレ */
+.gaps{display:flex;flex-direction:column;gap:16px}
+.gap{background:var(--void-wash);border:1px solid var(--void);border-radius:3px;padding:20px 24px}
+.gap .gh{font-family:var(--display);font-size:18.5px;font-weight:700;color:var(--void);margin:0 0 10px;line-height:1.4}
+.gap .grow{display:grid;grid-template-columns:5.5em 1fr;gap:4px 14px;font-size:14.3px;line-height:1.75}
+@media(max-width:560px){.gap .grow{grid-template-columns:1fr;gap:1px}}
+.gap .gk{font-family:var(--mono);font-size:11.5px;color:var(--ink3);letter-spacing:.05em;padding-top:5px}
+.gap .gv{color:var(--ink2)}
+.gap .gv b{color:var(--ink);font-weight:700}
+
+/* 構造の空白 */
+.axes3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:22px 0}
+.ax{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:18px 20px}
+.ax.empty{border-style:dashed;border-color:var(--void);background:var(--void-wash)}
+.ax .axn{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--flow);margin-bottom:8px}
+.ax.empty .axn{color:var(--void)}
+.ax .axv{font-family:var(--display);font-size:17px;font-weight:700;line-height:1.45;margin-bottom:8px}
+.ax .axd{font-size:13px;color:var(--ink3);line-height:1.7}
+
+.tbl-wrap{overflow-x:auto;margin:20px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:680px}
+th{background:var(--sunk);text-align:left;padding:11px 14px;font-weight:700;
+  font-size:12px;letter-spacing:.06em;color:var(--ink2);border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top;line-height:1.7}
+tr:last-child td{border-bottom:none}
+td b{font-weight:700}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pk{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;white-space:nowrap}
+.pk.cf{color:var(--cf)} .pk.sb{color:var(--sb)} .pk.vc{color:var(--vc)}
+th.cf{color:var(--cf)} th.sb{color:var(--sb)} th.vc{color:var(--vc)}
+.wall{font-size:13.4px;color:var(--ink3)}
+
+/* 壁の位置 */
+.walls{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:22px}
+.wcard{border:1px solid var(--rule);border-radius:3px;background:var(--surface);padding:20px 22px}
+.wcard.cf{border-left:3px solid var(--cf)}
+.wcard.sb{border-left:3px solid var(--sb)}
+.wcard.vc{border-left:3px solid var(--vc)}
+.wcard h3{font-family:var(--display);font-size:17px;margin:0 0 4px;font-weight:700}
+.wcard .wsub{font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-bottom:14px}
+.wcard ul{margin:0;padding-left:1.1em;font-size:13.8px;color:var(--ink2);line-height:1.8}
+.wcard li{margin-bottom:5px}
+.wcard li b{color:var(--ink)}
+
+/* 設問カード */
+.qcard{border:1px solid var(--rule);border-radius:3px;background:var(--surface);
+  margin-bottom:22px;overflow:hidden;box-shadow:var(--shadow)}
+.qhead{display:flex;align-items:flex-start;gap:14px;padding:20px 24px 16px;
+  border-bottom:1px solid var(--rule-soft);flex-wrap:wrap}
+.qid{font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.1em;
+  color:var(--flow);background:var(--flow-wash);padding:4px 9px;border-radius:2px;white-space:nowrap}
+.qtitle{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.4;flex:1;min-width:240px}
+.qtag{font-family:var(--mono);font-size:11px;color:var(--hold);background:var(--hold-wash);
+  padding:4px 9px;border-radius:2px;white-space:nowrap;font-weight:600}
+.qbody{padding:20px 24px 4px}
+.frow{display:grid;grid-template-columns:8.5em 1fr;gap:6px 16px;margin-bottom:13px;
+  font-size:14.3px;line-height:1.75}
+@media(max-width:560px){.frow{grid-template-columns:1fr;gap:2px}}
+.fk{font-family:var(--mono);font-size:11.5px;color:var(--ink3);letter-spacing:.05em;padding-top:5px}
+.fv{color:var(--ink2)}
+.fv b{color:var(--ink);font-weight:700}
+.fv.state{color:var(--ink);background:var(--sunk);padding:9px 12px;border-radius:2px;
+  border-left:2px solid var(--flow)}
+.opts-detail{margin:4px 0 14px;display:flex;flex-direction:column;gap:10px}
+.od{display:grid;grid-template-columns:2.2em 1fr;gap:0 12px;font-size:14px;line-height:1.72}
+.od .ol{font-family:var(--mono);font-weight:600;color:var(--flow);padding-top:2px}
+.od .ot{color:var(--ink2)}
+.od .ot b{color:var(--ink);font-weight:700}
+.od .oc{display:block;font-size:13px;color:var(--ink3);margin-top:3px}
+.src{font-family:var(--mono);font-size:11.5px;color:var(--ink3);
+  padding:12px 24px 16px;border-top:1px dashed var(--rule-soft);margin-top:6px}
+
+.ans{display:flex;gap:10px;padding:16px 24px 20px;flex-wrap:wrap;align-items:center;
+  border-top:1px solid var(--rule-soft);background:var(--sunk)}
+.ans-label{font-family:var(--mono);font-size:11.5px;color:var(--ink3);
+  letter-spacing:.08em;margin-right:4px}
+.opt{font-family:var(--body);font-size:14px;font-weight:500;padding:8px 18px;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink2);
+  border-radius:2px;cursor:pointer;transition:.13s}
+.opt:hover{border-color:var(--flow);color:var(--ink)}
+.opt:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.opt[aria-pressed="true"]{background:var(--flow);border-color:var(--flow);color:#fff;font-weight:700}
+
+/* 波及 */
+.impact{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:24px 26px}
+.impact h3{font-family:var(--display);font-size:18px;margin:0 0 14px;font-weight:700}
+blockquote{margin:16px 0;padding:14px 20px;border-left:3px solid var(--flow);
+  background:var(--flow-wash);font-size:14.6px;line-height:1.8;color:var(--ink);border-radius:0 2px 2px 0}
+blockquote p{margin:0}
+
+.copybar{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--ink);
+  padding:14px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  margin:0 -24px -110px;box-shadow:0 -2px 12px rgba(20,28,34,.06)}
+@media(max-width:600px){.copybar{margin:0 -16px -72px;padding:12px 16px}}
+.copy-status{font-family:var(--mono);font-size:12.5px;color:var(--ink3);flex:1;min-width:180px}
+.copy-status b{color:var(--flow);font-weight:600}
+.btn{font-family:var(--body);font-size:14px;font-weight:700;padding:10px 22px;
+  border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  border-radius:2px;cursor:pointer;transition:.13s}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink2);border-color:var(--rule)}
+.out{margin-top:18px;font-family:var(--mono);font-size:12.5px;line-height:1.9;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:2px;
+  padding:16px 18px;white-space:pre-wrap;word-break:break-word;color:var(--ink2)}
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:11.5px;color:var(--ink3);line-height:1.9}
+footer a{color:var(--flow)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<div class="masthead">
+  <div class="eyebrow">
+    <span>dialog-harness v6.17.0</span><span>L0 ブレスト</span>
+    <span>設問 5 問</span><span>2026-09-11</span>
+  </div>
+  <h1>デプロイ先の選択キット</h1>
+  <p class="lede">「Cloudflare をデフォルトにしたい」を仕様化する前に、<b>DH には供給元を選ぶ軸がそもそも存在しない</b>ことが実測で判明した。Vercel / Supabase は 11 stack とも runtime_profile とも別の場所 — 散文の中に暗黙の既定として埋まっている。比較材料を並べた上で、軸の形・既定の強さ・DB の置き方を 1 件 1 問で問う。5 問・約 10 分。</p>
+  <div class="meta">
+    <span>起点 <b>Cloudflare MCP 接続 + Supabase 無料枠の枯渇</b></span>
+    <span>実測 <b>2026-09-11 · skills / templates を全走査</b></span>
+    <span>儀式 <b>レベル 2（LC ≥ 1・機能追加）</b></span>
+    <span>局面 <b>人間専管。AI は代筆しない</b></span>
+  </div>
+</div>
+
+<section>
+  <div class="sec-eyebrow">認識のズレ · 先に潰す 3 件</div>
+  <h2>前提が 3 つ食い違っている</h2>
+  <p class="sub">いずれも判断の向きを変える。設問に入る前に確認いただきたい。</p>
+
+  <div class="gaps">
+    <div class="gap">
+      <p class="gh">1. Cloudflare MCP は、このセッションからは繋がっていない</p>
+      <div class="grow">
+        <div class="gk">観測</div><div class="gv">セッション起動時の通知に <b>cloudflareMCP は「認証が必要」</b>と出ている。このセッションは非対話のため OAuth を通せない。</div>
+        <div class="gk">意味</div><div class="gv">CF の API を叩いて実機確認する経路は<b>現時点で無い</b>。仕様策定（SPEC / 軸の新設）は MCP 非依存で進められるが、<b>実デプロイ検証は認証後</b>になる。</div>
+        <div class="gk">復旧</div><div class="gv">claude.ai のコネクタ設定、または対話セッションで <span class="mono">/mcp</span> から認可する。</div>
+      </div>
+    </div>
+
+    <div class="gap">
+      <p class="gh">2.「無料枠を使い切った」は、移行を強制しない</p>
+      <div class="grow">
+        <div class="gk">実態</div><div class="gv">Supabase の超過は soft enforcement — <b>DB 500MB 超で書込拒否</b>、storage 1GB で停止、帯域 5GB 超でエラー。<b>データは保持される</b>。1 週間無操作の pause も手動復帰できる。</div>
+        <div class="gk">意味</div><div class="gv">選択肢は「移行」だけではない。<b>減量・$25/月・移行</b>の 3 択。移行を既定にする理由は、費用ではなく<b>執行の型</b>（書込拒否か日次リセットか）で選ぶべき。</div>
+        <div class="gk">反面</div><div class="gv">CF も同じ壁を持つ。<b>2026-09-01 から D1 は無料枠超過でクエリがエラーを返す</b>（それ以前は超過しても通っていた）。「無料枠が枯れたから CF」は、CF でも再演しうる。</div>
+      </div>
+    </div>
+
+    <div class="gap">
+      <p class="gh">3.「サーバーも含めて Cloudflare」＝ D1 必須、ではない</p>
+      <div class="grow">
+        <div class="gk">経路</div><div class="gv">Workers（実行層）だけ CF にし、DB は <b>Hyperdrive 経由で既存 Postgres のまま</b>にできる。Hyperdrive は無料プランでも使える（10 万クエリ/日）。</div>
+        <div class="gk">意味</div><div class="gv">実行層と DB 層は<b>別々に決められる</b>。この分離が DH への波及量を左右する — 下の設問 3 が最大の分岐。</div>
+        <div class="gk">根拠</div><div class="gv">DB を D1（SQLite）に寄せると、DH の <span class="mono">schema-evolution.md</span>（Postgres の expand-contract 前提）と <span class="mono">subphase-l02-domain.md</span> の物理層が書き換え対象になる。Hyperdrive なら<b>両方そのまま生きる</b>。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">構造 · 実測</div>
+  <h2>供給元を選ぶ軸が、存在しない</h2>
+  <p class="sub">DH は stack（言語 / FW）と runtime_profile（実行再現性）の 2 軸で環境を表現している。「どこに置くか」は第 3 の軸だが、宣言されていない。</p>
+
+  <div class="axes3">
+    <div class="ax">
+      <div class="axn">軸 1 · stack</div>
+      <div class="axv">11 種のカタログ</div>
+      <div class="axd">Vite / Next / Vue / Astro / FastAPI / Django / Express / Go / Rails / Expo / GAS。言語と FW の選択。</div>
+    </div>
+    <div class="ax">
+      <div class="axn">軸 2 · runtime_profile</div>
+      <div class="axv">3 値</div>
+      <div class="axd">local-reproducible / cloud-managed / device-bound。smoke と CI が届くかどうかの読み替え。</div>
+    </div>
+    <div class="ax empty">
+      <div class="axn">軸 3 · 供給元</div>
+      <div class="axv">未定義</div>
+      <div class="axd">どこにホストし、どこから DB を借りるか。軸として宣言されておらず、散文に埋まっている。</div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>供給元</th><th>DH 内の出現</th><th>どこに</th><th>位置づけ</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="pk sb">Supabase</td>
+          <td class="num">67 箇所</td>
+          <td><span class="mono">supabase-local-dev.md</span>(35) / <span class="mono">spec-architect/SKILL.md</span>(11) / <span class="mono">schema-evolution.md</span>(9) / <span class="mono">scaffold-checklist.md</span>(8) / 他 4</td>
+          <td>専用プレイブック＋ローカル優先フローが<b>規範化済み</b>（v5.18.0）</td>
+        </tr>
+        <tr>
+          <td class="pk vc">Vercel</td>
+          <td class="num">4 箇所</td>
+          <td><span class="mono">supabase-local-dev.md</span>(3) / <span class="mono">regime-assessment.md</span>(1)</td>
+          <td>「本番値は Vercel 環境変数で管理」等、<b>散文中の暗黙前提</b>のみ</td>
+        </tr>
+        <tr>
+          <td class="pk cf">Cloudflare</td>
+          <td class="num">0 箇所</td>
+          <td>—</td>
+          <td>言及なし。<b>stack / profile / プレイブックのいずれにも不在</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <blockquote>
+    <p>つまり今回の要求は「既定の付け替え」ではなく、<b>未宣言の既定を軸として宣言し直す作業</b>を含む。Supabase 67 箇所は消す対象ではなく、供給元中立に一般化するか並置するかの判断対象になる（設問 4）。</p>
+  </blockquote>
+</section>
+
+<section>
+  <div class="sec-eyebrow">比較材料 · 2026-09 実測</div>
+  <h2>無料枠と、壁の位置</h2>
+  <p class="sub">「無料でどこまで」ではなく「<b>どこで詰まり、詰まったとき何が起きるか</b>」で並べた。出典は末尾。</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>項目</th><th class="cf">Cloudflare</th><th class="vc">Vercel</th><th class="sb">Supabase</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>実行層 無料枠</td>
+          <td class="num">Workers 10 万 req/日<br><span class="wall">bundle 64 MiB（09-04 拡大）</span></td>
+          <td class="num">Hobby 100 万 関数実行/月<br><span class="wall">転送 100 GB・ビルド 6000 分</span></td>
+          <td class="num">Edge Functions（DB 付帯）</td>
+        </tr>
+        <tr>
+          <td>DB 無料枠</td>
+          <td class="num">D1: 5 GB / 500 万 行読·日<br>10 万 行書·日</td>
+          <td class="num">自前（外部 PG 前提）</td>
+          <td class="num">500 MB（PG 本体）</td>
+        </tr>
+        <tr>
+          <td>ストレージ</td>
+          <td class="num">R2 10 GB<br><span class="wall">egress 無料</span></td>
+          <td class="num">Blob（別課金）</td>
+          <td class="num">1 GB</td>
+        </tr>
+        <tr>
+          <td>超過時の挙動</td>
+          <td><b>クエリ / req がエラー</b>（D1 は 2026-09-01 から厳格化）。<span class="wall">日次 00:00 UTC リセット</span></td>
+          <td>上限で停止・要アップグレード</td>
+          <td><b>書込拒否</b>（読取は継続）。<span class="wall">1 週無操作で pause・データ保持</span></td>
+        </tr>
+        <tr>
+          <td>有料の最小段</td>
+          <td class="num"><b>$5 / 月</b>（Workers・KV・D1・DO・Hyperdrive 込み）</td>
+          <td class="num">$20 / 人·月（Pro）</td>
+          <td class="num">$25 / 月（Pro・8 GB DB）</td>
+        </tr>
+        <tr>
+          <td>Postgres 継続</td>
+          <td><b>可</b> — Hyperdrive で外部 PG に接続（無料 10 万クエリ/日・移行不要）</td>
+          <td>可（外部 PG 前提）</td>
+          <td>本体が PG</td>
+        </tr>
+        <tr>
+          <td>商用利用</td>
+          <td>可</td>
+          <td><b>Hobby は不可</b>（個人・非商用限定）</td>
+          <td>可</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="walls">
+    <div class="wcard cf">
+      <h3>Cloudflare で詰まる場所</h3>
+      <div class="wsub">D1 を選んだ場合に固い</div>
+      <ul>
+        <li><b>10 GB がハード上限</b> — 到達すると書込が失敗する（分割 = 手動シャーディング）</li>
+        <li><b>書込 ~50 tps</b> 程度で天井</li>
+        <li><b>DB 間 JOIN 不可</b> — 横断集計は別途パイプラインが必要</li>
+        <li><b>Worker 外のプロセスから接続不可</b> — 管理ツール・バッチが CF 内に閉じる</li>
+        <li>PG 固有機能（jsonb 演算子・PL/pgSQL・PostGIS・LISTEN/NOTIFY）は<b>持ち込めない</b></li>
+        <li>node 互換は 2026-08-04 以降 <b>既定 ON</b>。ただし CPU 重い処理・ネイティブ依存は不向き</li>
+      </ul>
+    </div>
+    <div class="wcard sb">
+      <h3>Supabase で詰まる場所</h3>
+      <div class="wsub">現在ここ</div>
+      <ul>
+        <li>DB <b>500 MB で書込拒否</b>（読取は生きる）</li>
+        <li>1 週間無操作で <b>pause</b> — 手動復帰・稼働保証なし</li>
+        <li>Pro は <b>$25/月</b>（8 GB DB / 100k MAU）</li>
+        <li>逆に: PG そのものなので<b>移行の必要がない</b>唯一の選択肢</li>
+      </ul>
+    </div>
+    <div class="wcard vc">
+      <h3>Vercel で詰まる場所</h3>
+      <div class="wsub">DH の現行暗黙前提</div>
+      <ul>
+        <li><b>Hobby は商用不可</b> — 収益が出た瞬間に規約違反</li>
+        <li>Pro は <b>$20/人·月</b>（座席課金）</li>
+        <li>関数 CPU 4 時間 / 月・360 GB 時間の壁</li>
+        <li>DB は持たないので<b>供給元が二重</b>になる（Vercel + PG 提供元）</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">設問 · 1 件 1 問</div>
+  <h2>5 問</h2>
+  <p class="sub">順位は付けない。各カードは独立に答えられる。設問 3 には L0 対話での暫定回答が入っているので、比較材料を見た上で再確認いただきたい。回答を押して「回答まとめ」を貼れば確定する。</p>
+  <div id="qs"></div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">波及 · 触るファイル</div>
+  <h2>どこまで書き換わるか</h2>
+  <div class="impact">
+    <h3>設問 1 × 設問 3 の組み合わせで決まる</h3>
+    <div class="tbl-wrap" style="margin-top:14px">
+      <table>
+        <thead><tr><th>組み合わせ</th><th>新設</th><th>改訂</th><th>規模</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>A × B</b><br><span class="wall">新軸 + Hyperdrive/PG</span></td>
+            <td><span class="mono">deploy-target-spec.md</span><br><span class="mono">cloudflare-workers-dev.md</span></td>
+            <td><span class="mono">regime-assessment.md</span> / <span class="mono">meta-spec-template.md</span> / <span class="mono">spec-architect SKILL.md</span> §4</td>
+            <td>中 — DB 規範は無改訂</td>
+          </tr>
+          <tr>
+            <td><b>A × A</b><br><span class="wall">新軸 + D1</span></td>
+            <td>同上</td>
+            <td>上記 ＋ <span class="mono">schema-evolution.md</span>（PG 前提の expand-contract）/ <span class="mono">subphase-l02-domain.md</span> 物理層 / <span class="mono">supabase-local-dev.md</span> の位置づけ</td>
+            <td>大 — DB 規範が分岐する</td>
+          </tr>
+          <tr>
+            <td><b>B × C</b><br><span class="wall">stack 12 追加 + 両プロファイル</span></td>
+            <td><span class="mono">scaffold-checklist.md</span> に Stack 12</td>
+            <td>なし（前例 v6.1.0〜v6.3.0 と同型）</td>
+            <td>小 — ただし<b>供給元の軸は依然不在</b></td>
+          </tr>
+          <tr>
+            <td><b>C × *</b><br><span class="wall">推奨提示のみ</span></td>
+            <td><span class="mono">cloudflare-workers-dev.md</span></td>
+            <td><span class="mono">spec-architect SKILL.md</span> §6 に 1 行</td>
+            <td>最小 — <span class="mono">supabase-local-dev.md</span> と同型</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <blockquote>
+      <p>設問 2 で <b>「Cloudflare を既定」</b>を選ぶ場合のみ、規範の既定値変更にあたるため <b>ADR 記録 + Council 諮問</b>が要件に入る（escalation-matrix の H カテゴリ）。併置・推奨提示はいずれも既定を動かさないので、Council を経ずに通せる。</p>
+    </blockquote>
+  </div>
+</section>
+
+<div class="copybar">
+  <div class="copy-status" id="status">未回答 <b>5</b> / 5</div>
+  <button class="btn ghost" id="reset" type="button">リセット</button>
+  <button class="btn" id="copy" type="button" disabled>回答まとめをコピー</button>
+</div>
+<div class="out" id="out">まだ回答がありません。</div>
+
+<footer>
+  <p>出典（2026-09-11 取得）— Cloudflare: <a href="https://developers.cloudflare.com/workers/platform/pricing/">Workers Pricing</a> / <a href="https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/">D1 free tier limit enforcement</a> / <a href="https://developers.cloudflare.com/hyperdrive/platform/pricing/index.md">Hyperdrive Pricing</a> / <a href="https://developers.cloudflare.com/changelog/post/2026-08-04-nodejs-compat-default/">nodejs_compat default</a>。Vercel: <a href="https://costbench.com/software/developer-tools/vercel/free-plan/">Hobby plan limits</a>。Supabase: <a href="https://www.itpathsolutions.com/supabase-free-tier-limits">free tier limits</a>。D1 の制約: <a href="https://www.cipher.co.th/en/blogs/cloudflare-d1-vs-postgresql/">D1 vs PostgreSQL</a>。</p>
+  <p>DH 内の実測（出現箇所・軸の不在）は本セッションで <span class="mono">grep</span> により計測。振り返り儀式レベル 2 · CTL 再計算 CTL-1（<span class="mono">.council-ctl.json</span> の記載は CTL-2 でズレあり）· 未評価 Council 判定 8 件。</p>
+  <p>dialog-harness v6.17.0 · L0 ブレスト成果（判断材料・仕様変更なし）· 判定は含まない</p>
+</footer>
+
+</div>
+
+<script>
+var QS = [
+  {
+    id: "Q1",
+    title: "軸の形 — 供給元をどう表現するか",
+    tag: "構造",
+    state: "stack（11 種）と runtime_profile（3 値）はあるが、供給元の軸は不在。Supabase 67 箇所 / Vercel 4 箇所は散文に埋まっている。",
+    opts: [
+      {l:"A", t:"<b>deploy_target 新軸を新設</b>", c:"stack / runtime_profile と直交する第 3 軸として第一級化。REGIME.md に記録し、散文から供給元を脱埋め込みする。構造は綺麗だが軸が 1 本増える（認識負債）。"},
+      {l:"B", t:"<b>stack カタログに Stack 12 として足すだけ</b>", c:"「Cloudflare Workers + Hono + D1/R2」を 12 番目の stack に追加。v6.1.0〜v6.3.0 の前例と同型で最小介入。ただし「供給元を選ぶ」軸自体は依然不在のまま。"},
+      {l:"C", t:"<b>runtime_profile の cloud-managed を細分</b>", c:"cloud-managed を供給元別（GAS / Cloudflare / Vercel）に割る。新軸を増やさないが、実行再現性の軸に供給元を混ぜるため意味が濁る。"}
+    ],
+    src: "実測: scaffold-checklist.md 11 stack / regime-assessment.md §runtime_profile"
+  },
+  {
+    id: "Q2",
+    title: "既定の強さ — 「デフォルトにしたい」をどこまで効かせるか",
+    tag: "規範",
+    state: "DH の既定は全新規プロジェクトの L0 対話に効く。A を選ぶ場合のみ ADR + Council が要件に入る。",
+    opts: [
+      {l:"A", t:"<b>Cloudflare を既定・他は opt-in</b>", c:"無指定なら CF。Supabase / Vercel は明示選択時のみ。要求に最も忠実だが、既定値の変更＝規範変更なので ADR 記録と Council 諮問が付く。"},
+      {l:"B", t:"<b>併置（選択必須・既定なし）</b>", c:"供給元を L0 対話の 1 問にして人間に選ばせる。既定を動かさないので Council を経ずに通る。ただし毎回 1 問増える。"},
+      {l:"C", t:"<b>推奨提示のみ（既定は据え置き）</b>", c:"philosophy 第 6 条の「強制ではなく推奨」形式。supabase-local-dev.md と同じ扱いで cloudflare 版プレイブックを足すだけ。最小介入だが「デフォルト」ではない。"}
+    ],
+    src: "根拠: philosophy 第 6 条 / escalation-matrix H カテゴリ / dev_mode 昇降格と同一規約"
+  },
+  {
+    id: "Q3",
+    title: "Cloudflare 構成の DB — D1 か、Postgres 継続か",
+    tag: "L0 で暫定回答済み",
+    state: "暫定回答（L0 対話 2026-09-11）: 「両方を選択肢として定義し、プロジェクト立ち上げ時に内容によって推奨提示、または自動選択」→ 選択肢 C。比較材料を見た上で再確認いただきたい。",
+    opts: [
+      {l:"A", t:"<b>D1（SQLite）を既定に</b>", c:"フル CF 化。ただし 10 GB ハード上限・書込 ~50 tps・DB 間 JOIN 不可・Worker 外から接続不可。DH 側は schema-evolution.md（PG 前提）と subphase-l02 物理層の書き換えが要る＝波及最大。"},
+      {l:"B", t:"<b>Workers + Hyperdrive で Postgres 継続</b>", c:"実行層だけ CF、DB は PG のまま（Hyperdrive は無料枠 10 万クエリ/日）。既存の DB 規範がそのまま生きるので波及最小。DB 供給元（Supabase / Neon 等）は別途選択。"},
+      {l:"C", t:"<b>両プロファイルを並記し、L0 が推奨を出し分け</b>", c:"「CF + D1」「CF + Hyperdrive + PG」の 2 プロファイルを定義し、規模・データ性質（消失 NG か / 10 GB 到達見込みか / PG 固有機能を使うか）で L0 が推奨を切り替える。SPEC 量は増えるが射程が広い。"}
+    ],
+    src: "実測: schema-evolution.md（expand-contract は PG 前提）/ subphase-l02-domain.md 物理層"
+  },
+  {
+    id: "Q4",
+    title: "既存 Supabase 記述 67 箇所の扱い",
+    tag: "代謝",
+    state: "supabase-local-dev.md は v5.18.0 で規範化済み（ローカル優先 + migration 経由の本番反映）。中身の多くは供給元非依存の叡智（本番を汚さない・migration 一方向）。",
+    opts: [
+      {l:"A", t:"<b>供給元中立に一般化し、CF 版を足す</b>", c:"「hosted Postgres / BaaS」の抽象に一般化して Supabase 固有部分を分離、cloudflare-workers-dev.md を兄弟として追加。叡智を保存しつつ軸を立てられるが改訂量は最大。"},
+      {l:"B", t:"<b>Supabase 版はそのまま残し、CF 版を並置</b>", c:"既存 67 箇所は触らず、cloudflare-workers-dev.md を新設して並べる。改訂ゼロで済むが、共通の叡智（本番保護・migration 規律）が二重定義になる。"},
+      {l:"C", t:"<b>Supabase 版を非推奨化</b>", c:"無料枠が使えない事実を踏まえ deprecation-protocol に乗せる。ただし Supabase は PG そのもので移行不要という価値が残るため、廃止は過剰の可能性。"}
+    ],
+    src: "実測: supabase-local-dev.md 35 / SKILL.md 11 / schema-evolution.md 9 / scaffold-checklist.md 8 / dialog-questions.md 3 / subphase-l02 1"
+  },
+  {
+    id: "Q5",
+    title: "進め方 — MCP 認証を待つか",
+    tag: "順序",
+    state: "cloudflareMCP は未認証（このセッションは非対話のため OAuth を通せない）。仕様策定は MCP 非依存で進められるが、実デプロイ検証はできない。",
+    opts: [
+      {l:"A", t:"<b>MCP 非依存で SPEC 化を先に進める</b>", c:"軸の新設・プレイブック執筆・scaffold 定義までは MCP 無しで完遂できる。smoke test の実走は「認証後に検証」と明記して申し送る。"},
+      {l:"B", t:"<b>MCP 認証後にまとめて着手</b>", c:"実機で wrangler / D1 / Hyperdrive を確認しながら書く。記述の確度は上がるが、認証までこのサイクルは進まない。"},
+      {l:"C", t:"<b>SPEC 化 + 検証を 2 PR に分割</b>", c:"PR1（軸 + プレイブック・MCP 不要）と PR2（smoke test 実走・認証後）に割る。AD-021 の PR 粒度基準に沿う。"}
+    ],
+    src: "観測: セッション起動通知「cloudflareMCP requires authentication」"
+  }
+];
+
+var answers = {};
+var host = document.getElementById("qs");
+
+function render(){
+  host.innerHTML = QS.map(function(q){
+    var opts = q.opts.map(function(o){
+      return '<div class="od"><div class="ol">' + o.l + '</div>'
+           + '<div class="ot">' + o.t + '<span class="oc">' + o.c + '</span></div></div>';
+    }).join("");
+    var btns = q.opts.map(function(o){
+      return '<button class="opt" type="button" data-q="' + q.id + '" data-v="' + o.l + '" aria-pressed="false">' + o.l + '</button>';
+    }).join("");
+    return '<div class="qcard">'
+      + '<div class="qhead"><span class="qid">' + q.id + '</span>'
+      + '<span class="qtitle">' + q.title + '</span>'
+      + '<span class="qtag">' + q.tag + '</span></div>'
+      + '<div class="qbody">'
+      + '<div class="frow"><div class="fk">現状</div><div class="fv state">' + q.state + '</div></div>'
+      + '<div class="opts-detail">' + opts + '</div>'
+      + '</div>'
+      + '<div class="src">' + q.src + '</div>'
+      + '<div class="ans"><span class="ans-label">選択</span>' + btns + '</div>'
+      + '</div>';
+  }).join("");
+
+  host.querySelectorAll(".opt").forEach(function(b){
+    b.addEventListener("click", function(){
+      var q = b.dataset.q, v = b.dataset.v;
+      var group = b.parentElement.querySelectorAll('.opt[data-q="' + q + '"]');
+      if(answers[q] === v){
+        delete answers[q];
+        group.forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      } else {
+        answers[q] = v;
+        group.forEach(function(x){ x.setAttribute("aria-pressed", x.dataset.v === v ? "true" : "false"); });
+      }
+      update();
+    });
+  });
+}
+
+function update(){
+  var done = QS.filter(function(q){ return answers[q.id]; }).length;
+  var left = QS.length - done;
+  document.getElementById("status").innerHTML =
+    left === 0 ? '<b>5 / 5 回答済み</b>' : '未回答 <b>' + left + '</b> / 5';
+  document.getElementById("copy").disabled = left !== 0;
+  var out = document.getElementById("out");
+  if(done === 0){ out.textContent = "まだ回答がありません。"; return; }
+  out.textContent = buildText();
+}
+
+function buildText(){
+  var L = ["# デプロイ先 選択キット 回答（2026-09-11）", ""];
+  QS.forEach(function(q){
+    var a = answers[q.id];
+    var label = "（未回答）";
+    if(a){
+      var hit = q.opts.filter(function(o){ return o.l === a; })[0];
+      label = a + ". " + hit.t.replace(/<[^>]+>/g, "");
+    }
+    L.push(q.id + " " + q.title.split(" — ")[0] + ": " + label);
+  });
+  L.push("");
+  L.push("反映先: dh-upgrades/upgrade-spec-v6.19.0.md（新規）+ history/ARCH-DECISIONS.md");
+  L.push("Q2=A の場合: ADR 記録 + Council 諮問が必須（既定値変更）");
+  L.push("Q5: cloudflareMCP の認証は人間専管（claude.ai コネクタ設定 または 対話セッションの /mcp）");
+  return L.join("\n");
+}
+
+document.getElementById("copy").addEventListener("click", function(){
+  var btn = document.getElementById("copy");
+  navigator.clipboard.writeText(buildText()).then(function(){
+    var t = btn.textContent; btn.textContent = "コピーしました";
+    setTimeout(function(){ btn.textContent = t; }, 1600);
+  }).catch(function(){
+    var r = document.createRange(); r.selectNodeContents(document.getElementById("out"));
+    var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = "下のテキストを選択しました";
+    setTimeout(function(){ btn.textContent = "回答まとめをコピー"; }, 2200);
+  });
+});
+
+document.getElementById("reset").addEventListener("click", function(){
+  Object.keys(answers).forEach(function(k){ delete answers[k]; });
+  document.querySelectorAll(".opt").forEach(function(b){ b.setAttribute("aria-pressed","false"); });
+  update();
+});
+
+render();
+update();
+</script>
+
+</body>
+</html>
