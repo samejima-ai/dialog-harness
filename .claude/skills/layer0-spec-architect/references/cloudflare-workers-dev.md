@@ -6,6 +6,7 @@
 >
 > 数値の正本は **1 箇所だけ**ある: `.claude/skills/crosscut-quota-observer/references/adapters/cloudflare.md`
 > （2026-09-11 観測 / 観測日付つき）。判断に使う前に現在値を確認すること。
+> これは §データ層の出し分け の**判定閾値にも適用される** — 規範が持つのは条件の形、観測が持つのは閾値の値。
 >
 > **実際に意味が変わった実例**: 2026-09-01、D1 無料枠の日次行読／行書の上限が「超過しても通る」から
 > **「超過するとアカウントの全 D1 クエリが失敗する」**に変わった。変わったのは数値ではなく**数値の意味**である。
@@ -43,7 +44,7 @@ Workers + D1 / R2 / KV を使う案件で、本番を汚さずにローカルで
 
 - ローカル完結 / 組込 DB のみ / 使い捨てプロトタイプ
 - **PG 固有機能に依存する設計**（→ 罠 C5。D1 では成立しない。`Hyperdrive` + 外部 PG か別供給元を検討する。
-  出し分けの機械判定は同 spec F5）
+  出し分けは §データ層の出し分け の 3 条件で機械的に決まる）
 - CPU 重い処理・ネイティブ依存（→ 罠 C8）
 
 ---
@@ -122,6 +123,68 @@ python3 .claude/skills/crosscut-quota-observer/scripts/quota-observer.py --input
 - **「枠が見えない」を「枠が空いている」と読み替えない。** 観測不能はそのまま観測不能として扱う
 - 新規に DB を作る前、および量産フェーズでは**先に残量を見る**。
   枠はアカウント共有のため、**無関係な既存プロジェクトを巻き込んで止める**（罠 C1）
+
+---
+
+## データ層の出し分け — D1 / Hyperdrive + 外部 Postgres（v6.19.0 F5）
+
+「消失許容度」のような主観語で分けると判定が AI 推論依存になる。**3 条件のいずれか 1 つでも
+該当すれば Hyperdrive + 外部 Postgres**、すべて非該当なら D1。
+
+| # | 条件 | 判定方法（機械的に決まる形） |
+|---|---|---|
+| 1 | **Time Travel の保持期間を超える復旧要求があるか** | 「何日前まで戻せれば足りるか」を L0 が 1 問で確認し、**観測記録の Time Travel 保持日数と比較**する。顧客・請求・現場記録のように再生成できないデータは通常こちらに倒れる |
+| 2 | **単一 DB が容量上限を超える見込みか** | 想定レコード数 × 平均行長の概算を、**観測記録の単一 DB 容量上限と比較**する |
+| 3 | **DB 間 JOIN または Worker 外からの接続が要るか** | 横断集計ダッシュボード / 管理バッチ / BI / PG 固有機能（`jsonb` 演算子・PL-pgSQL・PostGIS・`LISTEN`-`NOTIFY`）の要否。**要否は yes/no で決まる**ため推論を挟まない |
+
+**閾値の現在値はここに書かない。** 保持日数と容量上限は供給元が単独で書き換えられる値であり、
+判定時に観測記録（`.claude/skills/crosscut-quota-observer/references/adapters/cloudflare.md`）から
+取る。**規範が持つのは条件の形、観測が持つのは閾値の値**（`upgrade-spec-v6.19.0.md` I-3）。
+
+3 条件すべて非該当なら **D1**（軽量・再生成可能な設定 / マスタ / 収集ログが大多数）。
+
+### Hyperdrive は共有枠から逃げる手段ではない
+
+**選んでも共有枠の問題は消えない。どの枠を食うかが変わるだけ。**
+
+| 選択 | 食う日次枠（いずれもアカウント単位・00:00 UTC リセット・超過で失敗） |
+|---|---|
+| D1 | 行読 / 行書（現在値は観測記録） |
+| Hyperdrive + 外部 PG | **Hyperdrive のクエリ数**（2026-09-11 観測: 無料 10 万/日。有料は無制限）。`SELECT` だけでなく `INSERT` / `UPDATE` / `DELETE` / `CREATE` / `ALTER` / `DROP` も 1 クエリとして数える |
+
+したがって **Hyperdrive を選んだ案件も観測の対象**である。「PG にしたから枠を気にしなくてよい」は
+誤り。加えて外部 PG 側の枠（Supabase なら 2 アクティブプロジェクト上限など）が**二重に効く**。
+
+### ローカル再現性が D1 と違う
+
+| 選択 | ローカル開発 |
+|---|---|
+| D1 | `.wrangler/state` の SQLite で**完全オフライン**。認証も外部サービスも不要 |
+| Hyperdrive + 外部 PG | `localConnectionString`（または `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_<BINDING>`）で `wrangler dev` から**到達可能な PG が必要**。ローカル PG を立てれば認証は不要にできるが、**依存が 1 つ増える**。なお**ローカルではクエリキャッシュが効かない**ため、キャッシュ前提の性能はローカルで再現しない |
+
+`runtime_profile` は D1 側が `local-reproducible`。**PG プロファイルは「ローカル PG を立てるか」に依存する**
+ため、案件ごとに判定する（立てないなら smoke が外部到達を要求し `local-reproducible` を満たさない）。
+
+### 追加の罠（Hyperdrive 固有）
+
+| # | 罠 |
+|---|---|
+| H1 | **キャッシュ可否の判定が文字列パターンマッチ**。`NOW()` 等の関数名が **SQL コメント内にあるだけ**でもキャッシュ不可と判定される |
+| H2 | ローカルではキャッシュが効かない（上記）。「ローカルで速いから本番も速い」も、その逆も言えない |
+| H3 | **外部 PG の可用性と課金がそのまま乗る**。Cloudflare の枠内に収まっていても外部 PG 側で止まる |
+| H4 | 接続数は設定可能だが**最小 5 本**。小規模 PG（無料枠インスタンス）では接続数上限を先に食う |
+
+### 2 プロファイル並立のコスト（記録）
+
+経営者軸の懸念として spec に残っている: **保守対象が 2 系統に増える**。
+D1 と Hyperdrive+PG の採用比率を観測し、**PG 側が過半を占めるなら供給元設計そのものを再評価する**
+（`upgrade-spec-v6.19.0.md` F5 `review_trigger`）。「両方あります」で止めず、比率を見る。
+
+### 外部 PG の入手経路（2026-09-11 観測）
+
+- 既存の hosted Postgres（Supabase 等）を使う → 供給元側の枠が別に効く（§Hyperdrive は共有枠から…）
+- **PlanetScale Postgres を Cloudflare 側から作成し、利用料を Cloudflare アカウントに合算する**経路もある
+  （供給元が 1 つ減るわけではない。請求が 1 つになるだけ）
 
 ---
 
@@ -225,6 +288,9 @@ review_trigger:
       本ファイルは数値を持たないため再観測の対象は観測記録側（adapters/cloudflare.md）だが、
       「数値を持たない構成が実際に腐敗を防げたか」をここで測る
   - measured: 罠カタログに載っていない事故が起きたら追記（罠は実害からのみ増やす）
+  - measured: D1 と Hyperdrive+PG の採用比率を観測する。
+      **PG 側が過半を占めるなら供給元設計そのものを再評価**（経営者軸の懸念: 2 プロファイル並立は
+      保守対象を 2 系統に増やす）。「両方あります」で止めず比率を見る
 ```
 
 ## プロトコル自己評価
@@ -237,6 +303,8 @@ review_trigger:
 - `--local` / `--remote` の明示が守られ、本番への誤爆が発生していないか
 - 罠カタログが**実害からのみ**増えているか（推測で増やしていないか）
 - 静的／動的の境界が設計判断として機能したか（Worker を呼ばない経路を実際に確保できたか）
+- **出し分けの 3 条件が推論を挟まずに決まったか** — 「消失許容度」のような主観語に戻っていないか。戻るなら条件の立て方が悪い
+- **Hyperdrive を選んだ案件が観測の対象から外れていないか**（「PG にしたから枠は関係ない」は誤り）
 
 ---
 
@@ -246,3 +314,4 @@ review_trigger:
 - [D1 無料枠の日次制限強制化（2026-09-01）](https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/)
 - [Workers Pricing](https://developers.cloudflare.com/workers/platform/pricing/) / [Workers Cache（課金）](https://developers.cloudflare.com/workers/cache/) / [Pages Functions Pricing](https://developers.cloudflare.com/pages/functions/pricing/)
 - [Compatibility flags（nodejs_compat）](https://developers.cloudflare.com/workers/configuration/compatibility-flags/)
+- [Hyperdrive Pricing](https://developers.cloudflare.com/hyperdrive/platform/pricing/) / [Hyperdrive Local development](https://developers.cloudflare.com/hyperdrive/configuration/local-development/) / [Query caching](https://developers.cloudflare.com/hyperdrive/concepts/query-caching/)

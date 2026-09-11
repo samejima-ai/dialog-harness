@@ -20,6 +20,7 @@
 | KV 書込 | **1,000 / 日** | 無料枠で最も狭い |
 | Workers リクエスト | 10 万 / 日 | 静的アセットは無制限・帯域無料 |
 | R2 | 10 GB / egress 無料 | |
+| Hyperdrive クエリ | **10 万 / 日** | **アカウント単位で共有**・00:00 UTC リセット・超過で失敗。有料は無制限。`SELECT` だけでなく `INSERT` / `UPDATE` / `DELETE` / `CREATE` / `ALTER` / `DROP` も 1 クエリ。D1 を避けて Hyperdrive にしても**共有枠から逃げたことにはならない**（v6.19.0 F5） |
 
 **最重要**: 日次枠は**アカウント単位で共有**される。DB を増やしても枠は増えない。
 2026-09-01 以降、超過するとアカウントの**全 D1 クエリが失敗**する（`minna-no-ai-bbs` のような
@@ -142,3 +143,4 @@ DH の動作は止めない（`upgrade-spec-v6.19.0` I-5）。
 - [D1 無料枠の日次制限強制化（2026-09-01）](https://developers.cloudflare.com/changelog/post/2026-09-01-d1-free-tier-limit-enforcement/)
 - [Workers Pricing](https://developers.cloudflare.com/workers/platform/pricing/) / [Static Assets 課金](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations)
 - [Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/)
+- [Hyperdrive Pricing](https://developers.cloudflare.com/hyperdrive/platform/pricing/) / [Hyperdrive Limits](https://developers.cloudflare.com/hyperdrive/platform/limits/)

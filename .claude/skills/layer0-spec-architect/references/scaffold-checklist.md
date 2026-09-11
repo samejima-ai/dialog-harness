@@ -381,6 +381,8 @@ edge ランタイム（`workerd`）上の API / 小規模 Web アプリ stack。
 
 **ローカル開発フロー・枠・設計上の罠は `cloudflare-workers-dev.md` が一次情報源**。本節は scaffold（何が実体として揃うか）に責務を絞る。無料枠の数値は本節にも同ファイルにも置かない（観測記録が正本 — `upgrade-spec-v6.19.0.md` I-3）。
 
+**データ層を D1 にするか Hyperdrive + 外部 Postgres にするかは scaffold の前に決まる**（同ファイル §データ層の出し分け の 3 条件で機械的に判定する）。本節の必須生成ファイルは **D1 構成**のもの。Hyperdrive 構成では #1 の binding が `hyperdrive` になり、#6 の migration は外部 PG 側のツール（`schema-evolution.md` 準拠）に移る。
+
 | # | パス | 役割 | 最低要件 |
 |---|---|---|---|
 | 1 | `wrangler.jsonc` | Worker 設定 | `compatibility_date` を**明示して固定**。`d1_databases` / `r2_buckets` 等の binding 宣言。`.toml` でも可だが現行ドキュメントは `.jsonc` 先行 |
