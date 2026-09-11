@@ -347,3 +347,12 @@ v5.2.0 リリース後に L0 で確定し、L1（layer1-autonomous-dev）が同�
 | 判断 | v5.16.0 で三兄弟均質化。onboarding に reverse-design ステップ (既存 src/ から色・font・spacing 逆抽出して DESIGN.md 初版生成)、archeo-architect の意図マップに視覚 Island (リファクタ前の視覚仕様意図復元) を追加 |
 | 根拠 | philosophy 第 1 条フラクタル原則: L0 三兄弟は同一形状の責務、関心事 (DESIGN.md) は形状に乗るべき横軸。第 5 条献上哲学: 利用者プロジェクトに片足対応を献上することは情報純度違反。Council `council-2026-05-12T13:32:00Z-sspr01` revised C 採用 |
 | 影響 | layer0-onboarding/SKILL.md と references/ に reverse-design 手順追加。layer0-archeo-architect の意図マップスキーマに visual_intent_island フィールド追加。L0 三兄弟対応マトリクスを REGIME-LOG.md に記録 |
+
+### AD-023: 供給元（デプロイ先）は独立軸にせず Stack 層に閉じる（v6.19.0）
+
+| 項目 | 内容 |
+|---|---|
+| 状況 | 利用者発話（2026-09-11）「Cloudflare をデフォルトにしたい」を受け `deploy_target` 新軸の新設を検討。実測で DH 内の供給元記述は Supabase 67 箇所 / Vercel 4 箇所 / Cloudflare 0 箇所、いずれも軸ではなく散文に埋まった暗黙既定であり、Supabase の無料枠（2 アクティブ上限・ユーザー単位で全 org 合算）は既に満杯＝既定が到達不能な供給元を指していた。Council `council-2026-09-11T03:07:42Z-dt0911` で諮問 |
+| 判断 | 新軸を作らない。供給元差分は `scaffold-checklist.md` の stack エントリ（Stack 12: Cloudflare Workers + D1/R2）として吸収し、既定は stack の定義域に閉じる。アカウント共有枠は観測 skill が保持する cross-project state として持つ。供給元固有の数値は規範ではなく観測日付つきプレイブックに置く |
+| 根拠 | 実質 1 列しか埋まらない軸は軸ではなく stack エントリ（GAS を Stack 11 + runtime_profile 注記で吸収した v6.3.0 と同型）。開発者軸: アカウント共有枠は per-project 属性ではなく cross-project state であり、per-project 軸に押し込むのはカテゴリエラー。哲学者軸: 既定を企業名に置くと軸の同一性を他者の価格表に握られ、独立性原則（「GitHub 無しでも DH は完全動作」）が形式だけ残る。既定は妥当性が成立する定義域にスコープすべき（stack=Expo / GAS / Go CLI に供給元既定を及ばせない）。weighted_score C 2.34 / A 2.16、judgment_confidence 0.35（第3の道が ΣW の 45% を占め帯上限切下げ）、implementer_consent: agreed |
+| 影響 | (1) `deploy_target` 新軸は実装しない（第3の道＝既定を制約プロファイルに置く案は minority として COUNCIL-LOG に温存、供給元を跨ぐ構成が Stack 層で表現しきれなくなった時点が再問の契機） (2) 供給元固有の数値表には観測日付と失効前提（「この表は腐る」）を明記する — 2026-09-01 に D1 日次枠の意味が変わった実例が根拠 (3) 実装順序は 観測 → プレイブック → 規範（規範を先に書くと観測が規範を否定したとき改変コストが観測を抑圧する） (4) 供給元アカウントの枠観測は Level A skill として切り出し、主目的は枠の見張りでなく暴走案件の早期隔離（news-collector が単体で日次書込枠の 53% を消費し全 D1 クエリを巻き込む構造の実測が根拠） (5) Supabase 既定性の降格は軸の議論から分離して先行実施（既存 2 枠は凍結・deprecation-protocol は発動しない）

@@ -4001,3 +4001,57 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   agreed_at: null
   modification_note: null
   escalation_reason: null
+- invocation_id: "council-2026-09-11T03:07:42Z-dt0911"
+  timestamp: "2026-09-11T03:07:42Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "DH の供給元（デプロイ先）をどう規範化すべきか。deploy_target 新軸を新設して Cloudflare を既定に付け替えるか、新軸のみで既定は置かないか、既存の stack カタログ拡張＋推奨提示に留めるか。"
+  council_type: "business"
+  category: "conception"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "simple_conflict"
+  options:
+    - "A. deploy_target 新軸を新設し Cloudflare を既定にする（他供給元は opt-in、ADR 記録つき）。規範 / プレイブック（cloudflare-workers-dev.md）/ 枠観測 skill の 3 層で実装"
+    - "B. deploy_target 新軸は新設するが既定は置かず、L0 対話の 1 問で供給元を選択必須にする（既定値の変更を伴わないため Council/ADR の重量が軽い）"
+    - "C. 新軸を設けず scaffold-checklist に Stack 12（Cloudflare Workers + D1/R2）を追加し、cloudflare-workers-dev.md を supabase-local-dev.md と同型の『推奨提示のみ』に留める（最小介入・v6.1.0〜v6.3.0 の前例と同型）"
+  final_weights:
+    経営者: 3
+    開発者: 3
+    哲学者: 5
+  persona_summary:
+    経営者: { stance: "A. deploy_target 新軸を新設し Cloudflare を既定にする（他供給元は opt-in、ADR 記録つき）。規範 / プレイブック（cloudflare-workers-dev.md）/ 枠観測 skill の 3 層で実装", confidence: 0.72, dimension: "ROI", note: "合意済み前提「課金は当面無料で閾値管理（昇格の第一トリガーは DB 個数 8）」に経営視点から異見がある。free 枠の閾値管理は無料ではない。DB 個数と日次書込を気にし続ける注意コストが月 1 時間でも発生すれば、$5/月（50,000 DB・1DB 10GB）を上回る。有料プランは節約対象ではなく「観測作業を買い取る費用」として先に承認しておくのが ROI 上は正しく、DB 個数 8 を昇格トリガーにするより「最初から $5 を既定予算とし、観測 skill は枠残量の見張りではなく異常書込の早期検出（news-collector 型の単体 53% 消費の再発防止）に絞る」方が安い。観測 skill の価値は枠の見張りではなく暴走案件の隔離にある。\n\nもう一点。本件を「新軸を増やすか」の設計論として扱うと論点がずれる。実測で判明したのは既定値が事実誤り（満杯の枠を指している）という運用事故であり、軸の有無に関わらず今すぐ直す必要がある。Supabase 67 箇所の扱い（新規禁止の明文化と既存 2 枠の凍結）は A/B/C いずれでも同じ優先度で実施すべきで、ここを軸新設の可否に従属させると、結論が C に落ちた場合に事故が放置される。事故修正と軸新設は分離して着手順を決めることを勧める。" }
+    開発者: { stance: "C. 新軸を設けず scaffold-checklist に Stack 12（Cloudflare Workers + D1/R2）を追加し、cloudflare-workers-dev.md を supabase-local-dev.md と同型の『推奨提示のみ』に留める（最小介入・v6.1.0〜v6.3.0 の前例と同型）", confidence: 0.78, dimension: "保守性 / 技術的実現性", note: "schema 外の違和感を 2 点。(1) 今回本当に新しい情報は「複数プロジェクトが 1 アカウントの枠を共有する」という cross-project の状態であって、個々のプロジェクトが持つ属性ではない。deploy_target という per-project 軸に押し込むのはカテゴリエラーで、この情報は枠観測 skill が保持する可変 state に置くのが正しい。A/B が魅力的に見えるのは、軸として表現できない共有枠の問題を軸で解こうとしているためだと見る。(2) 「Cloudflare を既定にする」を規範の既定値に書くと、stack=Expo / GAS / Go CLI のように供給元概念が無効または誤りのプロジェクトにも既定が及ぶ。既定は妥当性が成立する定義域（＝stack）にスコープされるべきで、これも C を支持する技術的理由になる。なお本件は escalation-matrix「規範文書改変」行の対象であり、C であっても実装前 Council 諮問と献上時の人間判定は省略できない。" }
+    哲学者: { stance: "第3の道", confidence: 0.6, dimension: "長期影響", note: "この議題で最も重い一次事実は D1 の無料枠数値ではなく「2026-09-01 に日次枠の意味が変わった」ことそれ自体である。真理条件を第三者が単独で書き換えられる文書は、規範ではなく観測記録として扱うべきで、cloudflare-workers-dev.md には明示的な観測日付と失効前提（「この表は腐る」）を書き込む必要がある。裏返せば、A の 3 層のうち枠観測 skill だけが供給元の交代を跨いで生き残る資産であり、実装順序は「観測 → プレイブック → 規範」の逆順が正しい（規範を先に書くと、観測が規範を否定したときに規範改変コストが観測を抑圧する）。もう一点の違和感: 軸の名前。deploy_target は「どこへ置くか」という技術操作の名だが、実体は「誰にどれだけ依存する姿勢を取るか」という関係の宣言である。名が実体より狭いと、後から Hyperdrive+PG のような「供給元を跨ぐ構成」が軸に収まらなくなる。" }
+  judgment_confidence: 0.35
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "C. 新軸を設けず scaffold-checklist に Stack 12（Cloudflare Workers + D1/R2）を追加し、cloudflare-workers-dev.md を supabase-local-dev.md と同型の『推奨提示のみ』に留める（最小介入・v6.1.0〜v6.3.0 の前例と同型）"
+    scores:
+      - stance: "C. 新軸を設けず scaffold-checklist に Stack 12（Cloudflare Workers + D1/R2）を追加し、cloudflare-workers-dev.md を supabase-local-dev.md と同型の『推奨提示のみ』に留める（最小介入・v6.1.0〜v6.3.0 の前例と同型）"
+        supporters: ["開発者"]
+        weight_sum: 3
+        weighted_score: 2.34
+        components:
+          - { persona: "開発者", weight: 3, confidence: 0.78 }
+      - stance: "A. deploy_target 新軸を新設し Cloudflare を既定にする（他供給元は opt-in、ADR 記録つき）。規範 / プレイブック（cloudflare-workers-dev.md）/ 枠観測 skill の 3 層で実装"
+        supporters: ["経営者"]
+        weight_sum: 3
+        weighted_score: 2.16
+        components:
+          - { persona: "経営者", weight: 3, confidence: 0.72 }
+    third_way_excluded:
+      - { persona: "哲学者", stance: "第3の道: A の骨格（新軸 + ADR + 3 層）は採るが、既定値を「Cloudflare」という供給元名ではなく「制約プロファイル（消失許容度 / 枠の律速 / 商用可否）」に置き、Cloudflare はその現時点の写像として日付つきプレイブックに降ろす。軸名も deploy_target ではなく「供給元制約（依存姿勢）」とし、判定は v6.3.0 と同じく自動推定・新規質問ゼロにする", weight: 5, confidence: 0.6, reason: "options 外の自由記述。weight 非加算・minority_opinion へ転載" }
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.3, hi: 0.5, basis: "gap_ratio" }
+  recommended: "C. 新軸を設けず scaffold-checklist に Stack 12（Cloudflare Workers + D1/R2）を追加し、cloudflare-workers-dev.md を supabase-local-dev.md と同型の『推奨提示のみ』に留める（最小介入・v6.1.0〜v6.3.0 の前例と同型）。ただし骨格内の必須条件として次の 4 点を吸収する: (1) Supabase 67 箇所の既定性降格（新規禁止の明文化＋既存 2 枠の凍結・日付づけ）を軸新設の可否から分離して先行実施する、(2) アカウント共有枠は per-project 属性でなく cross-project state ゆえ枠観測 skill を独立実装し、実装順序は観測 → プレイブック → 規範とする（観測 skill の主目的は枠の見張りでなく暴走案件の早期隔離）、(3) cloudflare-workers-dev.md に観測日付と失効前提（この表は腐る）を明記し、供給元名は交換可能な値として扱う、(4) D1 / Hyperdrive+PG の出し分けは Time Travel 7 日・単一 DB 500MB・DB 間 JOIN 不可の 3 条件を機械判定可能な分岐表に落とし、$5/月昇格は例外処理でなく前提として見積もる。本件は escalation-matrix「規範文書改変」行の対象であり、C でも実装前 Council 諮問と人間判定は省略しない。"
+  minority_opinion: "A（2.16／経営者）: 既定が満杯の枠を指す事故は件数比例で損失、D1 日次枠はアカウント共有で 1 案件の暴走が全案件を落とす→ポートフォリオ単位の枠会計に機械可読な軸が必要、下振れは年 $60 で頭打ち、$5/月は節約対象でなく観測作業の買取費として先に承認すべき。第3の道（哲学者 weight 5＝ΣW の 45%、options 外のため weight 加算から除外）: 新軸＋ADR＋3 層は採るが既定値を供給元名でなく制約プロファイル（消失許容度／枠の律速／商用可否）に置き、Cloudflare は日付つきプレイブックへ降ろす。軸名は deploy_target でなく「供給元制約（依存姿勢）」、判定は自動推定・新規質問ゼロ。C 採用時の残課題は既定の二重化防止。B は両者とも退ける。"
+  weight_note: "weight_calculation を機械適用（カテゴリ: implementation ＝ 規範文書改変）。1 persona = 1 stance の不可分整数、按分なし。哲学者 weight 5 は options 外ゆえ third_way_excluded に退避（ΣW の 45% ≥ 30% → 帯上限 0.50 切下げ発動）。tie_break 未適用。"
+  reasoning: "重み（経営者 3 / 開発者 3 / 哲学者 5）の機械適用で C = 2.34（3×0.78）、A = 2.16（3×0.72）。差 0.18 ÷ ΣW 11 = gap 率 0.016 の拮抗であり、C は「勝った案」ではなく「骨格として選ばれた案」である。構造上、最大重みの哲学者 5 が options 外（第3の道）へ退避し選択形式で吸収されなかったため、options 内では最小介入案が僅差で上位に立った。C の骨格を支える技術論拠: 供給元差分（V8 isolate / wrangler・miniflare / D1 の JOIN 不可・Worker 外接続不可・PG 機能欠落）は必須生成ファイル＋最低要件＋smoke test で決定論的に書けるため stack 軸の定義そのもの、GAS を Stack 11＋runtime_profile 注記で吸収した前例と同型、実質 1 列しか埋まらない軸は軸でなく stack エントリ、既定は妥当性が成立する定義域（stack）にスコープすべき（Expo / GAS / Go CLI に供給元既定を及ばせない）。一方で経営者・哲学者が独立に突いた 2 点は C の骨格内で必ず処理する必要があり recommended の必須条件へ吸収した: 既定値が満杯の枠を指す運用事故（軸の有無と独立に今すぐ直す）と、共有枠という cross-project state を per-project 軸に押し込むカテゴリエラー。哲学者の「規範が価格表の人質になる／観測 skill だけが供給元より長生きする」も実装順序と日付つき失効前提として吸収。judgment_confidence は拮抗帯かつ third_way が ΣW の 45% を占めるため 0.35 とし、人間エスカレーション（final_decision は人間／合意プロセス）を要する。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: true
+  final_decision: null
+  implementer_consent: "agreed"  # 2026-09-11 人間判定: C + 必須4条件を採用。$5/月昇格は「当面無料」を維持（経営者軸の異見は minority として温存し、観測 skill の実測で再判断）
