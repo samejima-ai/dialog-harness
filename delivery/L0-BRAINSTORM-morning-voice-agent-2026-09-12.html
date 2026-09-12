@@ -1,0 +1,612 @@
+<title>おはようジャービス</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#ECEEF3; --surface:#F7F8FB; --sunk:#DFE3EB;
+  --ink:#131A26; --ink2:#4A5666; --ink3:#7B8798;
+  --rule:#C6CCD8; --rule-soft:#DCE0E8;
+  --deep:#2C4370;        /* 夜明け前の藍 = 構造・骨格 */
+  --deep-wash:#DDE4F0;
+  --wake:#9A6B05;        /* 覚醒の琥珀 = 一点の強調 */
+  --wake-wash:#F4E9D2;
+  --warn:#8A5A2B; --warn-wash:#F1E6D8;
+  --stop:#8C3F36; --stop-wash:#F3DFDB;
+  --go:#2C6B52; --go-wash:#DCEAE3;
+  --shadow:0 1px 0 rgba(19,26,38,.05);
+  --display:"Zen Old Mincho",'Hiragino Mincho ProN',"Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New",'Hiragino Sans',"Yu Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1219; --surface:#141B25; --sunk:#1A2230;
+    --ink:#E3E8F0; --ink2:#A2AEBF; --ink3:#717E90;
+    --rule:#28313F; --rule-soft:#1F2732;
+    --deep:#6E92D4; --deep-wash:#131E30;
+    --wake:#E0A21A; --wake-wash:#2A2110;
+    --warn:#D3A264; --warn-wash:#281E12;
+    --stop:#D4796C; --stop-wash:#2B1714;
+    --go:#5FBE91; --go-wash:#10231C;
+    --shadow:0 1px 0 rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1219; --surface:#141B25; --sunk:#1A2230;
+  --ink:#E3E8F0; --ink2:#A2AEBF; --ink3:#717E90;
+  --rule:#28313F; --rule-soft:#1F2732;
+  --deep:#6E92D4; --deep-wash:#131E30;
+  --wake:#E0A21A; --wake-wash:#2A2110;
+  --warn:#D3A264; --warn-wash:#281E12;
+  --stop:#D4796C; --stop-wash:#2B1714;
+  --go:#5FBE91; --go-wash:#10231C;
+  --shadow:0 1px 0 rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding-inline:24px;padding-block:0 110px}
+@media(max-width:600px){.wrap{padding-inline:16px;padding-block:0 72px}body{font-size:15px}}
+.mono{font-family:var(--mono);font-size:.88em;font-variant-numeric:tabular-nums}
+a{color:var(--deep)}
+
+/* ── masthead ── */
+.masthead{padding-block:60px 30px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(32px,6vw,54px);
+  line-height:1.16;margin:0 0 18px;letter-spacing:.01em;text-wrap:balance}
+h1 .wakeword{color:var(--wake)}
+.lede{font-size:17px;color:var(--ink2);max-width:64ch;margin:0}
+.lede b{color:var(--ink);font-weight:700}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:24px;
+  font-size:12.5px;color:var(--ink3);font-family:var(--mono)}
+.meta b{color:var(--ink2);font-weight:500}
+
+section{margin-top:54px}
+.sec-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--deep);margin-bottom:10px}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,30px);
+  margin:0 0 8px;line-height:1.32;text-wrap:balance}
+.sub{color:var(--ink2);font-size:15px;margin:0 0 24px;max-width:70ch}
+h3{font-family:var(--body);font-weight:700;font-size:16px;margin:0 0 6px;line-height:1.5}
+
+/* ── 結論ブロック ── */
+.verdict{border:2px solid var(--ink);background:var(--surface);padding:26px 24px;margin-top:34px}
+.verdict-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.verdict-tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;padding:3px 9px;
+  background:var(--go-wash);color:var(--go);border:1px solid var(--go)}
+.verdict-head p{font-family:var(--display);font-size:clamp(19px,3vw,25px);font-weight:700;margin:0;line-height:1.4}
+.verdict ul{margin:0;padding-left:1.15em;color:var(--ink2);font-size:15px}
+.verdict li{margin-bottom:7px}
+.verdict li b{color:var(--ink)}
+
+/* ── 汎用カードグリッド ── */
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:780px){.g3,.g2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--rule);padding:20px 18px;
+  display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.card p{margin:0;font-size:14.5px;color:var(--ink2)}
+.card .num{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3)}
+
+/* ── 認識ズレ ── */
+.gap-item{border-left:3px solid var(--wake);background:var(--wake-wash);padding:18px 20px;margin-bottom:14px}
+.gap-item .label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--wake);margin-bottom:6px}
+.gap-item h3{margin-bottom:8px}
+.gap-item p{margin:0 0 8px;font-size:14.5px;color:var(--ink2)}
+.gap-item p:last-child{margin-bottom:0}
+.gap-item b{color:var(--ink)}
+
+/* ── 表 ── */
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+thead th{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink3);background:var(--sunk);border-bottom:1px solid var(--rule);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td b{color:var(--ink)}
+td{color:var(--ink2)}
+th[scope="row"]{font-weight:700;color:var(--ink);white-space:nowrap;font-size:14px}
+.num-cell{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ── 可否リスト ── */
+.canlist{display:grid;gap:10px}
+.can-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;
+  background:var(--surface);border:1px solid var(--rule);padding:14px 16px}
+@media(max-width:600px){.can-row{grid-template-columns:auto 1fr;gap:10px}
+  .can-row .diff{grid-column:2;justify-self:start;margin-top:2px}}
+.mark{font-family:var(--mono);font-weight:700;font-size:13px;width:2.2em;text-align:center;
+  padding:2px 0;line-height:1.5}
+.mark.ok{color:var(--go);background:var(--go-wash)}
+.mark.part{color:var(--warn);background:var(--warn-wash)}
+.mark.no{color:var(--stop);background:var(--stop-wash)}
+.can-row .body-txt{font-size:14.5px;color:var(--ink2);min-width:0}
+.can-row .body-txt b{color:var(--ink);display:block;font-size:15px;margin-bottom:2px}
+.diff{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink3);
+  border:1px solid var(--rule);padding:2px 7px;white-space:nowrap;align-self:center}
+
+/* ── 壁 ── */
+.wall{border:1px solid var(--rule);background:var(--surface);margin-bottom:16px}
+.wall-head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;
+  padding:15px 18px 12px;border-bottom:1px solid var(--rule-soft);background:var(--sunk)}
+.wall-head .idx{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3)}
+.wall-head h3{margin:0;flex:1;min-width:12ch}
+.sev{font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:2px 8px;white-space:nowrap}
+.sev.hi{background:var(--stop-wash);color:var(--stop);border:1px solid var(--stop)}
+.sev.mid{background:var(--warn-wash);color:var(--warn);border:1px solid var(--warn)}
+.sev.lo{background:var(--go-wash);color:var(--go);border:1px solid var(--go)}
+.wall-body{padding:16px 18px;display:grid;gap:12px}
+.wall-body dl{margin:0;display:grid;grid-template-columns:5.5em 1fr;gap:6px 14px;font-size:14.5px}
+@media(max-width:520px){.wall-body dl{grid-template-columns:1fr;gap:2px}
+  .wall-body dd{margin-bottom:8px}}
+.wall-body dt{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink3);
+  padding-top:5px;text-transform:uppercase}
+.wall-body dd{margin:0;color:var(--ink2)}
+.wall-body dd b{color:var(--ink)}
+
+/* ── パイプライン図 ── */
+.pipe{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);padding:22px 18px}
+.pipe svg{display:block;min-width:680px;max-width:100%;height:auto}
+
+/* ── 遅延バー ── */
+.budget{display:grid;gap:12px;margin-top:6px}
+.b-row{display:grid;grid-template-columns:11em 1fr;gap:14px;align-items:center}
+@media(max-width:600px){.b-row{grid-template-columns:1fr;gap:4px}}
+.b-label{font-size:13.5px;color:var(--ink2)}
+.b-label b{color:var(--ink);font-weight:500}
+.b-track{background:var(--sunk);height:26px;position:relative;border:1px solid var(--rule-soft)}
+.b-fill{height:100%;display:flex;align-items:center;padding-left:8px;
+  font-family:var(--mono);font-size:11px;color:var(--paper);white-space:nowrap}
+.b-fill.deep{background:var(--deep)}
+.b-fill.wake{background:var(--wake)}
+.b-fill.ink3{background:var(--ink3)}
+.b-note{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:4px}
+
+/* ── フェーズ ── */
+.phase{display:grid;grid-template-columns:auto 1fr;gap:0 20px}
+.phase-col{position:relative;padding-bottom:26px;padding-left:22px;border-left:1px solid var(--rule)}
+.phase-col:last-child{border-left-color:transparent;padding-bottom:0}
+.phase-col::before{content:"";position:absolute;left:-5px;top:6px;width:9px;height:9px;
+  background:var(--paper);border:2px solid var(--deep);border-radius:50%}
+.phase-col.now::before{background:var(--wake);border-color:var(--wake)}
+.phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:3px}
+.phase-col h3{margin-bottom:4px}
+.phase-col p{margin:0;font-size:14.5px;color:var(--ink2)}
+.phase-col .cost{font-family:var(--mono);font-size:11.5px;color:var(--deep);margin-top:6px}
+
+/* ── 未決 ── */
+.q{border-top:1px solid var(--rule);padding:16px 0;display:grid;grid-template-columns:auto 1fr;gap:16px}
+.q:last-child{border-bottom:1px solid var(--rule)}
+.q .qn{font-family:var(--mono);font-size:12px;color:var(--wake);padding-top:2px}
+.q h3{margin-bottom:4px}
+.q p{margin:0;font-size:14.5px;color:var(--ink2)}
+.q .opts{font-family:var(--mono);font-size:12px;color:var(--ink3);margin-top:6px}
+
+/* ── 出典 ── */
+.src{font-size:13px;color:var(--ink2);line-height:1.7}
+.src li{margin-bottom:6px}
+footer{margin-top:56px;padding-top:22px;border-top:2px solid var(--ink);
+  font-family:var(--mono);font-size:11.5px;color:var(--ink3);
+  display:flex;flex-wrap:wrap;gap:6px 20px;justify-content:space-between}
+:focus-visible{outline:2px solid var(--wake);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>Layer 0 / Brainstorm</span>
+    <span>dialog-harness</span>
+    <span>2026-09-12</span>
+    <span>草案 — 未確定</span>
+  </div>
+  <h1><span class="wakeword">「おはよう、Claude」</span>で<br>起きるデスクトップ常駐エージェント</h1>
+  <p class="lede">朝、PC に声をかけるとサブスク契約済みの CC / Codex が立ち上がり、<b>Live モードのように喋ったまま</b>タスクが流れていく。<b>結論から言うと作れる。</b>ただし「サブスク枠で回す」と「Live 並みの応答速度」は<b>同じ層では両立しない</b>。その分離が本 ARC の中心論点。</p>
+  <div class="meta">
+    <span><b>層</b> L0（目的・意図の具体化）</span>
+    <span><b>状態</b> 発散フェーズ / SPEC 未生成</span>
+    <span><b>次工程</b> 認識合わせ → SPEC.md</span>
+    <span><b>想定 dev_mode</b> local_only</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="verdict-head">
+    <span class="verdict-tag">実現可能</span>
+    <p>ただし「音声層」と「エージェント層」を分けた 2 層 ARC でのみ成立する。</p>
+  </div>
+  <ul>
+    <li><b>できる</b> — ウェイクワード常駐、起床トリガー、音声でのタスク実行、読み上げ応答。既存 OSS の組み合わせで到達する。</li>
+    <li><b>現状できない</b> — CC / Codex 自体にウェイクワードはない。CC の音声入力は <span class="mono">Space</span> 押下の push-to-talk のみで、常時待機モードは公式には存在しない（要望 Issue は起票済み）。<b>外側に常駐プロセスを自作するのが唯一の道</b>。</li>
+    <li><b>最大の壁</b> — サブスク（Claude Pro/Max・ChatGPT Plus）で使えるのは<b>テキスト入出力だけ</b>。真の Live（speech-to-speech）は Realtime API = 従量課金であり、サブスクの外側にある。</li>
+    <li><b>推奨</b> — <b>案 B：ローカル常駐 OC</b>。サブスク枠を維持したまま、体感 3〜6 秒の往復で「喋って、実行される」を成立させる。総難度 <span class="mono">★★★☆☆</span>、実働 2〜3 週間（Phase 2 まで）。</li>
+  </ul>
+</div>
+
+<section>
+  <div class="sec-eyebrow">Feasibility</div>
+  <h2>できること / できないこと</h2>
+  <p class="sub">「今の手持ち（Windows デスクトップ + サブスク契約 + OSS）で素直に組んだ場合」の可否。難度は実装工数ではなく<b>詰まる確率</b>で付けている。</p>
+
+  <div class="canlist">
+    <div class="can-row">
+      <span class="mark ok">可</span>
+      <span class="body-txt"><b>「おはよう、Claude」で常駐プロセスを起こす</b>ウェイクワード検出はオンデバイス OSS（openWakeWord）または商用 SDK（Porcupine）で完結。ネット接続も課金も不要。カスタム語の学習も即時。</span>
+      <span class="diff">★☆☆☆☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark ok">可</span>
+      <span class="body-txt"><b>サブスク枠のまま CC / Codex を自動実行する</b>CC は <span class="mono">claude -p</span>（headless）、Codex は <span class="mono">codex exec</span> で非対話実行できる。CC は <span class="mono">claude setup-token</span> で長命 OAuth トークンを発行でき、<b>サブスクの利用枠がそのまま適用される</b>（API 従量課金にならない）。</span>
+      <span class="diff">★★☆☆☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark ok">可</span>
+      <span class="body-txt"><b>「送信」と言わずに文が確定する</b>VAD（発話終端検出）で無音 600〜800ms を検出して自動確定。IDATSUKA さんが引っかかっていた「最後に送信と言わねばならない」問題は、ここで技術的に解ける。</span>
+      <span class="diff">★★☆☆☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark ok">可</span>
+      <span class="body-txt"><b>応答を声で返す</b>ローカル TTS（Piper 等）なら追加課金ゼロ、初音 200〜400ms。自然さを取るならクラウド TTS に差し替え可能（層が分離してあれば載せ替えるだけ）。</span>
+      <span class="diff">★☆☆☆☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark part">条件付</span>
+      <span class="body-txt"><b>スリープからの起床</b>OS のスリープ中はマイクが死ぬため、音声では起こせない。<b>タスクスケジューラで定刻起床（自動起動）させ、起きた PC が待機している</b>という設計に倒すのが現実解。あるいはモダンスタンバイ／スリープ無効運用。</span>
+      <span class="diff">★★★☆☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark part">条件付</span>
+      <span class="body-txt"><b>会話の途中で割り込む（バージイン）</b>読み上げ中に喋りかけて止める挙動は、自前パイプラインでも実装可能だがエコーキャンセルが要る。スピーカー出力をマイクが拾って自分の声で誤発火するため、<b>ヘッドセット前提なら易、スピーカー前提なら難</b>。</span>
+      <span class="diff">★★★★☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark part">条件付</span>
+      <span class="body-txt"><b>GPU なし PC（7〜8 万円クラス）での実用速度</b>faster-whisper の small は CPU だと数倍遅い。tiny / base へ落とすか、STT だけクラウドに出す。<b>マシン性能が要件を直撃する唯一の箇所</b>なので、実機ベンチが先。</span>
+      <span class="diff">★★★☆☆</span>
+    </div>
+    <div class="can-row">
+      <span class="mark no">不可</span>
+      <span class="body-txt"><b>サブスク枠のまま「真の Live モード」にする</b>speech-to-speech（音声のまま推論し音声を返す）は Realtime API の領域で、<b>従量課金・API キー必須</b>。CC / Codex のサブスクにこの経路は含まれない。サブスク維持なら STT → テキスト → TTS の往復になり、遅延は原理的に残る。</span>
+      <span class="diff">—</span>
+    </div>
+    <div class="can-row">
+      <span class="mark no">不可</span>
+      <span class="body-txt"><b>CC 公式機能だけでハンズフリーにする</b>公式の音声モードは push-to-talk のみ。ウェイクワード・常時待機・アンビエント文字起こしはいずれも非搭載で、これは明示された設計方針。<b>外側の常駐プロセスは省略できない</b>。</span>
+      <span class="diff">—</span>
+    </div>
+    <div class="can-row">
+      <span class="mark no">不可</span>
+      <span class="body-txt"><b>Windows 音声アクセスだけで完結させる</b>アプリ起動・定型操作までは可能だが、<b>自由発話をエージェントへ流し込む経路がない</b>。「Claude を開く」までは担えても、対話そのものは担えない。起動トリガー専用の補助輪と割り切る。</span>
+      <span class="diff">—</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Alignment</div>
+  <h2>先に潰しておく認識のズレ</h2>
+  <p class="sub">L0 では実装より前にここを合わせる。以下 3 点が未合意のまま進むと、作った後に「思ってたのと違う」が確定する。</p>
+
+  <div class="gap-item">
+    <div class="label">Gap 01 — 用語</div>
+    <h3>「Live モードのように」は、2 つの別物を指している</h3>
+    <p>ChatGPT の Live が滑らかなのは <b>speech-to-speech</b>（音声のまま推論）だから。一方、やりたい「タスク実行」は CC / Codex というテキスト前提のエージェントの仕事。<b>この 2 つは別の層に置くしかない</b>。</p>
+    <p>合意すべき点 — 求めているのは <b>(a) 遅延 1 秒未満の滑らかな会話体験</b> か、<b>(b) 手を使わずタスクが流れる体験</b> か。<b>(b) なら案 B で足り、(a) を混ぜると課金構造が変わる。</b></p>
+  </div>
+
+  <div class="gap-item">
+    <div class="label">Gap 02 — コスト構造</div>
+    <h3>「サブスクを起動する」は、音声部分までは含まない</h3>
+    <p>CC / Codex のサブスクが覆うのは<b>テキストの推論</b>まで。音声の入口（STT）と出口（TTS）は別勘定で、ローカル OSS なら 0 円、クラウドなら従量。Realtime API を音声フロントに使う案 C だと、<b>1 日 10 分 × 30 日で概算 $15/月前後</b>が上乗せされる（gpt-realtime-2 系の公称レートからの試算。要実測）。</p>
+    <p>合意すべき点 — <b>「追加課金ゼロ」が制約なのか、月 $10〜20 なら許容なのか</b>。ここが案 B / 案 C の分岐点そのもの。</p>
+  </div>
+
+  <div class="gap-item">
+    <div class="label">Gap 03 — 権限</div>
+    <h3>「タスクを実行」の射程が決まっていない</h3>
+    <p>読み上げ・要約だけなら安全。だが<b>ファイル書き換え・コミット・送信・購入</b>まで含むなら、寝起きの曖昧な発話が不可逆操作に化ける。音声は誤認識する前提で、<b>不可逆操作は必ず音声で確認を返す</b>設計にする（dialog-harness の「人間最終承認」原則と同じ形）。</p>
+    <p>合意すべき点 — <b>無確認で実行してよい操作の範囲</b>。初期は「読む・調べる・下書きする」までに閉じるのが安全。</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Requirement</div>
+  <h2>要求の 5W1H 分解</h2>
+  <p class="sub">発話「朝起きたら声で起動して、喋って、タスクが実行される」を構造化したもの。<b>太字は未確定で、後段の未決事項に対応する。</b></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>軸</th><th>内容</th><th>設計への影響</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">When</th><td>起床直後（平日朝の想定時間帯）。<b>定刻か、任意の時刻か未確定</b></td><td>定刻ならスケジューラ起床で解決、任意なら常時起動運用が必要</td></tr>
+        <tr><th scope="row">Where</th><td>Windows デスクトップ PC。Mac ではないため Siri 系の仲介は使えない</td><td>ウェイクワードは自前実装。マイクは<b>ヘッドセット推奨</b>（バージイン対応のため）</td></tr>
+        <tr><th scope="row">Who</th><td>本人 1 名。<b>話者識別の要否は未確定</b></td><td>不要なら実装が 1 段軽くなる。同室に他者がいる環境なら要検討</td></tr>
+        <tr><th scope="row">What</th><td>ウェイクワードで常駐 OC を起こし、発話をタスクに変換して CC / Codex に実行させ、結果を声で返す</td><td>OC が本体。CC / Codex は<b>差し替え可能なバックエンド</b>として扱う</td></tr>
+        <tr><th scope="row">Why</th><td>手を使わずに一日を始める。目標像は「ジャービス」</td><td>体験価値の核は<b>速度</b>ではなく<b>手を使わない連続性</b>。ここが案 B を推す根拠</td></tr>
+        <tr><th scope="row">How</th><td>ローカル常駐 OC が STT / VAD / TTS を束ね、headless の CC / Codex を叩く</td><td>音声層とエージェント層を疎結合にし、<b>将来 Realtime API へ載せ替え可能</b>にしておく</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Architecture</div>
+  <h2>ARC 候補 3 案</h2>
+  <p class="sub">縦軸は「サブスク枠を守るか / Live 品質を買うか」。中間の案 B が、追加課金ゼロのまま手を使わない体験に届く唯一の位置にある。</p>
+  <div class="grid g3">
+    <div class="card">
+      <span class="num">案 A — OS 依存</span>
+      <h3>Windows 音声アクセス委譲</h3>
+      <p>OS のアプリ起動コマンドで CC / Codex を開き、以降は OS の音声入力で打鍵を代替する。</p>
+      <p><b>利点</b> 実装ほぼゼロ。今日試せる。</p>
+      <p><b>欠点</b> 自由発話をエージェントに流す経路がなく、確定操作が毎回要る。<b>Live 感は出ない</b>。</p>
+      <p class="mono" style="color:var(--ink3)">難度 ★☆☆☆☆ / 追加費用 0 円</p>
+    </div>
+    <div class="card" style="border-color:var(--wake);border-width:2px">
+      <span class="num" style="color:var(--wake)">案 B — 推奨</span>
+      <h3>ローカル常駐 OC</h3>
+      <p>自作の常駐プロセスがウェイクワード・VAD・STT・TTS を束ね、headless の CC / Codex を叩く。</p>
+      <p><b>利点</b> サブスク枠のまま完結。<b>バックエンドを Claude / Codex で差し替え可能</b>。</p>
+      <p><b>欠点</b> 往復 3〜6 秒。滑らかさは Live に届かない。</p>
+      <p class="mono" style="color:var(--wake)">難度 ★★★☆☆ / 追加費用 0 円</p>
+    </div>
+    <div class="card">
+      <span class="num">案 C — Live 優先</span>
+      <h3>Realtime API を音声フロントに</h3>
+      <p>Realtime モデルが会話を受け持ち、tool call で CC / Codex を呼び出す。</p>
+      <p><b>利点</b> 応答 1 秒未満、割り込みも標準で入る。<b>本物の Live 体験</b>。</p>
+      <p><b>欠点</b> 音声分が従量課金（概算 $15/月〜）。API キー必須でサブスクの外。</p>
+      <p class="mono" style="color:var(--ink3)">難度 ★★★★☆ / 追加費用 従量</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Recommended — 案 B</div>
+  <h2>常駐 OC のパイプライン</h2>
+  <p class="sub">音声層（ローカル・0 円）とエージェント層（サブスク枠）を分けて並べたもの。<b>この境界を保つ限り、後から案 C に載せ替えても①〜③と⑤は捨てずに済む。</b></p>
+  <div class="pipe">
+    <svg viewBox="0 0 900 250" role="img" aria-label="ウェイクワード検出から読み上げまでの5段パイプライン図">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink3)"></path>
+        </marker>
+        <marker id="ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--wake)"></path>
+        </marker>
+      </defs>
+
+      <text x="20" y="24" fill="var(--ink3)" font-family="var(--mono)" font-size="11" letter-spacing="1.4">INPUT — 声</text>
+      <text x="880" y="24" fill="var(--ink3)" font-family="var(--mono)" font-size="11" letter-spacing="1.4" text-anchor="end">OUTPUT — 声</text>
+      <line x1="20" y1="34" x2="880" y2="34" stroke="var(--rule)" stroke-width="1"></line>
+
+      <g font-family="var(--body)">
+        <g>
+          <rect x="20" y="58" width="150" height="92" fill="var(--surface)" stroke="var(--rule)"></rect>
+          <text x="34" y="80" fill="var(--deep)" font-family="var(--mono)" font-size="10" letter-spacing="1.2">01</text>
+          <text x="34" y="102" fill="var(--ink)" font-size="13.5" font-weight="700">ウェイクワード</text>
+          <text x="34" y="121" fill="var(--ink2)" font-size="11.5">「おはよう、Claude」</text>
+          <text x="34" y="140" fill="var(--ink3)" font-family="var(--mono)" font-size="10">openWakeWord</text>
+        </g>
+        <line x1="174" y1="104" x2="192" y2="104" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ah)"></line>
+        <g>
+          <rect x="196" y="58" width="150" height="92" fill="var(--surface)" stroke="var(--rule)"></rect>
+          <text x="210" y="80" fill="var(--deep)" font-family="var(--mono)" font-size="10" letter-spacing="1.2">02</text>
+          <text x="210" y="102" fill="var(--ink)" font-size="13.5" font-weight="700">VAD + STT</text>
+          <text x="210" y="121" fill="var(--ink2)" font-size="11.5">無音 700ms で確定</text>
+          <text x="210" y="140" fill="var(--ink3)" font-family="var(--mono)" font-size="10">faster-whisper</text>
+        </g>
+        <line x1="350" y1="104" x2="368" y2="104" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ah)"></line>
+        <g>
+          <rect x="372" y="58" width="150" height="92" fill="var(--surface)" stroke="var(--deep)" stroke-width="1.6"></rect>
+          <text x="386" y="80" fill="var(--deep)" font-family="var(--mono)" font-size="10" letter-spacing="1.2">03 — 本体</text>
+          <text x="386" y="102" fill="var(--ink)" font-size="13.5" font-weight="700">常駐 OC</text>
+          <text x="386" y="121" fill="var(--ink2)" font-size="11.5">意図判定・権限確認</text>
+          <text x="386" y="140" fill="var(--ink3)" font-family="var(--mono)" font-size="10">自作 / セッション保持</text>
+        </g>
+        <line x1="526" y1="104" x2="544" y2="104" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ah)"></line>
+        <g>
+          <rect x="548" y="58" width="150" height="92" fill="var(--deep-wash)" stroke="var(--deep)"></rect>
+          <text x="562" y="80" fill="var(--deep)" font-family="var(--mono)" font-size="10" letter-spacing="1.2">04</text>
+          <text x="562" y="102" fill="var(--ink)" font-size="13.5" font-weight="700">CC / Codex</text>
+          <text x="562" y="121" fill="var(--ink2)" font-size="11.5">headless 実行</text>
+          <text x="562" y="140" fill="var(--ink3)" font-family="var(--mono)" font-size="10">claude -p / codex exec</text>
+        </g>
+        <line x1="702" y1="104" x2="720" y2="104" stroke="var(--ink3)" stroke-width="1.4" marker-end="url(#ah)"></line>
+        <g>
+          <rect x="724" y="58" width="150" height="92" fill="var(--surface)" stroke="var(--rule)"></rect>
+          <text x="738" y="80" fill="var(--deep)" font-family="var(--mono)" font-size="10" letter-spacing="1.2">05</text>
+          <text x="738" y="102" fill="var(--ink)" font-size="13.5" font-weight="700">読み上げ</text>
+          <text x="738" y="121" fill="var(--ink2)" font-size="11.5">結果を要約して発話</text>
+          <text x="738" y="140" fill="var(--ink3)" font-family="var(--mono)" font-size="10">Piper TTS</text>
+        </g>
+
+        <path d="M 799 152 L 799 186 L 271 186 L 271 154" fill="none" stroke="var(--wake)" stroke-width="1.4"
+              stroke-dasharray="5 4" marker-end="url(#ahd)"></path>
+        <text x="535" y="180" fill="var(--wake)" font-size="11.5" text-anchor="middle">割り込み（バージイン）— 読み上げ中の発話で停止 ／ 難所</text>
+
+        <rect x="20" y="206" width="502" height="26" fill="none" stroke="var(--rule)" stroke-dasharray="3 3"></rect>
+        <text x="34" y="223" fill="var(--ink2)" font-size="11.5">音声層 ＋ OC ／ ローカル完結・追加課金 0 円</text>
+        <rect x="548" y="206" width="150" height="26" fill="none" stroke="var(--deep)" stroke-dasharray="3 3"></rect>
+        <text x="562" y="223" fill="var(--deep)" font-size="11.5">サブスク枠</text>
+        <rect x="724" y="206" width="150" height="26" fill="none" stroke="var(--rule)" stroke-dasharray="3 3"></rect>
+        <text x="738" y="223" fill="var(--ink2)" font-size="11.5">ローカル 0 円</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Latency</div>
+  <h2>遅延バジェット — Live との差はどこで生まれるか</h2>
+  <p class="sub">発話が終わってから最初の音が返るまでの内訳（GPU 搭載機での概算・要実測）。<b>合計 3.3〜6.4 秒</b>。案 C の Live は同じ区間を 1 秒未満で返す。</p>
+  <div class="budget">
+    <div class="b-row">
+      <span class="b-label"><b>VAD 発話終端判定</b></span>
+      <div class="b-track"><div class="b-fill ink3" style="width:11%">600–800ms</div></div>
+    </div>
+    <div class="b-row">
+      <span class="b-label"><b>STT 文字起こし</b></span>
+      <div class="b-track"><div class="b-fill ink3" style="width:16%">300–1000ms</div></div>
+    </div>
+    <div class="b-row">
+      <span class="b-label"><b>CC / Codex 初回応答</b></span>
+      <div class="b-track"><div class="b-fill deep" style="width:62%">2000–4000ms ← 支配項</div></div>
+    </div>
+    <div class="b-row">
+      <span class="b-label"><b>TTS 初音</b></span>
+      <div class="b-track"><div class="b-fill ink3" style="width:7%">200–400ms</div></div>
+    </div>
+    <div class="b-row">
+      <span class="b-label"><b>（参考）案 C の Live</b></span>
+      <div class="b-track"><div class="b-fill wake" style="width:12%">〜800ms 全区間</div></div>
+    </div>
+  </div>
+  <p class="b-note">※ 支配項はエージェントの初回応答。ここを縮める鍵は<b>プロセスを毎回起動しないこと</b>（常駐セッション保持）と、<b>相槌を先に鳴らして待ち時間を埋めること</b>。体感は数値より「無言の時間があるか」で決まる。</p>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Obstacles</div>
+  <h2>壁となるポイント</h2>
+  <p class="sub">難度は<b>詰まる確率と回避の効かなさ</b>で付けた。上 2 つは設計段階で決着を付けないと、実装が進むほど手戻りが大きくなる種類の壁。</p>
+
+  <div class="wall">
+    <div class="wall-head"><span class="idx">WALL 01</span><h3>サブスク枠と Live 品質が同じ層に乗らない</h3><span class="sev hi">難度 高 / 構造的</span></div>
+    <div class="wall-body"><dl>
+      <dt>正体</dt><dd>speech-to-speech は Realtime API の機能であり、<b>CC / Codex のサブスクにその経路が存在しない</b>。実装力では越えられない、契約構造の壁。</dd>
+      <dt>兆候</dt><dd>「サブスクのままヌルヌル喋らせたい」という要求が消えないまま実装に入る。</dd>
+      <dt>回避</dt><dd>層を割る。音声層を差し替え可能にしておけば、<b>まず案 B で作り、不満が残った時だけ案 C の音声層を被せる</b>という二段構えが取れる。捨てるのは音声層だけで済む。</dd>
+    </dl></div>
+  </div>
+
+  <div class="wall">
+    <div class="wall-head"><span class="idx">WALL 02</span><h3>寝起きの誤認識が不可逆操作に化ける</h3><span class="sev hi">難度 高 / 安全性</span></div>
+    <div class="wall-body"><dl>
+      <dt>正体</dt><dd>朝一の滑舌・生活音で STT は確実に誤る。<b>音声は「誤認識を前提に設計する入力」</b>であり、そこにファイル書き換えや送信を繋ぐと事故が確定する。</dd>
+      <dt>兆候</dt><dd>「なんでも実行できる」を初期スコープに入れてしまう。</dd>
+      <dt>回避</dt><dd>操作を <span class="mono">読む / 調べる / 下書きする</span>（無確認可）と <span class="mono">書く / 送る / 消す / 買う</span>（音声で復唱確認）に二分する。<b>復唱確認は遅延を増やすが、ここは削らない</b>。</dd>
+    </dl></div>
+  </div>
+
+  <div class="wall">
+    <div class="wall-head"><span class="idx">WALL 03</span><h3>スピーカー再生音を自分のマイクが拾う</h3><span class="sev mid">難度 中 / 実装</span></div>
+    <div class="wall-body"><dl>
+      <dt>正体</dt><dd>読み上げ中の自分の声でウェイクワードが再発火し、無限ループや会話崩壊を起こす。バージインを入れると必ず踏む。</dd>
+      <dt>兆候</dt><dd>スピーカー運用で「勝手に喋り続ける」「自分の返事に反応する」。</dd>
+      <dt>回避</dt><dd>初期は<b>ヘッドセット前提</b>で逃げる（実質ゼロコスト）。スピーカー運用を要件に入れるなら AEC（エコーキャンセル）が必要で、難度が一段上がる。</dd>
+    </dl></div>
+  </div>
+
+  <div class="wall">
+    <div class="wall-head"><span class="idx">WALL 04</span><h3>スリープした PC は声で起こせない</h3><span class="sev mid">難度 中 / OS 制約</span></div>
+    <div class="wall-body"><dl>
+      <dt>正体</dt><dd>スリープ中はマイク入力が止まる。スマートスピーカーのような常時待機は、専用ハードだから成立している。</dd>
+      <dt>兆候</dt><dd>「朝いちばんに声をかけたのに無反応」。</dd>
+      <dt>回避</dt><dd>タスクスケジューラで<b>定刻に PC を自動起床させ、OC を先に立ち上げておく</b>。声は「起こす合図」ではなく「待っている相手への呼びかけ」に意味を変える。要求の本質は満たせる。</dd>
+    </dl></div>
+  </div>
+
+  <div class="wall">
+    <div class="wall-head"><span class="idx">WALL 05</span><h3>非力な PC では STT が間に合わない</h3><span class="sev mid">難度 中 / 実機依存</span></div>
+    <div class="wall-body"><dl>
+      <dt>正体</dt><dd>GPU なしの 7〜8 万円クラスだと faster-whisper の中〜大モデルは実用速度に乗らない。<b>要求仕様ではなくマシンが上限を決める</b>唯一の箇所。</dd>
+      <dt>兆候</dt><dd>喋り終わってから文字になるまで数秒かかり、会話のリズムが壊れる。</dd>
+      <dt>回避</dt><dd>着手前に実機で tiny / base / small を並べてベンチを取る（Phase 0）。落ちない場合は<b>STT だけクラウドに出す</b>（月数百円規模）。この分岐は早く決めるほど安い。</dd>
+    </dl></div>
+  </div>
+
+  <div class="wall">
+    <div class="wall-head"><span class="idx">WALL 06</span><h3>常駐プロセスの寿命とトークン失効</h3><span class="sev lo">難度 低 / 運用</span></div>
+    <div class="wall-body"><dl>
+      <dt>正体</dt><dd>OAuth トークンの失効、CLI の更新、PC 再起動で、ある朝いきなり黙る。自動化の常。</dd>
+      <dt>兆候</dt><dd>「昨日まで動いていたのに反応しない」。</dd>
+      <dt>回避</dt><dd>OC の起動時にバックエンドへ ping を打ち、<b>失敗したらその場で声で伝える</b>（黙って死なせない）。ログを 1 ファイルに寄せておけば復旧は数分。</dd>
+    </dl></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Roadmap</div>
+  <h2>段階導入 — 小さく作って壁を先に踏む</h2>
+  <p class="sub">各フェーズの終わりに<b>捨てる判断ができる</b>ように区切ってある。Phase 0 は半日で終わり、案 B が成立するかどうかがそこで分かる。</p>
+  <div class="phase">
+    <div></div>
+    <div>
+      <div class="phase-col now">
+        <div class="phase-tag">PHASE 0 — 半日</div>
+        <h3>実機ベンチと疎通確認</h3>
+        <p>実機で STT の速度を測り、<span class="mono">claude -p "おはよう"</span> がサブスク枠で通ることを確認する。<b>WALL 05 と WALL 01 をここで潰す。</b></p>
+        <div class="cost">通らなければ案 C か、要求の縮小へ</div>
+      </div>
+      <div class="phase-col">
+        <div class="phase-tag">PHASE 1 — 2〜3 日</div>
+        <h3>手を使わない最小の一往復</h3>
+        <p>ウェイクワード → 一言の発話 → headless 実行 → 読み上げ。<b>読む・調べるだけに限定</b>し、書き込み系は繋がない。</p>
+        <div class="cost">ここで「ジャービス感」が出るか体感判定</div>
+      </div>
+      <div class="phase-col">
+        <div class="phase-tag">PHASE 2 — 1〜2 週</div>
+        <h3>連続対話と権限ゲート</h3>
+        <p>セッション保持で 2 往復目以降のウェイクワードを不要に。相槌で待ち時間を埋める。不可逆操作に復唱確認を入れる（WALL 02）。</p>
+        <div class="cost">案 B の完成形。追加課金 0 円のまま</div>
+      </div>
+      <div class="phase-col">
+        <div class="phase-tag">PHASE 3 — 任意</div>
+        <h3>Live 化の判断</h3>
+        <p>Phase 2 の遅延に不満が残った場合のみ、音声層を Realtime API に差し替える。<b>OC より下は作り直さない。</b></p>
+        <div class="cost">概算 $15/月〜 の従量が発生</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Open Questions</div>
+  <h2>返答が要る未決事項</h2>
+  <p class="sub">この 4 問が埋まれば SPEC.md に進める。<b>Q1 と Q2 は ARC を分岐させるため、先に決める必要がある。</b></p>
+  <div class="q"><span class="qn">Q1</span><div>
+    <h3>優先するのは「滑らかさ」か「手を使わないこと」か</h3>
+    <p>前者なら案 C（従量課金）、後者なら案 B（0 円）。<b>Gap 01 の合意点</b>。</p>
+    <div class="opts">→ 滑らかさ優先 / 手を使わない優先 / まず 0 円で試して判断</div>
+  </div></div>
+  <div class="q"><span class="qn">Q2</span><div>
+    <h3>音声部分の追加課金はどこまで許容するか</h3>
+    <p>「サブスク以外は 1 円も払わない」が制約なら、案 C と STT のクラウド化が同時に消える。</p>
+    <div class="opts">→ 追加課金ゼロ厳守 / 月 1,000 円まで / 体験が良ければ月 2,000〜3,000 円可</div>
+  </div></div>
+  <div class="q"><span class="qn">Q3</span><div>
+    <h3>朝いちばんに実行したいタスクの具体例は</h3>
+    <p>3 つ挙がれば、それが受け入れ基準になる。「予定の読み上げ」と「リポジトリの差分確認」では必要な権限が違う。</p>
+    <div class="opts">→ 例：予定確認 / 未読要約 / 昨日の作業の続き / 今日やることの整理</div>
+  </div></div>
+  <div class="q"><span class="qn">Q4</span><div>
+    <h3>マイクはヘッドセットか、スピーカー運用か</h3>
+    <p>ヘッドセットなら WALL 03 が消えて難度が一段下がる。スピーカー運用は要件に入れると跳ね上がる。</p>
+    <div class="opts">→ ヘッドセットで可 / 手ぶらで話したい（AEC 必須）</div>
+  </div></div>
+</section>
+
+<section>
+  <div class="sec-eyebrow">Sources</div>
+  <h2>裏取りした一次情報</h2>
+  <p class="sub">仕様・価格は変動する。<b>実装着手時点で再確認すること</b>（特に Realtime API の単価と CLI の認証方式）。</p>
+  <ol class="src">
+    <li>CC の音声モードは push-to-talk のみでウェイクワード非搭載 — <a href="https://claudefa.st/blog/guide/mechanics/voice-mode">Claude Code Voice Mode (2026)</a> ／ ハンズフリー化の要望 Issue — <a href="https://github.com/anthropics/claude-code/issues/36745">anthropics/claude-code #36745</a></li>
+    <li>headless 実行とサブスク枠での認証（<span class="mono">claude -p</span> / <span class="mono">setup-token</span>）— <a href="https://docs.anthropic.com/en/docs/claude-code/sdk/sdk-headless">Claude Docs: SDK headless</a></li>
+    <li>Codex の非対話実行 <span class="mono">codex exec</span> と認証方式 — <a href="https://learn.chatgpt.com/docs/non-interactive-mode">ChatGPT Learn: Non-interactive mode</a> ／ <a href="https://learn.chatgpt.com/docs/auth">Authentication</a></li>
+    <li>Realtime API（gpt-realtime-2）の speech-to-speech と単価 — <a href="https://www.layer3labs.io/guides/openai-realtime-api-pricing">OpenAI Realtime API Pricing 2026</a></li>
+    <li>ウェイクワードのオンデバイス検出 — <a href="https://github.com/dscripka/openWakeWord">openWakeWord</a> ／ <a href="https://github.com/Picovoice/porcupine">Picovoice Porcupine</a></li>
+    <li>Windows 11 音声アクセスの範囲（オンデバイス認識・アプリ起動コマンド）— <a href="https://support.microsoft.com/ja-jp/accessibility/windows/voice-access/voice-access-command-list">Microsoft サポート: 音声アクセス コマンド一覧</a></li>
+  </ol>
+</section>
+
+<footer>
+  <span>dialog-harness / Layer 0 Brainstorm</span>
+  <span>草案 — SPEC 未確定 / 認識合わせ待ち</span>
+  <span>2026-09-12</span>
+</footer>
+
+</div>
