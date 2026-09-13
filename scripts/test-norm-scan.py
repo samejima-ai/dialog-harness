@@ -182,6 +182,13 @@ check("superseded_by 欠落は「宣言不完全」として列挙する（黙�
       len(got) == 1 and not got[0]["complete"] and got[0]["superseded_by"] is None, str(got))
 check("status が active / frozen なら失効として拾わない",
       m.extract_revoked("`{ status: active }`\n`{ status: frozen, stage: S2 }`") == [])
+got = m.extract_revoked(f"{REV}, revoked_at: 2026-09-13, superseded_by: none  # 参考 {{x}}")
+check("宣言より後ろにしか { が無い行でも window が潰れず complete になる（Copilot #289）",
+      len(got) == 1 and got[0]["complete"] and got[0]["superseded_by"] == "none", str(got))
+got = m.extract_revoked(f"x = {{}} 規範メタデータ: `{{ {REV}, revoked_at: 2026-09-13, superseded_by: none }}`")
+check("無関係な {} が前にあっても宣言の { } を window にする", len(got) == 1 and got[0]["complete"], str(got))
+got = m.extract_revoked(f"`{{ {REV}, revoked_at: 2026-09-13, superseded_by: none")
+check("閉じ } が無いインライン形は行末まで読む", len(got) == 1 and got[0]["complete"], str(got))
 check("frozen の既存例（G-AGENT）を失効と誤認しない",
       m.extract_revoked("`{ status: frozen, stage: S2, review_trigger: [model_generation] }`") == [])
 

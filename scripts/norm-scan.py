@@ -279,9 +279,14 @@ def extract_revoked(text: str) -> list[dict]:
     for i, line in enumerate(lines):
         if not STATUS_REVOKED_RE.search(line):
             continue
-        if "{" in line and "}" in line:
-            window = line[line.rfind("{", 0, STATUS_REVOKED_RE.search(line).start()):]
-            window = window[: window.find("}") + 1] if "}" in window else window
+        st = STATUS_REVOKED_RE.search(line)
+        lb = line.rfind("{", 0, st.start())   # 宣言より前の直近の `{`
+        if lb >= 0:
+            # インライン形: その `{` から、宣言より後ろの最初の `}`（無ければ行末）まで。
+            # 宣言より後ろにしか `{` が無い行や、無関係な `{}` が前にある行で window が
+            # 末尾 1 文字や `{}` に潰れて「宣言不完全」に誤分類しない（Copilot review #289）
+            rb = line.find("}", st.end())
+            window = line[lb: rb + 1 if rb >= 0 else len(line)]
         else:
             block = [line]
             for nxt in lines[i + 1:i + 8]:
