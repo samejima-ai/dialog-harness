@@ -22,7 +22,7 @@ v6.17.0 は 7 つの新規規範すべてに `review_trigger:` を付した（I-
 | `date: YYYY-MM-DD` | 当日を過ぎていれば発火 | 完全に決定論 |
 | `cycles: N` | 最終 commit から N cycle 相当を経過（1 cycle = CYCLE_DAYS 日の近似） | 近似 |
 | `stage_transition: Sx→Sy` | REGIME.md の lifecycle_stage が Sy 側にあるか | REGIME 不在なら skip |
-| `model_generation` | `model-recommendations.md` の最終 commit が規範より新しい | 決定論 |
+| `model_generation` | max(`model-recommendations.md` の最終 commit, `history/.model-generation.yml` の changed_at) が規範より新しい（v7.0.0 F7） | 決定論 |
 | `measured: <条件>` | **判定しない**（人が測る条件）。列挙のみ | — |
 
 `measured:` を機械判定しないのは、条件が自然文であり LLM 判定を要するため。
@@ -186,9 +186,9 @@ def decide(item: str, *, path: str, file_epoch: int | None, now: _dt.datetime,
     if "model_generation" in item:
         if model_epoch and file_epoch and model_epoch > file_epoch:
             return {"kind": "model_generation", "fired": True,
-                    "why": "model-recommendations.md が本規範より新しい（世代交代の疑い）"}
+                    "why": "世代 epoch（model-recommendations.md / .model-generation.yml の新しい方）が本規範より新しい（世代交代の疑い）"}
         return {"kind": "model_generation", "fired": False,
-                "why": "model-recommendations.md は本規範より古い（世代交代なし）"}
+                "why": "世代 epoch（model-recommendations.md / .model-generation.yml の新しい方）は本規範より古い（世代交代なし）"}
 
     if item.startswith("measured"):
         # I-3: 自然文の条件は機械判定しない。列挙して人に見せる
@@ -198,10 +198,39 @@ def decide(item: str, *, path: str, file_epoch: int | None, now: _dt.datetime,
     return {"kind": "unknown", "fired": None, "why": f"未知のトリガ形式: {item[:60]}"}
 
 
+def model_generation_epoch(repo: Path) -> int | None:
+    """世代交代の epoch = max(model-recommendations.md の最終 commit, history/.model-generation.yml の changed_at)。
+
+    v7.0.0 Phase A F7。model-recommendations.md だけを見ると、同ファイルが更新されない限り世代交代を
+    永久に検出できない（代理指標が人間の作業に依存）。儀式 F1 が機械記録する .model-generation.yml を
+    併用し、どちらか新しい方を採る。LLM 判定は含まない。
+    """
+    rec = last_commit_epoch(
+        ".claude/skills/layer0-spec-architect/references/model-recommendations.md")
+    yml = repo / "history" / ".model-generation.yml"
+    ymd = None
+    if yml.is_file():
+        try:
+            m = re.search(r'^changed_at:\s*"?(\d{4}-\d{2}-\d{2})"?', yml.read_text(encoding="utf-8"), re.M)
+        except OSError:
+            m = None
+        if m:
+            try:
+                ymd = int(_dt.datetime.strptime(m.group(1), "%Y-%m-%d")
+                          .replace(tzinfo=_dt.timezone.utc).timestamp())
+            except ValueError:
+                # 形式は合うが意味が不正な日付（例 2026-13-45）。儀式 F2.6 の走査を止めない（degrade）。
+                # 黙って捨てず stderr に 1 行残す（検知は決定論・判定は人間）
+                import sys as _sys
+                print(f"warn: history/.model-generation.yml の changed_at が不正 ({m.group(1)})。無視して続行", file=_sys.stderr)
+                ymd = None
+    cands = [e for e in (rec, ymd) if e]
+    return max(cands) if cands else None
+
+
 def scan(repo: Path, now: _dt.datetime) -> dict:
     stage = regime_stage(repo)
-    model_epoch = last_commit_epoch(
-        ".claude/skills/layer0-spec-architect/references/model-recommendations.md")
+    model_epoch = model_generation_epoch(repo)
     results = []
     for path in find_files(repo):
         f = repo / path

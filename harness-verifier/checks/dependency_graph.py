@@ -19,7 +19,7 @@ skill 間の参照（`../{skill-name}/SKILL.md` または `../{skill-name}/refer
 
 責務（対象外、BOUNDARY.md §4）:
     - 機能的循環の判定（D5 領域）
-    - 設計妥当性の評価（crosscut-verifier-philosophy 領域、v5.3.0 候補）
+    - 設計妥当性の評価（思想整合の領域。旧 crosscut-verifier-philosophy は v7.0.0 F2 で廃止、v5.3.0 候補）
 """
 
 from __future__ import annotations

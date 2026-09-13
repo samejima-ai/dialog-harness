@@ -66,7 +66,6 @@ paths:
     - "crosscut-issue-quality-gate"
     - "crosscut-quota-observer"
     - "crosscut-verifier-drift"
-    - "crosscut-verifier-philosophy"
     - "layer0-archeo-architect"
     - "layer0-onboarding"
     - "layer0-reindex-librarian"
@@ -110,6 +109,7 @@ paths:
     - "history/"           # episodic + 叡智 + 情報代謝（COLD/HOT/cursor 含む）。**任意の階層で有効**
     - "delivery/"
     - ".claude/disabled/"  # モード判定で退避された要素（プロジェクト状態）
+    - ".claude/anchor-core.md"  # 不変核（v7.0.0 F1）。プロジェクト所有。雛形は templates/hooks/anchor-core.md（overwrite）で配る
     # 上記以外のプロジェクト固有コード・資産はすべて never_touch（明示列挙しない＝既定で不可侵）
 
   # unclassified_ok: 上記 4 分類のいずれにも属さないが、**それが正しい**と宣言するもの（v6.17.0 F4）。

@@ -1,7 +1,9 @@
 # upgrade-spec v7.0.0 — 現行モデル世代向けメタハーネス刷新（認知足場の剥離・環境足場の強化）
 
-> **状態: L0 起草（人間レビュー待ち）**。L0 §3 ドキュメント化・§4 モード判定済み。
-> Council 諮問は未実施 — 理由は §5 判断点 D-3。着地の PR 番号は `history/CHANGELOG.md` の各節が持つ。
+> **状態: 実装中（F1 / F2 / F4 / F5 / F7 / F10 済 / F3 / F6 / F8 / F9 未）**。
+> 「済」は PR-1 で着地する分（merge 前は本ブランチ上）。Council 諮問 `council-2026-09-13T01:40:00Z-v7phsa`
+> 通過（案C・jc 0.78・reason_divergence・consensus_mode は escalate_to_human だが人間が 2026-09-13 に「すべて実行」で
+> 事前承認、D-1〜D-5 は推奨案で確定）。着地順序は案C: PR-1（F1+F2+F4+F5+F7+F10+fixtures）→ 基準凍結 → PR-2（F6）→ PR-3（F3）。着地の PR 番号は `history/CHANGELOG.md` の各節が持つ。
 >
 > **本 spec は 2 段構成である。** Phase A は L-FULL 領域（第 9 条：revert で原状回復可能）のみを扱い、
 > philosophy.md / delegation-boundary.md / auto-merge-boundary.md に一切触れない。Phase B は H1（哲学変更）を
@@ -79,11 +81,11 @@ confidence σ ≈ 0.05 で「議題ではなく役柄を採点している」と
 **SessionStart hook の stdout**（matcher: `startup` / `resume` / `clear` / `compact`）。DH は PreCompact を配線済みだが
 注入点として使えないため、**SessionStart に 1 command を追加**する。
 
-- 新設 `templates/hooks/anchor-core.py`（DH 本体でも同じものを `scripts/anchor-core.py` として使う）。
+- 新設 `templates/hooks/anchor-core.py`（**1 本のみ**。DH 本体も同ファイルを直接実行する。`scripts/` へのコピーは作らない — 二重コピーの drift を避ける。実装時に改訂）。
   `.dh/anchor-core.md`（利用者プロジェクト）または `.claude/anchor-core.md`（DH 本体）を読んで stdout に出すだけ。
   LLM 判定なし・失敗時は exit 0 で無出力（degrade）。
 - `.claude/settings.json` の `SessionStart` に matcher なし（＝全 source）で追加。compact 直後にも startup にも効く。
-- `anchor-core.md` の内容（D-1 で人間が確定。以下は起草案・philosophy の引用のみ・≤ 250 字）:
+- `anchor-core.md` の内容（D-1 で人間が確定。以下は起草案・philosophy の引用のみ・≤ 250 字目安。検査上限は 400 字 / 8 行）:
 
   ```
   # 不変核（philosophy.md の引用。改訂は人間専管）
@@ -94,8 +96,8 @@ confidence σ ≈ 0.05 で「議題ではなく役柄を採点している」と
   ```
 
 - **受け入れ基準**: (a) `claude --debug` 相当で SessionStart 後の文脈に 4 行が現れる（手動確認、DELIVERY に記録）
-  (b) hook 不在・ファイル不在でも DH が通常動作する (c) `harness-verifier/checks/hook_wiring.py` が anchor 行の
-  配線を検査項目に持つ。
+  (b) hook 不在・ファイル不在でも DH が通常動作する (c) `harness-verifier/checks/hook_observations.py`（検査 6）が anchor 配線と
+  本文上限を検査項目に持ち、`scripts/test-hook-wiring.py` §5 が回帰テストする（実装時に改訂: `hook_wiring.py` は存在しない）。
 - 規範メタデータ: `stage: 全段階` / `review_trigger: [model_generation, measured: 再注入後も規範違反が観測される]`
 
 ### F2 休眠 skill の一覧枠からの退避
@@ -123,10 +125,13 @@ confidence σ ≈ 0.05 で「議題ではなく役柄を採点している」と
 
 - 目安 **≤ 300 字 / skill**（合計 ≤ 5,100 字）。「何をするか・いつ使うか・使わない境界 1 行」の 3 要素のみ。
   トリガー語の長い列挙と兄弟 skill との差分説明は SKILL.md 本体 §起動条件へ移す。
-- **トリガー評価集合の同時作成**: `harness-verifier/fixtures/skill-triggers.yml` に skill ごと **正例 8〜10・負例 8〜10**
-  の発話を置く（決定論 artifact）。routing の実測は LLM を要するため harness-verifier では検査しない（I-3）。
-  L1 が献上時に 1 回走らせ、正例再現率 / 負例誤発火率を DELIVERY に記録する（**基準値の凍結**、I-5）。
-- **受け入れ基準**: 合計 ≤ 5,100 字（検査で FAIL）/ fixtures が全 skill 分ある / 実測値が DELIVERY にある。
+- **トリガー評価集合の先行作成**（Council 案C・3 軸が独立に指摘した本文矛盾の是正）: `harness-verifier/fixtures/skill-triggers.yml`
+  に skill ごと **正例 8・負例 8** の発話を **圧縮前に** 置く（決定論 artifact・PR-1 で着地済み）。routing の実測は LLM を要するため
+  harness-verifier では検査しない（I-3）。**基準値は PR-1 merge 後の master（F2 で一覧が変わった後の 17 skill 構成）で 3 run 取り、
+  平均と揺れ幅を DELIVERY に記録して凍結する**（I-5・Council 重み 8 vs 2）。圧縮（PR-3）後に同じ fixtures で再測定し、
+  正例再現率 −5pt 超 / 負例誤発火率 +5pt 超（揺れ幅が 5pt を超える指標は揺れ幅を閾値に置換）を劣化と判定して戻す。
+  閾値と反復回数は測定前に fixtures ヘッダで宣言済み（測定器を答えに合わせない）。
+- **受け入れ基準**: fixtures が 17 skill 分ある（PR-1）/ 基準値（3 run 平均・揺れ幅）が DELIVERY にある（PR-1 merge 後）/ 合計 ≤ 5,100 字（検査で FAIL・PR-3）/ 再測定で劣化なし（PR-3）。
 - 規範メタデータ: `review_trigger: [model_generation, measured: 負例誤発火率が圧縮前より悪化]`
 
 ### F4 独立レビュアーの読み順制約

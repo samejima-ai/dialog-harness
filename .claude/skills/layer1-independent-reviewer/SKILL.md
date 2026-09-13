@@ -43,6 +43,10 @@ L1の成果物をSPEC⇔成果物の普遍的手順で検証する汎用agent。
 ```
 1. 入力受領（SPEC/DONT/REGIME/sensors/成果物パス / LC ≥ 1 なら history/）
 2. 実装コンテキストから切り離した状態でドキュメントを再読込
+   - **読み順制約（v7.0.0 Phase A F4）**: 3〜5（仕様合致・動作・使用）の判定を確定するまで `delivery/DELIVERY.md` と
+     `delivery/HANDOFF.md` を開かない。5.4 / 5.9 は必ずその後に実行する。根拠: 生成側の自己評価を先に読んだ
+     レビューは自己レビューより検出率が下がる（新規文脈・成果物のみ F1 28.6% ＞ 自己 24.6% ＞ 生成文脈継承 23.8%、
+     arXiv 2603.12123）。規範メタデータ: `{ stage: 全段階, review_trigger: [model_generation] }`
 3. 仕様合致チェック（機能ごとにPASS/FAIL）
 4. 動作確認（起動・主要操作・エラーハンドリング）
 5. 使用確認（ユーザー操作で期待結果が得られるか）
@@ -261,5 +265,4 @@ L1から以下のパスを受け取る。内容は直接参照し、L1の作業�
 独立検証は本 skill の責務で完結するが、PR レベル / CI 上での補完層として以下を併用する：
 
 - `.claude/skills/crosscut-verifier-drift/` — PR 差分の SPEC drift 検出。本 skill の指摘と並列実行され、結果は VERIFICATION.md に統合
-- `.claude/skills/crosscut-verifier-philosophy/` — 5 本柱整合検証（v5.1.0 で実装、現状 placeholder）
 - `.claude/skills/crosscut-feedback-loop/` — 検出された FAIL / drift / 思想違反を実装層・設計層・L0 へ還流（独立検証から直接還流せず、本 skill 経由で feedback-loop に渡す）

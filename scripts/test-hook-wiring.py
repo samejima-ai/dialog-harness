@@ -110,6 +110,28 @@ print("== 4. 旧経路の不在 ==")
 check("旧 .claude/hooks.json が存在しない（死んだ登録経路の残骸を残さない）",
       not (ROOT / ".claude" / "hooks.json").exists())
 
+
+print("== 5. 不変核 anchor（v7.0.0 Phase A F1） ==")
+ANCHOR_SCRIPT = ROOT / "templates" / "hooks" / "anchor-core.py"
+ANCHOR_MD = ROOT / ".claude" / "anchor-core.md"
+check("anchor-core.py 実在（templates/hooks・配布物）", ANCHOR_SCRIPT.exists())
+check("anchor-core.md 実在（DH 本体の不変核）", ANCHOR_MD.exists())
+ss_cmds = [h.get("command", "") for m in hooks.get("SessionStart", []) for h in m.get("hooks", [])]
+check("SessionStart が anchor-core.py を呼ぶ（stdout が文脈に載る唯一の注入点）",
+      any("anchor-core.py" in c for c in ss_cmds))
+if ANCHOR_SCRIPT.exists():
+    env = dict(os.environ, CLAUDE_PROJECT_DIR=str(ROOT))
+    r = subprocess.run([sys.executable, str(ANCHOR_SCRIPT)], capture_output=True, text=True, env=env)
+    check("anchor exit 0", r.returncode == 0, r.stderr[:120])
+    check("anchor が不変核 4 条を出力する", r.stdout.count("\n") >= 4 and "第 9 条" in r.stdout, r.stdout[:80])
+    check("anchor が HTML コメント（規範メタデータ）を出力しない", "<!--" not in r.stdout)
+    body = re.sub(r"<!--.*?-->", "", ANCHOR_MD.read_text(encoding="utf-8"), flags=re.S).strip()
+    check("不変核は 400 字 / 8 行以内", len(body) <= 400 and len(body.splitlines()) <= 8, f"{len(body)} chars")
+    with tempfile.TemporaryDirectory() as td:
+        r2 = subprocess.run([sys.executable, str(ANCHOR_SCRIPT)], capture_output=True, text=True,
+                            env=dict(os.environ, CLAUDE_PROJECT_DIR=td))
+        check("md 不在でも exit 0・無出力（degrade）", r2.returncode == 0 and r2.stdout == "")
+
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")
 print("\nPASS: hook-wiring 回帰テスト 全通過")

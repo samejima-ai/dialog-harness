@@ -3,11 +3,11 @@ name: crosscut-feedback-loop
 target_os: any
 dimension: D4
 description: >
-  検証層（drift verifier / philosophy verifier / 5 層検出スタック）で発覚した問題を、
+  検証層（drift verifier / 5 層検出スタック / 思想違反の Council 判定）で発覚した問題を、
   種別判定して設計層・実装層・L0 へルーティングする横断機構。
   「drift verifier の指摘を SPEC に戻したい」「形式 FAIL と drift が両方出た時の還流先」
   「思想違反検出後どこに還流」「自動 merge 後に drift 検出した、P3 に投げ返す手順」
-  「verifier-philosophy の placeholder fallback」「CTL 0 の local_only モードでの還流動作」
+  「思想違反の還流先」「CTL 0 の local_only モードでの還流動作」
   等、検証結果の還流先振り分けに関する発話で本スキルの起動を必ず検討する。
   drift は dispatcher 経由 Issue 化、思想違反は Council 経由、形式 FAIL は L1 に再献上、
   CTL に応じて自動化度が変化（CTL ≥ 1 から自動還流、CTL 0 では人間に献上のみ）。
@@ -20,7 +20,7 @@ description: >
 
 ## 発動条件
 
-- 検証層（`crosscut-verifier-drift` / `crosscut-verifier-philosophy` / 5 層検出スタック）からの還流要求
+- 検証層（`crosscut-verifier-drift` / 5 層検出スタック）からの還流要求
 - REGIME.md の `dev_mode` + CTL に応じて還流手段が変化
 - 明示コマンド（「drift を Issue 化」等）
 
@@ -81,7 +81,7 @@ description: >
 
 - `references/feedback-protocol.md` — CTL 別動作詳細・還流先判定詳細
 - `crosscut-verifier-drift/SKILL.md` — drift 検出元
-- `crosscut-verifier-philosophy/SKILL.md` — 思想検証元（v5.1.0）
+- 思想検証（旧 `crosscut-verifier-philosophy`）は v7.0.0 Phase A F2 で廃止。思想違反の検出は Council 経由・人間判定（escalation-matrix §1）に一本化し、Phase B の philosophy 分割後に再設計する
 - `crosscut-issue-dispatcher/SKILL.md` — drift → Issue 還流の実装
 - `crosscut-council/SKILL.md` — 思想 FAIL 時の判定機構
 - `templates/.github/workflows/drift-feedback.yml` — 自動化雛形（dialog-harness リポジトリのテンプレート。利用者プロジェクトに同梱されず、autonomous-drive deployment 経由で `.github/workflows/` へ展開）

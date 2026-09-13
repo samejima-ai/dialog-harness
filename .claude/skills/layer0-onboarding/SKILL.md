@@ -12,6 +12,8 @@ description: >
   新規プロジェクトの立ち上げ（spec-architect の責務）や、継続開発の仕様策定ではトリガーしない。
   使い捨てスキル：1 プロジェクトにつき最大 1 回のみ起動する。
   完了後は REGIME.md に onboarded_at を記録し、以降は spec-architect に引き継ぐ。
+# v7.0.0 Phase A F2: 人間明示トリガー専用。一覧枠（skill listing budget）から外す
+disable-model-invocation: true
 ---
 
 # Onboarding

@@ -26,7 +26,7 @@ placeholder `<...>` を実際の値で置換。不要セクションは削除可
 | Phase A | <PR#> | <内容> |
 | Phase B | <PR#> | <Council 諮問 N 件採決> |
 | Phase C | <PR#> | <SPEC 実装> |
-| Phase D | レビュー | <verifier-philosophy / verifier-drift 抵触 0> |
+| Phase D | レビュー | <verifier-drift 抵触 0 / 思想違反の Council 還流 0> |
 | Phase E | merge | <v5.X.Y minor リリース> |
 
 ## 2. Council 諮問結果サマリ

@@ -172,7 +172,7 @@ D5 判定の履歴は `reports/YYYY-MM.md` に蓄積される。
 本機構の初版（dialog-harness v5.2.0 で導入）は以下を **未実装** とする：
 
 - 検証項目の追加（v0.2.0 候補：「次元境界保全」）
-- 推論的検証（v5.3.0 で `crosscut-verifier-philosophy` が担当）
+- 推論的検証（思想整合。旧 `crosscut-verifier-philosophy` は v7.0.0 F2 で廃止、Council 経由・人間判定が担当）
 - 自動レポート生成の精緻化（diff ベースの増分検出等）
 
 これらは v0.2.0 以降で D5 判断により段階的に追加する。

@@ -1,0 +1,16 @@
+# .model-generation.yml — 現行モデル世代の機械記録（upgrade-spec v7.0.0 Phase A F7）
+#
+# なぜ要るか: norm-scan の `model_generation` トリガは「model-recommendations.md の最終 commit が規範より新しい」
+# で判定していたが、同ファイルが更新されない限り世代交代を永久に検出できなかった（2026-09-13 実測: 発火 0 件・
+# 実際は REGIME-LOG 記録の世代から 1 世代進んでいた）。代理指標が人間の作業に依存していた。
+# 本ファイルは振り返り儀式 F1 で AI が当該セッションの世代ラベルを記録し、norm-scan は
+# max(model-recommendations.md の最終 commit, 本ファイルの changed_at) を世代 epoch として使う。
+#
+# 規約:
+#   - current     : 世代ラベル（model-recommendations.md の「参照モデル世代」表記に合わせる。モデル ID の直書きはしない）
+#   - changed_at  : current が前回記録から変わった日（変わっていなければ更新しない）
+#   - recorded_by : 記録主体（ritual-F1 / human）
+#   - LLM 判定は含まない（I-3）。記録は AI、判定（何を再審するか）は norm-scan の列挙 + 人間
+current: "Claude 5 系（2026-08 世代・model-recommendations.md 2026-08-05 版）"
+changed_at: "2026-09-13"
+recorded_by: "ritual-F1"

@@ -56,7 +56,7 @@ metabolism 設計自身が推奨する Dry-run 精神。境界は `../../crosscu
 
 ## philosophy_violation の v5.0.0 取り扱い
 
-`crosscut-verifier-philosophy` が placeholder のため、v5.0.0 では philosophy_violation 種別の還流要求は届かない。本 skill で受信した場合は「未実装エラー」として人間献上する（v5.1.0 で接続予定）。
+思想検証 skill（旧 `crosscut-verifier-philosophy`）は v7.0.0 Phase A F2 で廃止。思想違反は Council 経由・人間判定へ還流する（escalation-matrix §1）。
 
 ## CTL ≥ 2 での Council 判定
 
