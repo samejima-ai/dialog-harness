@@ -1089,10 +1089,38 @@ CLAUDE.md 常駐行・センサー定義・罠エントリ等、任意の規範�
 |---|---|---|
 | `stage:` | S0-S7（複数可・省略 = 全段階） | 規範が効くライフサイクル段階。段階を出たら常駐正当性が消える（再審対象になる） |
 | `review_trigger:` | `stage_transition: <Sx→Sy>` / `model_generation` / `cycles: <N>` / `measured: <条件>` / `date: <YYYY-MM-DD>` のリスト | 失効・再審トリガ。発火の列挙と人間への問いは振り返り儀式 F2.6（`ritual-protocol.md`）が担う |
+| `status:` | `active`（省略時の既定）/ `frozen`（凍結・改訂は人間専管）/ `revoked`（失効） | 規範の生死。`revoked` は**購読対象から外す**（§失効） |
+| `revoked_at:` | `<YYYY-MM-DD>` | 失効日。`status` が `revoked` のとき必須 |
+| `superseded_by:` | `<path#anchor>` または `none` | 後継規範への逆引き。`status` が `revoked` のとき必須（後継が無いなら `none` を明示 — 「書き忘れ」と「後継なし」を区別する） |
 
 - **新規規範には必須・既存規範は儀式で出会ったときに後付け**（遡及作業を作らない）
 - **非対称原則**: 降格・廃止は追加より軽い手続き（F2.6 の一言承認）で実行する。例外は予防型規範の廃止のみ慎重側
 - 第一適用例: §CLAUDE.md 標準行の G-AGENT 凍結 = `{ status: frozen, stage: S2, review_trigger: [measured: 委譲漏れの実測が顕著, model_generation, stage_transition: S2→S3] }`
+
+### 失効（`status` を `revoked` にする・v7.0.0 Phase A F6）
+
+> 規範メタデータ: `{ stage: 全段階, review_trigger: [model_generation, cycles: 6] }`
+
+**根拠**: 環境が転回したとき、append-only の記憶を持つエージェントの成功率は 0.210 で「記憶なし」の 0.309 より
+**低い**（記憶が害になる）。明示的に失効させた記憶では 0.950（arXiv 2608.07429）。DH の COLD は archive ≠ delete で
+退避のみ、失効記法は `history/INTENT.md` の機能廃止（`**廃止**: YYYY-MM-DD — 理由`）に限られ、退避は 2 年後だった。
+**機能ではなく規範の単位**で失効を宣言し、宣言した規範を購読から外す経路を与える。
+
+- **宣言**: 失効させる規範の規範メタデータに `status` = `revoked` と `revoked_at` / `superseded_by` を書く。
+  書式は `{ status: <active|frozen|revoked>, revoked_at: <YYYY-MM-DD>, superseded_by: <path#anchor|none> }`
+  （インライン・ブロック・引用ブロックのいずれでも可。`review_trigger` と同じ書式規則）。
+  本文は消さない（COLD = archive ≠ delete。`superseded_by` と本文が逆引きの対になる）。
+- **効力**: 失効した規範は購読対象から外す。(1) AI は失効規範を判断根拠にしない。(2) `layer0-reindex-librarian` の
+  次サイクルの排泄で **HOT / WARM → COLD** へ移送する（`metabolism-regime.md` §2 昇降格。結晶化完了の確認は失効宣言が代替）。
+  `history/archive/` の「廃止から 2 年」は機能 INTENT の規則であり、失効規範には適用しない。
+- **列挙**: `scripts/norm-scan.py` が「`status` が `revoked` なのに購読層（HOT / WARM）に残っている規範」を列挙する
+  （`history/archive/` = COLD だけを除外）。`revoked_at` / `superseded_by` を欠く宣言は「宣言不完全」として別枠に出す。
+  **判定はしない** — COLD へ移すかは儀式 F2.6-3.5 で人間に問う（第 8 条 採用判断は人間）。
+- **適用対象**: INTENT.md の機能廃止に限らず、**罠エントリ（DONT.md / 罠カタログの 1 項目）/ RL の frontmatter
+  （`> ROLE:` 群の見出しブロックに 1 行）/ `history/DH-PHILOSOPHY-INSIGHTS.md` の各節（節見出し直下に 1 行）**
+  など任意の規範単位。INTENT.md の廃止マーカーは**機能**の記録として残し、**規範**の失効は規範単位側に持たせる
+  （二重管理にしない: 機能廃止に伴い規範も失効するなら両方書く）。
+- **誰が宣言するか**: 人間の一言承認（F2.6-4 非対称原則）または `deprecation-protocol.md` の廃止決定時。AI は候補化まで。
 
 ## 点検（型 C の静かな失敗に対する主対策・v6.18.0 B-1）
 
