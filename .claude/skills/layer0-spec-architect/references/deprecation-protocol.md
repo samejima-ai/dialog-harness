@@ -24,6 +24,9 @@
    - INTENT.md 該当項目に `**廃止**: YYYY-MM-DD — 理由` を追記（削除ではなく追記）
    - CHANGELOG.md に廃止エントリ追加
    - 2年後 `history/archive/` へ自動移動（β-1 の archive ルール）
+   - **廃止に伴って失効する規範**（罠エントリ / RL / 叡智層の節）があれば、その規範単位の規範メタデータに
+     `status` = `revoked` と `revoked_at` / `superseded_by` を書く（v7.0.0 F6・`dev-env-spec.md` §規範メタデータ §失効）。
+     INTENT.md の追記だけでは規範は購読から外れない。失効規範は 2 年を待たず次サイクルで COLD へ
 
 ## 廃止を拒否すべきケース
 

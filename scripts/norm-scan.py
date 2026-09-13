@@ -28,11 +28,23 @@ v6.17.0 は 7 つの新規規範すべてに `review_trigger:` を付した（I-
 `measured:` を機械判定しないのは、条件が自然文であり LLM 判定を要するため。
 I-3（検知は決定論・蒸留や検査に LLM を使わない）に従い、**列挙して人に見せる**に留める。
 
+## 失効済み規範の列挙（v7.0.0 Phase A F6）
+
+規範メタデータの `status:` が `revoked` の規範（`dev-env-spec.md` §規範メタデータ §失効）が
+**購読層（HOT / WARM）に残っていれば列挙する**。判定はしない — COLD へ移すかは儀式 F2.6 で人間に問う。
+根拠: 環境が転回したとき append-only の記憶は成功率 0.210 で「記憶なし 0.309」より悪く、明示的失効で 0.950
+（arXiv 2608.07429）。失効を宣言しても購読から外れなければ記憶は害のまま残る。
+走査範囲は `review_trigger` の走査と**異なる**: `history/` は失効の適用対象（`DH-PHILOSOPHY-INSIGHTS.md` の各節）を
+含むため除外せず、COLD である `history/archive/` だけを除く（REVOKED_EXCLUDE_PREFIXES）。
+`revoked_at` / `superseded_by` を欠く宣言は「宣言不完全」として別枠に列挙する（黙って捨てない）。
+
 規範メタデータ:
     stage: 全段階
     review_trigger:
       - measured: 本走査器が 6 cycle 連続で「発火 0 件」なら、規範側の時限設定が
         形骸化していないかを疑う（発火しない時限は時限ではない）
+      - model_generation
+      - cycles: 6
 """
 
 from __future__ import annotations
@@ -58,6 +70,14 @@ EXCLUDE_PREFIXES = (
     "delivery/",      # 分析・献上物。規範ではない
 )
 
+# 失効済み規範（F6）の走査で外すもの。review_trigger の走査より狭い:
+# history/ は失効の適用対象（叡智層の各節）を含むので除外せず、COLD（既定非ロード）だけを外す。
+REVOKED_EXCLUDE_PREFIXES = (
+    "dh-upgrades/",     # 版ごとの移行仕様。規範ではない
+    "delivery/",        # 分析・献上物。規範ではない
+    "history/archive/", # COLD。既に購読から外れている（列挙する意味が無い）
+)
+
 TRIGGER_RE = re.compile(r"review_trigger", re.I)
 # インライン形: `{ stage: S2, review_trigger: [measured: ..., date: 2026-11-30] }`
 INLINE_RE = re.compile(r"review_trigger:\s*\[(.*?)\]", re.S)
@@ -66,6 +86,11 @@ INLINE_RE = re.compile(r"review_trigger:\s*\[(.*?)\]", re.S)
 #     - measured: ...
 #     - date: 2026-11-30
 BLOCK_ITEM_RE = re.compile(r"^\s*[-*]\s*(\w+)\s*:?\s*(.*)$")
+
+# 失効宣言（F6）。`status:` の値が revoked のものだけを拾う（active / frozen は購読対象のまま）
+STATUS_REVOKED_RE = re.compile(r"status:\s*revoked\b")
+REVOKED_AT_RE = re.compile(r"revoked_at:\s*\"?(\d{4}-\d{2}-\d{2})\"?")
+SUPERSEDED_RE = re.compile(r"superseded_by:\s*\"?([^\s,}\"]+)\"?")
 
 DATE_RE = re.compile(r"date:\s*(\d{4}-\d{2}-\d{2})")
 CYCLES_RE = re.compile(r"cycles:\s*(\d+)")
@@ -228,6 +253,74 @@ def model_generation_epoch(repo: Path) -> int | None:
     return max(cands) if cands else None
 
 
+def find_revoked_files(repo: Path) -> list[str]:
+    """`status:` が revoked の宣言を含むファイルを git grep で列挙する（F6 の除外規則を適用）。"""
+    out = _run(["git", "grep", "-l", "-E", "status:[[:space:]]*revoked",
+                "--", "*.md", "*.py", "*.yml", "*.yaml"])
+    files = []
+    for line in out.splitlines():
+        p = line.strip()
+        if not p or any(p.startswith(x) for x in REVOKED_EXCLUDE_PREFIXES):
+            continue
+        files.append(p)
+    return sorted(files)
+
+
+def extract_revoked(text: str) -> list[dict]:
+    """1 ファイルから失効宣言を抜き出す。**意味は解釈しない**（COLD へ移すかは人間）。
+
+    宣言 1 件につき `{line, revoked_at, superseded_by, complete}` を返す。
+    インライン形 `{ status: ..., revoked_at: ..., superseded_by: ... }` は同じ `{ }` の中を、
+    ブロック形は宣言行から空行までを 1 宣言の範囲とみなす。
+    """
+    text = re.sub(r"^(\s*)>\s?", r"\1", text, flags=re.M)  # 引用ブロック内の宣言も拾う（extract_triggers と同じ理由）
+    lines = text.split("\n")
+    found: list[dict] = []
+    for i, line in enumerate(lines):
+        if not STATUS_REVOKED_RE.search(line):
+            continue
+        if "{" in line and "}" in line:
+            window = line[line.rfind("{", 0, STATUS_REVOKED_RE.search(line).start()):]
+            window = window[: window.find("}") + 1] if "}" in window else window
+        else:
+            block = [line]
+            for nxt in lines[i + 1:i + 8]:
+                if not nxt.strip():
+                    break
+                block.append(nxt)
+            window = "\n".join(block)
+        ra = REVOKED_AT_RE.search(window)
+        sb = SUPERSEDED_RE.search(window)
+        found.append({
+            "line": i + 1,
+            "revoked_at": ra.group(1) if ra else None,
+            "superseded_by": sb.group(1) if sb else None,
+            "complete": bool(ra and sb),
+        })
+    return found
+
+
+def scan_revoked(repo: Path, files: list[str] | None = None) -> list[dict]:
+    """購読層（HOT / WARM）に残っている失効済み規範を列挙する。判定はしない（F6）。
+
+    `files` を渡せば git grep を使わない（テスト用）。渡さなければ find_revoked_files。
+    """
+    paths = find_revoked_files(repo) if files is None else [
+        p for p in files if not any(p.startswith(x) for x in REVOKED_EXCLUDE_PREFIXES)]
+    out: list[dict] = []
+    for path in paths:
+        f = repo / path
+        if not f.is_file():
+            continue
+        try:
+            text = f.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for r in extract_revoked(text):
+            out.append({"path": path, **r})
+    return out
+
+
 def scan(repo: Path, now: _dt.datetime) -> dict:
     stage = regime_stage(repo)
     model_epoch = model_generation_epoch(repo)
@@ -257,6 +350,7 @@ def scan(repo: Path, now: _dt.datetime) -> dict:
         "not_fired": [r for r in results if r["fired"] is False],
         "undecidable": [r for r in results if r["fired"] is None],
         "lifecycle_stage": stage,
+        "revoked": scan_revoked(repo),
     }
 
 
@@ -267,6 +361,9 @@ def render(res: dict) -> str:
     lines.append(f"- 時限トリガ: {res['total_triggers']} 件"
                  f"（**発火 {len(res['fired'])}** / 未発火 {len(res['not_fired'])} / "
                  f"機械判定しない {len(res['undecidable'])}）")
+    revoked = res.get("revoked", [])
+    lines.append(f"- 失効済みで購読に残る規範: {len(revoked)} 件"
+                 f"（宣言不完全 {sum(1 for r in revoked if not r['complete'])}）")
     lines.append("")
     if res["fired"]:
         lines.append("## 発火（儀式 F2.6-3 で人間に問う）")
@@ -289,6 +386,17 @@ def render(res: dict) -> str:
         lines.append("")
         for r in res["undecidable"]:
             lines.append(f"- {r['path']} — [{r['kind']}] {r['why']}")
+        lines.append("")
+    if revoked:
+        lines.append("## 失効済みで購読に残っている規範（儀式 F2.6-3.5 で「COLD へ？」と人間に問う）")
+        lines.append("")
+        for r in revoked:
+            flag = "" if r["complete"] else "**宣言不完全** — "
+            lines.append(f"- {flag}{r['path']}:{r['line']} — revoked_at: {r['revoked_at'] or '(欠落)'} / "
+                         f"superseded_by: {r['superseded_by'] or '(欠落)'}")
+        lines.append("")
+        lines.append("失効宣言は購読から外れて初めて効く（append-only の記憶は害 — arXiv 2608.07429）。"
+                     "移送は reindex-librarian の排泄経路（`metabolism-regime.md` §2 昇降格）。")
         lines.append("")
     lines.append("---")
     lines.append("")

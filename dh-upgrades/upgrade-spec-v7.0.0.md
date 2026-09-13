@@ -1,7 +1,9 @@
 # upgrade-spec v7.0.0 — 現行モデル世代向けメタハーネス刷新（認知足場の剥離・環境足場の強化）
 
-> **状態: 実装中（F1 / F2 / F4 / F5 / F7 / F10 済 / F3 / F6 / F8 / F9 未）**。
-> 「済」は PR-1 で着地する分（merge 前は本ブランチ上）。Council 諮問 `council-2026-09-13T01:40:00Z-v7phsa`
+> **状態: 実装中（F1 / F2 / F4 / F5 / F6 / F7 / F8 / F9 / F10 済 / F3 未）**。
+> F1 / F2 / F4 / F5 / F7 / F8 / F9 / F10 + F3 fixtures は PR-1（#288・2026-09-13 merge）で着地。F6 は PR-2。
+> F3（description 圧縮 + 再測定）は基準値計測後の PR-3。PR-1 の状態行は F8 / F9 を「未」と書いていたが
+> 両方とも PR-1 で着地済み（`delivery/ABLATION-council-2026-09-13.md` / DELIVERY-PR1 §F9）— PR-2 で訂正。Council 諮問 `council-2026-09-13T01:40:00Z-v7phsa`
 > 通過（案C・jc 0.78・reason_divergence・consensus_mode は escalate_to_human だが人間が 2026-09-13 に「すべて実行」で
 > 事前承認、D-1〜D-5 は推奨案で確定）。着地順序は案C: PR-1（F1+F2+F4+F5+F7+F10+fixtures）→ 基準凍結 → PR-2（F6）→ PR-3（F3）。着地の PR 番号は `history/CHANGELOG.md` の各節が持つ。
 >
@@ -172,6 +174,11 @@ confidence σ ≈ 0.05 で「議題ではなく役柄を採点している」と
 - 適用対象を INTENT.md 以外へ拡張: 罠エントリ / RL frontmatter / `history/DH-PHILOSOPHY-INSIGHTS.md` の各節。
 - **受け入れ基準**: メタデータ規格に 3 フィールド / norm-scan が列挙する / 儀式 F2.6 に問いがある。
 - 規範メタデータ: `review_trigger: [model_generation, cycles: 6]`
+- **実装注記（PR-2）**: (1) 列挙の走査範囲は `review_trigger` の走査と異なり `history/` を含む（叡智層 `DH-PHILOSOPHY-INSIGHTS.md`
+  が適用対象のため）。除外は COLD = `history/archive/` のみ。(2) `superseded_by` は後継なしでも `none` を明示する（「書き忘れ」と
+  区別）。(3) `deprecation-protocol.md` 廃止決定時の記録と `history-layer-spec.md` §archive にも失効規範の経路を追記
+  （2 年規則は機能 INTENT のみ・失効規範は次サイクル）。(4) 実リポの第一適用例は作っていない — 何を失効させるかは採用判断
+  （第 8 条）ゆえ人間。列挙が空振りでないことは `scripts/test-norm-scan.py` の fixtures で実証。
 
 ### F7 `model_generation` 検知の修正
 

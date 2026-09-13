@@ -318,6 +318,8 @@ run 要約の追記は **レベル A（自動承認・通知のみ）**。flaky 
 ### 対象
 
 廃止機能 INTENT のうち、廃止日から **2年経過**したもの。
+**失効規範**（規範メタデータの `status` が `revoked`・v7.0.0 F6）は 2 年を待たず、人間承認（儀式 F2.6-3.5）後の
+次サイクル reindex 排泄で移送する（正本 `../../layer0-reindex-librarian/references/metabolism-regime.md` §2 昇降格）。
 加えて **E2E の COLD 排泄物**（相 A artifact・生 run ログ・結晶化完了済みの古い run 要約）を
 `archive/YYYY-MM/e2e/` に retrievable で保持する（archive≠delete・disk 無制限 OK・既定非ロード）。
 

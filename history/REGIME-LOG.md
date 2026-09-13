@@ -2,6 +2,14 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v7.0.0 Phase A / PR-2 — F6 失効セマンティクス（2026-09-13・VERSION は 6.18.0 のまま）
+
+- 体制: M2 / LC=1（PR-1 と同一 cycle の続き）。Council 新規発動なし — `v7phsa`（案C）が PR-2 = F6 の着地単位を含む。
+  F6 の内容は spec（#287・人間 merge）で承認済み。規範文書 5 本の改変を含むため `human-review-needed`（3 ファイル以上横断）
+- 着地条件の機械確認: `git log origin/master..HEAD` に PR-1 のコミットを含まない（PR-1 merge 後に master から分岐・Council 案C の運用規則）
+- 自律修正: 0（verifier FAIL なし）。独立検証 1 回（`delivery/VERIFICATION-v7.0.0-phaseA-PR2.md`）
+- 世代: `history/.model-generation.yml` 変更なし（同一セッション世代）
+
 ## v7.0.0 Phase A / PR-1（major 候補の前段・VERSION は 6.18.0 のまま）
 
 - 判定日: 2026-09-13

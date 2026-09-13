@@ -2,7 +2,24 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v7.0.0 Phase A / PR-1 — 認知足場を剥がす前に、環境足場を締める（2026-09-13・実装中）
+## v7.0.0 Phase A / PR-2 — 失効した規範を購読から外す経路（2026-09-13・F6）
+
+**この PR を持つと何が違うか**: 規範を「廃止した」と書いても購読に残り続ける状態が終わる。(1) 規範メタデータに `status` /
+`revoked_at` / `superseded_by` の 3 フィールドが載り、**規範の単位**（罠エントリ / RL frontmatter / 叡智層の節）で失効を宣言できる
+（従来は INTENT.md の機能廃止のみ・退避は 2 年後）。(2) `scripts/norm-scan.py` が「失効済みなのに購読層（HOT / WARM）に残る規範」を
+列挙する（判定はしない。宣言不完全は別枠）。(3) 儀式 F2.6-3.5 が「失効済み N 件が購読に残っています。COLD へ？」と人間に 1 問する。
+(4) reindex-librarian の昇降格表に「失効 → 次サイクルで COLD」が載り、結晶化完了の確認を失効宣言が代替する。
+根拠: append-only の記憶は環境転回後に成功率 0.210 で「記憶なし 0.309」より悪く、明示失効で 0.950（arXiv 2608.07429）。
+
+- spec: `dh-upgrades/upgrade-spec-v7.0.0.md` §F6（Council `v7phsa` 案C の PR-2。前 PR #288 の merge 後に master から分岐）
+- 変更: `dev-env-spec.md` §規範メタデータ（3 フィールド + §失効）/ `ritual-protocol.md` F2.6-3.5 / `metabolism-regime.md` §2・§4 /
+  `deprecation-protocol.md` 手順 3 / `history-layer-spec.md` §archive / `scripts/norm-scan.py`（`scan_revoked` + render）/
+  `scripts/test-norm-scan.py`（F6 12 項目）
+- 訂正: spec 状態行が F8 / F9 を「未」としていたのを「済」に（両方 PR-1 で着地済み）
+- 献上物: `delivery/DELIVERY-v7.0.0-phaseA-PR2.md` / `HANDOFF-v7.0.0-phaseA-PR2.md` / `VERIFICATION-v7.0.0-phaseA-PR2.md`
+- 検証: `verify.py --strict` 全 PASS / `scripts/test-*` 18 本 PASS。実リポの失効列挙は 0 件（第一適用例は人間判断）
+
+## v7.0.0 Phase A / PR-1 — 認知足場を剥がす前に、環境足場を締める（2026-09-13・PR #288 merge 済み）
 
 **この PR を持つと何が違うか**: (1) compaction で憲法が静かに落ちなくなる（SessionStart hook が不変核 4 行を再注入・F1）。(2) 起動しない skill が一覧枠を食わなくなる（3 本に `disable-model-invocation`・`crosscut-verifier-philosophy` を廃止・F2）。(3) 時限規範の `model_generation` が実際に発火する（世代の機械記録・F7。修正前 0 件 → 3 件）。(4) 独立レビューが生成側の自己評価に汚染されない順序になる（F4）。(5) 「機械検査の FAIL は LLM の PASS で覆らない」が配線表に載る（F5）。(6) 500 行超の SKILL.md 3 本が圧縮時に落ちない大きさになる（F10）。
 

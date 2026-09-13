@@ -157,6 +157,53 @@ with tempfile.TemporaryDirectory() as td:
     r = decide("model_generation", model_epoch=m.model_generation_epoch(root))
     check("yml 由来の世代 epoch で model_generation が発火する", r and r.get("fired") is True, str(r))
 
+print("== 失効済み規範の列挙（v7.0.0 F6）: 判定せず列挙する ==")
+# 本テストファイル自身が git grep に引っかからないよう、宣言は連結で組み立てる
+REV = "status: " + "revoked"
+inline = f"規範メタデータ: `{{ {REV}, revoked_at: 2026-09-13, superseded_by: dev-env-spec.md#規範メタデータ }}`"
+got = m.extract_revoked(inline)
+check("インライン形の失効宣言を 1 件拾う", len(got) == 1, str(got))
+check("revoked_at / superseded_by を読み、complete になる",
+      got and got[0]["revoked_at"] == "2026-09-13"
+      and got[0]["superseded_by"] == "dev-env-spec.md#規範メタデータ" and got[0]["complete"], str(got))
+block = "\n".join([
+    "> 規範メタデータ:",
+    "> ```yaml",
+    f"> {REV}",
+    '> revoked_at: "2026-09-01"',
+    "> superseded_by: history/DH-PHILOSOPHY-INSIGHTS.md#第-10-章",
+    "> ```",
+    "",
+])
+got = m.extract_revoked(block)
+check("引用ブロック形の失効宣言を拾う", len(got) == 1 and got[0]["complete"], str(got))
+got = m.extract_revoked(f"規範メタデータ: `{{ {REV}, revoked_at: 2026-09-13 }}`")
+check("superseded_by 欠落は「宣言不完全」として列挙する（黙って捨てない）",
+      len(got) == 1 and not got[0]["complete"] and got[0]["superseded_by"] is None, str(got))
+check("status が active / frozen なら失効として拾わない",
+      m.extract_revoked("`{ status: active }`\n`{ status: frozen, stage: S2 }`") == [])
+check("frozen の既存例（G-AGENT）を失効と誤認しない",
+      m.extract_revoked("`{ status: frozen, stage: S2, review_trigger: [model_generation] }`") == [])
+
+with tempfile.TemporaryDirectory() as td:
+    root = pathlib.Path(td)
+    for rel in ("rules/a.md", "history/insights.md", "history/archive/2026-06/old.md", "delivery/x.md"):
+        f = root / rel; f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(f"# x\n規範メタデータ: `{{ {REV}, revoked_at: 2026-09-13, superseded_by: none }}`\n", encoding="utf-8")
+    files = ["rules/a.md", "history/insights.md", "history/archive/2026-06/old.md", "delivery/x.md"]
+    got = m.scan_revoked(root, files=files)
+    paths = sorted(r["path"] for r in got)
+    check("購読層（rules/ と history/ 本体）の失効宣言を列挙する",
+          paths == ["history/insights.md", "rules/a.md"], str(paths))
+    check("history/archive/（COLD）と delivery/ は列挙しない（除外規則）",
+          "history/archive/2026-06/old.md" not in paths and "delivery/x.md" not in paths, str(paths))
+check("除外は COLD だけで history/ 本体は含む（review_trigger の走査より狭い）",
+      "history/archive/" in m.REVOKED_EXCLUDE_PREFIXES and "history/" not in m.REVOKED_EXCLUDE_PREFIXES)
+res = m.scan(HERE, _dt.datetime.now(_dt.timezone.utc))
+check("実リポの走査結果に失効列挙（revoked）が載る", isinstance(res.get("revoked"), list), str(type(res.get("revoked"))))
+out = m.render({**res, "revoked": [{"path": "rules/a.md", "line": 3, "revoked_at": None, "superseded_by": None, "complete": False}]})
+check("render が失効節と宣言不完全フラグを出す", "失効済みで購読に残っている規範" in out and "宣言不完全" in out)
+
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")
 print("\nPASS: norm-scan 回帰テスト 全通過")
