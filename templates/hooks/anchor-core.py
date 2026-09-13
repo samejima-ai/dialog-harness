@@ -49,7 +49,7 @@ def load_anchor(root: Path) -> str:
         try:
             text = p.read_text(encoding="utf-8")
         except OSError:
-            return ""
+            continue  # 読取失敗は degrade として次候補を試す（Copilot review #288）
         return COMMENT_RE.sub("", text).strip()
     return ""
 
