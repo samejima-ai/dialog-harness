@@ -88,9 +88,11 @@ INLINE_RE = re.compile(r"review_trigger:\s*\[(.*?)\]", re.S)
 BLOCK_ITEM_RE = re.compile(r"^\s*[-*]\s*(\w+)\s*:?\s*(.*)$")
 
 # 失効宣言（F6）。`status:` の値が revoked のものだけを拾う（active / frozen は購読対象のまま）
-STATUS_REVOKED_RE = re.compile(r"status:\s*revoked\b")
-REVOKED_AT_RE = re.compile(r"revoked_at:\s*\"?(\d{4}-\d{2}-\d{2})\"?")
-SUPERSEDED_RE = re.compile(r"superseded_by:\s*\"?([^\s,}\"]+)\"?")
+# 値の引用符は revoked_at / superseded_by と同様に許す（非対称にしない — 独立検証 F-5d）
+STATUS_REVOKED_RE = re.compile(r"status:\s*[\"']?revoked\b")
+REVOKED_AT_RE = re.compile(r"revoked_at:\s*[\"']?(\d{4}-\d{2}-\d{2})[\"']?")
+# 値の終端: 空白 / , / } / 引用符 / backtick / 全角括弧・読点（`none（参照…）` を取り込まない — F-5e）
+SUPERSEDED_RE = re.compile(r"superseded_by:\s*[\"']?([^\s,}\"'`（）、]+)")
 
 DATE_RE = re.compile(r"date:\s*(\d{4}-\d{2}-\d{2})")
 CYCLES_RE = re.compile(r"cycles:\s*(\d+)")
@@ -255,7 +257,8 @@ def model_generation_epoch(repo: Path) -> int | None:
 
 def find_revoked_files(repo: Path) -> list[str]:
     """`status:` が revoked の宣言を含むファイルを git grep で列挙する（F6 の除外規則を適用）。"""
-    out = _run(["git", "grep", "-l", "-E", "status:[[:space:]]*revoked",
+    # --untracked: 書いたばかり（未 git add）の宣言も儀式で列挙する（独立検証 F-1 untracked = 0 件）
+    out = _run(["git", "grep", "-l", "--untracked", "-E", "status:[[:space:]]*[\"']?revoked",
                 "--", "*.md", "*.py", "*.yml", "*.yaml"])
     files = []
     for line in out.splitlines():
@@ -269,39 +272,41 @@ def find_revoked_files(repo: Path) -> list[str]:
 def extract_revoked(text: str) -> list[dict]:
     """1 ファイルから失効宣言を抜き出す。**意味は解釈しない**（COLD へ移すかは人間）。
 
-    宣言 1 件につき `{line, revoked_at, superseded_by, complete}` を返す。
-    インライン形 `{ status: ..., revoked_at: ..., superseded_by: ... }` は同じ `{ }` の中を、
-    ブロック形は宣言行から空行までを 1 宣言の範囲とみなす。
+    宣言 1 件につき `{line, revoked_at, superseded_by, complete}` を返す。1 行に複数宣言があれば各々 1 件。
+    範囲（window）の決め方:
+    - インライン形（宣言より前の同一行に `{` があり、宣言より後ろの同一行に `}` がある）: その `{ … }`。
+    - それ以外（ブロック形 / 引用ブロック形 / `{` が同一行で閉じない複数行インライン形）: 宣言行から
+      空行または `}` を含む行までを 1 宣言の範囲とみなす（行数上限なし・docstring どおり「空行まで」）。
+    引用ブロック（`> `）は行頭記号を剥がさなくても正規表現が同じ結果を返すため、剥がさない。
     """
-    text = re.sub(r"^(\s*)>\s?", r"\1", text, flags=re.M)  # 引用ブロック内の宣言も拾う（extract_triggers と同じ理由）
     lines = text.split("\n")
     found: list[dict] = []
     for i, line in enumerate(lines):
-        if not STATUS_REVOKED_RE.search(line):
-            continue
-        st = STATUS_REVOKED_RE.search(line)
-        lb = line.rfind("{", 0, st.start())   # 宣言より前の直近の `{`
-        if lb >= 0:
-            # インライン形: その `{` から、宣言より後ろの最初の `}`（無ければ行末）まで。
-            # 宣言より後ろにしか `{` が無い行や、無関係な `{}` が前にある行で window が
-            # 末尾 1 文字や `{}` に潰れて「宣言不完全」に誤分類しない（Copilot review #289）
-            rb = line.find("}", st.end())
-            window = line[lb: rb + 1 if rb >= 0 else len(line)]
-        else:
-            block = [line]
-            for nxt in lines[i + 1:i + 8]:
-                if not nxt.strip():
-                    break
-                block.append(nxt)
-            window = "\n".join(block)
-        ra = REVOKED_AT_RE.search(window)
-        sb = SUPERSEDED_RE.search(window)
-        found.append({
-            "line": i + 1,
-            "revoked_at": ra.group(1) if ra else None,
-            "superseded_by": sb.group(1) if sb else None,
-            "complete": bool(ra and sb),
-        })
+        for st in STATUS_REVOKED_RE.finditer(line):
+            lb = line.rfind("{", 0, st.start())   # 宣言より前の直近の `{`
+            rb = line.find("}", st.end())         # 宣言より後ろの最初の `}`
+            if lb >= 0 and rb >= 0:
+                # インライン形。宣言より後ろにしか `{` が無い行や、無関係な `{}` が前にある行で
+                # window が末尾 1 文字や `{}` に潰れて「宣言不完全」に誤分類しない（Copilot review #289）
+                window = line[lb: rb + 1]
+            else:
+                block = [line[st.start():]]
+                if rb < 0:
+                    for nxt in lines[i + 1:]:
+                        if not nxt.strip():
+                            break
+                        block.append(nxt)
+                        if "}" in nxt:
+                            break
+                window = "\n".join(block)
+            ra = REVOKED_AT_RE.search(window)
+            sb = SUPERSEDED_RE.search(window)
+            found.append({
+                "line": i + 1,
+                "revoked_at": ra.group(1) if ra else None,
+                "superseded_by": sb.group(1) if sb else None,
+                "complete": bool(ra and sb),
+            })
     return found
 
 
@@ -319,8 +324,8 @@ def scan_revoked(repo: Path, files: list[str] | None = None) -> list[dict]:
             continue
         try:
             text = f.read_text(encoding="utf-8")
-        except OSError:
-            continue
+        except (OSError, UnicodeDecodeError):
+            continue  # 読めないファイルは走査を止めない（degrade）
         for r in extract_revoked(text):
             out.append({"path": path, **r})
     return out
@@ -336,8 +341,8 @@ def scan(repo: Path, now: _dt.datetime) -> dict:
             continue
         try:
             text = f.read_text(encoding="utf-8")
-        except OSError:
-            continue
+        except (OSError, UnicodeDecodeError):
+            continue  # 読めないファイルは走査を止めない（degrade）
         items = extract_triggers(text)
         if not items:
             continue

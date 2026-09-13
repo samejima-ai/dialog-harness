@@ -189,6 +189,17 @@ got = m.extract_revoked(f"x = {{}} 規範メタデータ: `{{ {REV}, revoked_at:
 check("無関係な {} が前にあっても宣言の { } を window にする", len(got) == 1 and got[0]["complete"], str(got))
 got = m.extract_revoked(f"`{{ {REV}, revoked_at: 2026-09-13, superseded_by: none")
 check("閉じ } が無いインライン形は行末まで読む", len(got) == 1 and got[0]["complete"], str(got))
+got = m.extract_revoked("\n".join([f"`{{ {REV},", "   revoked_at: 2026-09-13, superseded_by: none }}`", ""]))
+check("複数行インライン形（{ が同一行で閉じない）も complete（独立検証 F-5f）", len(got) == 1 and got[0]["complete"], str(got))
+REVQ = 'status: "' + 'revoked"'  # 引用符付きも連結で組み立てる（自己一致回避）
+got = m.extract_revoked(f'{{ {REVQ}, revoked_at: "2026-09-13", superseded_by: "none" }}')
+check("引用符付きの値も拾う（F-5d・revoked_at と非対称にしない）", len(got) == 1 and got[0]["complete"], str(got))
+got = m.extract_revoked(f"{{ {REV}, revoked_at: 2026-09-13, superseded_by: none }} / {{ {REV}, revoked_at: 2026-09-14, superseded_by: a.md#x }}")
+check("1 行に 2 宣言なら 2 件（F-5a）", len(got) == 2 and all(g["complete"] for g in got), str(got))
+got = m.extract_revoked(f"- {REV}, revoked_at: 2026-09-13, superseded_by: none（参照 {{x}}）")
+check("superseded_by は全角括弧で止まる（F-5e）", len(got) == 1 and got[0]["superseded_by"] == "none", str(got))
+got = m.extract_revoked("\n".join([REV] + [f"  k{i}: v" for i in range(9)] + ["  revoked_at: 2026-09-13", "  superseded_by: none", ""]))
+check("ブロック形は空行まで読む（8 行上限なし・F-5g）", len(got) == 1 and got[0]["complete"], str(got))
 check("frozen の既存例（G-AGENT）を失効と誤認しない",
       m.extract_revoked("`{ status: frozen, stage: S2, review_trigger: [model_generation] }`") == [])
 
@@ -204,6 +215,12 @@ with tempfile.TemporaryDirectory() as td:
           paths == ["history/insights.md", "rules/a.md"], str(paths))
     check("history/archive/（COLD）と delivery/ は列挙しない（除外規則）",
           "history/archive/2026-06/old.md" not in paths and "delivery/x.md" not in paths, str(paths))
+    bad = root / "rules" / "bad.md"; bad.write_bytes(b"\xff\xfe" + REV.encode() + b"\n")
+    try:
+        got = m.scan_revoked(root, files=["rules/bad.md", "rules/a.md"]); crashed = False
+    except Exception:
+        crashed = True
+    check("非 UTF-8 ファイルでも crash せず他を列挙する（F-7）", not crashed and [r["path"] for r in got] == ["rules/a.md"], str(got))
 check("除外は COLD だけで history/ 本体は含む（review_trigger の走査より狭い）",
       "history/archive/" in m.REVOKED_EXCLUDE_PREFIXES and "history/" not in m.REVOKED_EXCLUDE_PREFIXES)
 res = m.scan(HERE, _dt.datetime.now(_dt.timezone.utc))

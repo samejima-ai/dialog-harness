@@ -14,10 +14,10 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 - spec: `dh-upgrades/upgrade-spec-v7.0.0.md` §F6（Council `v7phsa` 案C の PR-2。前 PR #288 の merge 後に master から分岐）
 - 変更: `dev-env-spec.md` §規範メタデータ（3 フィールド + §失効）/ `ritual-protocol.md` F2.6-3.5 / `metabolism-regime.md` §2・§4 /
   `deprecation-protocol.md` 手順 3 / `history-layer-spec.md` §archive / `scripts/norm-scan.py`（`scan_revoked` + render）/
-  `scripts/test-norm-scan.py`（F6 12 項目）
+  `scripts/test-norm-scan.py`（F6 20 項目。Copilot review 1 件 + 独立検証の差戻し推奨 10 件を同 PR で是正: 複数行インライン / 引用符付き値 / 1 行 2 宣言 / 全角括弧終端 / 空行まで / 非 UTF-8 degrade / `git grep --untracked`）
 - 訂正: spec 状態行が F8 / F9 を「未」としていたのを「済」に（両方 PR-1 で着地済み）
 - 献上物: `delivery/DELIVERY-v7.0.0-phaseA-PR2.md` / `HANDOFF-v7.0.0-phaseA-PR2.md` / `VERIFICATION-v7.0.0-phaseA-PR2.md`
-- 検証: `verify.py --strict` 全 PASS / `scripts/test-*` 18 本 PASS。実リポの失効列挙は 0 件（第一適用例は人間判断）
+- 検証: `verify.py --strict` 全 PASS / `scripts/test-*` 18 本 PASS / 独立検証 `delivery/VERIFICATION-v7.0.0-phaseA-PR2.md` PASS（警告付き）。実リポの失効列挙は 0 件（第一適用例は人間判断）
 
 ## v7.0.0 Phase A / PR-1 — 認知足場を剥がす前に、環境足場を締める（2026-09-13・PR #288 merge 済み）
 

@@ -5,7 +5,7 @@
 ## 体制情報
 
 - Mode: M2 / LC=1 / Cycle: v7.0.0 Phase A（PR-2）
-- 自律修正回数: 0 / 上限 3（verifier FAIL なし）
+- 自律修正回数: 2 / 上限 3（verifier FAIL 0。修正 1 = Copilot review 1 件（`247b7e3`）/ 修正 2 = 独立検証の差戻し推奨 #1〜#10 を同ターン是正・本 PR 3 commit 目）
 - Council: 新規発動なし。`council-2026-09-13T01:40:00Z-v7phsa`（案C）が「PR-2 = F6」の着地単位を含み、F6 の内容は spec（PR #287・人間 merge）で承認済み。escalation-matrix「規範文書改変の実装前 → Council 諮問」はこの諮問で通過したものとして扱う（PR-1 と同じ扱い。別途諮問が要るなら人間判定）
 - 着地条件: PR #288（PR-1）merge 後に `origin/master` から分岐。`git log origin/master..HEAD` = 0 件（先行 PR のコミットを含まない — Council 案C の運用規則を機械確認）
 - AI 能力バージョン: Claude 5 系（`history/.model-generation.yml` 変更なし）
@@ -27,7 +27,7 @@
 
 | ゲート | 結果 |
 |---|---|
-| escalation-matrix「規範文書改変の実装前 → Council 諮問」 | 通過（v7phsa 案C・上記体制情報。**人間確認事項 #1**） |
+| escalation-matrix「規範文書改変の実装前 → Council 諮問」 | 通過（v7phsa 案C・上記体制情報。**未解決事項 H-2**） |
 | 献上時の人間判定 | `human-review-needed`（references 5 本横断 = opt-in「3 ファイル以上」） |
 | L-FROZEN 不可侵（I-1） | philosophy.md / delegation-boundary.md / auto-merge-boundary.md の diff **0 バイト** |
 | Council 案C 運用規則 | `git log origin/master..HEAD` に PR-1 コミット 0 件 |
@@ -39,9 +39,9 @@
 | 検査 | 結果 |
 |---|---|
 | `python3 harness-verifier/verify.py --strict` | **総合 PASS**（11 項目全 PASS・FAIL 0） |
-| `scripts/test-*.py` 14 本 + `test-*.sh` 4 本 | **全 PASS**（norm-scan に F6 12 項目を新設: インライン / 引用ブロック / 宣言不完全 / active・frozen 非誤認 / 除外規則 / 実リポ / render） |
-| `python3 scripts/norm-scan.py` | 走査 23 / 時限トリガ 39（発火 2 / 未発火 12 / 機械判定しない 25）/ **失効済み 0 件**（宣言不完全 0）。総数 34（HEAD）→ 39 = +5: dev-env-spec §失効 の `model_generation` + `cycles: 6`（2）/ norm-scan.py docstring の同 2 項（2）/ test-norm-scan.py の fixture 文字列 `review_trigger: [model_generation]`（1） |
-| `git grep -E "status:[[:space:]]*revoked"` | 実リポに literal 出現 0（列挙 0 件が空振りでない根拠。走査器・テスト・規格文書は `status` と `revoked` を隣接させない書き方で自己誤列挙を避けた） |
+| `scripts/test-*.py` 14 本 + `test-*.sh` 4 本 | **全 PASS**（norm-scan に F6 20 項目を新設: インライン / 引用ブロック / 複数行インライン / 引用符付き値 / 1 行 2 宣言 / 全角括弧終端 / 空行まで / 宣言不完全 / active・frozen 非誤認 / 除外規則 / 非 UTF-8 degrade / 実リポ / render） |
+| `python3 scripts/norm-scan.py` | 走査 23 / 時限トリガ 39（commit 後: 発火 0 / 未発火 14 / 機械判定しない 25。commit 前は発火 2）/ **失効済み 0 件**（宣言不完全 0）。総数 34（HEAD）→ 39 = +5: dev-env-spec §失効 の `model_generation` + `cycles: 6`（2）/ norm-scan.py docstring の同 2 項（2）/ test-norm-scan.py の fixture 文字列 `review_trigger: [model_generation]`（1） |
+| `git grep --untracked -E "status:[[:space:]]*[\"']?revoked"` | 実リポに literal 出現 0（`delivery/` を除く。列挙 0 件が空振りでない根拠。走査器・テスト・規格文書は `status` と `revoked` を隣接させない書き方で自己誤列挙を避けた。独立検証の反証 F-1 は一時ファイル 4 件の実列挙を確認） |
 
 ### 推論的センサー
 
@@ -51,17 +51,20 @@
 
 ### 独立検証（M2 必須）
 
-`delivery/VERIFICATION-v7.0.0-phaseA-PR2.md`（layer1-independent-reviewer・新規文脈・F4 読み順制約）。
+`delivery/VERIFICATION-v7.0.0-phaseA-PR2.md`（layer1-independent-reviewer・新規文脈・F4 読み順制約）: **PASS（警告付き）**。反証 F-1〜F-8 + ミューテーション M-1〜M-7。差戻し推奨 16 件のうち実装側 #1〜#10 を同ターン是正（複数行インライン形の退行 / 引用符付き値 / 1 行 2 宣言 / 全角括弧終端 / ブロック形の行数上限 / 非 UTF-8 crash / 未追跡ファイル（`git grep --untracked`）/ no-op strip 除去 / DELIVERY・CHANGELOG の計数 / 参照先）。#11〜#13 は下記 仕様改訂提案、#14〜#16 は 未解決事項。
 
 ## 仕様改訂提案（タイプC）
 
 1. **走査範囲の非対称**: `review_trigger` は `history/` を全除外、失効列挙は `history/archive/` のみ除外。理由は上記だが、二つの除外集合を持つことは読者に重い。次に `review_trigger` 側の除外を見直す機会（叡智層の節に `review_trigger` を付ける運用が始まったとき）に統一を検討。
 2. **`superseded_by: none` の明示**: spec は `<path#anchor>` のみだったが「書き忘れ」と「後継なし」を区別するため `none` を許した。
+3. **衛星文書の時限（独立検証 #11）**: F6 の `review_trigger` は正本（dev-env-spec §失効・norm-scan）にのみ置き、ritual / metabolism / deprecation / history-layer の追記行には自前の時限を付けていない。「1 規範 1 時限（正本に置く）」を I-4 の解釈として明文化するか、衛星にも付けるかは L0 判断。
+4. **F2.6-3.5 の文言（#13）**: spec の「失効済み N 件が購読に残っています。COLD へ？」に対し実装は同義・非逐語（「購読（HOT / WARM）に残っています。COLD へ移送しますか？（一括移送 / 個別に確認 / 後で）」）。spec 側を実装に合わせる改訂を提案。
 
 ## 未解決事項
 
-- **第一適用例なし**: 実リポで失効させた規範は 0 件。何を失効させるかは採用判断（第 8 条・不変核 2）ゆえ人間。候補があれば F2.6-3 の「廃止」選択時に `status` を `revoked` にすれば経路が回る。
-- **移送の実行**: reindex-librarian は Dry-run 既定（初回・規定サイクルは提示のみ）。失効 → COLD の初回移送は Dry-run レポートに載るところまで。本移送は人間承認後。
+- **H-1 第一適用例なし**: 実リポで失効させた規範は 0 件。何を失効させるかは採用判断（第 8 条・不変核 2）ゆえ人間。候補があれば F2.6-3 の「廃止」選択時に `status` を `revoked` にすれば経路が回る。
+- **H-2 Council 通過扱い**: 規範文書 5 本の改変を `v7phsa`（着地単位の諮問）で escalation-matrix 通過扱いとした（独立検証 #15）。別途諮問が要るなら差し戻し。
+- **H-3 移送の実行主体**: 失効 → COLD の移送コードは無く reindex-librarian（LLM skill・Dry-run 既定）頼み（独立検証 #16）。初回移送は次サイクルの Dry-run レポートで目視が要る。reindex-librarian は Dry-run 既定（初回・規定サイクルは提示のみ）。失効 → COLD の初回移送は Dry-run レポートに載るところまで。本移送は人間承認後。
 - `model_generation` 発火数の変化 3（PR-1 時点）→ 1（#288 merge 後の HEAD）→ 2（本 PR）: merge で `layer1-independent-reviewer/SKILL.md` と `test-norm-scan.py` の最終 commit（09-13 10:03 UTC）が世代 epoch（`.model-generation.yml` の 09-13 00:00 UTC）より新しくなり発火が消えた（設計どおり）。本 PR の +1 は dev-env-spec §失効 の宣言で、同ファイルの最終 commit（09-06）が世代 epoch より古いため即発火する。commit されれば消える。世代 epoch の粒度が「日」であることの帰結で、儀式 F2.6 の判断には影響しない。
 
 ## 体制事後評価
