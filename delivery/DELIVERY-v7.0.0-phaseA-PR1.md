@@ -14,7 +14,7 @@
 
 | F | 内容 | 受け入れ基準 | 結果 |
 |---|---|---|---|
-| F1 | 不変核の再注入。`templates/hooks/anchor-core.py`（配布物・DH 本体も同一ファイルを直接実行）+ `.claude/anchor-core.md`（4 条・246 字）+ `templates/hooks/anchor-core.md`（雛形）+ `.claude/settings.json` SessionStart に 1 command | (a) SessionStart 後の文脈に 4 行 → **手動確認は未実施**（本セッションはリモート実行で新規セッション起動不可。`scripts/test-hook-wiring.py` §5 で stdout 出力を機械確認済み）(b) md 不在で exit 0・無出力 → PASS (c) `hook_observations.py` に anchor 配線検査 → PASS（検査 6） | PASS（(a) は人間確認待ち） |
+| F1 | 不変核の再注入。`templates/hooks/anchor-core.py`（配布物・DH 本体も同一ファイルを直接実行）+ `.claude/anchor-core.md`（4 条・246 字）+ `templates/hooks/anchor-core.md`（雛形）+ `.claude/settings.json` SessionStart に 1 command | (a) SessionStart 後の文脈に 4 行 → **resume 経路で機械観測済み**（セッション再開時に hook 出力が文脈へ載ったことを 2026-09-13 04:40 UTC に確認。`test-hook-wiring.py` §5 でも stdout を機械確認）。compact 経路は人間の目視 1 回(b) md 不在で exit 0・無出力 → PASS (c) `hook_observations.py` に anchor 配線検査 → PASS（検査 6） | PASS（(a) は人間確認待ち） |
 | F2 | `crosscut-verifier-philosophy` を配布除去（1 本・dir 削除・manifest・GRAPH・glossary・参照 12 箇所を廃止注記）。`rtk-integration` / `layer0-onboarding` / `layer0-archeo-architect` の **3 本**に `disable-model-invocation: true`（合計 4 本が一覧枠から消える） | manifest ⇄ GRAPH ⇄ 実在 dir の三者突合（検査 8/9）PASS | PASS |
 | F3 | **fixtures のみ**（Council 案C）。`harness-verifier/fixtures/skill-triggers.yml` 17 skill × 正例 8・負例 8 = 272 発話。測定プロトコル（3 run・閾値 5pt・基準は PR-1 merge 後）をヘッダで事前宣言 | fixtures が 17 skill 分ある → PASS。基準値は **merge 後に取る**（未） | 部分（データ着地） |
 | F4 | `layer1-independent-reviewer/SKILL.md` に読み順制約（3〜5 の判定確定まで DELIVERY / HANDOFF を開かない） | 記述順が満たす → PASS。本 PR の独立検証に初適用 | PASS |
@@ -78,7 +78,7 @@
 
 ## 未解決事項
 
-- F1(a) 新規セッションでの注入の目視確認（人間）。
+- F1(a) 注入の目視確認: **resume 経路は機械観測済み**（2026-09-13 04:40 UTC、本セッション再開時の `SessionStart:resume` hook 出力として不変核 4 行が文脈に載った）。`startup` / `clear` / `compact` 経路は未観測（同じ matcher なし配線なので同挙動の想定。人間の目視は `compact` 直後 1 回で足りる）。
 - F3 基準値の計測（PR-1 merge 後・3 run）。`/context` による一覧枠の実消費（等級 C 由来の 4.5〜6.5 倍の実数化）も人間側で 1 回。
 - Council の `consensus_mode: escalate_to_human`（jc 0.78 なのに）の算出条件は未調査。人間事前承認で進めたが、算出ロジックの確認を P3 に。
 
