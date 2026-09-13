@@ -12,6 +12,8 @@ description: >
   発動には REGIME.md 存在 + LC ≥ 1 が必須。新規プロジェクト立ち上げや harness 後付け化では
   トリガーしない（それぞれ spec-architect / onboarding の責務）。
   自動起動はしない。人間の明示トリガーのみで起動する。
+# v7.0.0 Phase A F2: 人間明示トリガー専用。一覧枠（skill listing budget）から外す
+disable-model-invocation: true
 ---
 
 # Archeo Architect

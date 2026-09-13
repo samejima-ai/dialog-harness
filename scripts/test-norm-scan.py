@@ -128,6 +128,35 @@ check("抽出 = 発火 + 未発火 + 判定しない（取りこぼしゼロ）"
       res["total_triggers"] == len(res["fired"]) + len(res["not_fired"]) + len(res["undecidable"]),
       str(res))
 
+
+print("== model_generation_epoch: .model-generation.yml 併用（v7.0.0 F7） ==")
+import tempfile, pathlib, datetime as _dt2
+with tempfile.TemporaryDirectory() as td:
+    root = pathlib.Path(td); (root / "history").mkdir()
+    (root / "history" / ".model-generation.yml").write_text('current: "x"\nchanged_at: "2030-01-02"\n', encoding="utf-8")
+    e = m.model_generation_epoch(root)
+    want = int(_dt2.datetime(2030, 1, 2, tzinfo=_dt2.timezone.utc).timestamp())
+    check("yml の changed_at が model-recommendations より新しければそれを採る", e is not None and e >= want, str(e))
+    (root / "history" / ".model-generation.yml").write_text('current: "x"\nchanged_at: "2000-01-01"\n', encoding="utf-8")
+    e2 = m.model_generation_epoch(root)
+    check("yml が古ければ model-recommendations 側（or None）に落ちる", e2 is None or e2 > int(_dt2.datetime(2000,1,2,tzinfo=_dt2.timezone.utc).timestamp()), str(e2))
+    (root / "history" / ".model-generation.yml").write_text('current: "x"\nchanged_at: "2026-13-45"\n', encoding="utf-8")
+    try:
+        e3 = m.model_generation_epoch(root); crashed = False
+    except Exception:
+        crashed = True
+    check("不正日付（2026-13-45）でも crash せず degrade する", not crashed and (e3 is None or isinstance(e3, int)))
+    (root / "history" / ".model-generation.yml").unlink()
+    try:
+        e4 = m.model_generation_epoch(root); crashed = False
+    except Exception:
+        crashed = True
+    check("yml 不在でも例外を出さない", not crashed and (e4 is None or isinstance(e4, int)))
+    # decide() レベルで「yml が新しければ発火」を観測する（spec F7 受け入れ基準の文言）
+    (root / "history" / ".model-generation.yml").write_text('current: "x"\nchanged_at: "2030-01-02"\n', encoding="utf-8")
+    r = decide("model_generation", model_epoch=m.model_generation_epoch(root))
+    check("yml 由来の世代 epoch で model_generation が発火する", r and r.get("fired") is True, str(r))
+
 if FAIL:
     sys.exit(f"\nFAIL: {FAIL} 件")
 print("\nPASS: norm-scan 回帰テスト 全通過")

@@ -30,7 +30,7 @@ dialog-harness は次の 5 次元で構成される：
 | 仕様策定の対話プロトコル | L0（spec-architect / onboarding） |
 | AI 自律実装 | L1（autonomous-dev / independent-reviewer） |
 | 大規模統括 | L2（orchestrator / integration-verifier） |
-| 横断機構 | crosscut-* 系列（council / issue-dispatcher / issue-implementer / verifier-drift / verifier-philosophy / feedback-loop） |
+| 横断機構 | crosscut-* 系列（council / issue-dispatcher / issue-implementer / verifier-drift / feedback-loop。verifier-philosophy は v7.0.0 F2 で廃止） |
 | 生成物（D2 / D3）の検証 | §7.4 自己検証 / 5 層検出スタック / crosscut-verifier-drift |
 
 **DH 本体は D4 自身の整合性を検査しない**。
@@ -59,7 +59,7 @@ dialog-harness は次の 5 次元で構成される：
 | 禁止事項 | 理由 |
 |---|---|
 | DH 本体（D4）skill の自動修正 | 独立性要請違反。D5（人間）の判定領域 |
-| crosscut-verifier-philosophy の責務（思想整合）の代行 | 計算的検証と推論的検証は別機構 |
+| 思想整合の代行（旧 crosscut-verifier-philosophy の責務。skill は v7.0.0 F2 で廃止、責務境界は不変） | 計算的検証と推論的検証は別機構 |
 | crosscut-verifier-drift の責務（生成物の SPEC drift）の代行 | D2 / D3 は本機構の対象外 |
 | §7.4 自己検証の責務（個別プロジェクトの broken reference / smoke test）の代行 | 同上、対象次元が違う |
 | DH 本体の skill を import / 呼び出し | 独立性要請違反（依存方向は一方向のみ） |
@@ -84,7 +84,7 @@ DH には複数の検証機構が存在する。本機構との責務分離：
 |---|---|---|---|
 | 5 層検出スタック | D1 | 型 / lint / 単体 / E2E / 推論 | 利用者プロジェクトの CI |
 | `crosscut-verifier-drift` | D2 + D3 | SPEC ↔ 実装 drift | 利用者プロジェクトの CI（CTL ≥ 1）|
-| `crosscut-verifier-philosophy` (v5.3.0 候補) | D2 + D3 | philosophy.md 5 本柱整合 | 利用者プロジェクトの CI（CTL ≥ 2）|
+| `crosscut-verifier-philosophy`（**v7.0.0 Phase A F2 で廃止**。思想違反は Council 経由・人間判定に一本化、Phase B の philosophy 分割後に再設計） | D2 + D3 | philosophy.md 5 本柱整合 | 利用者プロジェクトの CI（CTL ≥ 2）|
 | L0 §7.4 自己検証 | D2 | broken reference / smoke test / DONT 自己照合 / Pre-flight 充足 | L0 完了時 |
 | **`harness-verifier/`（本機構）** | **D4** | **DH 本体の内部整合（5 項目）** | **dialog-harness リポジトリの CI（月次 + push/PR）** |
 

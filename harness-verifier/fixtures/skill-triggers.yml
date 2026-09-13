@@ -1,0 +1,361 @@
+# skill-triggers.yml — skill routing のトリガー評価集合（upgrade-spec v7.0.0 Phase A F3・基準値の凍結用）
+#
+# 目的: description 圧縮（PR-3）の前に routing の基準値を取る（I-5: 基準凍結 → 測定 → 劣化した分だけ戻す）。
+# Council `council-2026-09-13T01:40:00Z-v7phsa`（案C）の順序: fixtures 執筆 → 凍結 → 圧縮 → 再測定。
+# 本ファイルは**圧縮後の文言を見る前に**書いた（測定器を答えに合わせない・哲学者条件）。
+#
+# 形式: skill ごとに positive（起動すべき発話）8 件・negative（起動してはならない発話）8 件。
+# negative は主に兄弟 skill の positive（混同ケース）から取る。
+#
+# 測定プロトコル（事前宣言・LLM 実測は harness-verifier の検査対象外 = I-3）:
+#   - 実行主体: L1 が献上時に 1 回。各発話を新規セッションの skill 一覧（description のみ）に提示し、
+#     「起動する skill を 1 つ選ぶ / 該当なし」を回答させる
+#   - 反復: 3 run。基準値は 3 run の平均と揺れ幅（max−min）を DELIVERY に記録する
+#   - 指標: 正例再現率 = 正しい skill を選んだ positive / positive 総数、負例誤発火率 = 当該 skill を選んだ negative / negative 総数
+#   - 劣化判定（PR-3 再測定時）: 正例再現率が基準より **5pt 超**低下、または負例誤発火率が **5pt 超**上昇。
+#     ただし基準の揺れ幅が 5pt を超える指標は閾値を揺れ幅に置き換える（偽陽性で戻し過ぎない）
+#   - 基準値は **PR-1 merge 後の master**（F2 で一覧が変わった後の 17 skill 構成）で取る（Council 重み 8 vs 2）
+#
+# 規範メタデータ: `{ stage: 全段階, review_trigger: [model_generation, measured: 負例誤発火率が圧縮前より悪化] }`
+
+version: 1
+skills:
+  layer0-spec-architect:
+    positive:
+      - 新しいレシピアプリを作りたい。まだイメージしかない
+      - 既存プロジェクトに通知機能を追加したい。仕様から相談したい
+      - 前回作ったやつを振り返りたい。機能拡張の前に
+      - DB を使うか迷っている。保存が要るか決まっていない
+      - M2 と L2 の境界が分からない。判定して
+      - L0-5 認可サブフェーズを起動して
+      - dev_mode を github_assisted から autonomous に昇格したい。ADR 込みで
+      - L0 メタハーネス開発を開始する。DH の刷新を設計したい
+    negative:
+      - 実装して。SPEC は確定済み
+      - リファクタしたい。自分で書いたコードの意図が分からなくなった
+      - 既存プロジェクトを harness 化したい。後付けで onboarding して
+      - Issue にして
+      - drift チェックを走らせて
+      - 今回の cycle を振り返って改善点を出して
+      - history が重い。reindex して
+      - Council に諮って
+
+  layer1-autonomous-dev:
+    positive:
+      - 開発を始めて
+      - 実装して。ship まで
+      - ビルドしてテストして
+      - デプロイして本番に上げて
+      - アプリを完成させて
+      - implement
+      - コード書いて。仕様は SPEC.md にある
+      - 出荷して
+    negative:
+      - 新しいアプリを作りたい。まだイメージ段階
+      - 独立検証して
+      - 仕様を変えたい。SPEC を改訂したい
+      - Issue から自動で PR を出す仕組みを設定したい
+      - 大規模プロジェクトを統括して
+      - 反証して。壊してみて
+      - 今のサイクルの反省をしたい
+      - rtk を導入したい
+
+  layer1-independent-reviewer:
+    positive:
+      - 独立検証して
+      - レビューして
+      - verify して
+      - サニティ確認
+      - 献上物の独立審査をして
+      - 仕様と合っているか確認して
+      - 反証して。壊してみて
+      - このテストは信用できるか
+    negative:
+      - 実装して
+      - 仕様を策定したい
+      - PR レビューの workflow を deploy したい
+      - Issue の品質チェックをして
+      - ドメインを跨いだ整合性を検証して（L2）
+      - 振り返り儀式をやって
+      - drift verifier の指摘を SPEC に戻したい
+      - Council に諮って
+
+  layer2-orchestrator:
+    positive:
+      - REGIME.md で L2 判定が出た。統括を開始して
+      - L2 モードでサブドメインを分割して並列実行を調整して
+      - 複数 L1 の配下構成に沿って統括実行して
+      - L2 オーケストレータとして DOMAINS.md に従って進めて
+      - L2 発動。統合検証の手配まで
+      - 統括指揮モードで各ドメイン L1 を起動して
+      - L2 配下の並列実行の調整をして
+      - REGIME が L2。orchestrator に委譲する
+    negative:
+      - 大規模プロジェクトを統括して（REGIME 未判定）
+      - 複数ドメインをまとめて（L2 未確定）
+      - 実装して（M2）
+      - 独立検証して
+      - M2 と L2 の境界を判定して
+      - 統合検証だけやって
+      - Issue にして
+      - 新規プロジェクトを立ち上げたい
+
+  layer2-integration-verifier:
+    positive:
+      - 複数 L1 ドメインの成果物が揃った。跨ぎドメインの整合性を検証して
+      - 全体不変条件を検証して
+      - L2 の統合検証を実行して
+      - E2E で全体としてちゃんと動くか確認して（L2）
+      - INTEGRATION.md のチェックリストで統合検証して
+      - ドメイン間の contracts が壊れていないか検証して
+      - integration-verifier を起動して
+      - L2 配下の統合 sensors を回して
+    negative:
+      - 単一ドメインの成果物をレビューして
+      - 独立検証して（M2）
+      - 実装して
+      - L2 を発動すべきか判定して
+      - サブドメインを分割して統括して
+      - drift チェック
+      - 仕様と合っているか確認して（M2 単一ドメイン）
+      - Council に諮って
+
+  layer0-reindex-librarian:
+    positive:
+      - 履歴が重い
+      - history を結晶化したい
+      - reindex して
+      - 振り返りの読み込みが膨らんできた
+      - 叡智を蒸留して抜け殻を archive に移したい
+      - AI の購読量を減らしたい
+      - 代謝サイクルを回して
+      - history 層が token 閾値を超えた
+    negative:
+      - 実装して
+      - 新規プロジェクトの対話設計をしたい
+      - コードの意図を復元したい。リファクタ前
+      - 後付けで harness 化したい
+      - 今回の cycle を振り返って
+      - hook 観測ログからパターンを抽出して
+      - Issue にして
+      - 生 history を削除して
+
+  crosscut-council:
+    positive:
+      - Council に諮る
+      - 合議で判断して
+      - 重み付き判定をして
+      - 止揚して
+      - 複数案が拮抗している。どちらを採るべきか実装判断が必要
+      - trade-off がある。判定を仰ぎたい
+      - 実装中の判断点で confidence が 0.6 未満
+      - 案 A と案 B で拮抗している。諮問して
+    negative:
+      - 迷っている（対話段階）
+      - タイポを直して
+      - 明確な仕様を素直に実装して
+      - リファクタの定型処理をして
+      - drift チェックを走らせて
+      - Issue の品質を 12 軸で見て
+      - 振り返り儀式をやって
+      - 思想違反の還流先はどこ
+
+  crosscut-issue-dispatcher:
+    positive:
+      - Issue にして
+      - Issue を射出して
+      - タスク分解して Issue に
+      - SPEC を Issue に落として
+      - ADR 差分から Issue を生成して
+      - SPEC の差分を GitHub Issue にして
+      - この仕様を Issue 化して
+      - commit hook から Issue を作って
+    negative:
+      - ready-for-ai を付けた Issue が動かない
+      - この Issue の品質チェックをして
+      - PR レビューをして
+      - auto-merge workflow を deploy したい
+      - 実装して
+      - Council に諮って
+      - drift の指摘を SPEC に戻したい
+      - local_only モードで Issue 化して（無効）
+
+  crosscut-issue-implementer:
+    positive:
+      - ready-for-ai を付けた Issue が動かない
+      - Issue から自動で PR を出す仕組みを設定したい
+      - triage で弾かれた
+      - issue-pickup.yml が type-aware 化された件
+      - circuit-breaker の閾値を確認したい
+      - P4 暴走介入の手順
+      - CLAUDE_CODE_OAUTH_TOKEN の設定漏れ
+      - autonomous_scope が full なのに走らない
+    negative:
+      - Issue にして
+      - Issue 品質チェックをして
+      - PR レビュー
+      - auto-merge workflow を deploy
+      - 実装して（セッション駆動）
+      - Council に諮って
+      - drift チェック
+      - github_assisted で自動実装したい（起動しない）
+
+  crosscut-issue-quality-gate:
+    positive:
+      - この Issue の品質チェックをして
+      - ready-for-ai を付ける前に 12 軸で見て
+      - Issue 品質ゲートで弾かれた。どの軸で fail
+      - 並列安全性軸って何を見ているの
+      - dispatcher が生成した Issue 群のどれが gate 通過したか
+      - issue-quality-checklist.template.md を手動でチェックしたい
+      - fractal-application はどの粒度で再帰検査する
+      - Council 起点の Issue を gate 経由にして
+    negative:
+      - Issue にして
+      - Issue を自動実装して
+      - テスト品質ゲートの CI 設定
+      - 実装して
+      - 独立検証して
+      - Council に諮って
+      - drift チェック
+      - PR をレビューして
+
+  crosscut-verifier-drift:
+    positive:
+      - drift チェック
+      - SPEC 逸脱検出をして
+      - 実装が仕様から離れていないか確認して
+      - ADR からの逸脱を検出して
+      - PR 作成時の drift 検出を走らせて
+      - この実装は SPEC に対して drift していないか
+      - 仕様との乖離を機械的に検出して
+      - CI の drift verifier を実行して
+    negative:
+      - drift の指摘を SPEC に戻したい（還流）
+      - 独立検証して
+      - 仕様と合っているか確認して（reviewer）
+      - Council に諮って
+      - 思想違反を検出して
+      - Issue にして
+      - 実装して
+      - 振り返り儀式
+
+  crosscut-feedback-loop:
+    positive:
+      - drift verifier の指摘を SPEC に戻したい
+      - 形式 FAIL と drift が両方出た時の還流先は
+      - 思想違反を検出した後どこに還流する
+      - 自動 merge 後に drift を検出した。P3 に投げ返す手順
+      - 思想違反の還流先
+      - CTL 0 の local_only モードでの還流動作
+      - 検証層の指摘を設計層にルーティングして
+      - 5 層検出スタックの FAIL をどこに戻す
+    negative:
+      - drift チェックを走らせて
+      - Issue にして
+      - 振り返り儀式をやって
+      - Council に諮って
+      - 実装して
+      - 独立検証して
+      - hook 観測ログを取得して
+      - Issue の品質チェック
+
+  crosscut-continuous-learning:
+    positive:
+      - continuous-learning
+      - instinct promotion 候補を出して
+      - 観測パターンから skill 候補を抽出して
+      - hook 観測ログから何が繰り返されているか分析して
+      - Wave 2 末の振り返り儀式で観測経路を確認して
+      - hook-observations.jsonl から反復パターンを抽出して
+      - PreToolUse の繰り返しから候補を出して
+      - CONTINUOUS-LEARNING-CANDIDATES を生成して
+    negative:
+      - hook 観測機構を有効化して
+      - 今回の cycle を振り返って
+      - history を結晶化して
+      - 候補を自動で promote して
+      - 実装して
+      - Council に諮って
+      - drift チェック
+      - Issue にして
+
+  crosscut-cycle-retrospective:
+    positive:
+      - 今回の開発を振り返って
+      - cycle を振り返りたい
+      - 今のサイクルの反省
+      - 実行結果を評価して改善点を出して
+      - 出荷後の振り返り
+      - retrospective
+      - ふりかえり
+      - マージできたので振り返り
+    negative:
+      - 振り返り儀式（対話冒頭）
+      - reindex して
+      - continuous-learning
+      - 実装して
+      - Council に諮って
+      - 独立検証して
+      - Issue にして
+      - drift チェック
+
+  crosscut-hook-observer:
+    positive:
+      - hook 観測機構を有効化して
+      - PreToolUse の観測ログを取得して
+      - Claude Code hook で session lifecycle を観測したい
+      - harness-verifier に観測ログを渡す bridge を設定して
+      - settings.json の hooks から観測を起動して
+      - PostToolUse を観測して JSONL に落として
+      - PreCompact を観測対象に入れたい
+      - hook の観測ログが出ていない
+    negative:
+      - hook 観測ログからパターンを抽出して
+      - tool call を block して
+      - 実装して
+      - Council に諮って
+      - drift チェック
+      - 振り返り
+      - Issue にして
+      - 独立検証して
+
+  crosscut-quota-observer:
+    positive:
+      - 無料枠はあとどれくらい残ってる
+      - 新しいツールをもう 1 個作れる
+      - 枠が埋まっていないか見て
+      - このプロジェクト、書き込みが多すぎないか
+      - DB をあと何個作れる
+      - デプロイ先の枠の消費状況を確認して
+      - 量産する前に残量チェック
+      - 共有枠の消費率を提示して
+    negative:
+      - Issue にして
+      - drift チェック
+      - Council に諮って
+      - 実装して
+      - 枠を超えたので自動で停止して
+      - 課金プランを昇格して
+      - 振り返り
+      - reindex
+
+  crosscut-autonomous-drive:
+    positive:
+      - autonomous-drive を deploy したい
+      - auto-merge.yml と gemini-review.yml を配置したい
+      - stop ラベル（do-not-merge / human-review-needed）と ready-for-ai を一括作成
+      - Repository Secrets の設定ガイド（GH_REVIEW_PAT / GEMINI_API_KEY）
+      - auto-merge を opt-in から opt-out に反転したい
+      - workflow テンプレの placeholder 一覧
+      - opt-in / opt-out 境界 SPEC を確認したい
+      - autonomous-drive の deploy が失敗した。secrets 漏れか
+    negative:
+      - Issue を自動実装して
+      - Issue の品質チェック
+      - git auto-merge を GitHub UI で enable
+      - 実装して
+      - Council に諮って
+      - drift チェック
+      - dev_mode を autonomous に昇格したい（判定は L0）
+      - PR をレビューして

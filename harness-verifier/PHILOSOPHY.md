@@ -41,7 +41,7 @@ DH 本体には 2 つの層がある：
 
 | DH 本体の層 | 対応する検証 | 性格 |
 |---|---|---|
-| philosophy.md | 思想検証（推論的） | `crosscut-verifier-philosophy`（v5.3.0 候補） |
+| philosophy.md | 思想検証（推論的） | Council 経由・人間判定（旧 `crosscut-verifier-philosophy` は v7.0.0 F2 で廃止。v5.3.0 候補） |
 | SKILL 構造 | 静的検証（計算的） | **`harness-verifier/`（本機構）** |
 
 両者は補完関係にあり、どちらかが他方を吸収できない。

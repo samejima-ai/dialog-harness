@@ -43,6 +43,10 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" SessionStart || python \"$CLAUDE_PROJECT_DIR/.claude/skills/crosscut-hook-observer/scripts/bootstrap.py\" SessionStart"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/templates/hooks/anchor-core.py\" || python \"$CLAUDE_PROJECT_DIR/templates/hooks/anchor-core.py\""
           }
         ]
       }

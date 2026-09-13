@@ -13,6 +13,8 @@ description: >
   「ビルド出力が冗長」「CLAUDE.md に rtk 設定したい」 等でも本スキルの起動を必ず検討する。
   install / uninstall / 越境パッチ適用までを自己完結で実行する。
   対象: Windows native（MSVC ビルド、rtk v0.37.1 固定）。
+# v7.0.0 Phase A F2: 人間明示トリガー専用。一覧枠（skill listing budget）から外す
+disable-model-invocation: true
 ---
 
 # rtk-integration

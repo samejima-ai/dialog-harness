@@ -4055,3 +4055,53 @@ PR #21（v5.2.0）merge 後の Copilot review で以下のスキーマ違反を�
   human_escalated: true
   final_decision: null
   implementer_consent: "agreed"  # 2026-09-11 人間判定: C + 必須4条件を採用。$5/月昇格は「当面無料」を維持（経営者軸の異見は minority として温存し、観測 skill の実測で再判断）
+
+- invocation_id: "council-2026-09-13T01:40:00Z-v7phsa"
+  timestamp: "2026-09-13T01:40:00Z"
+  source_skill: "layer0-spec-architect"
+  question_to_answer: "Phase A の実装着手を認め、どの着地単位（1 PR / 分割 / F3 切り離し）で進めるべきか。I-5 ablation 規律と auto-merge 境界・直近の重複クローズ事故を踏まえて。"
+  council_type: "business"
+  category: "implementation"
+  category_fallback: false
+  decision_category: "C2"
+  phase_reached: "phase_3"
+  execution_mode: "workflow"
+  degrade_reason: null
+  conflict_type: "reason_divergence"
+  options:
+    - "案A: Phase A 全 F（F1-F7, F9, F10）を 1 PR で着地する。human-review-needed が付き人間が 1 回で内容判定。依存 PR の重複クローズ事故を構造的に回避。欠点: diff が大きく routing 劣化の切り分け不能、レビュー負荷が 1 点集中"
+    - "案B: F 単位に PR を分割し順次 merge を待つ。PR-1 = F1+F2+F4+F5+F7（機械的・小・高効果）→ PR-2 = F3+F10（description 圧縮 + SKILL 分割、routing リスク）→ PR-3 = F6（失効セマンティクス、複数 reference 横断）。各 PR は前の merge 後に master から切る。欠点: 3 回の human-review 待ち、cycle が長い"
+    - "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動"
+  final_weights:
+    経営者: 2
+    開発者: 6
+    哲学者: 2
+  persona_summary:
+    経営者: { stance: "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動", confidence: 0.72, dimension: "ROI", note: "spec §3 F3 の本文に内部矛盾がある。「L1 が献上時に 1 回走らせ、正例再現率 / 負例誤発火率を DELIVERY に記録する（基準値の凍結、I-5）」は圧縮後の 1 回計測であり、同節の review_trigger「負例誤発火率が圧縮前より悪化」が要求する圧縮前の値を生まない。案C はこの矛盾を実装順序で解消するものであり、spec 本文の当該 1 文も「圧縮前に基準値を取り、圧縮後に再計測」へ改める必要がある（これも規範文書改変なので献上時に人間判定）。また、諮問文の「案A は依存 PR の重複クローズ事故を構造的に回避」は事故の原因（積み重ねブランチの同時 PR 化）と対策（順次 master から切る）を混同している。1 PR 化は事故回避の唯一手段ではなく、案B/C の運用規則で同等に回避できる。" }
+    開発者: { stance: "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動", confidence: 0.82, dimension: "可逆性 / 検証可能性（保守性）", note: "技術的訂正 3 点。(1) 案A の「human-review 1 回で済む」と案B の「3 回待ち」は比較軸として不正確: auto-merge-boundary §opt-in は harness-verifier/** 改修と 3 ファイル以上横断のどちらか該当で human-review-needed を要求し、F1(c) hook_wiring 検査追加・F3 合計検査追加・F2 検査 8/9 整合はいずれも harness-verifier/** を触る。よってどの分割でも全 PR が人間判定を経る。差は「人間の判定回数」であって「判定の有無」ではない。(2) F3 の review_trigger「圧縮前より悪化」は圧縮前値が無ければ決定論的に評価不能な条件であり、spec 自体が案C の順序を暗黙に要求している。案A/案B を採る場合は F3 の review_trigger を書き換えるか、圧縮前実測を F3 の受け入れ基準に追加する必要がある。(3) 重複クローズ事故（SUMMARY 2026-09-06）の原因は「依存 PR の積み重ねブランチ同時 PR 化」であり、分割そのものではない。「前 PR の merge を待って master から切る」は `git log master..HEAD` が先行 PR のコミットを含まないことで機械検査できる（決定論）。1 PR 化で構造回避する必要はない。" }
+    哲学者: { stance: "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動", confidence: 0.78, dimension: "前提への問い", note: "schema 外の違和感を 2 点。(1) 本諮問は「着地単位」を問うているが、その手前に「F3 が本当に Phase A の環境足場なのか」という問いがある。description の文言は routing を教える認知足場に近く、spec の 3 層表でも環境足場の列に置かれていない。F3 を環境足場として扱う分類が、I-5 を緩める暗黙の理由になっていないか。(2) 案A の「人間が 1 回で内容判定」は、人間のレビュー負荷を 1 点に集めることで「見たことにする」誘因を生む。第 6 条の人間最終承認は、承認行為の回数ではなく承認が実質を持つかで測られるべきで、大 PR は承認の形式化を招く。分割は cycle を長くするが、承認を意味あるものに保つ代価として妥当。" }
+  judgment_confidence: 0.78
+  weight_calculation:
+    method: "weight_times_confidence"
+    max_score_stance: "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動"
+    scores:
+      - stance: "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動"
+        supporters: ["経営者", "開発者", "哲学者"]
+        weight_sum: 10
+        weighted_score: 7.92
+        components:
+          - { persona: "経営者", weight: 2, confidence: 0.72 }
+          - { persona: "開発者", weight: 6, confidence: 0.82 }
+          - { persona: "哲学者", weight: 2, confidence: 0.78 }
+    third_way_excluded: []
+    tie_break_applied: false
+  weight_calculation_retry_count: 0
+  confidence_band: { lo: 0.6, hi: 0.9, basis: "reason_divergence" }
+  recommended: "案C: F3 を Phase A から切り離す。まず fixtures（正例/負例 20 問 × 17 skill）を作って現行 description での routing 実測を取り基準値を凍結し、その後に圧縮 → 再実測で劣化を検出する（I-5 の厳格適用）。F1/F2/F4/F5/F6/F7/F10 は案B の分割で先行。欠点: 常駐超過の是正が 1 cycle 遅れる、fixtures の LLM 実測は harness-verifier 外で手動 — 着地順序: PR-1 = F1+F2+F4+F5+F7+F10（+fixtures を追加データとして同梱可）→ 基準値凍結を DELIVERY に記録 → PR-2 = F6 → PR-3 = F3 圧縮+再実測。各 PR は前 PR の merge 後に master から切る（`git log master..HEAD` に先行 PR コミットを含まないことを機械検査）。PR-1 の DELIVERY に /context 実測値を載せ「4.5-6.5 倍」を実数化する"
+  minority_opinion: "結論は一致するが観測次元は分離（ROI / 可逆性・検証可能性 / 前提への問い）。案C 内部で基準計測の時点が割れた: 経営者は「PR-1 merge 前の現行 master」、開発者・哲学者は「PR-1 merge 後の 17 skill 構成」（F2 の一覧変更と F3 圧縮を混在させない）。重み上は後者（8 vs 2）が優勢だが人間判定事項。未吸収の懸念: fixtures 執筆→凍結→圧縮の順序証跡化、LLM 実測の run 間揺れに対する閾値・反復回数の事前宣言、F3 が「環境足場」なのか「認知足場」なのかの分類問い、spec F3 本文の当該 1 文修正（規範改変ゆえ人間判定）。"
+  weight_note: "stance 一致のため重み配分（implementation: 開発者 6 / 経営者 2 / 哲学者 2）は判定に影響しなかった。weighted_score 7.92 は決定論計算済み。基準計測時点の内部分岐のみ重みで参考順位を付けた。"
+  reasoning: "3 軸が独立次元から同一結論に到達した（reason_divergence）。ROI 軸（経営者）: F3 は「効果未実測・失敗が無音・検知器なし」の 3 条件が重なり、review_trigger「圧縮前より悪化」は圧縮前値が無いと永久に発火しない。F1/F5/F7 の確実な効果を F3 の不確実性に道連れにしない分割が投資として最安。可逆性/検証可能性軸（開発者）: 案A は F1〜F10 が 1 commit に融合し revert 粒度が最悪。全案とも harness-verifier/** を触るため人間判定は必ず入り、差は回数のみ。F3 以外は決定論検査で受け入れ基準が閉じる。前提への問い軸（哲学者）: 「削る前に測る」を F8 に課しながら自らの description に課さない非対称は I-4 自己適用に反する。重複クローズ事故の原因は積み重ねブランチの同時 PR 化であり PR 本数ではない、という事実認定は 3 軸で一致。3 軸すべてが spec §3 F3 本文の内部矛盾（献上時 1 回計測では基準が生まれない）を独立に指摘しており、案C は実装順序でこの矛盾を解消する。案A/B を採る場合は F3 の review_trigger 自体の書き換えが必要となる。"
+  consensus_mode: "escalate_to_human"
+  human_escalated: false
+  final_decision: null
+  implementer_consent: "agreed"  # 2026-09-13 人間事前承認「すべて実行」+ 基準計測時点は重み 8 vs 2 の PR-1 merge 後を採用（合意プロセス完了）

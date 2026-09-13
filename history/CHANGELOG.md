@@ -2,6 +2,16 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v7.0.0 Phase A / PR-1 — 認知足場を剥がす前に、環境足場を締める（2026-09-13・実装中）
+
+**この PR を持つと何が違うか**: (1) compaction で憲法が静かに落ちなくなる（SessionStart hook が不変核 4 行を再注入・F1）。(2) 起動しない skill が一覧枠を食わなくなる（3 本に `disable-model-invocation`・`crosscut-verifier-philosophy` を廃止・F2）。(3) 時限規範の `model_generation` が実際に発火する（世代の機械記録・F7。修正前 0 件 → 3 件）。(4) 独立レビューが生成側の自己評価に汚染されない順序になる（F4）。(5) 「機械検査の FAIL は LLM の PASS で覆らない」が配線表に載る（F5）。(6) 500 行超の SKILL.md 3 本が圧縮時に落ちない大きさになる（F10）。
+
+- spec: `dh-upgrades/upgrade-spec-v7.0.0.md`（Phase A = L-FULL のみ。philosophy / delegation-boundary / auto-merge-boundary は不可侵）
+- Council: `council-2026-09-13T01:40:00Z-v7phsa`（案C: description 圧縮 F3 は基準値を先に取ってから PR-3 で）
+- 献上物: `delivery/DELIVERY-v7.0.0-phaseA-PR1.md` / `delivery/HANDOFF-v7.0.0-phaseA-PR1.md` / `delivery/ABLATION-council-2026-09-13.md`（F8）
+- 判断材料: `delivery/DIAGNOSIS-metaharness-rebuild-2026-09-13.md`（PR #287）
+- 検証: `verify.py --strict` 全 PASS / `scripts/test-*` 18 本 PASS
+
 ## VERSION 6.17.0 → 6.18.0 — 時限を読む主体と、供給元の枠を見る目（2026-09-11）
 
 **この版を持つと何が違うか**: 2 つ増える。**(1) 宣言した時限を読む主体が居る**（期限を書いても
@@ -2834,3 +2844,237 @@ PR #18 への Copilot レビュー 3 件すべてに対応。GitHub Actions の�
 
 テンプレートとして最小権限を明示することで、デフォルト read-only な GITHUB_TOKEN 設定のリポジトリでもそのまま動作する形になった。yaml syntax は引き続き全 PASS。
 
+## layer0-spec-architect SKILL.md 版履歴（v7.0.0 Phase A F10 で SKILL.md から移送）
+
+> `layer0-spec-architect/SKILL.md` §参照ドキュメント 配下にあった版ごとの追加記録（v3.1〜v6.3.0、約 230 行）を本ファイルへ移送。
+> SKILL.md は起動時に丸ごと文脈に載るため、版履歴を同居させると 500 行上限（Claude Code 公式ガイド・compaction 再添付 5,000 tok）を超え、
+> 圧縮時に本体側が落ちる。内容は不変。相対リンクはリポジトリルート基準に書き換えた。
+
+#### v3.1 追加（配置規則・クレジット）
+
+- `.claude/skills/layer0-spec-architect/assets/credit-template.md` — README.md 制作クレジットの規格とテンプレート（マーカー管理・拒否権・更新ルール）※v4.2 で `.claude/skills/layer0-spec-architect/references/` → `.claude/skills/layer0-spec-architect/assets/` に再分類
+
+#### v3.2 追加（L0 サブフェーズ拡張 Phase 1）
+
+ステップ 3.5 で使用する動的サブフェーズ選定・実行プロトコル群。条件を満たさないプロジェクトではロードされない。
+
+- `.claude/skills/layer0-spec-architect/references/subphase-common-protocol.md` — 対話→生成→検証→判定 の 4 フェーズ骨格、サブフェーズ間 I/O 契約、成果物配置規約
+- `.claude/skills/layer0-spec-architect/references/subphase-selection.md` — 基本 5 問・起動判定表・モード選定・`spec/subphase-manifest.md` 雛形・事後追加プロトコル
+- `.claude/skills/layer0-spec-architect/references/subphase-l02-domain.md` — L0-2 ドメインモデル（Zod + TypeScript, `domain.ts`）対話プロトコル
+- `.claude/skills/layer0-spec-architect/references/subphase-l03-api.md` — L0-3 API 契約（TypeSpec, `api.tsp`）対話プロトコル
+- `.claude/skills/layer0-spec-architect/references/subphase-l04-transition.md` — L0-4 状態遷移（XState v5 + Mermaid, `state-machine.ts` + `state-diagrams.md`）対話プロトコル
+- `.claude/skills/layer0-spec-architect/references/subphase-l05-authz.md` — L0-5 認可（OpenFGA DSL, `authz.fga`）対話プロトコル
+- `.claude/skills/layer0-spec-architect/references/subphase-l06-invariants.md` — L0-6 層間不変条件（Gherkin Happy/Sad/Evil 三分類, `invariants.feature`）対話プロトコル
+
+※ ファイル配置規則とバージョニング規則は `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` に統合済み。
+
+#### v6.3.0 追加（runtime_profile 軸新設 + GAS stack 追加・11 stack 化、minor 昇格）
+
+後方互換維持の追加のみ。Council `council-2026-07-12T11:10:45Z-07oknv`（business / category=conception / 経営者3・開発者3・哲学者5 / **unanimous 案A** / weighted_score 8.06）に基づく。起点は `delivery/ANALYSIS-multistack-meta-harness-2026-07-12.md` §3（特殊環境拡張解析）+ 人間の明示承認（runtime_profile 軸 SPEC 化 / GAS 正規 stack 追加）。
+
+- **runtime_profile 軸新設**: 全 stack が暗黙に前提してきた「ローカル CLI で決定論 smoke が回る」「CI が実行環境に届く」を明示化し、`local-reproducible`（既定）/ `cloud-managed` / `device-bound`（定義のみ・観測温存）の 3 値で smoke / E2E / CI 到達性の要求水準を読み替える。`.claude/skills/layer0-spec-architect/references/regime-assessment.md` §runtime_profile 判定（stack から AI 自動推定・新規質問ゼロ・不明時 local-reproducible fallback・訂正は手動 override + ADR）、`.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` §runtime_profile 別要求水準（正本）、`.claude/skills/layer0-spec-architect/assets/meta-spec-template.md` REGIME テンプレ欄を新設。既存プロジェクトは REGIME.md 未記載 = `local-reproducible` と等価（後方互換・遡及追記不要）
+- **Stack 11: GAS (Google Apps Script) + clasp + TypeScript** を追加 stack カタログに追加（10 → 11 stack 化）。`cloud-managed` の第一適用例として要求水準表を同一リリースで実参照（Council 制約 C-a: 実行経路未接続の死蔵機構＝v6.1.0 CTL 分断と同型の反復欠陥を防止）。純粋ロジック層 / GAS API 接触層の**層分離規約を最低要件化**し、ローカルランタイム不在下でも 5 層検出スタック第 1 層の検出力を確保。罠 G1〜G6（6 分制限 / quota / simple trigger / Script Properties / trigger 冪等性 / ES modules 非対応）を明記。観測元は Google 公式ドキュメント（2026-07 観測）
+- **下流機構への機械接続は本版では行わない**（Council 制約 C-c）: auto-merge SUCCESS 条件 / 5 層層別配分 / e2e-ci 雛形への profile 参照は将来接続点の明文化に留める。`device-bound` の要求水準較正は実適用例（MacroDroid 等）の観測まで温存（同 C-b）
+
+#### v6.2.0 追加（scaffold-checklist に Expo (React Native) stack 追加・10 stack 化、minor 昇格）
+
+後方互換維持の追加のみ。`.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` の追加 stack カタログに **Stack 10: Expo (React Native)** を DH 形式（必須生成ファイル表 + 最低要件 + smoke test）で追加し、9 stack → 10 stack 化。前 9 stack が Web/API 層なのに対し本 stack はモバイル＋Web のネイティブアプリ層を担う。
+
+- `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` に Stack 10 を追加。`create-expo-app` default template（expo-router / TypeScript / 3 platform）を基準に必須生成ファイル 9 種・決定論的 smoke サブセット（`expo lint` / `tsc --noEmit` / `expo export --platform web`）を規定
+- **CLAUDE.md 共存規約**: Expo SDK 56+ の `create-expo-app` が自動生成する `AGENTS.md` / `CLAUDE.md` / `.claude/settings.json` と DH 生成物を上書きせず共存させる規約を明記（AGENTS.md を残し DH CLAUDE.md から `@AGENTS.md` import、Expo プラグイン有効化を温存）
+- 共通規約「UI を含む stack」列挙に Expo を追加（DESIGN.md 連携対象。Web スクショ比較はネイティブ E2E への読み替え規約を併記）
+- 観測元は Expo 公式ドキュメント（docs.expo.dev/agents/, /skills/, /eas/ai/mcp/、2026-06 観測）。Expo は DH が scaffold する**対象技術**であり Layer 3 方法論層ではないため `observed-peers.md` には登録しない（claude-world とは観測性質が異なる）
+
+#### v6.1.0 追加（外部観測事例 claude-world の吸収・scaffold 9 stack カタログ化・CLAUDE.md アンチパターン診断、minor 昇格）
+
+後方互換維持の追加のみ。Council `council-2026-06-18T11:50:01Z-cw0rld`（全会一致 案A、最小介入）に基づく外部観測事例 [claude-world-examples](https://github.com/claude-world/claude-world-examples)（非公式コミュニティ製・MIT）の DH 形式での吸収。
+
+- `.claude/skills/layer0-spec-architect/references/observed-peers.md` に claude-world-examples を観測事例として登録（CoDD に次ぐ 2 件目）。当初発話「公式テンプレ採用」と調査結論「非公式コミュニティ事例」の乖離を明記し後世への申し送りとする
+- `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` を **9 stack カタログ化**（標準 Vite+TS+React+PWA + 追加 8 stack: Next.js / Vue / Astro / FastAPI / Django / Express / Go / Rails）。各 stack を DH 形式（必須生成ファイル表 + 最低要件 + smoke test）で再構成。出典・MIT・観測経路を当該ファイルに明記。原典の散文テンプレ丸ごと転記ではない
+- §7.4 自己検証に **CLAUDE.md アンチパターン診断**（曖昧 / コマンド欠落 / 権限境界未定義 / 矛盾 / 陳腐化の 5 観点）を 1 チェック追加
+- **却下項目**: 概念文書の philosophy/references 取り込み（案B、思想の二重定義 drift）と GitHub Actions/workflow 集の取り込み（DH templates と機能重複）は Council で除外
+
+#### v5.23.0 追加（E2E 構築 BP の体系化・C5 テスト oracle 言語化・UI Baseline RL 取り込み、minor 昇格）
+
+2 テーマをバンドル: **(1)** E2E 構築 BP + C5、**(2)** UI Baseline RL（相互作用層）。両者は「B-ID = oracle」で接続する。
+
+**(1) E2E 構築 BP の体系化・C5 テスト oracle 言語化**
+
+後方互換維持の追加のみ。AI 駆動開発における E2E テストの「構築」叡智を DH に結晶化する。
+DH には既に E2E の「位置づけ」（5層スタック第2層・L2 Test Agents・`sensors/e2e/` scaffold 枠）が
+あったが、「堅牢な E2E をどう構築するか」の BP が欠落していた。本リリースでその空白を埋める。
+
+確定した一次概念と対策（人間との対話で合意）：
+
+- **二相分離（一次概念）**: 相 A（in-loop 知覚器・使い捨て可）/ 相 B（SPEC 由来の耐久資産）を明示分離
+- **E2E = AI の知覚器官**: AI は「見ると宣言したものしか見えない」→ artifact 密度が人間以上に重要
+- **C5 テスト oracle 言語化（本丸）**: §2.6 新設。人間の暗黙の関心を TQ1-3 で言語化し相 B 母集団を SPEC へ確定
+- **AI テスト精度対策**: C1（SPEC 由来母集団）/ C2（生成と判定の隔離＝自己言及の罠回避）/ C3（本数天井）/ C5
+- **実行環境の統一**: browser provenance pinning（借りない・固定する・記録する）、chromium 単一既定・他 opt-in
+- **device emulation**: 実デバイスは射程外、device descriptors で本番見え方を寄せ Vision 判定に乗せる
+- **接続地図（強制は将来 PR）**: flaky→circuit-breaker/P4・Quarantine→feedback-loop・provenance→観測性統一
+- **温存**: テスト情報代謝・mutation メタテスト（C4）は試験的導入のため minority opinion として温存
+
+変更点：
+
+- §処理フロー に 2.6 を新設（UX 3問の直後、critical journey or UI プロジェクトのみ起動）
+- §2.6「C5 テスト oracle 言語化」を新設（TQ1-3・自動補完・格納マッピング・persona 非依存）
+- `.claude/skills/layer0-spec-architect/references/test-oracle-dialog.md` 新設（C5 対話プロトコル原典・知覚野拡張原理）
+- `.claude/skills/layer1-autonomous-dev/references/e2e-best-practices.md` 新設（構築 BP 正本・二相分離・8 規律 + 接続地図）
+- `.claude/skills/layer1-autonomous-dev/references/inferential-sensor-v2.md` §第2層に正本参照 + 二相分離の 1 行言及
+- `.claude/skills/layer2-orchestrator/references/e2e-integration.md` の config.ts 規格に pinned chromium / projects マトリクス / 公式コンテナ runner / provenance 記録 + 正本参照
+- `.claude/skills/layer1-independent-reviewer/SKILL.md` のレビュー観点に「テスト妥当性（自己言及の罠隔離・C2）」追加
+- 参照ドキュメント 拡張 list に `.claude/skills/layer0-spec-architect/references/test-oracle-dialog.md` を追加
+
+**(2) UI Baseline RL の取り込み（利用者提供 UIUX 研究 → DH 統合）**
+
+DESIGN.md は「どう見えるか（視覚トークン層）」を担うが「どう知覚され・操作されるか（相互作用層）」が
+空白だった（token 静的検査の限界・DONT「創造的 UX を AI に任せない」）。枯れた UX 法則（Norman/Fitts/
+Hick/Miller/Jakob/Doherty/Gestalt/WCAG）に立脚した機械可読 RL でこの空白を埋める。
+
+- 新設 `templates/rules/common/ui-baseline.rules.md`（B-01〜B-25・常時適用・MUST 違反はマージ不可）
+- 新設 `templates/rules/common/ui-specialization.context.md`（目的特化 S-01〜S-06 + 衝突解決）
+- `.claude/skills/layer0-spec-architect/references/design-system-spec.md` に「UI 相互作用層」節を新設（二層モデル / デプロイ・override /
+  S-xx 選択の L0 接続 / **B-ID を 5 層検出スタック・C5 の ready-made oracle 化**）
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` の templates/rules 節に UI Baseline RL を共通 RL として明記
+- `.claude/skills/layer1-independent-reviewer/SKILL.md` 5.5.1 に B-ID レビューチェックリスト照合を追加
+- `templates/rules/README.md` の common/ 現況を更新
+
+設計の核: B-ID は抽象的な「使える」を検証可能な宣言に落としたもの＝ E2E/Vision の oracle であり、(1) の
+C5（AI は見ると宣言したものしか見えない）と直結する。S-xx 選択は新質問を増やさず DG2/3・UX 3問・NFR から
+導出する。利用者プロジェクトは `.dh/rules/` で S-xx を override 可能（DH 更新で消えない）。
+
+LC ≥ 1 既存プロジェクトは新規開始する E2E から段階適用（既存テストの遡及修正は不要）。
+非該当（CLI/ライブラリ/cosmetic のみ）では §2.6 を起動せず e2e-best-practices.md もロードしない（時間コストゼロ）。
+flaky 強制接続は本 PR では地図のみ。実 E2E 運用データが貯まった次 PR で teeth を入れる。
+
+#### v5.18.0 追加（Supabase ローカル開発の推奨オプション化、minor 昇格）
+
+後方互換維持の追加のみ。新規 skill / agent は作らず、専用 reference 1 件の新設 + SKILL.md 本体および既存 reference 4 件への軽い配線（pointer）で構成する（#107 データモデリング吸収と同型の「既存構造への栄養追加」方針、ただし本件はツール固有プレイブックのため専用 reference 形式を採る）。本番 Supabase（hosted Postgres）に消失 NG の私的データを持つ構成で、本番を汚さない**ローカル優先開発**（Docker 上のローカルスタック + migration 経由の本番反映）を推奨オプションとして提示できるようにする。
+
+- `.claude/skills/layer0-spec-architect/references/supabase-local-dev.md` 新設。推奨発動条件（S1 = DB 使用あり + hosted Postgres/Supabase + 消失 NG データ）/ 前提確認（OS / Docker / WSL2）/ 7 ステップワークフロー（CLI install〜`.env.local`）/ 生成物配置（`dev-env-spec.md` 整合）/ smoke test（`scaffold-checklist.md` 整合）/ 本番反映の安全規律（`schema-evolution.md` 整合）/ セキュリティ規律 / モード別の扱い / プロトコル自己評価 を規定。ツール固有プレイブックのため必要時のみロード（progressive disclosure）
+- §6「開発環境の設計・構築」M2 標準生成構成に「推奨開発オプション」1 ブロックを追加（hosted Postgres/Supabase 構成時に `supabase-local-dev.md` を参照、強制ではなく推奨）
+- §参照ドキュメント 拡張 list に `.claude/skills/layer0-spec-architect/references/supabase-local-dev.md` を追加
+- `.claude/skills/layer0-spec-architect/references/dialog-questions.md` S1 に「フォローアップ: 本番保護とローカル開発の推奨」を追加（非技術語彙の推奨提示、過剰提示回避の解釈付き）
+- `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` に「Supabase ローカル開発（推奨バックエンド開発オプション）」セクションを追加（追加生成物 `supabase/` + `.env.local` / smoke test 追加。標準 stack 12 種は置換せず追加層）
+- `.claude/skills/layer0-spec-architect/references/schema-evolution.md` に「Supabase CLI マイグレーション運用との整合」セクションを追加（コマンド ↔ デプロイ戦略の対応、expand-contract への分解、append-only 規律、`db push` 前の人間承認）
+- `.claude/skills/layer0-spec-architect/references/subphase-l02-domain.md` の 3 階層モデル節に物理層 = hosted Postgres/Supabase 時のローカル優先推奨を 1 行追加
+
+LC ≥ 1 既存プロジェクトは新規開始する DB 機能から段階適用（既存の本番直結フローの遡及置換は不要、事後追加プロトコルで任意導入可）。非該当プロジェクト（SQLite / メモリのみ / 使い捨て）では `supabase-local-dev.md` をロードせず提示もしない（時間コストゼロ）。
+
+#### v5.17.0 追加（対話 persona 層・presentation 差替インフラ、minor 昇格）
+
+後方互換維持の追加のみ。DH の応答出力（presentation layer）を persona ごとに差し替え可能にする。
+仕様策定の判断（logic layer）は persona に依存しない（philosophy 第 6 条「人間最終承認」を維持）。
+
+- `.claude/skills/layer0-spec-architect/references/persona-spec.md` 新設。二層モデル（Logic / Presentation）/ State Machine 規約（Normal / Overflow / Attention）/ 出力パイプライン（XML AI-data → Character Output）/ 切替方法 / 適用範囲 / philosophy 整合を規定
+- `templates/personas/` 新設。`README.md` / `default.persona.md`（中立・既定）/ `sheep-navigator.persona.md`（サンプル: 羊系ナビゲーター）を同梱
+- §原則 に「対話 persona の二層分離」1 行を追加
+- §ステップ 0「対話 persona ロード」を新設（処理フロー先頭に挿入）。REGIME.md `persona.active` を読むか default を使う
+- `.claude/skills/layer0-spec-architect/assets/meta-spec-template.md` の REGIME.md テンプレに `## persona`（任意）セクションを追加
+- 適用対象は L0 三兄弟（spec-architect / archeo-architect / onboarding）のみ。L1/L2/crosscut は人間対話なしのため対象外（フラクタル原則の対話形状境界に揃える）
+
+LC ≥ 1 既存プロジェクトは REGIME.md に `persona` 未指定なら default が active になり、既存挙動と完全同一（後方互換）。
+
+#### v5.16.0 追加（共有可能スキル整理・参照整合性確立・AI 駆動 PR 運用の実証、minor 昇格）
+
+後方互換維持の追加のみ。Council 2 件 (`council-2026-05-12T13:32:00Z-sspr01` / `council-2026-05-12T14:30:00Z-adpp01`) 合意の scope_lock 6 項目を 1 PR で実装。
+
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` に **Level A 配布性評価 checklist**（6 軸 / 21 項目）を新設。新規 skill 追加 / 改修 / 格上げ・格下げ時の判定基準として運用
+- `.claude/skills/layer0-spec-architect/references/ecc-compat-criteria.md` 新設。ECC 互換配置の規約格上げ判定材料（6 軸）を整備。v5.16.0 時点では観測層継続、規約格上げは v5.17.0 以降に延期
+- `.claude/skills/layer0-spec-architect/references/deprecation-protocol.md` の dead-backtick-link 1 件修正（.claude/skills/layer0-spec-architect/references/ 配下からは「2 階層遡る」相対パスが必要、SKILL.md 直下からは「1 階層遡る」で兄弟 skill に届く点を判別）
+
+連動して以下が他 skill / harness 側で更新（詳細は各 skill / `dh-upgrades/upgrade-spec-v5.16.0.md`）:
+- `harness-verifier/checks/references.py` に `BACKTICK_PATH_RE` を追加（バッククォート内相対パスの dead-link 検査）
+- `layer0-onboarding` に reverse-design ステップ追加（既存 src/ から `DESIGN.md` 逆抽出、UI プロジェクトのみ）
+- `layer0-archeo-architect` の意図マップに視覚 Island 追加（`island_type` / `design_md_impact` フィールド）
+- `history/REGIME-LOG.md` に L0 三兄弟マトリクス記録、`history/ARCH-DECISIONS.md` に AD-021 / AD-022 追加
+
+LC ≥ 1 既存プロジェクトは新規開始機能・フェーズに段階適用、既存成果物への遡及修正は不要。
+PR 粒度方針として AD-021「AI 駆動開発における PR 粒度の決定基準」を採択、v5.16.0 を最初の実証 PR とする。
+
+#### v5.15.0 追加（DESIGN.md 生成機能、minor 昇格）
+
+後方互換維持の追加のみ。UI を伴うプロジェクトの視覚的アイデンティティ（カラー / タイポ / spacing / コンポーネント / Do's and Don'ts）を AI コーディングエージェントに伝えるための DESIGN.md 生成機能を導入する。
+
+- §処理フロー に 3.6 を新設（UI 有無を 1 問で判定、UI ありなら 3 問で視覚仕様取得）
+- §3 ドキュメント化に DESIGN.md（任意・UI プロジェクトのみ）を生成物として追加
+- §3.6 を新設し、起動判定（DG1）/ 対話プロトコル（DG2〜DG4）/ 生成物 / 非起動条件 / 既存プロジェクト後方互換を規定
+- §7 出力ツリーに `DESIGN.md` を追加
+- §7.4 自己検証チェックリストに「DESIGN.md トークン一貫性検査」を追加（DESIGN.md 生成時のみ）
+- `.claude/skills/layer0-spec-architect/references/design-system-spec.md` 新設。Google Labs 公式仕様（YAML フロントマター + Markdown 本体の 2 層構造、標準セクション順序）/ 対話プロトコル / Do's and Don'ts の重要性（アンカリング効果の正方向活用）/ 意図のコード化 / 盆栽運用規律 / LC ≥ 1 後付け追加プロトコル を規定
+- `.claude/skills/layer0-spec-architect/assets/design-md-template.md` 新設。実践テンプレート（YAML トークン + Markdown 本体 + Components 拡張ガイド）を提供
+- `.claude/skills/layer0-spec-architect/assets/meta-spec-template.md` の INDEX.md テンプレに DESIGN.md への参照行を追加（UI プロジェクトのみ条件付）
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` のルート直下許可ファイル一覧に DESIGN.md を追加
+- `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` に Vite + React + PWA stack での DESIGN.md 参照ガイドを追加（L1 連携情報）
+- `layer1-autonomous-dev/SKILL.md` §1 ドキュメント受領に DESIGN.md（存在時）の条件付き読込を追加。§5 タスク実行に DESIGN.md トークン参照ルールを追加。§6 自己検証に「DESIGN.md トークン整合検査」を新設（HEX リテラル / px 直書きの grep 検査）
+- `layer1-independent-reviewer/SKILL.md` の入力リストに DESIGN.md（存在時）を追加。処理フロー 5.5.1 として「DESIGN.md トークン整合検査」を新設（YAML 定義と Markdown `{...}` 参照の整合 / src/ への HEX 直書き混入検出 / Do's and Don'ts 違反パターン検出）
+- `design-system-spec.md` §非起動条件と SKILL.md §3.6 非起動条件で event-sourcing 表現を精緻化（event-sourcing でも UI ありなら起動、UI なしのバックエンド単体運用に限定）
+- **E2E 視覚検証経路の組込**: コードファーストでは UX を保証できないため、philosophy 5 層検出スタックの第 2 層 (Playwright スクショ) と第 5 層 (Vision モデル判定) に DESIGN.md を必ず乗せる。`design-system-spec.md` に §E2E 視覚検証 セクションを新設し、L1-autonomous-dev §6 自己検証と L1-independent-reviewer 5.5.1 にスクショ取得と Vision 判定を組込。§7.4 のトークン一貫性検査は必要条件であり十分条件ではないことを明記
+- scaffold-checklist.md DESIGN.md 連携セクションに「E2E 視覚検証が最も重要」を明記
+
+LC ≥ 1 既存プロジェクトは新規開始の UI 機能から段階適用、既存 UI 実装への遡及生成は不要（事後追加プロトコル経由で任意追加可）。
+非 UI プロジェクト（CLI / API サーバ / ライブラリ）では DG1 を投げずにスキップ確定（時間コストゼロ）。
+
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（継続検討）。
+
+#### v5.2.0 追加（次元論導入・D4 検査機構の独立配置、minor 昇格）
+
+dialog-harness 自身の自己検証機構として、リポジトリルート直下に `harness-verifier/` を独立配置する。
+DH 本体（D4: メタスキル層）の内部整合性を 5 項目で検査する独立機構であり、本 SKILL.md からは**情報依存しない**（独立性要請）。
+本セクションは次元論の概念と関連配置を記録するためのみのメモであり、L0 起動フローには影響しない。
+
+- **5 次元論**: D1（ソースコード）/ D2（開発環境）/ D3（配布 skill インスタンス）/ **D4（マスタ skill = メタスキル）** / D5（Meta モニタリング層 = 人間）。機械可読命名は D-numbering、思想文書では `meta-layer` / `meta-meta-layer` 等の階層形容詞を併走させる二重命名を採用（Council 合意 2026-04-29）
+- **`harness-verifier/`（リポジトリルート直下）**: D4 を検査する独立機構。`.claude/skills/` 配下ではなく、DH 本体と並列のディレクトリ。`PHILOSOPHY.md` / `BOUNDARY.md` / `HUMAN-PROTOCOL.md` / `glossary.yml` / `verify.py` / `checks/` / `reports/` を含む
+- **検証スコープ 5 項目**: frontmatter 整合性 / 参照 path 有効性 / SK 間依存グラフ循環（自己参照と未定義参照のみ） / 5 層構造保全（D4 解釈） / 用語辞書整合
+- **責務分離（BOUNDARY.md §5）**: 既存 `crosscut-verifier-drift`（D2/D3 対象）/ `crosscut-verifier-philosophy`（v5.3.0 候補、D2/D3 対象）/ §7.4 自己検証（D2 対象）と本機構（D4 対象）は次元が違う独立検証
+- **後方互換**: 既存 SKILL.md / references / crosscut-* の挙動は完全不変。`harness-verifier/` 不在でも DH は通常動作する
+
+`crosscut-verifier-philosophy` の本実装は v5.3.0 候補として引き続き継続検討（v5.1.0 から後送）。
+詳細: `harness-verifier/README.md`, `harness-verifier/PHILOSOPHY.md`, `history/ARCH-DECISIONS.md` AD-010〜AD-012。
+
+#### v5.1.0 追加（L0 受け入れ基準明文化・Pre-flight 必読化・scaffold checklist・自己検証ステップ、minor 昇格）
+
+後方互換維持の追加のみ。テストレビュー（PR #19、シナリオ「ケロぴの森」）で判明した L0 charter 未達 P0 4 項目（受け入れ基準・Pre-flight・scaffold・自己検証）を解消する。
+
+- §0「原則」に **L0 完了の受け入れ基準 4 条件** を明文化（仕様充足 / scaffold 実体 / smoke test / §7.4 PASS）。ドキュメント生成完了 ≠ L0 完了。
+- §1.5 / §3.5 / §4 / §6 / §7 各ステップ冒頭に **Pre-flight 必読リファレンス指定** を 1 行追加（読まずに進行禁止）
+- `.claude/skills/layer0-spec-architect/references/scaffold-checklist.md` 新設。v5.1.0 標準 stack（Vite + TypeScript + React + PWA）の必須生成ファイル 12 種と smoke test 手順を規定
+- §7（出力）と §7.5 の間に **§7.4 L0 自己検証** を新設（broken reference / smoke test / DONT 自己照合 / Pre-flight 充足 / 受け入れ基準充足の 5 チェック）
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` の「開発環境構築時の初期化」に scaffold-checklist.md への相互参照 1 行を追加
+- `.claude/skills/layer0-spec-architect/assets/credit-template.md` のバージョン表記を v5.1.0 に更新
+
+`crosscut-verifier-philosophy` の本実装は本リリース対象外（v5.2.0 候補として継続検討）。LC ≥ 1 既存プロジェクトは新規開始機能・フェーズに段階適用、既存成果物への遡及修正は不要。
+
+#### v5.0.0 追加（GitHub 連携前提化・crosscut prefix 確立・semver 化、major 昇格）
+
+破壊的変更を含む major 昇格。詳細は `dh-upgrades/upgrade-spec-v5.0.0.md` および `history/REGIME-LOG.md` 参照。
+
+- L0 判定軸に `dev_mode`（local_only / github_assisted / github_autonomous）を 3 軸目として追加（§4 モード判定 / §dev_mode 軸 / `.claude/skills/layer0-spec-architect/references/regime-assessment.md` §dev_mode 判定）
+- `.claude/skills/layer0-spec-architect/assets/meta-spec-template.md` の REGIME.md テンプレに `## dev_mode` セクション追加
+- `.claude/skills/layer0-spec-architect/references/dev-env-spec.md` の参照権限マトリクスに `templates/` 行を追加（配布雛形）
+- 関連: 既存 `council/` を `crosscut-council/` にリネーム（major 破壊）。`crosscut-` を Level A skill の第二の命名規則として確立
+- 関連: 5 新規 crosscut skill（issue-dispatcher / issue-implementer / verifier-drift / verifier-philosophy(placeholder) / feedback-loop）追加。詳細は各 SKILL.md
+- v5.8.0 追加: crosscut-issue-quality-gate（Issue 品質チェック、発動契機 (b)）
+- バージョン記法を semver 厳格化（v5.0.0 以降は MAJOR.MINOR.PATCH）。v4.x 互換のため旧表記は受理
+
+#### v4.2 追加（分類再編・progressive disclosure 適合化）
+
+skill-creator 規約（`.claude/skills/layer0-spec-architect/references/` = 読み参考の docs、`.claude/skills/layer0-spec-architect/assets/` = 埋めて使うテンプレ）への適合化として、以下 3 テンプレを `.claude/skills/layer0-spec-architect/references/` → `.claude/skills/layer0-spec-architect/assets/` に再分類。identity（ベース名）と内容は完全に保持。本節冒頭（§既存）の「改名禁止」制約には「再分類は例外」条項を明文化済み。
+
+- `.claude/skills/layer0-spec-architect/assets/meta-spec-template.md` — 保持対象 7 件のうちの 1 件、再分類として minor 許容（上記例外条項に基づく）。§357 参照
+- `.claude/skills/layer0-spec-architect/assets/credit-template.md` — v3.1 追加分、再分類。§377 参照
+- `.claude/skills/layer0-onboarding/assets/reverse-spec-template.md` — 兄弟 skill 側で同期移動（Issue #12）
+
+#### v4.1 追加（廃止判断プロトコル分離）
+
+- `.claude/skills/layer0-spec-architect/references/deprecation-protocol.md` — 廃止判断プロトコル（LC ≥ 1 で適用、発動条件・プロトコル・拒否ケース）。SKILL.md 本体から分離して参照化。
+
+#### v4.0 追加（哲学原典化・5層エラー検出スタック・UX プロトコル）
+
+- `.claude/skills/layer0-spec-architect/references/philosophy.md` — dialog-harness 6条憲法（フラクタル / Shift Left / 情報純度 / 人間責務 / 献上哲学 / 人間 ≒ Council）。全skill の参照原典。第6条は v4.2 で追加。
+
+関連（他 skill 配下に配置される参照ファイル、本 SKILL.md から間接参照）：
+- `.claude/skills/layer1-autonomous-dev/references/inferential-sensor-v2.md` — Shift Left 基盤 + 5層エラー検出スタック（L1 自己検証の埋め込み手順含む）
+- `.claude/skills/layer2-orchestrator/references/e2e-integration.md` — Playwright Test Agents 規格（L2 配下の並列 Agent 群）
+- `.claude/skills/layer2-orchestrator/references/sub-agent-protocol.md` — サブエージェント統括の情報純度プロトコル

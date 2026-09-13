@@ -33,6 +33,72 @@ REQUIRED_FIELDS = ["ts", "event"]
 TAIL_LINES_LIMIT = 1000
 
 
+
+# --- v7.0.0 Phase A F1: 不変核 anchor の配線検査 ---
+ANCHOR_MD_CANDIDATES = (".claude/anchor-core.md", ".dh/anchor-core.md")
+ANCHOR_SCRIPT = "templates/hooks/anchor-core.py"
+ANCHOR_MAX_CHARS = 400   # 不変核は 3〜4 条・250 字目安。膨らむと compaction 耐性の利点が消える
+ANCHOR_MAX_LINES = 8
+
+
+def _check_anchor(repo_root: Path) -> list[dict[str, Any]]:
+    """anchor-core.md（不変核）と SessionStart hook の配線が対応しているかを見る。
+
+    - md があるのに settings.json の SessionStart が anchor-core.py を呼んでいない → FAIL（注入されない）
+    - settings が anchor-core.py を呼ぶのに md も script も無い → WARN（配線だけ残った）
+    - md の本文（HTML コメント除く）が上限超過 → FAIL（不変核は小さく保つ。arXiv 2608.12426 k*=2〜4）
+    LLM 判定は含まない。
+    """
+    import re as _re
+
+    issues: list[dict[str, Any]] = []
+    md_path = next((repo_root / c for c in ANCHOR_MD_CANDIDATES if (repo_root / c).is_file()), None)
+    settings = repo_root / ".claude" / "settings.json"
+    wired = False
+    if settings.is_file():
+        try:
+            doc = json.loads(settings.read_text(encoding="utf-8"))
+            for entry in (doc.get("hooks", {}) or {}).get("SessionStart", []) or []:
+                for h in entry.get("hooks", []) or []:
+                    if "anchor-core.py" in str(h.get("command", "")):
+                        wired = True
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    if md_path is not None and not wired:
+        issues.append({
+            "location": str(md_path.relative_to(repo_root)),
+            "message": "anchor-core.md があるが .claude/settings.json の SessionStart が anchor-core.py を呼んでいない（不変核が再注入されない）",
+            "severity": "FAIL",
+        })
+    if wired and not (repo_root / ANCHOR_SCRIPT).is_file():
+        issues.append({
+            "location": ".claude/settings.json",
+            "message": f"SessionStart が anchor-core.py を呼ぶが {ANCHOR_SCRIPT} が無い",
+            "severity": "FAIL",
+        })
+    if wired and md_path is None:
+        issues.append({
+            "location": ".claude/settings.json",
+            "message": "SessionStart が anchor-core.py を呼ぶが anchor-core.md が無い（配線だけ残っている。出力は空で無害）",
+            "severity": "WARN",
+        })
+    if md_path is not None:
+        try:
+            body = _re.sub(r"<!--.*?-->", "", md_path.read_text(encoding="utf-8"), flags=_re.S).strip()
+        except OSError:
+            body = ""
+        n_lines = len([ln for ln in body.splitlines() if ln.strip()])
+        if len(body) > ANCHOR_MAX_CHARS or n_lines > ANCHOR_MAX_LINES:
+            issues.append({
+                "location": str(md_path.relative_to(repo_root)),
+                "message": (f"不変核が大きすぎる: {len(body)} 字 / {n_lines} 行"
+                            f"（上限 {ANCHOR_MAX_CHARS} 字 / {ANCHOR_MAX_LINES} 行。3〜4 条に絞る）"),
+                "severity": "FAIL",
+            })
+    return issues
+
+
 def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # noqa: ARG001
     """hook-observations.jsonl の形式整合性を検査する。
 
@@ -42,8 +108,10 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # no
     repo_root = skills_dir.parent.parent
     log_path = repo_root / "harness-verifier" / "reports" / "hook-observations.jsonl"
 
+    anchor_issues = _check_anchor(repo_root)
+
     if not log_path.is_file():
-        return []
+        return anchor_issues
 
     try:
         text = log_path.read_text(encoding="utf-8")
@@ -108,4 +176,4 @@ def run(*, skills_dir: Path, glossary_path: Path) -> list[dict[str, Any]]:  # no
             }
         )
 
-    return issues
+    return anchor_issues + issues

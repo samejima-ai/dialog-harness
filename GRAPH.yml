@@ -213,14 +213,8 @@ nodes:
 #   「登録すべきだが面倒だから除く」ものを置く場所ではない。
 # ---------------------------------------------------------------------------
 graph_excluded:
-  # --- skill: 発動禁止の placeholder（凍結 / 廃止の決定が未了） ---
-  # SKILL.md 自身が「v5.0.0 では発動禁止 / DO NOT TRIGGER」と宣言する placeholder。
-  # v5.0.0 から 6 回後送された別案件（SK-08）で、凍結・廃止いずれの決定も未了。
-  # その未決定をここで可視化する（upgrade-spec-v6.17.0 §実装しないもの）。
-  # 本実装または廃止の決定時に本項を外す。
-  - id: crosscut-verifier-philosophy
-    path: .claude/skills/crosscut-verifier-philosophy/
-    reason: 発動禁止の placeholder（判定ロジック未実装・凍結/廃止の決定が未了）
+  # --- skill: crosscut-verifier-philosophy は v7.0.0 Phase A F2 で廃止（v5.0.0 placeholder のまま 6 版後送・
+  #     CTL-1 では起動条件 CTL ≥ 2 も未達）。思想検証は Phase B の philosophy 分割後に再設計する。---
 
   # --- script: 実行グラフの経路ではなく、検査器 / 分析器（D-2） ---
   # tool node は「グラフ上で誰かから起動される」ものに限る。以下は儀式や CI から

@@ -2,6 +2,22 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v7.0.0 Phase A / PR-1（major 候補の前段・VERSION は 6.18.0 のまま）
+
+- 判定日: 2026-09-13
+- 判定者: ユーザー（L0 儀式 F2 の 4 問: スコープ全部 / H1 は 11-06 後 / Council は ablation 先行 / 再評価は献上同梱）+ D-1〜D-5 推奨案で GO
+- AI 能力バージョン: Claude 5 系（`model-recommendations.md` 2026-08-05 版の参照世代）。前回記録から 1 世代進行。以後は
+  `history/.model-generation.yml` に機械記録（F7）
+- 改修主体: layer0-spec-architect 対話セッション（儀式レベル 3）→ 同セッション内 L1 実装 → layer1-independent-reviewer（新規文脈）
+- **段階構成の根拠**: Phase A は第 9 条 L-FULL 領域のみ（revert 可）。philosophy.md は L-FROZEN-PHIL で AI は提案 PR も不可のため、
+  H1 を含む Phase B は 2026-11-06 の roll-back 評価ゲート後に人間起票。`VERSION` 7.0.0 昇格は Phase B
+- モード判定: **M2 標準**（S=大 / U=低 / R=高: 自己改修・憲法隣接・配布物 / N=低 / 単一ドメイン / L2 閾値未達）
+- dev_mode: `github_assisted` 相当（PR + 人間判定。規範文書改変は opt-in 領域）
+- 儀式記録: レベル 3（F1 / F2 矛盾 3 件・再提案 1 件 / F2.6 発火 0 件・検知器欠陥を検出 / F2.7 再評価同梱 / F3 予告）
+- Council 記録: `council-2026-09-13T01:40:00Z-v7phsa`（C2 / implementation / 案C / jc 0.78 / reason_divergence / 3 軸全会一致・
+  次元分離 ROI・可逆性・前提への問い / implementer_consent: agreed）。CTL-1 維持（67/67 一致）
+- F2.7 環境再評価: 総合 **B−（変化なし）**。下位で特徴 4「edge を契約として扱う」✕ → △（F5）。詳細は DELIVERY §F9
+
 ## v6.18.0（minor 昇格、時限の主体化 + 供給元の共有枠の観測）
 
 - 判定日: 2026-09-11

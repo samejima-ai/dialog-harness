@@ -91,6 +91,12 @@ L0（spec-architect）が対話開始時に実行する「過去文脈⇔現欲�
    手順書依存に戻さないための実行経路接続（`crosscut-council/SKILL.md` §CTL 記録 /
    `dh-upgrades/upgrade-spec-v6.1.0.md`）。スクリプト不在なら skip（利用者プロジェクトで壊れない）。
    同期は読取専用の導出で可逆・低コスト。質問は挟まない（F1 は質問なしフェーズ）。
+5.5. **モデル世代の機械記録（v7.0.0 Phase A F7）**: 当該セッションのモデル世代ラベル（`model-recommendations.md` の
+   「参照モデル世代」表記に合わせる。モデル ID は直書きしない）を `history/.model-generation.yml` の `current` と照合し、
+   変わっていれば `current` / `changed_at` / `recorded_by: ritual-F1` を更新する（変わっていなければ触らない）。
+   `scripts/norm-scan.py` はこの `changed_at` と model-recommendations.md の最終 commit の**新しい方**を世代 epoch に使う。
+   これにより「model-recommendations.md が更新されない限り `model_generation` が永久に発火しない」代理指標欠陥
+   （2026-09-13 実測）を塞ぐ。質問は挟まない（F1 は質問なしフェーズ）。LLM 判定なし（I-3）。
 5. **軸独立性・観測バイアス監査（v6.6.0）**: `scripts/council-axis-audit.py` が存在すれば
    `python3 scripts/council-axis-audit.py` を走らせ、出力の「総括」節だけを読む
    （スクリプト不在なら skip）。CTL 同期と同様に**読取専用の集計**であり、質問は挟まない。
