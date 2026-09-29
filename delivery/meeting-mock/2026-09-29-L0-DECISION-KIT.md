@@ -41,4 +41,21 @@
 
 ## 決定記録
 
-（回答の貼り戻し後に追記: 問い / 決定 / 次に AI がすること）
+回答日: 2026-09-29（武久）
+
+| # | 決定 | 次に AI がすること |
+|---|---|---|
+| Q1 | C 双方向に切替可（起動時に選択、途中はボタン 1 つ） | SPEC に mode 状態（meeting / dev）と切替時挙動を追加。control に mode.switch |
+| Q2 | B 左ドキュメント＋右に確定発言ログ（時刻付き） | FR-06 をモード別に分割 |
+| Q3 | C 一般会議＋区分を会議ごとにカスタム（AI 推奨 B を却下、v0.1 に含める） | 区分を固定 enum から「会議テンプレート」定義へ変更（追加確認あり） |
+| Q4 | B 会議=minutes.md / 開発=handoff.md。メモ: 出力用プロンプトはプリセット＋カスタマイズ可 | Q3 と統合し「会議テンプレート = 区分定義 + 更新プロンプト + 出力プロンプト」に畳む案を提示 |
+| Q5 | B P0→P1a→P2→P1b→P3→P4 | 段階表を組み替え |
+| Q6 | B ルート作り直し、DH は .claude/ だけ残す。メモ: 後で新規リポジトリへコピー予定 | .claude/ の外部依存を指摘（下記）し、残す範囲を確認 |
+| Q7 | D 会議モード=参加者が「伝わった」、開発モード=handoff から着手可 | SPEC WHY 層・合格基準をモード別に記述 |
+| Q8 | A 社内のみ | R4 は P0 前必須から外す（P2 までに確認） |
+| Q9 | A 画面崩れ / B 言っていない決定 / C 録音の無言停止（D 無料枠送信は非選択） | A〜C を critical journey に確定。D は DONT/機密要件で別途担保 |
+| Q10 | A Windows 11 確定 | scaffold の起動・smoke を Windows 前提に |
+
+### 決定後に判明した事項
+
+- **Q6 の依存**: `.claude/settings.json` の hooks が `scripts/bootstrap.py`・`scripts/local_verify.py`・`templates/hooks/anchor-core.py` を呼ぶ。skills 9 ファイルが `../../../templates`（13 箇所）・`../../../history`（7 箇所）を参照。`.claude/` だけ残すと hooks が失敗し参照が切れる
