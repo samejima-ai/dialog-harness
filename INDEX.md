@@ -22,6 +22,7 @@
 → REGIME.md（ドラフト）
 
 ## 判断の記録
+→ delivery/meeting-mock/SESSION-HANDOFF-2026-09-29.md（再開はここから）
 → delivery/meeting-mock/2026-09-29-L0-DECISION-KIT.md
 → delivery/meeting-mock/2026-09-29-L0-FLOW-KIT.md
 → delivery/meeting-mock/ANALYSIS-2026-09-29-fact-check.md
