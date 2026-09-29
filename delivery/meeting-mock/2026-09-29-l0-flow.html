@@ -1,0 +1,478 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head><body style="margin:0"><title>会議モック 開発フロー判断キット</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #14141c; --surface: #1c1c27; --surface-2: #252533;
+    --line: #33334a; --line-soft: #26263a;
+    --ink: #ecebf3; --ink-2: #aaa8c0; --ink-3: #7c7a94;
+    --accent: #8b7ff0; --accent-deep: #6d5fe0; --accent-soft: rgba(139,127,240,.14);
+    /* data-viz categorical (validated for the dark surface, see references/design.md) */
+    --c1: #9085e9; --c2: #199e70; --c3: #c98500; --c4: #3987e5; --c-neutral: #55546a;
+    --no: #b05a5a;
+    --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ground); }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 24px 96px; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.3; margin: 8px 0 12px; text-wrap: balance; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.35; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  .lede { color: var(--ink-2); max-width: 70ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--ink-3); font-size: 13px; margin-top: 18px; }
+  .meta b { color: var(--ink-2); font-weight: 400; }
+  section { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--line-soft); }
+  section > .eyebrow { margin-bottom: 6px; }
+  .sub { color: var(--ink-2); max-width: 72ch; }
+  .panel { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; padding: 20px 22px; }
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; margin-top: 28px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  .stat { padding: 12px 14px; border-radius: 8px; background: var(--surface-2); }
+  .stat .n { font-family: var(--font-mono); font-size: 30px; line-height: 1.1; font-weight: 500; }
+  .stat .l { color: var(--ink-2); font-size: 13px; margin-top: 6px; }
+  /* stacked bar */
+  .bar { display: flex; height: 44px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--ground); margin-top: 14px; }
+  .seg { position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 14px; color: #0d0d14; font-weight: 500; cursor: default; transition: filter .15s; min-width: 10px; }
+  .seg:hover { filter: brightness(1.12); }
+  .seg.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 4px, #3a3950 4px 8px); color: var(--ink); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .sw.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 3px, #3a3950 3px 6px); }
+  .tip { position: fixed; pointer-events: none; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); font-size: 13px; padding: 6px 10px; border-radius: 6px; opacity: 0; transition: opacity .12s; z-index: 10; white-space: nowrap; }
+  .tip.on { opacity: 1; }
+  /* svg charts + diagrams */
+  .chart { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-2); }
+  .chart .axis { stroke: var(--line); stroke-width: 1; }
+  .chart .grid { stroke: var(--line-soft); stroke-width: 1; }
+  .chart .lbl-strong { fill: var(--ink); font-size: 13px; }
+  .chart .lbl-note { fill: var(--ink-3); font-family: var(--font-body); font-size: 12px; }
+  .chart .lbl-body { fill: var(--ink); font-family: var(--font-body); font-size: 13px; }
+  .chart .lbl-body-2 { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
+  .chart .lbl-mono-strong { fill: var(--ink); font-size: 14px; font-weight: 500; }
+  .caption { color: var(--ink-3); font-size: 12.5px; margin-top: 8px; max-width: 72ch; }
+  .flow-wrap { overflow-x: auto; margin-top: 18px; }
+  .flow { min-width: 760px; }
+  .flow .box { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+  .flow .box-strong { fill: var(--surface-2); stroke: var(--accent); stroke-width: 1.25; }
+  .flow .box-dim { fill: var(--ground); stroke: var(--line-soft); stroke-width: 1; stroke-dasharray: 3 3; }
+  .flow .edge { fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+  .flow .edge-loop { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .flow .edge-no { fill: none; stroke: var(--no); stroke-width: 1.5; stroke-dasharray: 2 4; }
+  .flow .arrow { fill: var(--ink-3); }
+  .flow .arrow-accent { fill: var(--accent); }
+  .flow .pill-1 { fill: var(--c1); } .flow .pill-2 { fill: var(--c2); } .flow .pill-3 { fill: var(--c3); } .flow .pill-4 { fill: var(--c4); }
+  .flow .pill-t { fill: #0d0d14; font-size: 12px; font-weight: 500; }
+  /* stepper */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  .step { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 8px; padding: 14px 16px; }
+  .step .t { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .08em; }
+  .step .m { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin: 2px 0 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-family: var(--font-mono); font-size: 12.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface-2); }
+  .chip.done { border-color: var(--accent); color: var(--accent); }
+  /* tables */
+  .tbl-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line-soft); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
+  th { color: var(--ink-3); font-weight: 400; font-size: 12px; letter-spacing: .06em; background: var(--surface); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-family: var(--font-mono); white-space: nowrap; color: var(--ink-2); }
+  .tag { display: inline-block; font-family: var(--font-mono); font-size: 11.5px; padding: 1px 7px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); white-space: nowrap; }
+  .tag.c1 { color: var(--c1); } .tag.c2 { color: var(--c2); } .tag.c3 { color: var(--c3); } .tag.c4 { color: var(--c4); } .tag.new { color: var(--accent); border-color: var(--accent); }
+  /* guard list */
+  .guards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+  @media (max-width: 760px) { .guards { grid-template-columns: 1fr; } }
+  .guard { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--no); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+  .guard b { display: block; margin-bottom: 4px; }
+  .guard .why { color: var(--ink-2); font-size: 13px; }
+  /* question cards */
+  .qlist { display: flex; flex-direction: column; gap: 22px; margin-top: 22px; }
+  .q { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--c1); border-radius: 10px; padding: 22px 24px; }
+  .q-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+  .q-num { font-family: var(--font-mono); color: var(--c1); font-size: 13px; letter-spacing: .1em; }
+  .q-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0; flex: 1 1 320px; text-wrap: balance; }
+  .q-time { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+  .q-fbs { margin-top: 6px; font-size: 13px; color: var(--ink-3); font-family: var(--font-mono); }
+  .q-quote { margin: 12px 0 0; padding: 8px 14px; border-left: 2px solid var(--line); color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+  .q-body { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px 28px; margin-top: 16px; }
+  @media (max-width: 860px) { .q-body { grid-template-columns: 1fr; } }
+  .q-facts h4, .q-opts h4, .q-after h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .12em; color: var(--ink-3); font-weight: 400; font-family: var(--font-mono); }
+  .q-facts ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .q-facts li { margin-bottom: 6px; }
+  .q-facts li b, .q-after b { color: var(--ink); font-weight: 700; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: start; width: 100%; text-align: left; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--ink); font: inherit; font-size: 14px; line-height: 1.55; cursor: pointer; transition: border-color .12s, background .12s; }
+  .opt:hover { border-color: var(--accent); }
+  .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt .k { font-family: var(--font-mono); color: var(--ink-3); }
+  .opt .rec { font-family: var(--font-mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; align-self: center; white-space: nowrap; }
+  .opt.selected { background: var(--accent-soft); border-color: var(--accent); }
+  .opt.selected .k { color: var(--accent); }
+  .opt.no { cursor: not-allowed; color: var(--ink-3); border-style: dashed; }
+  .opt.no .k { color: var(--no); }
+  .opt.no .rec { color: var(--no); border-color: var(--no); }
+  .q-after { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line-soft); color: var(--ink-2); font-size: 14px; }
+  .q-after p { max-width: none; margin: 0; }
+  .q-note { margin-top: 10px; }
+  .q-note textarea { width: 100%; min-height: 56px; background: var(--ground); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13.5px; resize: vertical; }
+  .q-note textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* summary */
+  .sum { margin-top: 22px; background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 20px 22px; }
+  .sum pre { margin: 12px 0 0; padding: 14px; background: var(--ground); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: var(--ink-2); max-height: 360px; overflow: auto; }
+  .btn { font: inherit; font-size: 13.5px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); cursor: pointer; }
+  .btn:hover { background: var(--accent-deep); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.quiet { border-color: var(--line); background: transparent; color: var(--ink-2); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .btn-row .note { color: var(--ink-3); font-size: 12.5px; }
+  .foot { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line-soft); color: var(--ink-3); font-size: 12.5px; }
+  .foot p { max-width: none; }
+  /* ---- declarative visuals (scripts/visuals.py, references/visuals.md) ---- */
+  .viz { margin: 18px 0 0; }
+  .viz-t { font-size: 13px; color: var(--ink-2); margin-bottom: 4px; font-family: var(--font-mono); letter-spacing: .04em; }
+  .hero-viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px 28px; margin-top: 28px; }
+  .hero-viz > .viz-stats, .hero-viz > .viz-flow, .hero-viz > .viz-timeline { grid-column: 1 / -1; }
+  .viz .stat-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .stat .n { white-space: nowrap; }
+  .hero-viz > .viz { margin: 0; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; padding: 18px 20px; }
+  .q-viz { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 4px 24px; }
+  .q-viz > .viz { margin-top: 6px; }
+  .waffle { display: grid; grid-template-columns: repeat(auto-fill, 16px); gap: 3px; margin-top: 12px; }
+  .waffle .cell { width: 16px; height: 16px; border-radius: 3px; display: block; }
+  .waffle .cell.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 3px, #3a3950 3px 6px); }
+  .hbar { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .hb-row { display: grid; grid-template-columns: minmax(80px, 34%) 1fr auto; gap: 4px 10px; align-items: center; font-size: 13.5px; }
+  .hb-label { color: var(--ink-2); }
+  .hb-track { height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .hb-fill { height: 100%; background: var(--c1); opacity: .5; border-radius: 4px; }
+  .hb-fill.hl { opacity: 1; }
+  .hb-val { color: var(--ink); font-size: 13px; }
+  .hb-note { grid-column: 2 / -1; color: var(--ink-3); font-size: 12px; margin-top: -4px; }
+  .flowh { display: flex; align-items: stretch; margin-top: 4px; overflow-x: auto; padding: 12px 0 4px; }
+  .fl-node { position: relative; flex: 1 1 0; min-width: 110px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+  .fl-node.strong { background: var(--surface-2); border-color: var(--accent); }
+  .fl-node.dim { background: var(--ground); border: 1px dashed var(--line-soft); color: var(--ink-3); }
+  .fl-node.stop { border-color: var(--no); box-shadow: inset 3px 0 0 var(--no); }
+  .fl-label { font-weight: 700; line-height: 1.45; }
+  .fl-sub { color: var(--ink-2); font-size: 12px; margin-top: 4px; line-height: 1.5; }
+  .fl-pill { position: absolute; top: -9px; left: 10px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; color: #0d0d14; border-radius: 999px; padding: 0 7px; line-height: 18px; }
+  .fl-edge { flex: 0 0 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .fl-line { position: relative; width: 100%; height: 0; border-top: 2px solid var(--ink-3); }
+  .fl-line::after { content: ""; position: absolute; right: -1px; top: -6px; border: 5px solid transparent; border-left: 7px solid var(--ink-3); }
+  .fl-edge.loop .fl-line { border-top: 2px dashed var(--accent); }
+  .fl-edge.loop .fl-line::after { border-left-color: var(--accent); }
+  .fl-edge.no .fl-line { border-top: 2px dotted var(--no); }
+  .fl-edge.no .fl-line::after { content: "×"; border: 0; top: -12px; right: 40%; color: var(--no); font-weight: 700; font-size: 14px; }
+  .fl-elab { font-size: 11px; color: var(--ink-3); text-align: center; line-height: 1.3; }
+  .fl-back { margin-top: 6px; color: var(--accent); font-size: 12.5px; }
+  @media (max-width: 640px) {
+    .flowh { flex-direction: column; overflow: visible; }
+    .fl-edge { flex: 0 0 34px; flex-direction: row; }
+    .fl-line { width: 0; height: 22px; border-top: 0; border-left: 2px solid var(--ink-3); }
+    .fl-line::after { right: auto; left: -6px; top: auto; bottom: -3px; border: 5px solid transparent; border-top: 7px solid var(--ink-3); }
+    .fl-edge.loop .fl-line { border-top: 0; border-left: 2px dashed var(--accent); }
+    .fl-edge.loop .fl-line::after { border-left-color: transparent; border-top-color: var(--accent); }
+    .fl-edge.no .fl-line { border-top: 0; border-left: 2px dotted var(--no); }
+    .fl-edge.no .fl-line::after { left: 6px; bottom: 2px; }
+    .fl-elab { text-align: left; margin-left: 8px; }
+  }
+  .cmp { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 10px; align-items: stretch; margin-top: 12px; }
+  @media (max-width: 640px) { .cmp { grid-template-columns: 1fr; } .cmp-arrow { transform: rotate(90deg); } }
+  .cmp-col { border-radius: 8px; padding: 12px 14px; font-size: 13.5px; }
+  .cmp-col.before { background: var(--ground); border: 1px dashed var(--line); color: var(--ink-2); }
+  .cmp-col.after { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .cmp-h { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--ink-3); margin-bottom: 6px; }
+  .cmp-col.after .cmp-h { color: var(--accent); }
+  .cmp ul { margin: 0; padding-left: 0; list-style: none; }
+  .cmp li { margin-bottom: 5px; }
+  .cmp-plus { color: var(--c2); margin-right: 6px; } .cmp-minus { color: var(--no); margin-right: 6px; }
+  .cmp-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; }
+  .mx td:nth-child(2) { min-width: 8em; }
+  .mx th { white-space: nowrap; }
+  .mx td.mx-c, .mx th:nth-child(n+3) { text-align: center; white-space: nowrap; }
+  .mx tr.mx-rec td { background: var(--accent-soft); }
+  .mx tr.mx-rec td.id { color: var(--accent); }
+  .mx-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--c1); vertical-align: middle; }
+  .mx-dot.full { background: var(--c1); }
+  .mx-dot.half { background: linear-gradient(90deg, var(--c1) 50%, transparent 50%); }
+  .mx-x { color: var(--no); font-weight: 700; }
+  .mx-na { color: var(--ink-3); }
+  .step.now { border-color: var(--accent); background: var(--surface-2); }
+  .step.later { border-style: dashed; background: var(--ground); color: var(--ink-3); }
+  .step-b { font-size: 13px; color: var(--ink-2); }
+  .meter { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .meter-track { flex: 1; height: 12px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .meter-fill { height: 100%; background: var(--c1); border-radius: 999px; transition: width .25s; }
+  .meter-lab { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .tl { list-style: none; margin: 14px 0 0; padding: 0; display: flex; gap: 0; overflow-x: auto; position: relative; }
+  .tl-ev { position: relative; flex: 1 1 0; min-width: 96px; padding: 22px 8px 0 0; font-size: 13px; }
+  .tl-ev::before { content: ""; position: absolute; top: 6px; left: 0; right: 0; border-top: 2px solid var(--line); }
+  .tl-ev.future::before { border-top-style: dashed; }
+  .tl-dot { position: absolute; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--c1); border: 2px solid var(--ground); }
+  .tl-ev.now .tl-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .tl-ev.stop .tl-dot { background: var(--no); }
+  .tl-ev.future .tl-dot { background: var(--ground); border-color: var(--c1); }
+  .tl-d { display: block; color: var(--ink-3); font-size: 12px; }
+  .tl-l { display: block; color: var(--ink); line-height: 1.45; }
+  .tl-gap { margin-top: 8px; color: var(--no); font-size: 12.5px; }
+  /* answer map (auto, from questions[].time) */
+  .qmap { display: flex; gap: 3px; margin-top: 18px; height: 40px; }
+  .qmap a { flex: 1 1 0; min-width: 34px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--ink-2); text-decoration: none; font-family: var(--font-mono); font-size: 12px; line-height: 1.2; }
+  .qmap a small { font-size: 10.5px; color: var(--ink-3); }
+  .qmap a.done { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+  .qmap a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qmap-cap { color: var(--ink-3); font-size: 12.5px; margin-top: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">会議モック可視化ツール · L0 · 2026-09-29 · 第 2 弾</div>
+  <h1>会議モック 開発フロー判断キット</h1>
+  <p class="lede">モック UI までの標準的な開発フロー（S1 企画 → S8 確定）に沿って、残りの判断を 13 問に並べた。<b>前の段階の問いに全部答えると、次の段階が解放される。</b>足りない要素と、回答どうしの食い違いは吹き出しで出る。S0（準備）はいつでも答えられる。</p>
+  <div class="meta"><span><b>前回</b> 判断キット 0929（Q1〜Q10 回答済み）</span><span><b>モック</b> delivery/meeting-mock/board-mock.html（v1）</span><span><b>ブランチ</b> ccr-a72b57e5-jrlhni（master へマージしない）</span></div>
+
+  <div class="hero-viz"><figure class="viz viz-steps"><figcaption class="viz-t">モック UI までの標準フロー（今はここ）</figcaption><div class="steps"><div class="step"><div class="t">S1–S2</div><div class="m">企画・要件</div><div class="step-b">ほぼ済み。UX 2 問が残り</div></div><div class="step now"><div class="t">S3–S5</div><div class="m">画面設計・見た目</div><div class="step-b">飛ばしていた。今回ここを埋める</div></div><div class="step"><div class="t">S6–S7</div><div class="m">試作・確認</div><div class="step-b">v1 → v2 で埋め直す</div></div><div class="step later"><div class="t">S8</div><div class="m">確定</div><div class="step-b">SPEC 確定 → 実装（P0）へ</div></div></div></figure><figure class="viz viz-stats"><div class="stat-row"><div class="stat"><div class="n">13</div><div class="l">今回の問い</div></div><div class="stat"><div class="n" style="color:var(--accent)">5</div><div class="l">順番に解放される段階</div></div><div class="stat"><div class="n" style="color:var(--no)">2</div><div class="l">v1 に無い画面</div></div></div></figure></div>
+
+  <section>
+<div class="eyebrow">01 · 工程表</div>
+<h2>段階ごとの状態と足りない要素を見る</h2>
+<p class="sub">● 済み ／ ◐ 一部 ／ ○ 未着手 ／ 🔒 前の段階待ち。吹き出しは、その段階で足りない要素。問いに答えると吹き出しが減っていく。</p>
+
+
+<style>
+.rail{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}
+.st{position:relative;display:grid;grid-template-columns:18px 170px 1fr;gap:4px 12px;align-items:start;padding:10px 12px;border:1px solid var(--line-soft);border-radius:10px;background:var(--surface)}
+.st-dot{width:14px;height:14px;border-radius:50%;margin-top:5px;border:2px solid var(--ink-3);background:transparent}
+.st-name{font-size:15px}.st-name b{font-family:var(--font-mono);color:var(--ink-3);margin-right:4px}
+.st-what{font-size:14px;color:var(--ink-3)}
+.st-done .st-dot{background:var(--c4);border-color:var(--c4)}
+.st-partial .st-dot{background:linear-gradient(90deg,var(--c3) 50%,transparent 50%);border-color:var(--c3)}
+.st-now{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.st-now .st-dot{border-color:var(--accent);background:var(--accent)}
+.st-locked{opacity:.55}
+.st-locked .st-name::after{content:' 🔒';font-size:13px}
+.bubble{grid-column:2 / 4;position:relative;font-size:13.5px;line-height:1.5;background:var(--surface-2);border:1px solid var(--c3);border-radius:10px;padding:6px 10px;margin-top:4px;color:var(--ink-2)}
+.bubble::before{content:'';position:absolute;top:-7px;left:18px;width:12px;height:12px;background:var(--surface-2);border-left:1px solid var(--c3);border-top:1px solid var(--c3);transform:rotate(45deg)}
+.bubble.ok{border-color:var(--c4);color:var(--ink-3)}
+.bubble.ok::before{border-color:var(--c4)}
+.q.locked{opacity:.5}
+.q.locked .opts,.q.locked textarea{pointer-events:none}
+.lockbar{font-size:14px;background:var(--surface-2);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;margin:0 0 10px;color:var(--ink-2)}
+.qbubble{position:relative;font-size:14px;background:var(--surface-2);border:1px solid var(--no);border-radius:10px;padding:7px 12px;margin:10px 0 0;color:var(--ink)}
+.qbubble::before{content:'';position:absolute;top:-7px;left:24px;width:12px;height:12px;background:var(--surface-2);border-left:1px solid var(--no);border-top:1px solid var(--no);transform:rotate(45deg)}
+.qbubble.info{border-color:var(--c1)}.qbubble.info::before{border-color:var(--c1)}
+.stage-tag{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-left:6px}
+.gate-toggle{font-size:14px;color:var(--ink-3);margin-top:10px;display:flex;gap:6px;align-items:center}
+@media (max-width:640px){.qmap{flex-wrap:wrap}.qmap a{flex-basis:18%;min-width:0}.st{grid-template-columns:18px 1fr}.st-what{grid-column:2}.bubble{grid-column:1 / 3}}
+</style>
+<ol class='rail' id='rail'><li class='st st-todo' data-stage='S0'><span class='st-dot'></span><span class='st-name'><b>0</b> 準備</span><span class='st-what'>作業場所を整える</span><span class='bubble' data-bubble='S0'>DH 本体のファイル整理が権限で止まっている</span></li><li class='st st-done' data-stage='S1'><span class='st-dot'></span><span class='st-name'><b>1</b> 企画</span><span class='st-what'>誰の何を解決するか</span></li><li class='st st-partial' data-stage='S2'><span class='st-dot'></span><span class='st-name'><b>2</b> 要件定義</span><span class='st-what'>機能・条件・非機能</span><span class='bubble' data-bubble='S2'>UX 3問のうち「禁止挙動」「参考サービス」が未回答</span></li><li class='st st-todo' data-stage='S3'><span class='st-dot'></span><span class='st-name'><b>3</b> 情報設計</span><span class='st-what'>画面一覧と画面のつながり</span><span class='bubble' data-bubble='S3'>画面一覧・画面遷移図が無い。v1 にはテンプレート編集と出力確認の画面が無い</span></li><li class='st st-partial' data-stage='S4'><span class='st-dot'></span><span class='st-name'><b>4</b> ワイヤーフレーム</span><span class='st-what'>各画面の配置</span><span class='bubble' data-bubble='S4'>v1 が兼ねている。比率と切替ボタンが未確定</span></li><li class='st st-todo' data-stage='S5'><span class='st-dot'></span><span class='st-name'><b>5</b> ビジュアル方針</span><span class='st-what'>色・トーン</span><span class='bubble' data-bubble='S5'>DESIGN.md が無い（トーン・強調色が未決）</span></li><li class='st st-partial' data-stage='S6'><span class='st-dot'></span><span class='st-name'><b>6</b> プロトタイプ</span><span class='st-what'>触って流れを確かめる</span><span class='bubble' data-bubble='S6'>v1 は画面が 2 つ足りない。v2 で埋める</span></li><li class='st st-locked' data-stage='S7'><span class='st-dot'></span><span class='st-name'><b>7</b> 確認</span><span class='st-what'>触ってつまずきを探す</span><span class='bubble' data-bubble='S7'>v2 を社内で触ってもらう</span></li><li class='st st-locked' data-stage='S8'><span class='st-dot'></span><span class='st-name'><b>8</b> 確定</span><span class='st-what'>仕様を固めて実装へ</span><span class='bubble' data-bubble='S8'>SPEC・REGIME を確定し、開発環境を作る</span></li></ol>
+<label class='gate-toggle'><input type='checkbox' id='gateOff'> 順番を無視してすべての問いを開く</label>
+
+</section>
+
+  <section>
+    <div class="eyebrow">02 · 決めること</div>
+    <h2>段階の順に 13 問に答える</h2>
+    <p class="sub">推奨は AI の見立てであって決定ではない。見出しの右端がその問いの段階。</p>
+    <div class="qmap" id="qmap" aria-label="問いの地図（幅 = 所要時間）"></div>
+    <div class="qmap-cap" id="qmapcap"></div>
+    <div class="qlist" id="qlist"></div>
+    <div class="sum" id="summary">
+      <h3>回答まとめ（選んだ内容がここに並ぶ）</h3>
+      <div class="meter"><div class="meter-track"><div class="meter-fill" id="sumfill" style="width:0%"></div></div><div class="meter-lab mono" id="sumlab"></div></div>
+      <p class="sub">コピーして Claude に貼れば、次の cycle はここから始まる。未回答の問いは「未回答」と出る。補足はメモ欄に書けば一緒に出る。</p>
+      <pre id="sumtext">（まだ何も選んでいません）</pre>
+      <div class="btn-row">
+        <button class="btn" id="copy">まとめをコピー</button>
+        <button class="btn quiet" id="clear">選択をすべて消す</button>
+        <span class="note" id="copynote"></span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+<div class="eyebrow">03 · 答えた後</div>
+<h2>回答を貼り戻すと AI が埋める</h2>
+<p class="sub">S3〜S5 の回答を SPEC・DONT・DESIGN.md に反映し、v2 を作る。S7（確認）と S8（確定）はその後に開く。</p>
+<figure class="viz viz-flow"><div class="flowh"><div class="fl-node strong"><div class="fl-label">回答を貼り戻す</div></div><div class="fl-edge solid" aria-hidden="true"><span class="fl-line"></span></div><div class="fl-node normal"><div class="fl-label">SPEC・DESIGN 更新</div></div><div class="fl-edge solid" aria-hidden="true"><span class="fl-line"></span></div><div class="fl-node normal"><div class="fl-label">モック v2</div></div><div class="fl-edge solid" aria-hidden="true"><span class="fl-line"></span></div><div class="fl-node dim"><div class="fl-label">S7 確認</div></div><div class="fl-edge solid" aria-hidden="true"><span class="fl-line"></span></div><div class="fl-node dim"><div class="fl-label">S8 確定</div></div></div></figure>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var QSTAGE = {"Q1": "S0", "Q2": "S0", "Q3": "S2", "Q4": "S2", "Q5": "S2", "Q6": "S3", "Q7": "S3", "Q8": "S4", "Q9": "S4", "Q10": "S5", "Q11": "S5", "Q12": "S5", "Q13": "S6"}, GATED = ["S2", "S3", "S4", "S5", "S6"], STATIC = {"S0": "todo", "S1": "done", "S2": "partial", "S3": "todo", "S4": "partial", "S5": "todo", "S6": "partial", "S7": "locked", "S8": "locked"};
+  var NAMES = {"S0": "準備", "S1": "企画", "S2": "要件定義", "S3": "情報設計", "S4": "ワイヤーフレーム", "S5": "ビジュアル方針", "S6": "プロトタイプ", "S7": "確認", "S8": "確定"};
+  function sel(q) { return Array.prototype.map.call(document.querySelectorAll('.opts[data-q="' + q + '"] .opt.selected'), function (b) { return b.getAttribute('data-k'); }); }
+  function qsOf(s) { return Object.keys(QSTAGE).filter(function (q) { return QSTAGE[q] === s; }); }
+  function stageDone(s) { var qs = qsOf(s); return qs.length > 0 && qs.every(function (q) { return sel(q).length > 0; }); }
+  function bubble(q, cls, text) {
+    var art = document.getElementById(q); if (!art) return;
+    var b = document.createElement('div'); b.className = 'qbubble ' + (cls || ''); b.innerHTML = text; art.appendChild(b);
+  }
+  function update() {
+    var off = document.getElementById('gateOff').checked;
+    document.querySelectorAll('.qbubble,.lockbar').forEach(function (e) { e.remove(); });
+    // 1) 段階ごとの解放
+    var open = true, now = null;
+    GATED.forEach(function (s) {
+      qsOf(s).forEach(function (q) {
+        var art = document.getElementById(q); if (!art) return;
+        var lock = !open && !off;
+        art.classList.toggle('locked', lock);
+        if (lock) { var bar = document.createElement('div'); bar.className = 'lockbar'; bar.textContent = '🔒 前の段階（' + now + ' ' + NAMES[now] + '）の問いに全部答えると解放されます'; art.insertBefore(bar, art.firstChild); }
+      });
+      if (open && !stageDone(s)) { open = false; now = s; }
+    });
+    // 2) 段階の表示
+    document.querySelectorAll('#rail .st').forEach(function (li) {
+      var s = li.getAttribute('data-stage'), base = STATIC[s];
+      li.className = 'st';
+      var qs = qsOf(s), answered = qs.filter(function (q) { return sel(q).length; }).length;
+      var st = base;
+      if (qs.length) { st = answered === qs.length ? 'done' : (answered ? 'partial' : base); }
+      if (GATED.indexOf(s) >= 0 && GATED.indexOf(s) > GATED.indexOf(now || 'S9') && !off && st !== 'done') st = 'locked';
+      li.classList.add('st-' + st); if (s === now) li.classList.add('st-now');
+      var bb = li.querySelector('.bubble');
+      if (bb && qs.length) {
+        if (answered === qs.length) { bb.classList.add('ok'); bb.textContent = '回答済み。回答を貼り戻すと AI が埋める'; }
+        else if (answered) { bb.classList.remove('ok'); bb.textContent = 'あと ' + (qs.length - answered) + ' 問（' + qs.filter(function (q) { return !sel(q).length; }).join('・') + '）'; }
+      }
+    });
+    // 3) 問いどうしの食い違いを吹き出しで出す
+    var s6 = sel('Q6');
+    if (s6.length && s6.indexOf('C') < 0) bubble('Q6', '', '⚠ 前回の決定（区分を会議ごとにカスタム）と食い違います。<b>テンプレート編集画面</b>が無いと、利用者がテンプレートを作れません');
+    if (s6.length && s6.indexOf('D') < 0 && sel('Q7')[0] === 'A') bubble('Q7', '', '⚠ Q7 で「出力を確認してから保存」を選ぶなら、Q6 で<b>終了・出力確認</b>の画面も要ります');
+    if (sel('Q9')[0] === 'B') bubble('Q9', '', '⚠ 前回の決定「ボタン 1 つで切替」と比べると、確認を挟むぶん操作が 2 回になります');
+    var s5 = sel('Q5')[0];
+    if (s5 === 'B' || s5 === 'C') bubble('Q5', 'info', 'SPEC に機能 F12 を追加します。' + (s5 === 'C' ? 'モック生成の解放条件が増えるので、P1b の範囲が広がります' : 'ドキュメント更新の出力に「不足一覧」を足すだけなので、呼び出し回数は増えません'));
+    if (sel('Q11')[0] === 'D') bubble('Q11', 'info', 'メモ欄に会社のブランドカラー（色コード）を書いてください');
+    var s3 = sel('Q3');
+    if (s3.indexOf('E') >= 0 && s3.length > 1) bubble('Q3', '', '⚠ 「特になし」と他の選択肢が同時に選ばれています');
+  }
+  document.addEventListener('click', function (e) { if (e.target.closest('.opt') || e.target.id === 'clear') setTimeout(update, 0); });
+  document.getElementById('gateOff').addEventListener('change', update);
+  // 段階タグを問いの見出しへ
+  Object.keys(QSTAGE).forEach(function (q) { var h = document.querySelector('#' + q + ' .q-title'); if (h) h.insertAdjacentHTML('beforeend', '<span class="stage-tag">' + QSTAGE[q] + ' ' + NAMES[QSTAGE[q]] + '</span>'); });
+  update();
+});
+</script>
+
+</section>
+
+  <div class="foot">推奨は AI の見立てであって決定ではない（最終承認は人間）。段階の解放と吹き出しはこのページの中だけで動き、回答はブラウザにだけ残る。回答まとめをコピーしてチャットに貼り戻す。</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+var KIT = {"key": "meeting-mock-l0-flow-0929b", "title": "会議モック 開発フロー判断キット", "questions": [{"id": "Q1", "short": "DH 整理の方法", "time": "2 分", "title": "DH 本体の不要ファイルをどう消すか", "visual_skip": "作業方法の選択。比べる数字が無い", "facts": ["AI による一括削除は権限（元に戻せない操作の防止）で止められた", "消す対象: history/ docs/ dh-upgrades/ harness-verifier/ skill-audit-workspace/ .github/ DH の README 類、delivery/ の DH 分", "<b>.github/<\/b> には DH の auto-merge などのワークフローがあり、この枝でも動きうる"], "options": [{"k": "A", "label": "<b>設定に削除の許可ルールを足す<\/b>。AI が消して commit する", "rec": "推奨"}, {"k": "B", "label": "自分で消す"}, {"k": "C", "label": "新リポジトリへ移すときに仕分ける（当面残す）", "rec": "次点"}], "after": "A なら許可後に 1 commit で削除（git で戻せる）。C なら .github/ だけでも先に止める方法を提案", "visualHtml": ""}, {"id": "Q2", "short": "scripts/ の扱い", "time": "2 分", "title": "ルートの scripts/ も消すか", "facts": ["scripts/ を参照する .claude/ のファイルは 0 件（grep で確認）"], "options": [{"k": "A", "label": "<b>消す<\/b>", "rec": "推奨"}, {"k": "B", "label": "残す"}], "after": "Q1 の作業に含める", "visualHtml": "<figure class=\"viz viz-compare\"><figcaption class=\"viz-t\">前回の理解 → 調べ直した結果<\/figcaption><div class=\"cmp\"><div class=\"cmp-col before\"><div class=\"cmp-h\">前回<\/div><ul><li><b class=\"cmp-minus\">−<\/b>フックが scripts/ を呼ぶ（誤り）<\/li><\/ul><\/div><div class=\"cmp-arrow\" aria-hidden=\"true\">→<\/div><div class=\"cmp-col after\"><div class=\"cmp-h\">実際<\/div><ul><li><b class=\"cmp-plus\">＋<\/b>フックの実体は .claude/ の中<\/li><li><b class=\"cmp-plus\">＋<\/b>.claude/ の外で使うのは templates/hooks/anchor-core.py だけ<\/li><li><b class=\"cmp-minus\">−<\/b>scripts/ は DH 自身の検査ツール 32 本<\/li><\/ul><\/div><\/div><\/figure>"}, {"id": "Q3", "short": "禁止挙動", "time": "2 分", "multi": true, "title": "会議中に絶対にしてほしくない画面の動きを選ぶ", "visual_skip": "価値判断の問い。選んだものが DONT.md の禁止挙動になる", "facts": ["UX 3 問の 2 問目（禁止挙動）。大画面をみんなで見ている前提", "選んだものは DONT.md に入り、テストで確かめる"], "options": [{"k": "A", "label": "音が鳴る"}, {"k": "B", "label": "ポップアップや確認ダイアログが画面を塞ぐ"}, {"k": "C", "label": "読んでいる途中で勝手にスクロールが飛ぶ"}, {"k": "D", "label": "画面全体がちらつく・大きく動く（変更は枠とハイライトだけにする）"}, {"k": "E", "label": "特になし"}], "after": "DONT.md §禁止挙動に追記、E2E の確認項目にする", "visualHtml": ""}, {"id": "Q4", "short": "参考サービス", "time": "2 分", "title": "「この感じが好き」という参考にするサービスを選ぶ", "visual_skip": "好みの問い。比べる事実が無い", "facts": ["UX 3 問の 3 問目。AI が画面の作りを寄せる先になる", "無ければ業界標準（議事録ツールの一般的な作り）で補う"], "options": [{"k": "A", "label": "議事録 AI 系（会議中に要点が溜まっていく画面）"}, {"k": "B", "label": "ホワイトボード系（Miro・FigJam のような付箋と図）"}, {"k": "C", "label": "ドキュメント系（Notion のような見出しと箇条書き）"}, {"k": "D", "label": "特になし（AI に任せる）"}], "after": "SPEC の UX 制約に記録。メモ欄に具体的なサービス名があれば書く", "visualHtml": ""}, {"id": "Q5", "short": "工程表示をツールにも入れるか", "time": "5 分", "title": "このキットの「工程表示・解放・不足の吹き出し」を、会議ツールの開発モードにも入れるか", "facts": ["開発モードの会議はサイト検討なので、会話が「要件 → 画面構成 → 見た目」の流れをたどる", "不足一覧はドキュメント更新の出力に 1 項目足すだけで取れる（呼び出し回数は増えない）", "モックの解放条件を入れると、要件が揃うまでモックが出ない＝会議中の見せ場が遅れる"], "options": [{"k": "A", "label": "このキットだけで使う"}, {"k": "B", "label": "<b>開発モードに「足りない要素の吹き出し」だけ入れる<\/b>（例:「画面の遷移がまだ決まっていません」）", "rec": "推奨"}, {"k": "C", "label": "工程表示＋条件を満たすとモック生成を解放＋吹き出し", "rec": "次点"}, {"k": "D", "label": "v0.2 以降で検討（DONT.md に記録）"}], "after": "B/C なら SPEC に F12 を追加し、モック v2 に吹き出しを入れて見せる", "visualHtml": "<figure class=\"viz viz-matrix\"><figcaption class=\"viz-t\">4 案の得失<\/figcaption><div class=\"tbl-wrap\"><table class=\"mx\"><thead><tr><th><\/th><th>案<\/th><th>認識合わせへの効き<\/th><th>費用が増えない<\/th><th>v0.1 に収まる<\/th><th>会議を止めない<\/th><\/tr><\/thead><tbody><tr><td class=\"id\">A<\/td><td>キットだけ（ツールには入れない）<\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><tr class=\"mx-rec\"><td class=\"id\">B<\/td><td>開発モードに不足の吹き出しだけ<\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><tr><td class=\"id\">C<\/td><td>工程表示＋モック解放＋吹き出し<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><\/tr><tr><td class=\"id\">D<\/td><td>v0.2 以降で検討<\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"legend\"><span><span class=\"mx-dot full\"><\/span>強い<\/span><span><span class=\"mx-dot half\"><\/span>中<\/span><span><span class=\"mx-dot empty\"><\/span>弱い<\/span><span><span class=\"mx-x\">×<\/span>損なう<\/span><\/div><\/figure>"}, {"id": "Q6", "short": "v0.1 の画面一覧", "time": "5 分", "multi": true, "title": "v0.1 に必要な画面を選ぶ", "facts": ["v1 にあるのは 開始画面・会議ボードの 2 つ", "前回 Q3 で区分のカスタムを採用したので、テンプレートを編集する場所が要る"], "options": [{"k": "A", "label": "開始画面（v1 にある）", "rec": "推奨"}, {"k": "B", "label": "会議ボード（v1 にある）", "rec": "推奨"}, {"k": "C", "label": "テンプレート編集画面", "rec": "推奨"}, {"k": "D", "label": "終了・出力確認画面（minutes / handoff の中身を見てから保存）"}], "after": "画面一覧と画面遷移図を SPEC に追加。v2 で足りない画面を作る。部品カタログ見本（P0）と過去の会議の閲覧は開始画面から開く扱い", "visualHtml": "<figure class=\"viz viz-flow\"><figcaption class=\"viz-t\">画面のつながり（案）<\/figcaption><div class=\"flowh\"><div class=\"fl-node normal\"><div class=\"fl-label\">開始画面<\/div><div class=\"fl-sub\">議題・モード・テンプレ<\/div><\/div><div class=\"fl-edge solid\" aria-hidden=\"true\"><span class=\"fl-line\"><\/span><\/div><div class=\"fl-node strong\"><div class=\"fl-label\">会議ボード<\/div><div class=\"fl-sub\">会議 / 開発<\/div><\/div><div class=\"fl-edge solid\" aria-hidden=\"true\"><span class=\"fl-line\"><\/span><\/div><div class=\"fl-node dim\"><div class=\"fl-label\">終了・出力確認<\/div><div class=\"fl-sub\">v1 に無い<\/div><\/div><div class=\"fl-edge solid\" aria-hidden=\"true\"><span class=\"fl-line\"><\/span><\/div><div class=\"fl-node normal\"><div class=\"fl-label\">過去の会議<\/div><div class=\"fl-sub\">閲覧・再開<\/div><\/div><\/div><div class=\"fl-back\">↺ 開始画面 ⇄ テンプレート編集（v1 に無い）<\/div><\/figure>"}, {"id": "Q7", "short": "終了後の流れ", "time": "2 分", "title": "会議を終了したあと、出力をどう扱うか", "facts": ["保存そのものは会議中から自動で行う（F8）。ここで決めるのは出力ファイルの生成と確認"], "options": [{"k": "A", "label": "<b>出力を画面で確認してから保存<\/b>（作り直しもできる）", "rec": "推奨"}, {"k": "B", "label": "終了と同時に保存し、フォルダを開く"}], "after": "A なら Q6-D の画面が必要。F8 に確認画面の条件を追加", "visualHtml": "<figure class=\"viz viz-compare\"><figcaption class=\"viz-t\">A と B の違い<\/figcaption><div class=\"cmp\"><div class=\"cmp-col before\"><div class=\"cmp-h\">B すぐ保存<\/div><ul><li><b class=\"cmp-plus\">＋<\/b>終了ボタンで即完了<\/li><li><b class=\"cmp-minus\">−<\/b>出力の中身はファイルを開くまで分からない<\/li><\/ul><\/div><div class=\"cmp-arrow\" aria-hidden=\"true\">→<\/div><div class=\"cmp-col after\"><div class=\"cmp-h\">A 確認してから保存<\/div><ul><li><b class=\"cmp-plus\">＋<\/b>その場で minutes / handoff を読める<\/li><li><b class=\"cmp-plus\">＋<\/b>出力プロンプトの手直しができる<\/li><li><b class=\"cmp-minus\">−<\/b>画面が 1 つ増える<\/li><\/ul><\/div><\/div><\/figure>"}, {"id": "Q8", "short": "会議モードの比率", "time": "2 分", "title": "会議モードの左右の比率を決める", "visual_skip": "v1 で実際に触って決める問い", "facts": ["v1 は左（ドキュメント）7 : 右（発言ログ）5。境界はドラッグで変えられる", "変えた比率を次回も覚えておくことはできる"], "options": [{"k": "A", "label": "<b>7 : 5 のまま<\/b>、ドラッグした比率を覚えておく", "rec": "推奨"}, {"k": "B", "label": "6 : 6（半々）"}, {"k": "C", "label": "発言ログは畳めるようにして、普段はドキュメント全幅"}], "after": "F6 の比率を確定", "visualHtml": ""}, {"id": "Q9", "short": "モード切替の操作", "time": "2 分", "title": "モード切替ボタンの押し間違いにどう備えるか", "facts": ["前回 Q1 は「途中はボタン 1 つで切替」", "切替は元に戻せる操作（ドキュメントも案も消えない）"], "options": [{"k": "A", "label": "<b>確認なしで切り替え、5 秒間「元に戻す」を出す<\/b>", "rec": "推奨"}, {"k": "B", "label": "確認ダイアログを出す"}, {"k": "C", "label": "確認なし（戻すときはもう一度押す）"}], "after": "F11 に確定した操作を追記", "visualHtml": "<figure class=\"viz viz-matrix\"><figcaption class=\"viz-t\">3 案の得失<\/figcaption><div class=\"tbl-wrap\"><table class=\"mx\"><thead><tr><th><\/th><th>案<\/th><th>速い<\/th><th>誤操作に強い<\/th><th>画面を塞がない<\/th><\/tr><\/thead><tbody><tr class=\"mx-rec\"><td class=\"id\">A<\/td><td>確認なし＋5 秒間の「元に戻す」<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><tr><td class=\"id\">B<\/td><td>確認ダイアログ<\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><\/tr><tr><td class=\"id\">C<\/td><td>確認なし<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"legend\"><span><span class=\"mx-dot full\"><\/span>強い<\/span><span><span class=\"mx-dot half\"><\/span>中<\/span><span><span class=\"mx-dot empty\"><\/span>弱い<\/span><span><span class=\"mx-x\">×<\/span>損なう<\/span><\/div><\/figure>"}, {"id": "Q10", "short": "トーン", "time": "2 分", "title": "会議ボードの見た目のトーンを選ぶ", "visual_skip": "好みの問い。v2 に反映して見てもらう", "facts": ["DESIGN.md の DG2。会議室の大画面で、2〜5 m 離れて読む", "モックの部品はワイヤーフレーム調で固定（DONT D9）。ここはボード自体の見た目"], "options": [{"k": "A", "label": "<b>大画面向けのはっきりした業務系<\/b>（白地・太めの文字・コントラスト高め）", "rec": "推奨"}, {"k": "B", "label": "落ち着いた暗めの画面（照明を落とした会議室向け）"}, {"k": "C", "label": "両方を用意して切り替える", "rec": "次点"}], "after": "DESIGN.md を作成（トークンと運用ルール）", "visualHtml": ""}, {"id": "Q11", "short": "強調色", "time": "2 分", "title": "強調色（ボタン・変更枠・ハイライト）を選ぶ", "visual_skip": "色の好み。v2 で見てもらう", "facts": ["DESIGN.md の DG4。赤は録音中・エラー、黄は警告に使うので強調色には使わない"], "options": [{"k": "A", "label": "<b>青<\/b>（v1 と同じ）", "rec": "推奨"}, {"k": "B", "label": "緑"}, {"k": "C", "label": "紺"}, {"k": "D", "label": "会社のブランドカラー（メモ欄に色コード）"}], "after": "DESIGN.md のトークンに登録", "visualHtml": ""}, {"id": "Q12", "short": "部品ラベルと枠", "time": "2 分", "title": "モックの部品名ラベルと変更枠をどう見せるか", "visual_skip": "v1 で見て決める問い", "facts": ["v1 は各部品の左上に小さな部品名、変更部品に青の太枠（次の更新まで残る）"], "options": [{"k": "A", "label": "<b>ラベルは表示、枠は細めに<\/b>", "rec": "推奨"}, {"k": "B", "label": "v1 のまま"}, {"k": "C", "label": "ラベルは切り替えで隠せる"}], "after": "F5・DESIGN.md に反映", "visualHtml": ""}, {"id": "Q13", "short": "v2 の出し方", "time": "2 分", "title": "モック v2 をどう出すか", "facts": ["v2 で足すもの: 答えた S3〜S5 の内容（画面・比率・トーン・色）"], "options": [{"k": "A", "label": "<b>v1 を進化させた 1 案<\/b>", "rec": "推奨"}, {"k": "B", "label": "トーン違いの 2 案を並べる（Q10 が C のとき向き）"}], "after": "v2 を作成 → S7 確認へ", "visualHtml": "<figure class=\"viz viz-compare\"><figcaption class=\"viz-t\">1 案を進化 と 2 案を並べる<\/figcaption><div class=\"cmp\"><div class=\"cmp-col before\"><div class=\"cmp-h\">1 案を進化<\/div><ul><li><b class=\"cmp-plus\">＋<\/b>作るのが速い<\/li><li><b class=\"cmp-minus\">−<\/b>別の方向を見比べられない<\/li><\/ul><\/div><div class=\"cmp-arrow\" aria-hidden=\"true\">→<\/div><div class=\"cmp-col after\"><div class=\"cmp-h\">2 案を並べる<\/div><ul><li><b class=\"cmp-plus\">＋<\/b>違いを触り比べて選べる<\/li><li><b class=\"cmp-minus\">−<\/b>用意に時間がかかる<\/li><\/ul><\/div><\/div><\/figure>"}], "summaryTitle": "会議モック 開発フロー判断キット — 回答", "summaryFooter": "（補足があればこの下に）"};
+(function () {
+  var KEY = 'dk-' + (KIT.key || 'kit');
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+  function h(s) { return s == null ? '' : String(s); } // trusted html from the kit author
+
+  // render question cards from KIT.questions
+  var list = document.getElementById('qlist');
+  (KIT.questions || []).forEach(function (q) {
+    var art = document.createElement('article');
+    art.className = 'q'; art.id = q.id;
+    var facts = (q.facts || []).map(function (f) { return '<li>' + h(f) + '</li>'; }).join('');
+    var opts = (q.options || []).map(function (o) {
+      var cls = 'opt' + (o.disabled ? ' no' : '');
+      var rec = o.rec ? '<span class="rec">' + esc(o.rec) + '</span>' : '';
+      return '<button class="' + cls + '" data-k="' + esc(o.k) + '"' + (o.disabled ? ' disabled' : '') + '><span class="k">' + esc(o.k) + '</span><span>' + h(o.label) + '</span>' + rec + '</button>';
+    }).join('');
+    art.innerHTML =
+      '<div class="q-head"><span class="q-num">' + esc(q.id) + '</span><h3 class="q-title">' + h(q.title) + '</h3>' + (q.time ? '<span class="q-time">' + esc(q.time) + '</span>' : '') + '</div>' +
+      (q.fbs ? '<div class="q-fbs">' + esc(q.fbs) + '</div>' : '') +
+      (q.quote ? '<blockquote class="q-quote">' + h(q.quote) + '</blockquote>' : '') +
+      (q.visualHtml ? '<div class="q-viz">' + h(q.visualHtml) + '</div>' : '') +
+      '<div class="q-body"><div class="q-facts"><h4>' + esc(q.factsLabel || '事実') + '</h4><ul>' + facts + '</ul></div>' +
+      '<div class="q-opts"><h4>' + esc(q.optionsLabel || (q.multi ? '選択肢（複数可）' : '選択肢')) + '</h4><div class="opts" data-q="' + esc(q.id) + '"' + (q.multi ? ' data-multi="1"' : '') + '>' + opts + '</div></div></div>' +
+      (q.extra ? '<div class="q-note">' + h(q.extra) + '</div>' : '') +
+      (q.after ? '<div class="q-after"><h4>決まったら</h4><p>' + h(q.after) + '</p></div>' : '') +
+      (q.note === false ? '' : '<div class="q-note"><textarea data-note="' + esc(q.id) + '" placeholder="補足があれば（任意）"></textarea></div>');
+    list.appendChild(art);
+  });
+
+  // answer map: one tile per question, width = minutes (parsed from q.time), links to the card
+  var qmap = document.getElementById('qmap'); var totalMin = 0;
+  (KIT.questions || []).forEach(function (q) {
+    var m = parseInt(String(q.time || '').replace(/[^0-9]/g, ''), 10); if (!m) m = 3; totalMin += m;
+    var a = document.createElement('a'); a.href = '#' + q.id; a.style.flexGrow = m; a.setAttribute('data-map', q.id);
+    a.innerHTML = esc(q.id) + (q.time ? '<small>' + esc(q.time) + '</small>' : '');
+    a.title = (q.short || String(q.title || '').replace(/<[^>]+>/g, '')) + (q.time ? '（' + q.time + '）' : '');
+    qmap.appendChild(a);
+  });
+  if (!(KIT.questions || []).length) qmap.style.display = 'none';
+  document.getElementById('qmapcap').textContent = '問いの地図: 幅 = 所要時間の目安（合計 約 ' + totalMin + ' 分）。短いものから答えてよい。答えた問いは紫になる。';
+
+  function labelOf(btn) { var s = btn.querySelectorAll('span')[1]; return s ? s.textContent.replace(/\s+/g, ' ').trim() : ''; }
+
+  function render() {
+    document.querySelectorAll('.opts').forEach(function (g) {
+      var q = g.getAttribute('data-q'); var sel = (state[q] && state[q].sel) || [];
+      g.querySelectorAll('.opt').forEach(function (b) { b.classList.toggle('selected', sel.indexOf(b.getAttribute('data-k')) >= 0); });
+      var chip = document.querySelector('.chip[data-chip="' + q + '"]'); if (chip) chip.classList.toggle('done', sel.length > 0);
+      var tile = document.querySelector('.qmap a[data-map="' + q + '"]'); if (tile) tile.classList.toggle('done', sel.length > 0);
+    });
+    document.querySelectorAll('textarea[data-note]').forEach(function (t) { var q = t.getAttribute('data-note'); var v = (state[q] && state[q].note) || ''; if (t.value !== v) t.value = v; });
+    var lines = [KIT.summaryTitle || (KIT.title + ' — 回答'), ''];
+    (KIT.questions || []).forEach(function (q) {
+      var s = state[q.id] || {}; var sel = s.sel || [];
+      var short = q.short || q.title.replace(/<[^>]+>/g, '');
+      if (!sel.length) { lines.push(q.id + ' ' + short + ': 未回答'); }
+      else {
+        var g = document.querySelector('.opts[data-q="' + q.id + '"]');
+        var parts = sel.map(function (k) { var b = g.querySelector('.opt[data-k="' + k + '"]'); var t = b ? labelOf(b) : ''; return k + '（' + t.slice(0, 40) + (t.length > 40 ? '…' : '') + '）'; });
+        lines.push(q.id + ' ' + short + ': ' + parts.join(' / '));
+      }
+      if (s.note) lines.push('  メモ: ' + s.note.replace(/\n/g, ' '));
+    });
+    if (KIT.summaryFooter) lines.push('', KIT.summaryFooter);
+    var qn = (KIT.questions || []).length; var done = (KIT.questions || []).filter(function (q) { return state[q.id] && state[q.id].sel && state[q.id].sel.length; }).length;
+    document.getElementById('sumfill').style.width = (qn ? done / qn * 100 : 0) + '%';
+    document.getElementById('sumlab').textContent = done + ' / ' + qn + ' 問 回答済み';
+    document.getElementById('sumtext').textContent = lines.join('\n');
+  }
+
+  document.querySelectorAll('.opts').forEach(function (g) {
+    var q = g.getAttribute('data-q'); var multi = g.getAttribute('data-multi') === '1';
+    g.querySelectorAll('.opt').forEach(function (b) {
+      if (b.disabled) return;
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-k'); var s = state[q] || {}; var sel = s.sel || [];
+        if (multi) { var i = sel.indexOf(k); if (i >= 0) sel.splice(i, 1); else sel.push(k); } else { sel = sel[0] === k ? [] : [k]; }
+        s.sel = sel; state[q] = s; save(); render();
+      });
+    });
+  });
+  document.querySelectorAll('textarea[data-note]').forEach(function (t) {
+    t.addEventListener('input', function () { var q = t.getAttribute('data-note'); var s = state[q] || {}; s.note = t.value; state[q] = s; save(); render(); });
+  });
+  document.getElementById('clear').addEventListener('click', function () { state = {}; save(); render(); });
+  document.getElementById('copy').addEventListener('click', function () {
+    var t = document.getElementById('sumtext').textContent; var note = document.getElementById('copynote');
+    function fallback() { var r = document.createRange(); r.selectNodeContents(document.getElementById('sumtext')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); note.textContent = '選択しました。Ctrl/⌘+C でコピーしてください'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(function () { note.textContent = 'コピーしました'; }, fallback); } else { fallback(); }
+  });
+  var tip = document.getElementById('tip');
+  document.querySelectorAll('[data-tip]').forEach(function (s) {
+    s.addEventListener('mousemove', function (e) { tip.textContent = s.getAttribute('data-tip'); tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; tip.classList.add('on'); });
+    s.addEventListener('mouseleave', function () { tip.classList.remove('on'); });
+  });
+  render();
+})();
+</script>
+</body></html>

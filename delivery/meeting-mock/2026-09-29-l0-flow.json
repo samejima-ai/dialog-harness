@@ -1,0 +1,665 @@
+{
+ "key": "meeting-mock-l0-flow-0929b",
+ "title": "会議モック 開発フロー判断キット",
+ "eyebrow": "会議モック可視化ツール · L0 · 2026-09-29 · 第 2 弾",
+ "lede": "モック UI までの標準的な開発フロー（S1 企画 → S8 確定）に沿って、残りの判断を 13 問に並べた。<b>前の段階の問いに全部答えると、次の段階が解放される。</b>足りない要素と、回答どうしの食い違いは吹き出しで出る。S0（準備）はいつでも答えられる。",
+ "meta": [
+  "<span><b>前回</b> 判断キット 0929（Q1〜Q10 回答済み）</span>",
+  "<span><b>モック</b> delivery/meeting-mock/board-mock.html（v1）</span>",
+  "<span><b>ブランチ</b> ccr-a72b57e5-jrlhni（master へマージしない）</span>"
+ ],
+ "hero_visuals": [
+  {
+   "type": "steps",
+   "title": "モック UI までの標準フロー（今はここ）",
+   "items": [
+    {
+     "t": "S1–S2",
+     "m": "企画・要件",
+     "body": "ほぼ済み。UX 2 問が残り"
+    },
+    {
+     "t": "S3–S5",
+     "m": "画面設計・見た目",
+     "body": "飛ばしていた。今回ここを埋める",
+     "now": true
+    },
+    {
+     "t": "S6–S7",
+     "m": "試作・確認",
+     "body": "v1 → v2 で埋め直す"
+    },
+    {
+     "t": "S8",
+     "m": "確定",
+     "body": "SPEC 確定 → 実装（P0）へ",
+     "later": true
+    }
+   ]
+  },
+  {
+   "type": "stats",
+   "items": [
+    {
+     "n": "13",
+     "l": "今回の問い"
+    },
+    {
+     "n": "5",
+     "l": "順番に解放される段階",
+     "c": "accent"
+    },
+    {
+     "n": "2",
+     "l": "v1 に無い画面",
+     "c": "no"
+    }
+   ]
+  }
+ ],
+ "sections": [
+  {
+   "eyebrow": "01 · 工程表",
+   "h2": "段階ごとの状態と足りない要素を見る",
+   "sub": "● 済み ／ ◐ 一部 ／ ○ 未着手 ／ 🔒 前の段階待ち。吹き出しは、その段階で足りない要素。問いに答えると吹き出しが減っていく。",
+   "html": "\n<style>\n.rail{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}\n.st{position:relative;display:grid;grid-template-columns:18px 170px 1fr;gap:4px 12px;align-items:start;padding:10px 12px;border:1px solid var(--line-soft);border-radius:10px;background:var(--surface)}\n.st-dot{width:14px;height:14px;border-radius:50%;margin-top:5px;border:2px solid var(--ink-3);background:transparent}\n.st-name{font-size:15px}.st-name b{font-family:var(--font-mono);color:var(--ink-3);margin-right:4px}\n.st-what{font-size:14px;color:var(--ink-3)}\n.st-done .st-dot{background:var(--c4);border-color:var(--c4)}\n.st-partial .st-dot{background:linear-gradient(90deg,var(--c3) 50%,transparent 50%);border-color:var(--c3)}\n.st-now{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}\n.st-now .st-dot{border-color:var(--accent);background:var(--accent)}\n.st-locked{opacity:.55}\n.st-locked .st-name::after{content:' 🔒';font-size:13px}\n.bubble{grid-column:2 / 4;position:relative;font-size:13.5px;line-height:1.5;background:var(--surface-2);border:1px solid var(--c3);border-radius:10px;padding:6px 10px;margin-top:4px;color:var(--ink-2)}\n.bubble::before{content:'';position:absolute;top:-7px;left:18px;width:12px;height:12px;background:var(--surface-2);border-left:1px solid var(--c3);border-top:1px solid var(--c3);transform:rotate(45deg)}\n.bubble.ok{border-color:var(--c4);color:var(--ink-3)}\n.bubble.ok::before{border-color:var(--c4)}\n.q.locked{opacity:.5}\n.q.locked .opts,.q.locked textarea{pointer-events:none}\n.lockbar{font-size:14px;background:var(--surface-2);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;margin:0 0 10px;color:var(--ink-2)}\n.qbubble{position:relative;font-size:14px;background:var(--surface-2);border:1px solid var(--no);border-radius:10px;padding:7px 12px;margin:10px 0 0;color:var(--ink)}\n.qbubble::before{content:'';position:absolute;top:-7px;left:24px;width:12px;height:12px;background:var(--surface-2);border-left:1px solid var(--no);border-top:1px solid var(--no);transform:rotate(45deg)}\n.qbubble.info{border-color:var(--c1)}.qbubble.info::before{border-color:var(--c1)}\n.stage-tag{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);margin-left:6px}\n.gate-toggle{font-size:14px;color:var(--ink-3);margin-top:10px;display:flex;gap:6px;align-items:center}\n@media (max-width:640px){.qmap{flex-wrap:wrap}.qmap a{flex-basis:18%;min-width:0}.st{grid-template-columns:18px 1fr}.st-what{grid-column:2}.bubble{grid-column:1 / 3}}\n</style>\n<ol class='rail' id='rail'><li class='st st-todo' data-stage='S0'><span class='st-dot'></span><span class='st-name'><b>0</b> 準備</span><span class='st-what'>作業場所を整える</span><span class='bubble' data-bubble='S0'>DH 本体のファイル整理が権限で止まっている</span></li><li class='st st-done' data-stage='S1'><span class='st-dot'></span><span class='st-name'><b>1</b> 企画</span><span class='st-what'>誰の何を解決するか</span></li><li class='st st-partial' data-stage='S2'><span class='st-dot'></span><span class='st-name'><b>2</b> 要件定義</span><span class='st-what'>機能・条件・非機能</span><span class='bubble' data-bubble='S2'>UX 3問のうち「禁止挙動」「参考サービス」が未回答</span></li><li class='st st-todo' data-stage='S3'><span class='st-dot'></span><span class='st-name'><b>3</b> 情報設計</span><span class='st-what'>画面一覧と画面のつながり</span><span class='bubble' data-bubble='S3'>画面一覧・画面遷移図が無い。v1 にはテンプレート編集と出力確認の画面が無い</span></li><li class='st st-partial' data-stage='S4'><span class='st-dot'></span><span class='st-name'><b>4</b> ワイヤーフレーム</span><span class='st-what'>各画面の配置</span><span class='bubble' data-bubble='S4'>v1 が兼ねている。比率と切替ボタンが未確定</span></li><li class='st st-todo' data-stage='S5'><span class='st-dot'></span><span class='st-name'><b>5</b> ビジュアル方針</span><span class='st-what'>色・トーン</span><span class='bubble' data-bubble='S5'>DESIGN.md が無い（トーン・強調色が未決）</span></li><li class='st st-partial' data-stage='S6'><span class='st-dot'></span><span class='st-name'><b>6</b> プロトタイプ</span><span class='st-what'>触って流れを確かめる</span><span class='bubble' data-bubble='S6'>v1 は画面が 2 つ足りない。v2 で埋める</span></li><li class='st st-locked' data-stage='S7'><span class='st-dot'></span><span class='st-name'><b>7</b> 確認</span><span class='st-what'>触ってつまずきを探す</span><span class='bubble' data-bubble='S7'>v2 を社内で触ってもらう</span></li><li class='st st-locked' data-stage='S8'><span class='st-dot'></span><span class='st-name'><b>8</b> 確定</span><span class='st-what'>仕様を固めて実装へ</span><span class='bubble' data-bubble='S8'>SPEC・REGIME を確定し、開発環境を作る</span></li></ol>\n<label class='gate-toggle'><input type='checkbox' id='gateOff'> 順番を無視してすべての問いを開く</label>\n"
+  }
+ ],
+ "questions_section": {
+  "eyebrow": "02 · 決めること",
+  "h2": "段階の順に 13 問に答える",
+  "sub": "推奨は AI の見立てであって決定ではない。見出しの右端がその問いの段階。"
+ },
+ "questions": [
+  {
+   "id": "Q1",
+   "short": "DH 整理の方法",
+   "time": "2 分",
+   "title": "DH 本体の不要ファイルをどう消すか",
+   "visual_skip": "作業方法の選択。比べる数字が無い",
+   "facts": [
+    "AI による一括削除は権限（元に戻せない操作の防止）で止められた",
+    "消す対象: history/ docs/ dh-upgrades/ harness-verifier/ skill-audit-workspace/ .github/ DH の README 類、delivery/ の DH 分",
+    "<b>.github/</b> には DH の auto-merge などのワークフローがあり、この枝でも動きうる"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>設定に削除の許可ルールを足す</b>。AI が消して commit する",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "自分で消す"
+    },
+    {
+     "k": "C",
+     "label": "新リポジトリへ移すときに仕分ける（当面残す）",
+     "rec": "次点"
+    }
+   ],
+   "after": "A なら許可後に 1 commit で削除（git で戻せる）。C なら .github/ だけでも先に止める方法を提案"
+  },
+  {
+   "id": "Q2",
+   "short": "scripts/ の扱い",
+   "time": "2 分",
+   "title": "ルートの scripts/ も消すか",
+   "visuals": [
+    {
+     "type": "compare",
+     "title": "前回の理解 → 調べ直した結果",
+     "before": {
+      "title": "前回",
+      "items": [
+       "- フックが scripts/ を呼ぶ（誤り）"
+      ]
+     },
+     "after": {
+      "title": "実際",
+      "items": [
+       "+ フックの実体は .claude/ の中",
+       "+ .claude/ の外で使うのは templates/hooks/anchor-core.py だけ",
+       "- scripts/ は DH 自身の検査ツール 32 本"
+      ]
+     }
+    }
+   ],
+   "facts": [
+    "scripts/ を参照する .claude/ のファイルは 0 件（grep で確認）"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>消す</b>",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "残す"
+    }
+   ],
+   "after": "Q1 の作業に含める"
+  },
+  {
+   "id": "Q3",
+   "short": "禁止挙動",
+   "time": "2 分",
+   "multi": true,
+   "title": "会議中に絶対にしてほしくない画面の動きを選ぶ",
+   "visual_skip": "価値判断の問い。選んだものが DONT.md の禁止挙動になる",
+   "facts": [
+    "UX 3 問の 2 問目（禁止挙動）。大画面をみんなで見ている前提",
+    "選んだものは DONT.md に入り、テストで確かめる"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "音が鳴る"
+    },
+    {
+     "k": "B",
+     "label": "ポップアップや確認ダイアログが画面を塞ぐ"
+    },
+    {
+     "k": "C",
+     "label": "読んでいる途中で勝手にスクロールが飛ぶ"
+    },
+    {
+     "k": "D",
+     "label": "画面全体がちらつく・大きく動く（変更は枠とハイライトだけにする）"
+    },
+    {
+     "k": "E",
+     "label": "特になし"
+    }
+   ],
+   "after": "DONT.md §禁止挙動に追記、E2E の確認項目にする"
+  },
+  {
+   "id": "Q4",
+   "short": "参考サービス",
+   "time": "2 分",
+   "title": "「この感じが好き」という参考にするサービスを選ぶ",
+   "visual_skip": "好みの問い。比べる事実が無い",
+   "facts": [
+    "UX 3 問の 3 問目。AI が画面の作りを寄せる先になる",
+    "無ければ業界標準（議事録ツールの一般的な作り）で補う"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "議事録 AI 系（会議中に要点が溜まっていく画面）"
+    },
+    {
+     "k": "B",
+     "label": "ホワイトボード系（Miro・FigJam のような付箋と図）"
+    },
+    {
+     "k": "C",
+     "label": "ドキュメント系（Notion のような見出しと箇条書き）"
+    },
+    {
+     "k": "D",
+     "label": "特になし（AI に任せる）"
+    }
+   ],
+   "after": "SPEC の UX 制約に記録。メモ欄に具体的なサービス名があれば書く"
+  },
+  {
+   "id": "Q5",
+   "short": "工程表示をツールにも入れるか",
+   "time": "5 分",
+   "title": "このキットの「工程表示・解放・不足の吹き出し」を、会議ツールの開発モードにも入れるか",
+   "visuals": [
+    {
+     "type": "matrix",
+     "title": "4 案の得失",
+     "rec": "B",
+     "axes": [
+      "認識合わせへの効き",
+      "費用が増えない",
+      "v0.1 に収まる",
+      "会議を止めない"
+     ],
+     "rows": [
+      {
+       "k": "A",
+       "label": "キットだけ（ツールには入れない）",
+       "marks": [
+        0,
+        2,
+        2,
+        2
+       ]
+      },
+      {
+       "k": "B",
+       "label": "開発モードに不足の吹き出しだけ",
+       "marks": [
+        1,
+        2,
+        2,
+        2
+       ]
+      },
+      {
+       "k": "C",
+       "label": "工程表示＋モック解放＋吹き出し",
+       "marks": [
+        2,
+        1,
+        0,
+        0
+       ]
+      },
+      {
+       "k": "D",
+       "label": "v0.2 以降で検討",
+       "marks": [
+        0,
+        2,
+        2,
+        2
+       ]
+      }
+     ]
+    }
+   ],
+   "facts": [
+    "開発モードの会議はサイト検討なので、会話が「要件 → 画面構成 → 見た目」の流れをたどる",
+    "不足一覧はドキュメント更新の出力に 1 項目足すだけで取れる（呼び出し回数は増えない）",
+    "モックの解放条件を入れると、要件が揃うまでモックが出ない＝会議中の見せ場が遅れる"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "このキットだけで使う"
+    },
+    {
+     "k": "B",
+     "label": "<b>開発モードに「足りない要素の吹き出し」だけ入れる</b>（例:「画面の遷移がまだ決まっていません」）",
+     "rec": "推奨"
+    },
+    {
+     "k": "C",
+     "label": "工程表示＋条件を満たすとモック生成を解放＋吹き出し",
+     "rec": "次点"
+    },
+    {
+     "k": "D",
+     "label": "v0.2 以降で検討（DONT.md に記録）"
+    }
+   ],
+   "after": "B/C なら SPEC に F12 を追加し、モック v2 に吹き出しを入れて見せる"
+  },
+  {
+   "id": "Q6",
+   "short": "v0.1 の画面一覧",
+   "time": "5 分",
+   "multi": true,
+   "title": "v0.1 に必要な画面を選ぶ",
+   "visuals": [
+    {
+     "type": "flow",
+     "title": "画面のつながり（案）",
+     "nodes": [
+      {
+       "label": "開始画面",
+       "sub": "議題・モード・テンプレ"
+      },
+      {
+       "label": "会議ボード",
+       "sub": "会議 / 開発",
+       "kind": "strong"
+      },
+      {
+       "label": "終了・出力確認",
+       "sub": "v1 に無い",
+       "kind": "dim"
+      },
+      {
+       "label": "過去の会議",
+       "sub": "閲覧・再開"
+      }
+     ],
+     "edges": [
+      "solid",
+      "solid",
+      "solid"
+     ],
+     "loop_back": "開始画面 ⇄ テンプレート編集（v1 に無い）"
+    }
+   ],
+   "facts": [
+    "v1 にあるのは 開始画面・会議ボードの 2 つ",
+    "前回 Q3 で区分のカスタムを採用したので、テンプレートを編集する場所が要る"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "開始画面（v1 にある）",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "会議ボード（v1 にある）",
+     "rec": "推奨"
+    },
+    {
+     "k": "C",
+     "label": "テンプレート編集画面",
+     "rec": "推奨"
+    },
+    {
+     "k": "D",
+     "label": "終了・出力確認画面（minutes / handoff の中身を見てから保存）"
+    }
+   ],
+   "after": "画面一覧と画面遷移図を SPEC に追加。v2 で足りない画面を作る。部品カタログ見本（P0）と過去の会議の閲覧は開始画面から開く扱い"
+  },
+  {
+   "id": "Q7",
+   "short": "終了後の流れ",
+   "time": "2 分",
+   "title": "会議を終了したあと、出力をどう扱うか",
+   "visuals": [
+    {
+     "type": "compare",
+     "title": "A と B の違い",
+     "before": {
+      "title": "B すぐ保存",
+      "items": [
+       "+ 終了ボタンで即完了",
+       "- 出力の中身はファイルを開くまで分からない"
+      ]
+     },
+     "after": {
+      "title": "A 確認してから保存",
+      "items": [
+       "+ その場で minutes / handoff を読める",
+       "+ 出力プロンプトの手直しができる",
+       "- 画面が 1 つ増える"
+      ]
+     }
+    }
+   ],
+   "facts": [
+    "保存そのものは会議中から自動で行う（F8）。ここで決めるのは出力ファイルの生成と確認"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>出力を画面で確認してから保存</b>（作り直しもできる）",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "終了と同時に保存し、フォルダを開く"
+    }
+   ],
+   "after": "A なら Q6-D の画面が必要。F8 に確認画面の条件を追加"
+  },
+  {
+   "id": "Q8",
+   "short": "会議モードの比率",
+   "time": "2 分",
+   "title": "会議モードの左右の比率を決める",
+   "visual_skip": "v1 で実際に触って決める問い",
+   "facts": [
+    "v1 は左（ドキュメント）7 : 右（発言ログ）5。境界はドラッグで変えられる",
+    "変えた比率を次回も覚えておくことはできる"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>7 : 5 のまま</b>、ドラッグした比率を覚えておく",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "6 : 6（半々）"
+    },
+    {
+     "k": "C",
+     "label": "発言ログは畳めるようにして、普段はドキュメント全幅"
+    }
+   ],
+   "after": "F6 の比率を確定"
+  },
+  {
+   "id": "Q9",
+   "short": "モード切替の操作",
+   "time": "2 分",
+   "title": "モード切替ボタンの押し間違いにどう備えるか",
+   "visuals": [
+    {
+     "type": "matrix",
+     "title": "3 案の得失",
+     "rec": "A",
+     "axes": [
+      "速い",
+      "誤操作に強い",
+      "画面を塞がない"
+     ],
+     "rows": [
+      {
+       "k": "A",
+       "label": "確認なし＋5 秒間の「元に戻す」",
+       "marks": [
+        2,
+        1,
+        2
+       ]
+      },
+      {
+       "k": "B",
+       "label": "確認ダイアログ",
+       "marks": [
+        1,
+        2,
+        0
+       ]
+      },
+      {
+       "k": "C",
+       "label": "確認なし",
+       "marks": [
+        2,
+        0,
+        2
+       ]
+      }
+     ]
+    }
+   ],
+   "facts": [
+    "前回 Q1 は「途中はボタン 1 つで切替」",
+    "切替は元に戻せる操作（ドキュメントも案も消えない）"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>確認なしで切り替え、5 秒間「元に戻す」を出す</b>",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "確認ダイアログを出す"
+    },
+    {
+     "k": "C",
+     "label": "確認なし（戻すときはもう一度押す）"
+    }
+   ],
+   "after": "F11 に確定した操作を追記"
+  },
+  {
+   "id": "Q10",
+   "short": "トーン",
+   "time": "2 分",
+   "title": "会議ボードの見た目のトーンを選ぶ",
+   "visual_skip": "好みの問い。v2 に反映して見てもらう",
+   "facts": [
+    "DESIGN.md の DG2。会議室の大画面で、2〜5 m 離れて読む",
+    "モックの部品はワイヤーフレーム調で固定（DONT D9）。ここはボード自体の見た目"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>大画面向けのはっきりした業務系</b>（白地・太めの文字・コントラスト高め）",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "落ち着いた暗めの画面（照明を落とした会議室向け）"
+    },
+    {
+     "k": "C",
+     "label": "両方を用意して切り替える",
+     "rec": "次点"
+    }
+   ],
+   "after": "DESIGN.md を作成（トークンと運用ルール）"
+  },
+  {
+   "id": "Q11",
+   "short": "強調色",
+   "time": "2 分",
+   "title": "強調色（ボタン・変更枠・ハイライト）を選ぶ",
+   "visual_skip": "色の好み。v2 で見てもらう",
+   "facts": [
+    "DESIGN.md の DG4。赤は録音中・エラー、黄は警告に使うので強調色には使わない"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>青</b>（v1 と同じ）",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "緑"
+    },
+    {
+     "k": "C",
+     "label": "紺"
+    },
+    {
+     "k": "D",
+     "label": "会社のブランドカラー（メモ欄に色コード）"
+    }
+   ],
+   "after": "DESIGN.md のトークンに登録"
+  },
+  {
+   "id": "Q12",
+   "short": "部品ラベルと枠",
+   "time": "2 分",
+   "title": "モックの部品名ラベルと変更枠をどう見せるか",
+   "visual_skip": "v1 で見て決める問い",
+   "facts": [
+    "v1 は各部品の左上に小さな部品名、変更部品に青の太枠（次の更新まで残る）"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>ラベルは表示、枠は細めに</b>",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "v1 のまま"
+    },
+    {
+     "k": "C",
+     "label": "ラベルは切り替えで隠せる"
+    }
+   ],
+   "after": "F5・DESIGN.md に反映"
+  },
+  {
+   "id": "Q13",
+   "short": "v2 の出し方",
+   "time": "2 分",
+   "title": "モック v2 をどう出すか",
+   "visuals": [
+    {
+     "type": "compare",
+     "title": "1 案を進化 と 2 案を並べる",
+     "before": {
+      "title": "1 案を進化",
+      "items": [
+       "+ 作るのが速い",
+       "- 別の方向を見比べられない"
+      ]
+     },
+     "after": {
+      "title": "2 案を並べる",
+      "items": [
+       "+ 違いを触り比べて選べる",
+       "- 用意に時間がかかる"
+      ]
+     }
+    }
+   ],
+   "facts": [
+    "v2 で足すもの: 答えた S3〜S5 の内容（画面・比率・トーン・色）"
+   ],
+   "options": [
+    {
+     "k": "A",
+     "label": "<b>v1 を進化させた 1 案</b>",
+     "rec": "推奨"
+    },
+    {
+     "k": "B",
+     "label": "トーン違いの 2 案を並べる（Q10 が C のとき向き）"
+    }
+   ],
+   "after": "v2 を作成 → S7 確認へ"
+  }
+ ],
+ "after_sections": [
+  {
+   "eyebrow": "03 · 答えた後",
+   "h2": "回答を貼り戻すと AI が埋める",
+   "sub": "S3〜S5 の回答を SPEC・DONT・DESIGN.md に反映し、v2 を作る。S7（確認）と S8（確定）はその後に開く。",
+   "visuals": [
+    {
+     "type": "flow",
+     "nodes": [
+      {
+       "label": "回答を貼り戻す",
+       "kind": "strong"
+      },
+      {
+       "label": "SPEC・DESIGN 更新"
+      },
+      {
+       "label": "モック v2"
+      },
+      {
+       "label": "S7 確認",
+       "kind": "dim"
+      },
+      {
+       "label": "S8 確定",
+       "kind": "dim"
+      }
+     ],
+     "edges": [
+      "solid",
+      "solid",
+      "solid",
+      "solid"
+     ]
+    }
+   ],
+   "html": "\n<script>\ndocument.addEventListener('DOMContentLoaded', function () {\n  var QSTAGE = {\"Q1\": \"S0\", \"Q2\": \"S0\", \"Q3\": \"S2\", \"Q4\": \"S2\", \"Q5\": \"S2\", \"Q6\": \"S3\", \"Q7\": \"S3\", \"Q8\": \"S4\", \"Q9\": \"S4\", \"Q10\": \"S5\", \"Q11\": \"S5\", \"Q12\": \"S5\", \"Q13\": \"S6\"}, GATED = [\"S2\", \"S3\", \"S4\", \"S5\", \"S6\"], STATIC = {\"S0\": \"todo\", \"S1\": \"done\", \"S2\": \"partial\", \"S3\": \"todo\", \"S4\": \"partial\", \"S5\": \"todo\", \"S6\": \"partial\", \"S7\": \"locked\", \"S8\": \"locked\"};\n  var NAMES = {\"S0\": \"準備\", \"S1\": \"企画\", \"S2\": \"要件定義\", \"S3\": \"情報設計\", \"S4\": \"ワイヤーフレーム\", \"S5\": \"ビジュアル方針\", \"S6\": \"プロトタイプ\", \"S7\": \"確認\", \"S8\": \"確定\"};\n  function sel(q) { return Array.prototype.map.call(document.querySelectorAll('.opts[data-q=\"' + q + '\"] .opt.selected'), function (b) { return b.getAttribute('data-k'); }); }\n  function qsOf(s) { return Object.keys(QSTAGE).filter(function (q) { return QSTAGE[q] === s; }); }\n  function stageDone(s) { var qs = qsOf(s); return qs.length > 0 && qs.every(function (q) { return sel(q).length > 0; }); }\n  function bubble(q, cls, text) {\n    var art = document.getElementById(q); if (!art) return;\n    var b = document.createElement('div'); b.className = 'qbubble ' + (cls || ''); b.innerHTML = text; art.appendChild(b);\n  }\n  function update() {\n    var off = document.getElementById('gateOff').checked;\n    document.querySelectorAll('.qbubble,.lockbar').forEach(function (e) { e.remove(); });\n    // 1) 段階ごとの解放\n    var open = true, now = null;\n    GATED.forEach(function (s) {\n      qsOf(s).forEach(function (q) {\n        var art = document.getElementById(q); if (!art) return;\n        var lock = !open && !off;\n        art.classList.toggle('locked', lock);\n        if (lock) { var bar = document.createElement('div'); bar.className = 'lockbar'; bar.textContent = '🔒 前の段階（' + now + ' ' + NAMES[now] + '）の問いに全部答えると解放されます'; art.insertBefore(bar, art.firstChild); }\n      });\n      if (open && !stageDone(s)) { open = false; now = s; }\n    });\n    // 2) 段階の表示\n    document.querySelectorAll('#rail .st').forEach(function (li) {\n      var s = li.getAttribute('data-stage'), base = STATIC[s];\n      li.className = 'st';\n      var qs = qsOf(s), answered = qs.filter(function (q) { return sel(q).length; }).length;\n      var st = base;\n      if (qs.length) { st = answered === qs.length ? 'done' : (answered ? 'partial' : base); }\n      if (GATED.indexOf(s) >= 0 && GATED.indexOf(s) > GATED.indexOf(now || 'S9') && !off && st !== 'done') st = 'locked';\n      li.classList.add('st-' + st); if (s === now) li.classList.add('st-now');\n      var bb = li.querySelector('.bubble');\n      if (bb && qs.length) {\n        if (answered === qs.length) { bb.classList.add('ok'); bb.textContent = '回答済み。回答を貼り戻すと AI が埋める'; }\n        else if (answered) { bb.classList.remove('ok'); bb.textContent = 'あと ' + (qs.length - answered) + ' 問（' + qs.filter(function (q) { return !sel(q).length; }).join('・') + '）'; }\n      }\n    });\n    // 3) 問いどうしの食い違いを吹き出しで出す\n    var s6 = sel('Q6');\n    if (s6.length && s6.indexOf('C') < 0) bubble('Q6', '', '⚠ 前回の決定（区分を会議ごとにカスタム）と食い違います。<b>テンプレート編集画面</b>が無いと、利用者がテンプレートを作れません');\n    if (s6.length && s6.indexOf('D') < 0 && sel('Q7')[0] === 'A') bubble('Q7', '', '⚠ Q7 で「出力を確認してから保存」を選ぶなら、Q6 で<b>終了・出力確認</b>の画面も要ります');\n    if (sel('Q9')[0] === 'B') bubble('Q9', '', '⚠ 前回の決定「ボタン 1 つで切替」と比べると、確認を挟むぶん操作が 2 回になります');\n    var s5 = sel('Q5')[0];\n    if (s5 === 'B' || s5 === 'C') bubble('Q5', 'info', 'SPEC に機能 F12 を追加します。' + (s5 === 'C' ? 'モック生成の解放条件が増えるので、P1b の範囲が広がります' : 'ドキュメント更新の出力に「不足一覧」を足すだけなので、呼び出し回数は増えません'));\n    if (sel('Q11')[0] === 'D') bubble('Q11', 'info', 'メモ欄に会社のブランドカラー（色コード）を書いてください');\n    var s3 = sel('Q3');\n    if (s3.indexOf('E') >= 0 && s3.length > 1) bubble('Q3', '', '⚠ 「特になし」と他の選択肢が同時に選ばれています');\n  }\n  document.addEventListener('click', function (e) { if (e.target.closest('.opt') || e.target.id === 'clear') setTimeout(update, 0); });\n  document.getElementById('gateOff').addEventListener('change', update);\n  // 段階タグを問いの見出しへ\n  Object.keys(QSTAGE).forEach(function (q) { var h = document.querySelector('#' + q + ' .q-title'); if (h) h.insertAdjacentHTML('beforeend', '<span class=\"stage-tag\">' + QSTAGE[q] + ' ' + NAMES[QSTAGE[q]] + '</span>'); });\n  update();\n});\n</script>\n"
+  }
+ ],
+ "foot": "推奨は AI の見立てであって決定ではない（最終承認は人間）。段階の解放と吹き出しはこのページの中だけで動き、回答はブラウザにだけ残る。回答まとめをコピーしてチャットに貼り戻す。",
+ "summaryTitle": "会議モック 開発フロー判断キット — 回答",
+ "summaryFooter": "（補足があればこの下に）"
+}
