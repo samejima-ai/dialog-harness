@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>会議ボード モック v1</title>
+<style>
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --ink:#1d2330; --sub:#5b6475; --line:#d9dde5;
+  --accent:#2f6fed; --accent-soft:#e6eefe; --warn:#c77700; --warn-soft:#fff4e0;
+  --bad:#c62828; --ok:#1f8a4c; --hl:#fff3b0; --wire:#e9ecf1; --wire-ink:#8a93a3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --panel:#1c2029; --ink:#e7eaf0; --sub:#a0a8b8; --line:#2e3441;
+    --accent:#6f9bff; --accent-soft:#223052; --warn:#f0a53a; --warn-soft:#3a2d15;
+    --bad:#ff6b6b; --ok:#4cc38a; --hl:#4a4220; --wire:#262b36; --wire-ink:#8a93a3;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:18px/1.6 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 14px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+
+/* 開始画面 */
+#start{max-width:760px;margin:48px auto;padding:0 16px}
+#start h1{font-size:30px;margin:0 0 4px}
+#start .note{color:var(--sub);font-size:16px;margin:0 0 28px}
+.field{margin:0 0 22px}
+.field>label{display:block;font-weight:600;margin-bottom:8px}
+.field input[type=text],.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode-card{border:2px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--panel);text-align:left}
+.mode-card b{display:block;font-size:20px}
+.mode-card span{color:var(--sub);font-size:15px}
+.mode-card.on{border-color:var(--accent);background:var(--accent-soft)}
+.tpl-desc{font-size:15px;color:var(--sub);margin-top:6px}
+.warn-box{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:15px;margin:0 0 20px}
+.recent{font-size:15px;color:var(--sub);border-top:1px solid var(--line);margin-top:28px;padding-top:14px}
+.recent li{margin:2px 0}
+
+/* ボード */
+#board{display:flex;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.topbar .agenda{font-weight:700;font-size:20px;flex:1 1 240px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:15px;border-radius:999px;padding:2px 12px;border:1px solid var(--line);white-space:nowrap}
+.pill.rec{color:var(--bad);border-color:var(--bad)}
+.pill.rec::before{content:"● "}
+.pill.pause{color:var(--warn);border-color:var(--warn)}
+.pill.stop{color:var(--sub)}
+.pill.mode{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.level{width:80px;height:10px;background:var(--wire);border-radius:5px;overflow:hidden}
+.level i{display:block;height:100%;width:0;background:var(--ok);transition:width .15s}
+.alert{font-size:15px;border-radius:6px;padding:2px 10px}
+.alert.y{background:var(--warn-soft);color:var(--warn)}
+.panes{flex:1;display:flex;min-height:0}
+.pane{background:var(--panel);overflow:auto;min-width:0;padding:14px 18px}
+.divider{width:8px;cursor:col-resize;background:var(--bg);flex:none}
+.divider:hover{background:var(--line)}
+.pane h2{font-size:16px;color:var(--sub);margin:0 0 8px;font-weight:600;letter-spacing:.04em}
+.bottombar{background:var(--panel);border-top:1px solid var(--line);padding:6px 16px;display:flex;gap:12px;align-items:center}
+.interim{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--sub);font-style:italic}
+.metrics{font-size:14px;color:var(--sub);white-space:nowrap}
+
+/* ドキュメント */
+.sec{margin:0 0 14px}
+.sec h3{font-size:18px;margin:0 0 6px;padding-bottom:2px;border-bottom:2px solid var(--line)}
+.sec h3 small{font-weight:400;color:var(--sub);font-size:14px;margin-left:6px}
+.item{padding:6px 10px;border-radius:6px;margin:2px 0;cursor:pointer;position:relative;transition:background 1s}
+.item:hover{outline:1px dashed var(--line)}
+.item.hl{background:var(--hl);transition:none}
+.item .lock{float:right;font-size:14px;color:var(--accent);margin-left:8px}
+.item .pc{display:block;font-size:15px;color:var(--sub)}
+.item input{width:100%;padding:4px 6px;border:1px solid var(--accent);border-radius:4px;background:var(--panel)}
+.empty{color:var(--sub);font-size:15px;padding:2px 10px}
+
+/* 発言ログ */
+.log-line{display:flex;gap:10px;padding:4px 0;border-bottom:1px solid var(--line)}
+.log-line time{color:var(--sub);font-size:15px;font-variant-numeric:tabular-nums;flex:none}
+
+/* モック */
+.mock-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.tab{border-radius:6px 6px 0 0;padding:4px 12px;font-size:15px}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mock-tools .sp{flex:1}
+.switch{font-size:15px;display:flex;align-items:center;gap:6px}
+.no-reflect{font-size:14px;color:var(--warn)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp>div>b{font-size:14px;color:var(--sub)}
+.site{border:1px solid var(--line);border-radius:6px;overflow:hidden;font-size:15px;background:var(--panel)}
+.p{position:relative;padding:12px 14px;border-bottom:1px solid var(--wire)}
+.p.changed{outline:3px solid var(--accent);outline-offset:-3px}
+.p .tag{position:absolute;top:4px;right:6px;font-size:12px;background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 6px}
+.p .name{position:absolute;top:4px;left:6px;font-size:11px;color:var(--wire-ink)}
+.p-header{display:flex;justify-content:space-between;align-items:center;padding-top:18px}
+.p-header .logo{font-weight:700}
+.btnw{display:inline-block;border:2px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 12px;font-size:14px;font-weight:600}
+.photo{background:var(--wire);color:var(--wire-ink);display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:14px}
+.p-hero{padding-top:20px}
+.p-hero .photo{height:150px;margin-bottom:8px}
+.p-hero .copy{font-size:20px;font-weight:700;margin:4px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:6px}
+.card .photo{height:60px}
+.card small{display:block;color:var(--sub)}
+.nums{display:flex;gap:10px;justify-content:space-around;padding-top:8px;text-align:center}
+.nums b{display:block;font-size:24px;color:var(--accent)}
+.tel{font-size:22px;font-weight:700;padding-top:12px}
+.form .f{height:22px;background:var(--wire);border-radius:3px;margin:5px 0}
+.p-footer{color:var(--sub);font-size:13px;padding-top:18px}
+.ph{padding:22px 14px;color:var(--wire-ink);text-align:center;border:2px dashed var(--line);margin:6px 0}
+.demo-ctl{position:fixed;right:16px;bottom:64px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;gap:6px;align-items:center}
+@media (max-width:760px){
+  .panes{flex-direction:column}
+  .divider{display:none}
+  .pane{flex:none!important;width:auto!important;max-height:none}
+  .modes{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .cmp{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- 開始画面（F0） -->
+<section id="start">
+  <h1>新しい会議</h1>
+  <p class="note">モック v1。音声は使わず、デモの発言を自動で流して動きを確認する。</p>
+  <div class="warn-box" id="tierWarn">無料枠の設定です: 会議内容が Google の製品改善に使われます（.env の GEMINI_TIER を paid にすると消えます）</div>
+  <div class="field">
+    <label for="agenda">議題</label>
+    <input id="agenda" type="text" value="法人向け修繕HPのトップ">
+  </div>
+  <div class="field">
+    <label>モード</label>
+    <div class="modes">
+      <button class="mode-card on" data-mode="meeting"><b>会議モード</b><span>ドキュメント＋発言ログ。約 1.4 ドル／時</span></button>
+      <button class="mode-card" data-mode="dev"><b>開発モード</b><span>ドキュメント＋画面モック。約 4.3 ドル／時</span></button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tpl">会議テンプレート</label>
+    <select id="tpl">
+      <option value="general">一般会議（プリセット）</option>
+      <option value="site">サイト検討（プリセット）</option>
+      <option value="custom">＋ プリセットを複製して作る…</option>
+    </select>
+    <div class="tpl-desc" id="tplDesc"></div>
+  </div>
+  <button class="primary" id="startBtn">会議を作成して録音開始</button>
+  <div class="recent">
+    直近の会議（クリックで再開）
+    <ul>
+      <li>2026-09-24 14:00　定例: 足場工程の調整（会議モード）</li>
+      <li>2026-09-18 10:30　法人向け修繕HP 初回（開発モード）</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 会議ボード（F6） -->
+<section id="board" class="hidden">
+  <div class="topbar">
+    <div class="agenda" id="bAgenda"></div>
+    <span class="pill mode" id="bMode"></span>
+    <span class="pill rec" id="bState">録音中</span>
+    <span class="level"><i id="lvl"></i></span>
+    <span id="elapsed" style="font-variant-numeric:tabular-nums">00:00</span>
+    <span class="alert y hidden" id="sttWarn">文字起こしが止まっている可能性</span>
+    <button id="modeBtn"></button>
+    <button id="nowBtn" title="集約窓を待たずに反映">今すぐ反映</button>
+    <button id="pauseBtn">一時停止</button>
+    <button id="endBtn">終了</button>
+  </div>
+  <div class="panes" id="panes">
+    <div class="pane" id="left"><h2>議事ドキュメント（正本）</h2><div id="doc"></div></div>
+    <div class="divider" id="divider"></div>
+    <div class="pane" id="right"></div>
+  </div>
+  <div class="bottombar">
+    <span style="font-size:14px;color:var(--sub)">暫定</span>
+    <div class="interim" id="interim">…</div>
+    <div class="metrics" id="metrics">直近: 文書 — ／ モック —</div>
+  </div>
+  <div class="demo-ctl">
+    デモ
+    <button id="demoStep">1 発言進める</button>
+    <label><input type="checkbox" id="demoAuto" checked> 自動</label>
+    <button id="demoStall" title="無言停止の警告表示を試す">停止を再現</button>
+  </div>
+</section>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const TEMPLATES = {
+    general:{name:"一般会議", out:"minutes.md", desc:"区分: 決定（合意必須）・保留・論点（賛否）・メモ ／ 出力: minutes.md"},
+    site:{name:"サイト検討", out:"handoff.md", desc:"区分: 決定（合意必須）・保留・論点（賛否）・メモ ／ 出力: handoff.md ／ 固有名詞: 大規模修繕, シーリング, 足場"},
+    custom:{name:"（複製して作成）", out:"—", desc:"v1 では未実装。プリセットを複製し、区分・プロンプトを編集する画面になる予定"}
+  };
+  const SECTIONS = [
+    {id:"decided", name:"決定", note:"合意が取れた事項"},
+    {id:"pending", name:"保留", note:"出たが決まっていない"},
+    {id:"issue", name:"論点", note:"意見が分かれている（賛否）"},
+    {id:"memo", name:"メモ", note:"数値・固有名詞・宿題"}
+  ];
+  // デモ台本: 発言と、それに伴うドキュメント操作・モック操作
+  const SCRIPT = [
+    {t:"じゃあトップページから決めていきましょうか。", ops:[]},
+    {t:"トップには実績の写真を大きく出したいですね。", ops:[{op:"add",sec:"pending",id:"a1",text:"トップに実績写真を大きく出す"}], mock:m=>{m.hero={copy:"建物の価値を、次の世代へ",photo:"写真：施工実績（外観）"};return["hero"]}},
+    {t:"そうしましょう、写真は大きく。", ops:[{op:"move",id:"a1",sec:"decided"}], mock:m=>[]},
+    {t:"問い合わせボタンは右上ですかね。", ops:[{op:"add",sec:"pending",id:"a2",text:"問い合わせボタンを右上に置く"}], mock:m=>{m.headerBtn=true;return["header"]}},
+    {t:"右上かな…でも電話番号を目立たせたい人も多いんですよ。", ops:[{op:"remove",id:"a2"},{op:"add",sec:"issue",id:"a3",text:"問い合わせ導線: ボタン右上か、電話番号を大きくか",pc:"賛: 迷わない ／ 反: 電話派の顧客が多い"}], mock:m=>{m.tel=true;return["tel"]}},
+    {t:"施工実績は3件くらいカードで並べたいです。", ops:[{op:"add",sec:"pending",id:"a4",text:"施工実績をカードで 3 件並べる"}], mock:m=>{m.cards=true;return["cards"]}},
+    {t:"えー、あの、年間の施工件数は120件です。", ops:[{op:"add",sec:"memo",id:"a5",text:"年間施工件数: 120 件"}], mock:m=>{m.nums=true;return["nums"]}},
+    {t:"あとドローンで点検してる動画も載せたいな。", ops:[{op:"add",sec:"pending",id:"a6",text:"ドローン点検の動画を載せる"}], mock:m=>{m.video=true;return["video"]}},
+    {t:"来週までに写真素材を集めておきます。", ops:[{op:"add",sec:"memo",id:"a7",text:"宿題: 写真素材を来週までに集める"}], mock:m=>[]}
+  ];
+
+  let mode="meeting", tpl="general", running=false, paused=false, step=0, startAt=0;
+  let doc={}, locked={}, log=[], versions=[], viewV=-1, frozen=false, compare=false, lastChanged=[], noReflect=false;
+  let mockState={};
+
+  // 開始画面
+  document.querySelectorAll(".mode-card").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(".mode-card").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); mode=b.dataset.mode;
+    $("#tpl").value = mode==="dev" ? "site" : "general"; showTpl();
+  });
+  function showTpl(){ tpl=$("#tpl").value; $("#tplDesc").textContent=TEMPLATES[tpl].desc; $("#startBtn").disabled = tpl==="custom"; }
+  $("#tpl").onchange=showTpl; showTpl();
+  $("#startBtn").onclick=()=>{
+    $("#start").classList.add("hidden"); $("#board").classList.remove("hidden");
+    $("#bAgenda").textContent=$("#agenda").value||"（議題なし）";
+    SECTIONS.forEach(s=>doc[s.id]=[]);
+    running=true; startAt=Date.now(); applyMode(); renderDoc(); tick();
+  };
+
+  // モード（F11）
+  function applyMode(){
+    $("#bMode").textContent = mode==="dev" ? "開発モード" : "会議モード";
+    $("#modeBtn").textContent = mode==="dev" ? "会議モードへ" : "開発モードへ";
+    const [l,r] = mode==="dev" ? [5,7] : [7,5];
+    $("#left").style.flex=l; $("#right").style.flex=r;
+    renderRight();
+  }
+  $("#modeBtn").onclick=()=>{
+    mode = mode==="dev" ? "meeting" : "dev";
+    if(mode==="dev" && versions.length===0) commitMock(Object.keys(mockState));
+    else if(mode==="dev") commitMock([]);
+    applyMode();
+  };
+
+  // ドキュメント（F4 / F7）
+  function renderDoc(hlIds=[]){
+    const root=$("#doc"); root.innerHTML="";
+    SECTIONS.forEach(s=>{
+      const sec=document.createElement("div"); sec.className="sec";
+      sec.innerHTML=`<h3>${s.name}<small>${s.note}</small></h3>`;
+      if(!doc[s.id].length) sec.insertAdjacentHTML("beforeend",`<div class="empty">まだありません</div>`);
+      doc[s.id].forEach(it=>{
+        const d=document.createElement("div"); d.className="item"+(hlIds.includes(it.id)?" hl":"");
+        d.innerHTML=(locked[it.id]?`<span class="lock" title="クリックで解除">🔒 手動</span>`:"")+esc(it.text)+(it.pc?`<span class="pc">${esc(it.pc)}</span>`:"");
+        d.onclick=e=>{ if(e.target.classList.contains("lock")){ delete locked[it.id]; renderDoc(); return;} editItem(d,it,s.id); };
+        sec.appendChild(d);
+        if(hlIds.includes(it.id)) setTimeout(()=>d.classList.remove("hl"),3000);
+      });
+      root.appendChild(sec);
+    });
+  }
+  function editItem(el,it,secId){
+    if(el.querySelector("input")) return;
+    el.innerHTML="";
+    const inp=document.createElement("input"); inp.value=it.text;
+    const sel=document.createElement("select");
+    SECTIONS.forEach(s=>sel.insertAdjacentHTML("beforeend",`<option value="${s.id}" ${s.id===secId?"selected":""}>${s.name}</option>`));
+    const del=document.createElement("button"); del.textContent="削除";
+    const row=document.createElement("div"); row.style.cssText="display:flex;gap:6px;margin-top:4px;font-size:15px";
+    row.append(sel,del); el.append(inp,row); inp.focus();
+    const save=()=>{ it.text=inp.value; locked[it.id]=true; if(sel.value!==secId){ doc[secId]=doc[secId].filter(x=>x!==it); doc[sel.value].push(it);} renderDoc([it.id]); };
+    inp.onkeydown=e=>{ if(e.key==="Enter") save(); if(e.key==="Escape") renderDoc(); };
+    sel.onchange=save;
+    del.onclick=e=>{ e.stopPropagation(); doc[secId]=doc[secId].filter(x=>x!==it); renderDoc(); };
+    inp.onblur=()=>setTimeout(()=>{ if(document.activeElement!==sel && document.activeElement!==del && el.isConnected) save(); },150);
+  }
+  function findItem(id){ for(const s of SECTIONS){ const i=doc[s.id].findIndex(x=>x.id===id); if(i>=0) return [s.id,i]; } return null; }
+  function applyOps(ops){
+    const hl=[];
+    ops.forEach(o=>{
+      if(o.op!=="add" && locked[o.id]) return; // ロック済みは add 以外捨てる
+      if(o.op==="add"){ doc[o.sec].push({id:o.id,text:o.text,pc:o.pc}); hl.push(o.id); }
+      const f=o.op!=="add" && findItem(o.id); if(o.op!=="add" && !f) return;
+      if(o.op==="move"){ const [s,i]=f; const [it]=doc[s].splice(i,1); doc[o.sec].push(it); hl.push(o.id); }
+      if(o.op==="remove"){ const [s,i]=f; doc[s].splice(i,1); }
+    });
+    renderDoc(hl);
+  }
+
+  // 右ペイン
+  function renderRight(){
+    const r=$("#right");
+    if(mode==="meeting"){
+      r.innerHTML=`<h2>確定発言ログ</h2><div id="log"></div>`;
+      log.forEach(l=>addLogLine(l,false));
+      r.scrollTop=r.scrollHeight; return;
+    }
+    const tabs=versions.map((v,i)=>`<button class="tab ${i===viewV?"on":""}" data-v="${i}">案${i+1}</button>`).join("");
+    r.innerHTML=`<div class="mock-tools">${tabs||'<span class="empty">案はまだありません</span>'}
+      <span class="sp"></span>
+      ${noReflect?'<span class="no-reflect">今回は反映なし</span>':""}
+      <button id="backBtn" ${versions.length<2?"disabled":""}>1 つ前に戻す</button>
+      <button id="cmpBtn" ${versions.length<2?"disabled":""}>${compare?"比較を閉じる":"2 案を並べて比較"}</button>
+      <label class="switch"><input type="checkbox" id="freeze" ${frozen?"checked":""}> モック固定</label>
+    </div><div id="mockArea"></div>`;
+    r.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{viewV=+b.dataset.v;renderRight();});
+    $("#backBtn").onclick=()=>{ if(viewV>0){viewV--;renderRight();} };
+    $("#cmpBtn").onclick=()=>{ compare=!compare; renderRight(); };
+    $("#freeze").onchange=e=>{ frozen=e.target.checked; };
+    const area=$("#mockArea");
+    if(viewV<0){ area.innerHTML=`<div class="ph">ドキュメントが更新されると、ここに案が出ます</div>`; return; }
+    if(compare && versions.length>=2){
+      const a=Math.max(0,viewV-1), b=viewV===0?1:viewV;
+      area.innerHTML=`<div class="cmp"><div><b>案${a+1}</b>${siteHTML(versions[a],[])}</div><div><b>案${b+1}</b>${siteHTML(versions[b],versions[b].changed)}</div></div>`;
+    } else {
+      const v=versions[viewV]; area.innerHTML=siteHTML(v, viewV===versions.length-1?v.changed:[]);
+    }
+  }
+  function part(key,name,changed,inner,extra=""){ return `<div class="p ${extra} ${changed.includes(key)?"changed":""}"><span class="name">${name}</span>${inner}</div>`; }
+  function siteHTML(v,changed){
+    const s=v.state; let h="";
+    h+=part("header","ヘッダー",changed,`<div class="p-header"><span class="logo">カクマン工業</span>${s.headerBtn?'<span class="btnw">お問い合わせ</span>':'<span style="color:var(--sub)">メニュー</span>'}</div>`);
+    if(s.hero) h+=part("hero","ヒーロー",changed,`<div class="p-hero"><div class="photo">${esc(s.hero.photo)}</div><div class="copy">${esc(s.hero.copy)}</div><span class="btnw">無料診断を申し込む</span></div>`);
+    if(s.nums) h+=part("nums","数字の強調",changed,`<div class="nums"><div><b>120</b>年間施工件数</div><div><b>—</b>創業年数</div><div><b>—</b>対応エリア</div></div>`);
+    if(s.cards) h+=part("cards","実績カード ×3",changed,`<div class="grid3">${[1,2,3].map(i=>`<div class="card"><div class="photo">写真：実績${i}</div>物件名 ${i}<small>大規模修繕</small></div>`).join("")}</div>`);
+    if(s.video) h+=part("video","画像（代用: 動画）",changed,`<span class="tag">代用</span><div class="photo" style="height:90px;margin-top:14px">写真：ドローン点検の様子（動画の代わり）</div>`);
+    if(s.tel) h+=part("tel","電話番号表示",changed,`<div class="tel">☎ 0120-000-000 <small style="font-size:14px;color:var(--sub)">平日 9–18 時</small></div>`);
+    h+=part("form","問い合わせフォーム",changed,`<div class="form" style="padding-top:12px"><div class="f"></div><div class="f"></div><span class="btnw">送信</span></div>`);
+    h+=part("footer","フッター",changed,`<div class="p-footer">会社概要 ／ プライバシーポリシー</div>`);
+    return `<div class="site">${h}</div>`;
+  }
+  function commitMock(changed){
+    if(frozen) return;
+    versions.push({state:JSON.parse(JSON.stringify(mockState)),changed});
+    viewV=versions.length-1; noReflect=false;
+  }
+  function addLogLine(l,scroll=true){
+    const box=$("#log"); if(!box) return;
+    box.insertAdjacentHTML("beforeend",`<div class="log-line"><time>${l.time}</time><span>${esc(l.t)}</span></div>`);
+    if(scroll){ const r=$("#right"); r.scrollTop=r.scrollHeight; }
+  }
+
+  // デモの進行（音声・生成の代わり）
+  function nextUtterance(){
+    if(!running || paused || step>=SCRIPT.length) return;
+    const u=SCRIPT[step++];
+    let i=0; const iv=setInterval(()=>{ i+=3; $("#interim").textContent=u.t.slice(0,i); if(i>=u.t.length){ clearInterval(iv); finalize(u);} },120);
+  }
+  function finalize(u){
+    const l={time:fmt(Date.now()-startAt),t:u.t}; log.push(l);
+    if(mode==="meeting") addLogLine(l);
+    $("#interim").textContent="…";
+    setTimeout(()=>{ // ドキュメント更新
+      applyOps(u.ops);
+      const docMs=1800+Math.round(Math.random()*1500);
+      let mockTxt="—";
+      if(u.mock){ const ch=u.mock(mockState);
+        if(mode==="dev" && !frozen){ if(ch.length){ commitMock(ch); } mockTxt=(docMs/1000+2.9).toFixed(1)+" 秒"; renderRight(); } }
+      $("#metrics").textContent=`直近: 文書 ${(docMs/1000).toFixed(1)} 秒 ／ モック ${mode==="dev"?mockTxt:"（会議モード）"}`;
+    },700);
+  }
+  $("#demoStep").onclick=nextUtterance;
+  $("#nowBtn").onclick=nextUtterance;
+  let autoTimer=setInterval(()=>{ if($("#demoAuto").checked) nextUtterance(); },5200);
+  $("#pauseBtn").onclick=()=>{ paused=!paused; $("#pauseBtn").textContent=paused?"再開":"一時停止";
+    const st=$("#bState"); st.className="pill "+(paused?"pause":"rec"); st.textContent=paused?"一時停止":"録音中"; };
+  $("#endBtn").onclick=()=>{ running=false; const st=$("#bState"); st.className="pill stop"; st.textContent="停止";
+    const outs = versions.length ? "minutes.md と handoff.md" : TEMPLATES[tpl].out==="handoff.md" && mode==="dev" ? "handoff.md" : "minutes.md";
+    alert("会議を終了しました。\n出力: sessions/…/ に "+outs+" を書き出します（モックでは表示のみ）"); };
+  $("#demoStall").onclick=()=>{ $("#sttWarn").classList.toggle("hidden"); };
+
+  // 経過時間・入力レベル
+  function tick(){
+    setInterval(()=>{ if(!running) return; $("#elapsed").textContent=fmt(Date.now()-startAt);
+      $("#lvl").style.width = paused?"0%":(20+Math.random()*70)+"%"; },300);
+  }
+  // 境界ドラッグ
+  $("#divider").onmousedown=e=>{ e.preventDefault(); const panes=$("#panes").getBoundingClientRect();
+    const mv=ev=>{ const x=Math.min(Math.max(ev.clientX-panes.left,200),panes.width-200); $("#left").style.flex=x; $("#right").style.flex=panes.width-x; };
+    const up=()=>{ removeEventListener("mousemove",mv); removeEventListener("mouseup",up); };
+    addEventListener("mousemove",mv); addEventListener("mouseup",up); };
+
+  function fmt(ms){ const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+  function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+})();
+</script>
+</body>
+</html>
