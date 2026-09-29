@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>会議ボード モック v2</title>
+<style>
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --ink:#1d2330; --sub:#5b6475; --line:#d9dde5;
+  --accent:#1d5fd8; --accent-soft:#e6eefe; --warn:#9a5b00; --warn-soft:#fff4e0;
+  --bad:#c62828; --ok:#1f7a45; --hl:#fff3b0; --wire:#e9ecf1; --wire-ink:#8a93a3;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:20px/1.6 "BIZ UDPGothic","Yu Gothic UI",Meiryo,system-ui,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 14px;font-size:18px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hidden{display:none!important}
+.mono{font-family:ui-monospace,Consolas,monospace}
+
+/* 開始画面・テンプレート編集 */
+.page{max-width:820px;margin:40px auto;padding:0 16px}
+.page h1{font-size:30px;margin:0 0 4px}
+.note{color:var(--sub);font-size:18px;margin:0 0 24px}
+.field{margin:0 0 20px}
+.field>label{display:block;font-weight:700;margin-bottom:6px;font-size:18px}
+.field input[type=text],.field select,.field textarea{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.field textarea{min-height:70px;font-size:18px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode-card{border:2px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--panel);text-align:left}
+.mode-card b{display:block;font-size:22px}
+.mode-card span{color:var(--sub);font-size:18px}
+.mode-card.on{border-color:var(--accent);background:var(--accent-soft)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tpl-desc{font-size:18px;color:var(--sub);margin-top:6px}
+.warn-box{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:18px;margin:0 0 20px}
+.recent{font-size:18px;color:var(--sub);border-top:1px solid var(--line);margin-top:24px;padding-top:12px}
+.sec-edit{display:grid;grid-template-columns:1fr 1.6fr auto auto auto;gap:8px;align-items:center;margin:0 0 8px}
+.sec-edit input[type=text]{padding:6px 10px;border:1px solid var(--line);border-radius:8px;width:100%;font-size:18px}
+.sec-edit label{font-size:16px;white-space:nowrap}
+.readonly{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:6px 12px;font-size:18px;margin-bottom:16px}
+
+/* ボード */
+#board{display:flex;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.topbar .agenda{font-weight:700;font-size:24px;flex:1 1 240px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:18px;border-radius:999px;padding:1px 12px;border:1px solid var(--line);white-space:nowrap;background:var(--panel)}
+.pill.rec{color:var(--bad);border-color:var(--bad)}
+.pill.rec::before{content:"● "}
+.pill.pause{color:var(--warn);border-color:var(--warn)}
+.pill.stop{color:var(--sub)}
+.pill.mode{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700}
+.level{width:80px;height:10px;background:var(--wire);border-radius:5px;overflow:hidden}
+.level i{display:block;height:100%;width:0;background:var(--ok)}
+.alert{font-size:18px;border-radius:6px;padding:1px 10px;background:var(--warn-soft);color:var(--warn)}
+.panes{flex:1;display:flex;min-height:0}
+.pane{background:var(--panel);overflow:auto;min-width:0;padding:14px 18px;position:relative}
+.divider{width:8px;cursor:col-resize;background:var(--bg);flex:none}
+.divider:hover{background:var(--line)}
+.pane h2{font-size:18px;color:var(--sub);margin:0 0 8px;font-weight:700}
+.bottombar{background:var(--bg);border-top:1px solid var(--line);padding:6px 16px;display:flex;gap:12px;align-items:center}
+.interim{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--sub)}
+.metrics{font-size:18px;color:var(--sub);white-space:nowrap}
+
+/* ドキュメント */
+.sec{margin:0 0 14px}
+.sec h3{font-size:22px;margin:0 0 4px;padding-bottom:2px;border-bottom:2px solid var(--line)}
+.sec h3 small{font-weight:400;color:var(--sub);font-size:18px;margin-left:6px}
+.item{padding:4px 10px;border-radius:6px;margin:2px 0;cursor:pointer;transition:background 1s}
+.item:hover{outline:1px dashed var(--line)}
+.item.hl{background:var(--hl);transition:none}
+.item .lock{float:right;font-size:16px;color:var(--accent);margin-left:8px}
+.item .pc{display:block;font-size:18px;color:var(--sub)}
+.item input{width:100%;padding:4px 6px;border:1px solid var(--accent);border-radius:4px}
+.empty{color:var(--sub);font-size:18px;padding:2px 10px}
+
+/* 発言ログ */
+.log-line{display:flex;gap:12px;padding:4px 0;border-bottom:1px solid var(--line)}
+.log-line time{color:var(--sub);font-size:18px;flex:none}
+.newchip{position:sticky;bottom:8px;margin-left:auto;display:block;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:4px 16px;font-size:18px}
+
+/* 工程表示（F12） */
+.stages{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:18px;margin-bottom:6px}
+.stg{display:flex;gap:6px;align-items:center;color:var(--sub)}
+.stg i{width:14px;height:14px;border-radius:50%;border:2px solid var(--sub);display:inline-block}
+.stg.done i{background:var(--ok);border-color:var(--ok)}
+.stg.done{color:var(--ink)}
+.stg.part i{background:linear-gradient(90deg,var(--warn) 50%,transparent 50%);border-color:var(--warn)}
+.stg.now{color:var(--accent);font-weight:700}
+.stg.now i{border-color:var(--accent)}
+.bubbles{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
+.bubble{position:relative;background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:4px 12px;font-size:18px;margin-left:10px}
+.bubble::before{content:"";position:absolute;left:-7px;top:12px;width:10px;height:10px;background:var(--warn-soft);border-left:1px solid var(--warn);border-bottom:1px solid var(--warn);transform:rotate(45deg)}
+
+/* モック */
+.mock-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.tab{padding:2px 12px;font-size:18px}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mock-tools .sp{flex:1}
+.switch{font-size:18px;display:flex;align-items:center;gap:6px}
+.no-reflect{font-size:18px;color:var(--warn)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp>div>b{font-size:18px;color:var(--sub)}
+.site{border:1px solid var(--line);border-radius:6px;overflow:hidden;font-size:16px;background:var(--panel)}
+.p{position:relative;padding:12px 14px;border-bottom:1px solid var(--wire)}
+.p.changed{outline:2px solid var(--accent);outline-offset:-2px}
+.p .tag{position:absolute;top:4px;right:6px;font-size:12px;background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 6px}
+.p .name{position:absolute;top:3px;left:6px;font-size:12px;color:var(--wire-ink)}
+.p-header{display:flex;justify-content:space-between;align-items:center;padding-top:16px}
+.btnw{display:inline-block;border:2px solid var(--accent);color:var(--accent);border-radius:6px;padding:2px 12px;font-size:15px;font-weight:700}
+.photo{background:var(--wire);color:var(--wire-ink);display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:15px}
+.p-hero{padding-top:18px}
+.p-hero .photo{height:150px;margin-bottom:8px}
+.p-hero .copy{font-size:22px;font-weight:700;margin:4px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:6px}
+.card .photo{height:60px}
+.card small{display:block;color:var(--sub)}
+.nums{display:flex;gap:10px;justify-content:space-around;padding-top:8px;text-align:center}
+.nums b{display:block;font-size:26px;color:var(--accent)}
+.tel{font-size:24px;font-weight:700;padding-top:12px}
+.form .f{height:22px;background:var(--wire);border-radius:3px;margin:5px 0}
+.p-footer{color:var(--sub);font-size:14px;padding-top:16px}
+.locked-mock{border:2px dashed var(--line);border-radius:8px;padding:28px;text-align:center;color:var(--sub)}
+.locked-mock b{display:block;color:var(--ink);font-size:22px;margin-bottom:6px}
+
+.toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:8px;padding:8px 16px;font-size:18px;display:flex;gap:14px;align-items:center;z-index:5}
+.toast button{background:transparent;color:#9fc0ff;border:0;font-weight:700;padding:0}
+.demo-ctl{position:fixed;right:16px;bottom:64px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:16px;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;gap:6px;align-items:center}
+.demo-ctl button{font-size:16px;padding:4px 10px}
+@media (max-width:760px){
+  body{font-size:18px}
+  .panes{flex-direction:column}
+  .divider{display:none}
+  .pane{flex:none!important}
+  .modes{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+  .cmp{grid-template-columns:1fr}
+  .sec-edit{grid-template-columns:1fr 1fr}
+  .demo-ctl{position:static;margin:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- 開始画面（F0） -->
+<section id="start" class="page">
+  <h1>新しい会議</h1>
+  <p class="note">モック v2。音声は使わず、デモの発言を流して動きを確認する。</p>
+  <div class="warn-box">無料枠の設定です: 会議内容が Google の製品改善に使われます（.env の GEMINI_TIER を paid にすると消えます）</div>
+  <div class="field"><label for="agenda">議題</label><input id="agenda" type="text" value="法人向け修繕HPのトップ"></div>
+  <div class="field">
+    <label>モード</label>
+    <div class="modes">
+      <button class="mode-card" data-mode="meeting"><b>会議モード</b><span>ドキュメント＋発言ログ（議事録向け）。約 1.4 ドル／時</span></button>
+      <button class="mode-card on" data-mode="dev"><b>開発モード</b><span>ドキュメント＋画面モック。約 4.3 ドル／時</span></button>
+    </div>
+  </div>
+  <div class="field">
+    <label for="tpl">会議テンプレート</label>
+    <div class="row"><select id="tpl" style="flex:1"></select><button id="editTplBtn">テンプレートを編集</button></div>
+    <div class="tpl-desc" id="tplDesc"></div>
+  </div>
+  <button class="primary" id="startBtn">会議を作成して録音開始</button>
+  <div class="recent">直近の会議（クリックで再開）
+    <ul><li>2026-09-24 14:00　定例: 足場工程の調整（会議モード）</li><li>2026-09-18 10:30　法人向け修繕HP 初回（開発モード）</li></ul>
+  </div>
+</section>
+
+<!-- テンプレート編集（F10） -->
+<section id="tplEdit" class="page hidden">
+  <h1>テンプレートを編集</h1>
+  <p class="note">プリセットは直接編集できない。複製してから編集する。会議の途中では変えられない。</p>
+  <div class="field"><label for="teBase">元にするテンプレート</label>
+    <div class="row"><select id="teBase" style="flex:1"></select><button id="teDup">複製して編集</button></div></div>
+  <div id="teForm">
+    <div class="readonly" id="teRO">プリセットは読み取り専用です。「複製して編集」を押してください</div>
+    <div class="field"><label for="teName">名前</label><input id="teName" type="text"></div>
+    <div class="field"><label>区分（1〜8 個）</label><div id="teSecs"></div><button id="teAdd">＋ 区分を追加</button></div>
+    <div class="field"><label for="tePrompt">ドキュメント更新プロンプトへの追記</label><textarea id="tePrompt"></textarea></div>
+    <div class="field"><label for="teOut">出力プロンプト</label><textarea id="teOut"></textarea></div>
+    <div class="field"><label for="teFile">出力ファイル名</label><input id="teFile" type="text"></div>
+    <div class="field"><label for="teVocab">固有名詞（文字起こしに登録。読点区切り）</label><input id="teVocab" type="text"></div>
+  </div>
+  <div class="row"><button class="primary" id="teSave">保存して戻る</button><button id="teBack">保存せずに戻る</button></div>
+</section>
+
+<!-- 会議ボード（F6） -->
+<section id="board" class="hidden">
+  <div class="topbar">
+    <div class="agenda" id="bAgenda"></div>
+    <span class="pill mode" id="bMode"></span>
+    <span class="pill rec" id="bState">録音中</span>
+    <span class="level"><i id="lvl"></i></span>
+    <span id="elapsed" class="mono">00:00</span>
+    <span class="alert hidden" id="sttWarn">文字起こしが止まっている可能性</span>
+    <button id="modeBtn"></button>
+    <button id="nowBtn">今すぐ反映</button>
+    <button id="pauseBtn">一時停止</button>
+    <button id="endBtn">終了</button>
+  </div>
+  <div class="panes" id="panes">
+    <div class="pane" id="left"><h2>議事ドキュメント（正本）</h2><div id="doc"></div></div>
+    <div class="divider" id="divider"></div>
+    <div class="pane" id="right"></div>
+  </div>
+  <div class="bottombar">
+    <span style="font-size:18px;color:var(--sub)">話し中</span>
+    <div class="interim" id="interim">…</div>
+    <div class="metrics" id="metrics">直近: 文書 — ／ モック —</div>
+  </div>
+  <div class="demo-ctl">デモ <button id="demoStep">1 発言進める</button>
+    <label><input type="checkbox" id="demoAuto"> 自動</label>
+    <button id="demoStall">停止を再現</button></div>
+</section>
+<div class="toast hidden" id="toast"><span id="toastMsg"></span><button id="toastUndo">元に戻す</button></div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+  const BASE_SECS=[
+    {id:"decided",name:"決定",desc:"合意が取れた事項",proCon:false,agree:true},
+    {id:"pending",name:"保留",desc:"出たが決まっていない",proCon:false,agree:false},
+    {id:"issue",name:"論点",desc:"意見が分かれている（賛否）",proCon:true,agree:false},
+    {id:"memo",name:"メモ",desc:"数値・固有名詞・宿題",proCon:false,agree:false}];
+  const PRESETS={
+    general:{name:"一般会議",preset:true,secs:BASE_SECS,prompt:"雑談・相づちは反映しない。",out:"決定・保留・論点・宿題の順に、議事録として簡潔にまとめる。",file:"minutes.md",vocab:""},
+    site:{name:"サイト検討",preset:true,secs:BASE_SECS,prompt:"画面・部品に関する発言は、どの部品の話かを明記する。",out:"議題→区分ごとの項目→最終モックの部品の木→未解決の宿題の順にまとめる。",file:"handoff.md",vocab:"大規模修繕、シーリング、足場"}};
+  let TEMPLATES=Object.assign({},PRESETS,store.get("mm-templates",{}));
+
+  // デモ台本（開発の会議）。stage: 1 要件 / 2 画面構成 / 3 見た目
+  const SCRIPT=[
+    {t:"今日は法人向け修繕HPのトップページを決めたいです。",ops:[]},
+    {t:"見るのは主にマンション管理組合の理事さんですね。",ops:[{op:"add",sec:"memo",id:"a0",text:"主な閲覧者: マンション管理組合の理事",stage:1}]},
+    {t:"目的は無料診断の申し込みを増やすことです、それでいきましょう。",ops:[{op:"add",sec:"decided",id:"a0b",text:"トップの目的: 無料診断の申し込みを増やす",stage:1}]},
+    {t:"トップには実績の写真を大きく出したいですね。",ops:[{op:"add",sec:"pending",id:"a1",text:"トップに実績写真を大きく出す",stage:2}],mock:m=>{m.hero={copy:"建物の価値を、次の世代へ",photo:"写真：施工実績（外観）"};return["hero"]}},
+    {t:"そうしましょう、写真は大きく。",ops:[{op:"move",id:"a1",sec:"decided"}],mock:m=>[]},
+    {t:"問い合わせボタンは右上ですかね。",ops:[{op:"add",sec:"pending",id:"a2",text:"問い合わせボタンを右上に置く",stage:2}],mock:m=>{m.headerBtn=true;return["header"]}},
+    {t:"右上かな…でも電話番号を目立たせたい人も多いんですよ。",ops:[{op:"remove",id:"a2"},{op:"add",sec:"issue",id:"a3",text:"問い合わせ導線: ボタン右上か、電話番号を大きくか",pc:"賛: 迷わない ／ 反: 電話派の顧客が多い",stage:2}],mock:m=>{m.tel=true;return["tel"]}},
+    {t:"施工実績は3件くらいカードで並べたいです。",ops:[{op:"add",sec:"pending",id:"a4",text:"施工実績をカードで 3 件並べる",stage:2}],mock:m=>{m.cards=true;return["cards"]}},
+    {t:"えー、あの、年間の施工件数は120件です。",ops:[{op:"add",sec:"memo",id:"a5",text:"年間施工件数: 120 件",stage:3}],mock:m=>{m.nums=true;return["nums"]}},
+    {t:"あとドローンで点検してる動画も載せたいな。",ops:[{op:"add",sec:"pending",id:"a6",text:"ドローン点検の動画を載せる",stage:3}],mock:m=>{m.video=true;return["video"]}},
+    {t:"来週までに写真素材を集めておきます。",ops:[{op:"add",sec:"memo",id:"a7",text:"宿題: 写真素材を来週までに集める",stage:3}],mock:m=>[]}];
+
+  let mode="dev",tpl="site",secs=BASE_SECS,running=false,paused=false,step=0,startAt=0;
+  let doc={},locked={},log=[],versions=[],viewV=-1,frozen=false,compare=false,noReflect=false,forceMock=false,unseen=0;
+  let mockState={}, ratios=store.get("mm-ratios",{meeting:[7,5],dev:[5,7]});
+
+  // ---------- 開始画面 ----------
+  function fillTplSelects(){
+    const opts=Object.entries(TEMPLATES).map(([k,t])=>`<option value="${k}">${esc(t.name)}${t.preset?"（プリセット）":""}</option>`).join("");
+    $("#tpl").innerHTML=opts; $("#teBase").innerHTML=opts;
+    if(!TEMPLATES[tpl]) tpl="site"; $("#tpl").value=tpl; showTpl();
+  }
+  function showTpl(){ tpl=$("#tpl").value; const t=TEMPLATES[tpl];
+    $("#tplDesc").textContent="区分: "+t.secs.map(s=>s.name+(s.agree?"（合意必須）":"")+(s.proCon?"（賛否）":"")).join("・")+" ／ 出力: "+t.file+(t.vocab?" ／ 固有名詞: "+t.vocab:""); }
+  document.querySelectorAll(".mode-card").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(".mode-card").forEach(x=>x.classList.remove("on")); b.classList.add("on"); mode=b.dataset.mode;
+    const t=TEMPLATES[$("#tpl").value]; if(t&&t.preset){ $("#tpl").value=mode==="dev"?"site":"general"; } showTpl(); });
+  $("#tpl").onchange=showTpl;
+  $("#startBtn").onclick=()=>{
+    $("#start").classList.add("hidden"); $("#board").classList.remove("hidden");
+    $("#bAgenda").textContent=$("#agenda").value||"（議題なし）";
+    secs=TEMPLATES[tpl].secs; secs.forEach(s=>doc[s.id]=[]);
+    running=true; startAt=Date.now(); applyMode(); renderDoc(); tick(); };
+
+  // ---------- テンプレート編集 ----------
+  let draft=null, draftKey=null;
+  $("#editTplBtn").onclick=()=>{ $("#start").classList.add("hidden"); $("#tplEdit").classList.remove("hidden"); $("#teBase").value=tpl; loadDraft(tpl,false); };
+  $("#teBase").onchange=()=>loadDraft($("#teBase").value,false);
+  $("#teDup").onclick=()=>{ const src=TEMPLATES[$("#teBase").value]; draft=JSON.parse(JSON.stringify(src)); draft.preset=false; draft.name=src.name+"（コピー）"; draftKey="u"+Date.now(); renderDraft(true); };
+  function loadDraft(k,editable){ draft=JSON.parse(JSON.stringify(TEMPLATES[k])); draftKey=k; renderDraft(editable||!draft.preset); }
+  function renderDraft(editable){
+    $("#teRO").classList.toggle("hidden",editable);
+    $("#teName").value=draft.name; $("#tePrompt").value=draft.prompt; $("#teOut").value=draft.out; $("#teFile").value=draft.file; $("#teVocab").value=draft.vocab;
+    const box=$("#teSecs"); box.innerHTML="";
+    draft.secs.forEach((s,i)=>{ const r=document.createElement("div"); r.className="sec-edit";
+      r.innerHTML=`<input type="text" value="${esc(s.name)}" aria-label="区分名"><input type="text" value="${esc(s.desc)}" aria-label="説明"><label><input type="checkbox" ${s.proCon?"checked":""}> 賛否</label><label><input type="checkbox" ${s.agree?"checked":""}> 合意必須</label><button aria-label="削除">✕</button>`;
+      const [n,d,pc,ag]=r.querySelectorAll("input");
+      n.oninput=()=>s.name=n.value; d.oninput=()=>s.desc=d.value; pc.onchange=()=>s.proCon=pc.checked; ag.onchange=()=>s.agree=ag.checked;
+      r.querySelector("button").onclick=()=>{ if(draft.secs.length>1){ draft.secs.splice(i,1); renderDraft(true);} };
+      box.appendChild(r); });
+    $("#teForm").querySelectorAll("input,textarea,button").forEach(e=>e.disabled=!editable);
+    $("#teAdd").disabled=!editable||draft.secs.length>=8; $("#teSave").disabled=!editable;
+  }
+  $("#teAdd").onclick=()=>{ draft.secs.push({id:"s"+Date.now(),name:"新しい区分",desc:"",proCon:false,agree:false}); renderDraft(true); };
+  $("#teSave").onclick=()=>{ Object.assign(draft,{name:$("#teName").value,prompt:$("#tePrompt").value,out:$("#teOut").value,file:$("#teFile").value,vocab:$("#teVocab").value});
+    draft.secs.forEach((s,i)=>{ if(!s.id) s.id="s"+i; }); TEMPLATES[draftKey]=draft;
+    const user={}; Object.entries(TEMPLATES).forEach(([k,t])=>{ if(!t.preset) user[k]=t; }); store.set("mm-templates",user);
+    tpl=draftKey; backToStart(); };
+  $("#teBack").onclick=backToStart;
+  function backToStart(){ $("#tplEdit").classList.add("hidden"); $("#start").classList.remove("hidden"); fillTplSelects(); }
+
+  // ---------- モード（F11） ----------
+  function applyMode(){
+    $("#bMode").textContent=mode==="dev"?"開発モード":"会議モード";
+    $("#modeBtn").textContent=mode==="dev"?"会議モードへ":"開発モードへ";
+    const [l,r]=ratios[mode]; $("#left").style.flex=l; $("#right").style.flex=r; renderRight(); }
+  function switchMode(){ mode=mode==="dev"?"meeting":"dev"; if(mode==="dev"&&unlocked()) commitMock(Object.keys(mockState).length&&!versions.length?Object.keys(mockState):[]); applyMode(); }
+  $("#modeBtn").onclick=()=>{ switchMode(); toast((mode==="dev"?"開発モード":"会議モード")+"に切り替えました",()=>switchMode()); };
+  let toastT=null;
+  function toast(msg,undo){ $("#toastMsg").textContent=msg; $("#toastUndo").classList.toggle("hidden",!undo); $("#toast").classList.remove("hidden");
+    $("#toastUndo").onclick=()=>{ $("#toast").classList.add("hidden"); undo&&undo(); }; clearTimeout(toastT); toastT=setTimeout(()=>$("#toast").classList.add("hidden"),5000); }
+
+  // ---------- ドキュメント（F4 / F7） ----------
+  function renderDoc(hl=[]){
+    const root=$("#doc"); root.innerHTML="";
+    secs.forEach(s=>{ const sec=document.createElement("div"); sec.className="sec";
+      sec.innerHTML=`<h3>${esc(s.name)}<small>${esc(s.desc)}</small></h3>`;
+      if(!doc[s.id].length) sec.insertAdjacentHTML("beforeend",`<div class="empty">まだありません</div>`);
+      doc[s.id].forEach(it=>{ const d=document.createElement("div"); d.className="item"+(hl.includes(it.id)?" hl":"");
+        d.innerHTML=(locked[it.id]?`<span class="lock" title="クリックで解除">🔒 手動</span>`:"")+esc(it.text)+(it.pc?`<span class="pc">${esc(it.pc)}</span>`:"");
+        d.onclick=e=>{ if(e.target.classList.contains("lock")){ delete locked[it.id]; renderDoc(); return;} editItem(d,it,s.id); };
+        sec.appendChild(d); if(hl.includes(it.id)) setTimeout(()=>d.classList.remove("hl"),3000); });
+      root.appendChild(sec); }); }
+  function editItem(el,it,secId){
+    if(el.querySelector("input")) return; el.innerHTML="";
+    const inp=document.createElement("input"); inp.value=it.text;
+    const sel=document.createElement("select"); secs.forEach(s=>sel.insertAdjacentHTML("beforeend",`<option value="${s.id}" ${s.id===secId?"selected":""}>${esc(s.name)}</option>`));
+    const del=document.createElement("button"); del.textContent="削除";
+    const row=document.createElement("div"); row.style.cssText="display:flex;gap:6px;margin-top:4px"; row.append(sel,del); el.append(inp,row); inp.focus();
+    const save=()=>{ it.text=inp.value; locked[it.id]=true; if(sel.value!==secId){ doc[secId]=doc[secId].filter(x=>x!==it); doc[sel.value].push(it);} renderDoc([it.id]); renderRight(); };
+    inp.onkeydown=e=>{ if(e.key==="Enter") save(); if(e.key==="Escape") renderDoc(); };
+    sel.onchange=save; del.onclick=e=>{ e.stopPropagation(); doc[secId]=doc[secId].filter(x=>x!==it); renderDoc(); renderRight(); };
+    inp.onblur=()=>setTimeout(()=>{ if(document.activeElement!==sel&&document.activeElement!==del&&el.isConnected) save(); },150); }
+  function findItem(id){ for(const s of secs){ const i=doc[s.id].findIndex(x=>x.id===id); if(i>=0) return [s.id,i]; } return null; }
+  function secFor(id){ return doc[id]?id:secs[secs.length-1].id; } // カスタム区分でデモが迷子にならないよう最後の区分へ
+  function applyOps(ops){ const hl=[];
+    ops.forEach(o=>{ if(o.op!=="add"&&locked[o.id]) return;
+      if(o.op==="add"){ doc[secFor(o.sec)].push({id:o.id,text:o.text,pc:o.pc,stage:o.stage}); hl.push(o.id); return; }
+      const f=findItem(o.id); if(!f) return; const [s,i]=f;
+      if(o.op==="move"){ const [it]=doc[s].splice(i,1); doc[secFor(o.sec)].push(it); hl.push(o.id); }
+      if(o.op==="remove") doc[s].splice(i,1); });
+    renderDoc(hl); }
+
+  // ---------- 工程表示とモック解放（F12） ----------
+  function stageCount(n){ return secs.reduce((a,s)=>a+doc[s.id].filter(it=>it.stage===n).length,0); }
+  function unlocked(){ return forceMock||stageCount(2)>0; }
+  function stageHTML(){
+    const c=[stageCount(1),stageCount(2),stageCount(3)], names=["① 要件","② 画面構成","③ 見た目"];
+    const now=c.findIndex(x=>x===0);
+    const st=names.map((n,i)=>`<span class="stg ${c[i]>=2?"done":c[i]===1?"part":""} ${i===now?"now":""}"><i></i>${n}</span>`).join("");
+    const miss=[];
+    if(c[0]===0) miss.push("誰が見るページか・何のためのページかがまだ出ていません");
+    else if(c[0]===1) miss.push("要件がもう 1 つ欲しいところです（閲覧者か目的のどちらかが未確定）");
+    if(c[1]===0) miss.push("どの部品をどこに置くかがまだ出ていません");
+    if(c[2]===0&&c[1]>0) miss.push("写真・文言・数字など、見た目の中身がまだ出ていません");
+    return `<div class="stages">${st}</div><div class="bubbles">${miss.slice(0,3).map(m=>`<div class="bubble">${m}</div>`).join("")}</div>`; }
+
+  // ---------- 右ペイン ----------
+  function renderRight(){
+    const r=$("#right");
+    if(mode==="meeting"){
+      r.innerHTML=`<h2>確定発言ログ</h2><div id="log"></div>`; log.forEach(l=>addLogLine(l,false));
+      r.scrollTop=r.scrollHeight; unseen=0;
+      r.onscroll=()=>{ if(atBottom()){ unseen=0; const c=$("#newchip"); c&&c.remove(); } }; return; }
+    r.onscroll=null;
+    let head=stageHTML();
+    if(!unlocked()){ r.innerHTML=head+`<div class="locked-mock"><b>画面の話が出るとモックが出ます</b>上の吹き出しの内容が話されると解放されます<br><br><button id="forceBtn">今すぐモックを出す</button></div>`;
+      $("#forceBtn").onclick=()=>{ forceMock=true; mockState.hero=mockState.hero||{copy:"（キャッチコピー）",photo:"写真：（未定）"}; commitMock(["hero"]); renderRight(); }; return; }
+    const tabs=versions.map((v,i)=>`<button class="tab ${i===viewV?"on":""}" data-v="${i}">案${i+1}</button>`).join("");
+    r.innerHTML=head+`<div class="mock-tools">${tabs||'<span class="empty">案はまだありません</span>'}<span class="sp"></span>
+      ${noReflect?'<span class="no-reflect">今回は反映なし</span>':""}
+      <button id="backBtn" ${viewV<1?"disabled":""}>1 つ前に戻す</button>
+      <button id="cmpBtn" ${versions.length<2?"disabled":""}>${compare?"比較を閉じる":"2 案を並べて比較"}</button>
+      <label class="switch"><input type="checkbox" id="freeze" ${frozen?"checked":""}> モック固定</label></div><div id="mockArea"></div>`;
+    r.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{viewV=+b.dataset.v;renderRight();});
+    $("#backBtn").onclick=()=>{ if(viewV>0){viewV--;renderRight();} };
+    $("#cmpBtn").onclick=()=>{ compare=!compare; renderRight(); };
+    $("#freeze").onchange=e=>{ frozen=e.target.checked; };
+    const area=$("#mockArea");
+    if(viewV<0){ area.innerHTML=`<div class="locked-mock">次の生成で案が出ます</div>`; return; }
+    if(compare&&versions.length>=2){ const a=Math.max(0,viewV-1),b=viewV===0?1:viewV;
+      area.innerHTML=`<div class="cmp"><div><b>案${a+1}</b>${siteHTML(versions[a],[])}</div><div><b>案${b+1}</b>${siteHTML(versions[b],versions[b].changed)}</div></div>`; }
+    else { const v=versions[viewV]; area.innerHTML=siteHTML(v,viewV===versions.length-1?v.changed:[]); } }
+  function part(key,name,changed,inner,tag=""){ return `<div class="p ${changed.includes(key)?"changed":""}"><span class="name">${name}</span>${tag?`<span class="tag">${tag}</span>`:""}${inner}</div>`; }
+  function siteHTML(v,ch){ const s=v.state; let h="";
+    h+=part("header","ヘッダー",ch,`<div class="p-header"><b>カクマン工業</b>${s.headerBtn?'<span class="btnw">お問い合わせ</span>':'<span style="color:var(--sub)">メニュー</span>'}</div>`);
+    if(s.hero) h+=part("hero","ヒーロー",ch,`<div class="p-hero"><div class="photo">${esc(s.hero.photo)}</div><div class="copy">${esc(s.hero.copy)}</div><span class="btnw">無料診断を申し込む</span></div>`);
+    if(s.nums) h+=part("nums","数字の強調",ch,`<div class="nums"><div><b>120</b>年間施工件数</div><div><b>—</b>創業年数</div><div><b>—</b>対応エリア</div></div>`);
+    if(s.cards) h+=part("cards","実績カード ×3",ch,`<div class="grid3">${[1,2,3].map(i=>`<div class="card"><div class="photo">写真：実績${i}</div>物件名 ${i}<small>大規模修繕</small></div>`).join("")}</div>`);
+    if(s.video) h+=part("video","画像（動画の代用）",ch,`<div class="photo" style="height:90px;margin-top:14px">写真：ドローン点検の様子</div>`,"代用");
+    if(s.tel) h+=part("tel","電話番号表示",ch,`<div class="tel">☎ 0120-000-000 <small style="font-size:14px;color:var(--sub)">平日 9–18 時</small></div>`);
+    h+=part("form","問い合わせフォーム",ch,`<div class="form" style="padding-top:12px"><div class="f"></div><div class="f"></div><span class="btnw">送信</span></div>`);
+    h+=part("footer","フッター",ch,`<div class="p-footer">会社概要 ／ プライバシーポリシー</div>`);
+    return `<div class="site">${h}</div>`; }
+  function commitMock(changed){ if(frozen) return; versions.push({state:JSON.parse(JSON.stringify(mockState)),changed}); viewV=versions.length-1; noReflect=false; }
+  function atBottom(){ const r=$("#right"); return r.scrollHeight-r.scrollTop-r.clientHeight<40; }
+  function addLogLine(l,live=true){ const box=$("#log"); if(!box) return;
+    const follow=!live||atBottom();
+    box.insertAdjacentHTML("beforeend",`<div class="log-line"><time class="mono">${l.time}</time><span>${esc(l.t)}</span></div>`);
+    if(follow){ $("#right").scrollTop=$("#right").scrollHeight; }
+    else { unseen++; let c=$("#newchip"); if(!c){ c=document.createElement("button"); c.id="newchip"; c.className="newchip"; c.onclick=()=>{ $("#right").scrollTop=$("#right").scrollHeight; }; $("#right").appendChild(c);} c.textContent="新しい発言 "+unseen+" 件 ↓"; } }
+
+  // ---------- デモ進行 ----------
+  function nextUtterance(){ if(!running||paused||step>=SCRIPT.length) return; const u=SCRIPT[step++]; let i=0;
+    const iv=setInterval(()=>{ i+=3; $("#interim").textContent=u.t.slice(0,i); if(i>=u.t.length){ clearInterval(iv); finalize(u);} },110); }
+  function finalize(u){ const l={time:fmt(Date.now()-startAt),t:u.t}; log.push(l); if(mode==="meeting") addLogLine(l); $("#interim").textContent="…";
+    setTimeout(()=>{ applyOps(u.ops); const docMs=1800+Math.round(Math.random()*1500); let mt="—";
+      if(u.mock) u.mock.ch=u.mock(mockState);
+      if(mode==="dev"&&!frozen&&unlocked()){ const ch=u.mock?u.mock.ch:[]; if(ch.length||!versions.length) commitMock(versions.length?ch:Object.keys(mockState)); mt=(docMs/1000+2.9).toFixed(1)+" 秒"; }
+      if(mode==="dev") renderRight();
+      $("#metrics").textContent=`直近: 文書 ${(docMs/1000).toFixed(1)} 秒 ／ モック ${mode==="dev"?(unlocked()?mt:"未解放"):"（会議モード）"}`; },700); }
+  $("#demoStep").onclick=nextUtterance; $("#nowBtn").onclick=nextUtterance;
+  setInterval(()=>{ if($("#demoAuto").checked) nextUtterance(); },5200);
+  $("#pauseBtn").onclick=()=>{ paused=!paused; $("#pauseBtn").textContent=paused?"再開":"一時停止";
+    const st=$("#bState"); st.className="pill "+(paused?"pause":"rec"); st.textContent=paused?"一時停止":"録音中"; };
+  $("#endBtn").onclick=()=>{ running=false; const st=$("#bState"); st.className="pill stop"; st.textContent="停止";
+    const outs=versions.length?"minutes.md と handoff.md":TEMPLATES[tpl].file; toast("保存しました（"+outs+"）。会議フォルダを開きます"); };
+  $("#demoStall").onclick=()=>$("#sttWarn").classList.toggle("hidden");
+
+  function tick(){ setInterval(()=>{ if(!running) return; $("#elapsed").textContent=fmt(Date.now()-startAt); $("#lvl").style.width=paused?"0%":(20+Math.random()*70)+"%"; },300); }
+  $("#divider").onmousedown=e=>{ e.preventDefault(); const P=$("#panes").getBoundingClientRect();
+    const mv=ev=>{ const x=Math.min(Math.max(ev.clientX-P.left,240),P.width-240); $("#left").style.flex=x; $("#right").style.flex=P.width-x; ratios[mode]=[x,P.width-x]; };
+    const up=()=>{ removeEventListener("mousemove",mv); removeEventListener("mouseup",up); store.set("mm-ratios",ratios); };
+    addEventListener("mousemove",mv); addEventListener("mouseup",up); };
+  function fmt(ms){ const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+  function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+  fillTplSelects();
+})();
+</script>
+</body>
+</html>

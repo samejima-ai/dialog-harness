@@ -10,7 +10,10 @@
 - F5 モック生成（開発モードのみ） → SPEC.md
 - F6 会議ボード / F7 手動編集 → SPEC.md
 - F8 保存と出力（minutes.md / handoff.md） → SPEC.md
-- F9 部品カタログ / F10 会議テンプレート / F11 モード切替 → SPEC.md
+- F9 部品カタログ / F10 会議テンプレート / F11 モード切替 / F12 工程表示とモック解放 → SPEC.md
+
+## 視覚仕様
+→ DESIGN.md
 
 ## スコープ外
 → DONT.md
@@ -20,10 +23,11 @@
 
 ## 判断の記録
 → delivery/meeting-mock/2026-09-29-L0-DECISION-KIT.md
+→ delivery/meeting-mock/2026-09-29-L0-FLOW-KIT.md
 → delivery/meeting-mock/ANALYSIS-2026-09-29-fact-check.md
 
 ## 画面モック（L0 確認用）
-→ delivery/meeting-mock/board-mock.html
+→ delivery/meeting-mock/board-mock-v2.html（最新）/ board-mock.html（v1）
 
 ## 開発環境
 → CLAUDE.md、sensors/（L0 完了時に生成。未生成）
