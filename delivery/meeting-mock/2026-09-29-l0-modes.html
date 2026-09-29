@@ -1,0 +1,384 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head><body style="margin:0"><title>会議モック L0 判断キット 0929</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #14141c; --surface: #1c1c27; --surface-2: #252533;
+    --line: #33334a; --line-soft: #26263a;
+    --ink: #ecebf3; --ink-2: #aaa8c0; --ink-3: #7c7a94;
+    --accent: #8b7ff0; --accent-deep: #6d5fe0; --accent-soft: rgba(139,127,240,.14);
+    /* data-viz categorical (validated for the dark surface, see references/design.md) */
+    --c1: #9085e9; --c2: #199e70; --c3: #c98500; --c4: #3987e5; --c-neutral: #55546a;
+    --no: #b05a5a;
+    --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ground); }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 24px 96px; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.3; margin: 8px 0 12px; text-wrap: balance; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.35; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  .lede { color: var(--ink-2); max-width: 70ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--ink-3); font-size: 13px; margin-top: 18px; }
+  .meta b { color: var(--ink-2); font-weight: 400; }
+  section { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--line-soft); }
+  section > .eyebrow { margin-bottom: 6px; }
+  .sub { color: var(--ink-2); max-width: 72ch; }
+  .panel { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; padding: 20px 22px; }
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; margin-top: 28px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  .stat { padding: 12px 14px; border-radius: 8px; background: var(--surface-2); }
+  .stat .n { font-family: var(--font-mono); font-size: 30px; line-height: 1.1; font-weight: 500; }
+  .stat .l { color: var(--ink-2); font-size: 13px; margin-top: 6px; }
+  /* stacked bar */
+  .bar { display: flex; height: 44px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--ground); margin-top: 14px; }
+  .seg { position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 14px; color: #0d0d14; font-weight: 500; cursor: default; transition: filter .15s; min-width: 10px; }
+  .seg:hover { filter: brightness(1.12); }
+  .seg.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 4px, #3a3950 4px 8px); color: var(--ink); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .sw.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 3px, #3a3950 3px 6px); }
+  .tip { position: fixed; pointer-events: none; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); font-size: 13px; padding: 6px 10px; border-radius: 6px; opacity: 0; transition: opacity .12s; z-index: 10; white-space: nowrap; }
+  .tip.on { opacity: 1; }
+  /* svg charts + diagrams */
+  .chart { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-2); }
+  .chart .axis { stroke: var(--line); stroke-width: 1; }
+  .chart .grid { stroke: var(--line-soft); stroke-width: 1; }
+  .chart .lbl-strong { fill: var(--ink); font-size: 13px; }
+  .chart .lbl-note { fill: var(--ink-3); font-family: var(--font-body); font-size: 12px; }
+  .chart .lbl-body { fill: var(--ink); font-family: var(--font-body); font-size: 13px; }
+  .chart .lbl-body-2 { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
+  .chart .lbl-mono-strong { fill: var(--ink); font-size: 14px; font-weight: 500; }
+  .caption { color: var(--ink-3); font-size: 12.5px; margin-top: 8px; max-width: 72ch; }
+  .flow-wrap { overflow-x: auto; margin-top: 18px; }
+  .flow { min-width: 760px; }
+  .flow .box { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+  .flow .box-strong { fill: var(--surface-2); stroke: var(--accent); stroke-width: 1.25; }
+  .flow .box-dim { fill: var(--ground); stroke: var(--line-soft); stroke-width: 1; stroke-dasharray: 3 3; }
+  .flow .edge { fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+  .flow .edge-loop { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .flow .edge-no { fill: none; stroke: var(--no); stroke-width: 1.5; stroke-dasharray: 2 4; }
+  .flow .arrow { fill: var(--ink-3); }
+  .flow .arrow-accent { fill: var(--accent); }
+  .flow .pill-1 { fill: var(--c1); } .flow .pill-2 { fill: var(--c2); } .flow .pill-3 { fill: var(--c3); } .flow .pill-4 { fill: var(--c4); }
+  .flow .pill-t { fill: #0d0d14; font-size: 12px; font-weight: 500; }
+  /* stepper */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  .step { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 8px; padding: 14px 16px; }
+  .step .t { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .08em; }
+  .step .m { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin: 2px 0 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-family: var(--font-mono); font-size: 12.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface-2); }
+  .chip.done { border-color: var(--accent); color: var(--accent); }
+  /* tables */
+  .tbl-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line-soft); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
+  th { color: var(--ink-3); font-weight: 400; font-size: 12px; letter-spacing: .06em; background: var(--surface); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-family: var(--font-mono); white-space: nowrap; color: var(--ink-2); }
+  .tag { display: inline-block; font-family: var(--font-mono); font-size: 11.5px; padding: 1px 7px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); white-space: nowrap; }
+  .tag.c1 { color: var(--c1); } .tag.c2 { color: var(--c2); } .tag.c3 { color: var(--c3); } .tag.c4 { color: var(--c4); } .tag.new { color: var(--accent); border-color: var(--accent); }
+  /* guard list */
+  .guards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+  @media (max-width: 760px) { .guards { grid-template-columns: 1fr; } }
+  .guard { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--no); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+  .guard b { display: block; margin-bottom: 4px; }
+  .guard .why { color: var(--ink-2); font-size: 13px; }
+  /* question cards */
+  .qlist { display: flex; flex-direction: column; gap: 22px; margin-top: 22px; }
+  .q { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--c1); border-radius: 10px; padding: 22px 24px; }
+  .q-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+  .q-num { font-family: var(--font-mono); color: var(--c1); font-size: 13px; letter-spacing: .1em; }
+  .q-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0; flex: 1 1 320px; text-wrap: balance; }
+  .q-time { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+  .q-fbs { margin-top: 6px; font-size: 13px; color: var(--ink-3); font-family: var(--font-mono); }
+  .q-quote { margin: 12px 0 0; padding: 8px 14px; border-left: 2px solid var(--line); color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+  .q-body { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px 28px; margin-top: 16px; }
+  @media (max-width: 860px) { .q-body { grid-template-columns: 1fr; } }
+  .q-facts h4, .q-opts h4, .q-after h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .12em; color: var(--ink-3); font-weight: 400; font-family: var(--font-mono); }
+  .q-facts ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .q-facts li { margin-bottom: 6px; }
+  .q-facts li b, .q-after b { color: var(--ink); font-weight: 700; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: start; width: 100%; text-align: left; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--ink); font: inherit; font-size: 14px; line-height: 1.55; cursor: pointer; transition: border-color .12s, background .12s; }
+  .opt:hover { border-color: var(--accent); }
+  .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt .k { font-family: var(--font-mono); color: var(--ink-3); }
+  .opt .rec { font-family: var(--font-mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; align-self: center; white-space: nowrap; }
+  .opt.selected { background: var(--accent-soft); border-color: var(--accent); }
+  .opt.selected .k { color: var(--accent); }
+  .opt.no { cursor: not-allowed; color: var(--ink-3); border-style: dashed; }
+  .opt.no .k { color: var(--no); }
+  .opt.no .rec { color: var(--no); border-color: var(--no); }
+  .q-after { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line-soft); color: var(--ink-2); font-size: 14px; }
+  .q-after p { max-width: none; margin: 0; }
+  .q-note { margin-top: 10px; }
+  .q-note textarea { width: 100%; min-height: 56px; background: var(--ground); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13.5px; resize: vertical; }
+  .q-note textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* summary */
+  .sum { margin-top: 22px; background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 20px 22px; }
+  .sum pre { margin: 12px 0 0; padding: 14px; background: var(--ground); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: var(--ink-2); max-height: 360px; overflow: auto; }
+  .btn { font: inherit; font-size: 13.5px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); cursor: pointer; }
+  .btn:hover { background: var(--accent-deep); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.quiet { border-color: var(--line); background: transparent; color: var(--ink-2); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .btn-row .note { color: var(--ink-3); font-size: 12.5px; }
+  .foot { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line-soft); color: var(--ink-3); font-size: 12.5px; }
+  .foot p { max-width: none; }
+  /* ---- declarative visuals (scripts/visuals.py, references/visuals.md) ---- */
+  .viz { margin: 18px 0 0; }
+  .viz-t { font-size: 13px; color: var(--ink-2); margin-bottom: 4px; font-family: var(--font-mono); letter-spacing: .04em; }
+  .hero-viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px 28px; margin-top: 28px; }
+  .hero-viz > .viz-stats, .hero-viz > .viz-flow, .hero-viz > .viz-timeline { grid-column: 1 / -1; }
+  .viz .stat-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .stat .n { white-space: nowrap; }
+  .hero-viz > .viz { margin: 0; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; padding: 18px 20px; }
+  .q-viz { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 4px 24px; }
+  .q-viz > .viz { margin-top: 6px; }
+  .waffle { display: grid; grid-template-columns: repeat(auto-fill, 16px); gap: 3px; margin-top: 12px; }
+  .waffle .cell { width: 16px; height: 16px; border-radius: 3px; display: block; }
+  .waffle .cell.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 3px, #3a3950 3px 6px); }
+  .hbar { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .hb-row { display: grid; grid-template-columns: minmax(80px, 34%) 1fr auto; gap: 4px 10px; align-items: center; font-size: 13.5px; }
+  .hb-label { color: var(--ink-2); }
+  .hb-track { height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .hb-fill { height: 100%; background: var(--c1); opacity: .5; border-radius: 4px; }
+  .hb-fill.hl { opacity: 1; }
+  .hb-val { color: var(--ink); font-size: 13px; }
+  .hb-note { grid-column: 2 / -1; color: var(--ink-3); font-size: 12px; margin-top: -4px; }
+  .flowh { display: flex; align-items: stretch; margin-top: 4px; overflow-x: auto; padding: 12px 0 4px; }
+  .fl-node { position: relative; flex: 1 1 0; min-width: 110px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+  .fl-node.strong { background: var(--surface-2); border-color: var(--accent); }
+  .fl-node.dim { background: var(--ground); border: 1px dashed var(--line-soft); color: var(--ink-3); }
+  .fl-node.stop { border-color: var(--no); box-shadow: inset 3px 0 0 var(--no); }
+  .fl-label { font-weight: 700; line-height: 1.45; }
+  .fl-sub { color: var(--ink-2); font-size: 12px; margin-top: 4px; line-height: 1.5; }
+  .fl-pill { position: absolute; top: -9px; left: 10px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; color: #0d0d14; border-radius: 999px; padding: 0 7px; line-height: 18px; }
+  .fl-edge { flex: 0 0 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .fl-line { position: relative; width: 100%; height: 0; border-top: 2px solid var(--ink-3); }
+  .fl-line::after { content: ""; position: absolute; right: -1px; top: -6px; border: 5px solid transparent; border-left: 7px solid var(--ink-3); }
+  .fl-edge.loop .fl-line { border-top: 2px dashed var(--accent); }
+  .fl-edge.loop .fl-line::after { border-left-color: var(--accent); }
+  .fl-edge.no .fl-line { border-top: 2px dotted var(--no); }
+  .fl-edge.no .fl-line::after { content: "×"; border: 0; top: -12px; right: 40%; color: var(--no); font-weight: 700; font-size: 14px; }
+  .fl-elab { font-size: 11px; color: var(--ink-3); text-align: center; line-height: 1.3; }
+  .fl-back { margin-top: 6px; color: var(--accent); font-size: 12.5px; }
+  @media (max-width: 640px) {
+    .flowh { flex-direction: column; overflow: visible; }
+    .fl-edge { flex: 0 0 34px; flex-direction: row; }
+    .fl-line { width: 0; height: 22px; border-top: 0; border-left: 2px solid var(--ink-3); }
+    .fl-line::after { right: auto; left: -6px; top: auto; bottom: -3px; border: 5px solid transparent; border-top: 7px solid var(--ink-3); }
+    .fl-edge.loop .fl-line { border-top: 0; border-left: 2px dashed var(--accent); }
+    .fl-edge.loop .fl-line::after { border-left-color: transparent; border-top-color: var(--accent); }
+    .fl-edge.no .fl-line { border-top: 0; border-left: 2px dotted var(--no); }
+    .fl-edge.no .fl-line::after { left: 6px; bottom: 2px; }
+    .fl-elab { text-align: left; margin-left: 8px; }
+  }
+  .cmp { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 10px; align-items: stretch; margin-top: 12px; }
+  @media (max-width: 640px) { .cmp { grid-template-columns: 1fr; } .cmp-arrow { transform: rotate(90deg); } }
+  .cmp-col { border-radius: 8px; padding: 12px 14px; font-size: 13.5px; }
+  .cmp-col.before { background: var(--ground); border: 1px dashed var(--line); color: var(--ink-2); }
+  .cmp-col.after { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .cmp-h { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--ink-3); margin-bottom: 6px; }
+  .cmp-col.after .cmp-h { color: var(--accent); }
+  .cmp ul { margin: 0; padding-left: 0; list-style: none; }
+  .cmp li { margin-bottom: 5px; }
+  .cmp-plus { color: var(--c2); margin-right: 6px; } .cmp-minus { color: var(--no); margin-right: 6px; }
+  .cmp-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; }
+  .mx td:nth-child(2) { min-width: 8em; }
+  .mx th { white-space: nowrap; }
+  .mx td.mx-c, .mx th:nth-child(n+3) { text-align: center; white-space: nowrap; }
+  .mx tr.mx-rec td { background: var(--accent-soft); }
+  .mx tr.mx-rec td.id { color: var(--accent); }
+  .mx-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--c1); vertical-align: middle; }
+  .mx-dot.full { background: var(--c1); }
+  .mx-dot.half { background: linear-gradient(90deg, var(--c1) 50%, transparent 50%); }
+  .mx-x { color: var(--no); font-weight: 700; }
+  .mx-na { color: var(--ink-3); }
+  .step.now { border-color: var(--accent); background: var(--surface-2); }
+  .step.later { border-style: dashed; background: var(--ground); color: var(--ink-3); }
+  .step-b { font-size: 13px; color: var(--ink-2); }
+  .meter { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .meter-track { flex: 1; height: 12px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .meter-fill { height: 100%; background: var(--c1); border-radius: 999px; transition: width .25s; }
+  .meter-lab { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .tl { list-style: none; margin: 14px 0 0; padding: 0; display: flex; gap: 0; overflow-x: auto; position: relative; }
+  .tl-ev { position: relative; flex: 1 1 0; min-width: 96px; padding: 22px 8px 0 0; font-size: 13px; }
+  .tl-ev::before { content: ""; position: absolute; top: 6px; left: 0; right: 0; border-top: 2px solid var(--line); }
+  .tl-ev.future::before { border-top-style: dashed; }
+  .tl-dot { position: absolute; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--c1); border: 2px solid var(--ground); }
+  .tl-ev.now .tl-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .tl-ev.stop .tl-dot { background: var(--no); }
+  .tl-ev.future .tl-dot { background: var(--ground); border-color: var(--c1); }
+  .tl-d { display: block; color: var(--ink-3); font-size: 12px; }
+  .tl-l { display: block; color: var(--ink); line-height: 1.45; }
+  .tl-gap { margin-top: 8px; color: var(--no); font-size: 12.5px; }
+  /* answer map (auto, from questions[].time) */
+  .qmap { display: flex; gap: 3px; margin-top: 18px; height: 40px; }
+  .qmap a { flex: 1 1 0; min-width: 34px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--ink-2); text-decoration: none; font-family: var(--font-mono); font-size: 12px; line-height: 1.2; }
+  .qmap a small { font-size: 10.5px; color: var(--ink-3); }
+  .qmap a.done { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+  .qmap a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qmap-cap { color: var(--ink-3); font-size: 12.5px; margin-top: 6px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">会議モック可視化ツール · L0 ブレスト · 2026-09-29</div>
+  <h1>会議モック L0 判断キット 0929</h1>
+  <p class="lede">新要件「起動時に会議モード（ドキュメントのみ）／開発モード（ドキュメント＋モック）を選ぶ」で派生した判断 5 問と、前回の未回答 5 問、計 10 問。短い順に答えて、最下部の「回答まとめ」をコピーして対話に貼り戻す。</p>
+  <div class="meta"><span><b>起点</b> REQUIREMENTS.md v0.1（武久）</span><span><b>ブランチ</b> ccr-a72b57e5-jrlhni（master へマージしない・PR 作らない）</span><span><b>Markdown 正本</b> delivery/meeting-mock/2026-09-29-L0-DECISION-KIT.md</span></div>
+
+  <div class="hero-viz"><figure class="viz viz-stats"><div class="stat-row"><div class="stat"><div class="n" style="color:var(--c4)">約 1.4 $</div><div class="l">会議モード / 時（見積もり）</div></div><div class="stat"><div class="n" style="color:var(--no)">約 4.3 $</div><div class="l">開発モード / 時（見積もり）</div></div><div class="stat"><div class="n" style="color:var(--accent)">5 $</div><div class="l">要件書の上限 / 時</div></div><div class="stat"><div class="n">10</div><div class="l">今日決める問い</div></div></div><div class="caption">見積もり。単価は要件書 §8 の値（未検証 R1）。8 秒窓が毎回発火する上限側で計算。</div></figure><figure class="viz viz-hbar"><figcaption class="viz-t">1 時間あたり費用の内訳（見積もり）</figcaption><div class="hbar"><div class="hb-row"><div class="hb-label">文字起こし</div><div class="hb-track"><div class="hb-fill" style="width:19.0%"></div></div><div class="hb-val mono">0.5 $</div><span class="hb-note">両モード共通</span></div><div class="hb-row"><div class="hb-label">ドキュメント更新</div><div class="hb-track"><div class="hb-fill" style="width:31.0%"></div></div><div class="hb-val mono">0.9 $</div><span class="hb-note">両モード共通</span></div><div class="hb-row"><div class="hb-label">モック生成</div><div class="hb-track"><div class="hb-fill hl" style="width:100.0%"></div></div><div class="hb-val mono">2.8 $</div><span class="hb-note">開発モードのみ・費用の 2/3</span></div></div><div class="caption">モック生成は入力にカタログ＋現在の案を毎回含むため重い（450 回 × 約 8.5k トークン入力 + 1.5k 出力 と仮定）。</div></figure></div>
+
+  <section>
+<div class="eyebrow">01 · モードで何が変わるか</div>
+<h2>会議モードは開発モードからモック枝を外したもの</h2>
+<p class="sub">正本はドキュメント、モックはそこからの派生（要件書 §2）。だからモード分割は「別アプリ」ではなく「モック枝の有無」1 本のスイッチで実装できる。</p>
+<figure class="viz viz-flow"><figcaption class="viz-t">処理の流れ（会議モードでは破線の箱が止まる）</figcaption><div class="flowh"><div class="fl-node normal"><div class="fl-label">音声</div><div class="fl-sub">マイク</div></div><div class="fl-edge solid" aria-hidden="true"><span class="fl-line"></span></div><div class="fl-node normal"><div class="fl-label">文字起こし</div><div class="fl-sub">暫定・確定</div></div><div class="fl-edge solid" aria-hidden="true"><span class="fl-line"></span><span class="fl-elab">8 秒窓</span></div><div class="fl-node strong"><div class="fl-label">ドキュメント更新</div><div class="fl-sub">正本</div></div><div class="fl-edge loop" aria-hidden="true"><span class="fl-line"></span><span class="fl-elab">開発モードのみ</span></div><div class="fl-node dim"><div class="fl-label">モック生成</div><div class="fl-sub">開発モードのみ</div></div></div></figure><figure class="viz viz-compare"><figcaption class="viz-t">要件書 v0.1 → モード分割後</figcaption><div class="cmp"><div class="cmp-col before"><div class="cmp-h">v0.1</div><ul><li><b class="cmp-minus">−</b>常に 2 ペイン（文書＋モック）</li><li><b class="cmp-minus">−</b>一般の打合せでもモック費用がかかる</li><li><b class="cmp-minus">−</b>handoff.md は 1 種類</li></ul></div><div class="cmp-arrow" aria-hidden="true">→</div><div class="cmp-col after"><div class="cmp-h">分割後</div><ul><li><b class="cmp-plus">＋</b>会議モードは費用 約 1/3</li><li><b class="cmp-plus">＋</b>サイト以外の会議にも使える</li><li><b class="cmp-plus">＋</b>P1 を文書のみで先に完成できる</li><li><b class="cmp-minus">−</b>画面・出力がモード別に 2 通りになる</li></ul></div></div></figure>
+
+</section>
+
+  <section>
+    <div class="eyebrow">02 · 決めること</div>
+    <h2>10 問に答える</h2>
+    <p class="sub">推奨は AI の見立てであって決定ではない。Q7〜Q9 は価値判断なので推奨を置かない。</p>
+    <div class="qmap" id="qmap" aria-label="問いの地図（幅 = 所要時間）"></div>
+    <div class="qmap-cap" id="qmapcap"></div>
+    <div class="qlist" id="qlist"></div>
+    <div class="sum" id="summary">
+      <h3>回答まとめ（選んだ内容がここに並ぶ）</h3>
+      <div class="meter"><div class="meter-track"><div class="meter-fill" id="sumfill" style="width:0%"></div></div><div class="meter-lab mono" id="sumlab"></div></div>
+      <p class="sub">コピーして Claude に貼れば、次の cycle はここから始まる。未回答の問いは「未回答」と出る。補足はメモ欄に書けば一緒に出る。</p>
+      <pre id="sumtext">（まだ何も選んでいません）</pre>
+      <div class="btn-row">
+        <button class="btn" id="copy">まとめをコピー</button>
+        <button class="btn quiet" id="clear">選択をすべて消す</button>
+        <span class="note" id="copynote"></span>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <div class="foot">推奨は AI の見立てであって決定ではない（最終承認は人間）。費用は要件書 §8 の単価による見積もりで、単価自体が未検証（R1: Flash の価格帯に見える）。R1・R3・R4 の事実確認は回答後に行う。</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+var KIT = {"key": "meeting-mock-l0-modes-0929", "title": "会議モック L0 判断キット 0929", "questions": [{"id": "Q1", "title": "途中でモードを切り替えられるようにするか", "short": "モード途中切替", "time": "2 分", "facts": ["モックはドキュメントから毎回作り直す設計（FR-05）。会議→開発に切り替えても、現ドキュメントから 1 回生成すれば追いつく", "開発→会議は既存の「モック固定」（FR-06）とほぼ同じ動き。追加実装は小さい"], "options": [{"k": "A", "label": "<b>起動時に固定<\/b>。変えたければ会議を作り直す"}, {"k": "B", "label": "<b>会議→開発の片方向<\/b>だけ許す", "rec": "次点"}, {"k": "C", "label": "<b>双方向に切替可<\/b>（起動時は選択、途中はボタン 1 つ）", "rec": "推奨"}], "after": "SPEC に mode 状態（meeting / dev）と切替時の挙動を 1 節追加。WebSocket の control に mode.switch を追加", "visualHtml": "<figure class=\"viz viz-matrix\"><figcaption class=\"viz-t\">3 案の得失<\/figcaption><div class=\"tbl-wrap\"><table class=\"mx\"><thead><tr><th><\/th><th>案<\/th><th>柔軟さ<\/th><th>実装の軽さ<\/th><th>費用の予測しやすさ<\/th><th>誤操作の少なさ<\/th><\/tr><\/thead><tbody><tr><td class=\"id\">A<\/td><td>起動時に固定<\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><tr><td class=\"id\">B<\/td><td>会議→開発の片方向のみ<\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><\/tr><tr class=\"mx-rec\"><td class=\"id\">C<\/td><td>双方向に切替可<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"legend\"><span><span class=\"mx-dot full\"><\/span>強い<\/span><span><span class=\"mx-dot half\"><\/span>中<\/span><span><span class=\"mx-dot empty\"><\/span>弱い<\/span><span><span class=\"mx-x\">×<\/span>損なう<\/span><\/div><\/figure>"}, {"id": "Q2", "title": "会議モードの右側に何を出すか", "short": "会議モード画面", "time": "2 分", "facts": ["確定発言は既に時刻付きで記録される（FR-02）。表示を足すだけでデータ追加は無い", "リスク表の 1 位は「反響・同時発話で認識が崩れる」（§12）。発言ログが見えると進行役が誤認識に気づける"], "options": [{"k": "A", "label": "<b>ドキュメントを全幅<\/b>で大きく出す"}, {"k": "B", "label": "<b>左ドキュメント＋右に確定発言ログ<\/b>（時刻付き）", "rec": "推奨"}, {"k": "C", "label": "2 ペインのまま右は空（開発モードと同じ骨格）", "rec": "×意味なし", "disabled": true}], "after": "FR-06 をモード別に分けて記述。受け入れ条件（1920×1080 でスクロールなし）を会議モードにも適用", "visualHtml": "<figure class=\"viz viz-matrix\"><figcaption class=\"viz-t\">3 案の得失<\/figcaption><div class=\"tbl-wrap\"><table class=\"mx\"><thead><tr><th><\/th><th>案<\/th><th>読みやすさ(大画面)<\/th><th>誤認識の気づきやすさ<\/th><th>実装の軽さ<\/th><\/tr><\/thead><tbody><tr><td class=\"id\">A<\/td><td>ドキュメント全幅<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><tr class=\"mx-rec\"><td class=\"id\">B<\/td><td>左ドキュメント＋右に確定発言ログ<\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><\/tr><tr><td class=\"id\">C<\/td><td>2 ペインのまま右は空<\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"legend\"><span><span class=\"mx-dot full\"><\/span>強い<\/span><span><span class=\"mx-dot half\"><\/span>中<\/span><span><span class=\"mx-dot empty\"><\/span>弱い<\/span><span><span class=\"mx-x\">×<\/span>損なう<\/span><\/div><\/figure>"}, {"id": "Q3", "title": "会議モードをサイト検討以外の会議にも使うか", "short": "会議モードの対象", "time": "2 分", "facts": ["ドキュメントの 4 区分（決定・保留・論点・メモ）はサイト固有ではない（FR-04）", "サイト固有なのはモック（部品カタログ）側だけ"], "options": [{"k": "A", "label": "<b>サイト検討に限定<\/b>（会議モードは費用節約の手段）"}, {"k": "B", "label": "<b>一般会議にも使う<\/b>。4 区分は共通、プロンプトからサイト前提を外す", "rec": "推奨"}, {"k": "C", "label": "一般会議＋<b>区分を会議ごとにカスタム<\/b>", "rec": "×v0.1 超過"}], "after": "B なら SPEC §1.1 目的に「一般会議の議事化」を追記し、ドキュメント更新プロンプトを中立化。C は DONT.md へ（次版候補）", "visualHtml": "<figure class=\"viz viz-matrix\"><figcaption class=\"viz-t\">3 案の得失<\/figcaption><div class=\"tbl-wrap\"><table class=\"mx\"><thead><tr><th><\/th><th>案<\/th><th>使える場面の広さ<\/th><th>v0.1 に収まるか<\/th><th>プロンプトの単純さ<\/th><\/tr><\/thead><tbody><tr><td class=\"id\">A<\/td><td>サイト検討会議に限定<\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><tr class=\"mx-rec\"><td class=\"id\">B<\/td><td>一般会議も可・4 区分は共通<\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><\/tr><tr><td class=\"id\">C<\/td><td>一般会議＋区分をカスタム可<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"legend\"><span><span class=\"mx-dot full\"><\/span>強い<\/span><span><span class=\"mx-dot half\"><\/span>中<\/span><span><span class=\"mx-dot empty\"><\/span>弱い<\/span><span><span class=\"mx-x\">×<\/span>損なう<\/span><\/div><\/figure>"}, {"id": "Q4", "title": "会議モード終了時に何を出力するか", "short": "会議モードの出力", "time": "2 分", "facts": ["handoff.md の構成は「議題→決定→保留→論点→最終モック→宿題」（FR-08）。モックが無いと 1 節が空になる"], "options": [{"k": "A", "label": "document.md だけ（追加の出力なし）"}, {"k": "B", "label": "<b>会議モードは minutes.md、開発モードは handoff.md<\/b>", "rec": "推奨"}, {"k": "C", "label": "両モードとも handoff.md（モック節は空）", "rec": "次点"}], "after": "FR-08 の出力表にモード列を追加。minutes.md の構成を L0 対話で 1 往復確認", "visualHtml": "<figure class=\"viz viz-compare\"><figcaption class=\"viz-t\">v0.1 → B を選んだ後<\/figcaption><div class=\"cmp\"><div class=\"cmp-col before\"><div class=\"cmp-h\">v0.1（1 モード）<\/div><ul><li><b class=\"cmp-minus\">−<\/b>handoff.md に最終モックの木構造が必須<\/li><li><b class=\"cmp-minus\">−<\/b>会議の記録としては読みにくい<\/li><\/ul><\/div><div class=\"cmp-arrow\" aria-hidden=\"true\">→<\/div><div class=\"cmp-col after\"><div class=\"cmp-h\">B<\/div><ul><li><b class=\"cmp-plus\">＋<\/b>会議モード: minutes.md（議事録）<\/li><li><b class=\"cmp-plus\">＋<\/b>開発モード: handoff.md（従来どおり）<\/li><li><b class=\"cmp-plus\">＋<\/b>途中で切り替えた会議は両方出す<\/li><\/ul><\/div><\/div><\/figure>"}, {"id": "Q5", "title": "会議モードを先に完成させる順番に組み替えるか", "short": "実装順", "time": "2 分", "facts": ["モック生成は費用の 2/3（見積もり）かつ未確認事項 R1・R3 が集中する部分", "ドキュメント更新だけなら json-render 未確認（R3）に左右されない"], "options": [{"k": "A", "label": "要件書どおり P1 で両方を作る"}, {"k": "B", "label": "<b>会議モードを先に実戦投入<\/b>（P0→P1a→P2→P1b→P3→P4）", "rec": "推奨"}], "after": "REGIME / SPEC の段階表を組み替え。P1a 完了条件 = 入力→左ペイン反映 中央値 3 秒以内（案、L0 で確定）", "visualHtml": "<figure class=\"viz viz-steps\"><figcaption class=\"viz-t\">B を選んだ場合の段階<\/figcaption><div class=\"steps\"><div class=\"step now\"><div class=\"t\">P0<\/div><div class=\"m\">骨組み<\/div><div class=\"step-b\">起動・接続・カタログ見本<\/div><\/div><div class=\"step\"><div class=\"t\">P1a<\/div><div class=\"m\">会議モード（テキスト入力）<\/div><div class=\"step-b\">文書更新だけ実測<\/div><\/div><div class=\"step\"><div class=\"t\">P2<\/div><div class=\"m\">音声＋10 分切替<\/div><div class=\"step-b\">会議モードで実戦投入可<\/div><\/div><div class=\"step later\"><div class=\"t\">P1b<\/div><div class=\"m\">開発モード<\/div><div class=\"step-b\">モック生成を実測<\/div><\/div><\/div><\/figure>"}, {"id": "Q6", "title": "プロジェクト本体をどこに置くか", "short": "配置", "time": "2 分", "facts": ["この枝には DH 本体（templates/ history/ 等）が載っている", "master へはマージしないので、DH の更新は master から取り込む方向だけになる"], "options": [{"k": "A", "label": "<b>projects/meeting-mock/<\/b> に置く（中は §9 の構成）", "rec": "推奨"}, {"k": "B", "label": "ルートを作り直し、DH は .claude/ だけ残す"}], "after": "A なら projects/meeting-mock/ に INDEX/SPEC/DONT/REGIME/CLAUDE を生成（L0 完了時）", "visualHtml": "<figure class=\"viz viz-matrix\"><figcaption class=\"viz-t\">2 案の得失<\/figcaption><div class=\"tbl-wrap\"><table class=\"mx\"><thead><tr><th><\/th><th>案<\/th><th>DH 更新の取り込み<\/th><th>戻しやすさ<\/th><th>要件書 §9 との一致<\/th><\/tr><\/thead><tbody><tr class=\"mx-rec\"><td class=\"id\">A<\/td><td>サブディレクトリ projects/meeting-mock/<\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><\/tr><tr><td class=\"id\">B<\/td><td>ルートを作り直す（server/ board/ catalog/ を最上位）<\/td><td class=\"mx-c\"><span class=\"mx-dot empty\" title=\"弱\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot half\" title=\"中\"><\/span><\/td><td class=\"mx-c\"><span class=\"mx-dot full\" title=\"強\"><\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"legend\"><span><span class=\"mx-dot full\"><\/span>強い<\/span><span><span class=\"mx-dot half\"><\/span>中<\/span><span><span class=\"mx-dot empty\"><\/span>弱い<\/span><span><span class=\"mx-x\">×<\/span>損なう<\/span><\/div><\/figure>"}, {"id": "Q7", "title": "この道具の「成功」を主に誰が判定するか", "short": "成功の判定者", "time": "2 分", "visual_skip": "価値判断の問い。比べる事実が無い", "facts": ["モード分割で、会議モード＝参加者向け、開発モード＝本実装への引き継ぎ向け、と目的が分かれた"], "options": [{"k": "A", "label": "進行役（武久さん）本人が「使える」と感じるか"}, {"k": "B", "label": "参加者が「伝わった」と言うか"}, {"k": "C", "label": "handoff.md から Claude Code が本実装に着手できるか"}, {"k": "D", "label": "モード別に分ける（会議＝B、開発＝C）"}], "after": "SPEC の優先順位（critical / standard）と E2E の対象を決める", "visualHtml": ""}, {"id": "Q8", "title": "最初に試す会議に社外の人が同席するか", "short": "初回の同席者", "time": "2 分", "visual_skip": "事実の比較ではなく予定の確認", "facts": ["社外同席なら、有料枠の強制（§12）と画面が崩れないことの優先度が上がる"], "options": [{"k": "A", "label": "社内のみ"}, {"k": "B", "label": "お客様同席"}, {"k": "C", "label": "未定"}], "after": "B なら R4（有料枠の判別可否）を P0 の前に調べる", "visualHtml": ""}, {"id": "Q9", "title": "壊れていたら絶対に人前に出したくない瞬間を選ぶ", "short": "絶対 NG の瞬間", "time": "5 分", "multi": true, "visual_skip": "価値判断の問い。選んだものがテストの最優先対象になる", "facts": ["選んだものは SPEC の critical journey になり、最優先で E2E テストされる"], "options": [{"k": "A", "label": "大画面が真っ白・崩れる"}, {"k": "B", "label": "言っていない「決定」が表示される"}, {"k": "C", "label": "録音が黙って止まっている（表示は動いて見える）"}, {"k": "D", "label": "機密の音声が無料枠に送られる"}], "after": "選択を TQ1 として SPEC critical journey に確定。メモ欄に他の NG があれば追記", "visualHtml": ""}, {"id": "Q10", "title": "会議 PC の OS を確定するか", "short": "会議 PC の OS", "time": "2 分", "visual_skip": "選択肢の差が小さく、比べる数字が無い", "facts": ["要件書 Q4 は「着手前に決める」。今がその時点", "ブラウザ（Chrome）と Node.js で動くので OS 差は起動コマンドとマイク権限程度"], "options": [{"k": "A", "label": "<b>Windows 11 で確定<\/b>（仮決定を追認）", "rec": "推奨"}, {"k": "B", "label": "macOS"}, {"k": "C", "label": "両方で動くこと"}], "after": "scaffold の起動コマンドと smoke test を OS に合わせる", "visualHtml": ""}], "summaryTitle": "会議モック L0 判断キット 0929 — 回答", "summaryFooter": "（補足があればこの下に）"};
+(function () {
+  var KEY = 'dk-' + (KIT.key || 'kit');
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+  function h(s) { return s == null ? '' : String(s); } // trusted html from the kit author
+
+  // render question cards from KIT.questions
+  var list = document.getElementById('qlist');
+  (KIT.questions || []).forEach(function (q) {
+    var art = document.createElement('article');
+    art.className = 'q'; art.id = q.id;
+    var facts = (q.facts || []).map(function (f) { return '<li>' + h(f) + '</li>'; }).join('');
+    var opts = (q.options || []).map(function (o) {
+      var cls = 'opt' + (o.disabled ? ' no' : '');
+      var rec = o.rec ? '<span class="rec">' + esc(o.rec) + '</span>' : '';
+      return '<button class="' + cls + '" data-k="' + esc(o.k) + '"' + (o.disabled ? ' disabled' : '') + '><span class="k">' + esc(o.k) + '</span><span>' + h(o.label) + '</span>' + rec + '</button>';
+    }).join('');
+    art.innerHTML =
+      '<div class="q-head"><span class="q-num">' + esc(q.id) + '</span><h3 class="q-title">' + h(q.title) + '</h3>' + (q.time ? '<span class="q-time">' + esc(q.time) + '</span>' : '') + '</div>' +
+      (q.fbs ? '<div class="q-fbs">' + esc(q.fbs) + '</div>' : '') +
+      (q.quote ? '<blockquote class="q-quote">' + h(q.quote) + '</blockquote>' : '') +
+      (q.visualHtml ? '<div class="q-viz">' + h(q.visualHtml) + '</div>' : '') +
+      '<div class="q-body"><div class="q-facts"><h4>' + esc(q.factsLabel || '事実') + '</h4><ul>' + facts + '</ul></div>' +
+      '<div class="q-opts"><h4>' + esc(q.optionsLabel || (q.multi ? '選択肢（複数可）' : '選択肢')) + '</h4><div class="opts" data-q="' + esc(q.id) + '"' + (q.multi ? ' data-multi="1"' : '') + '>' + opts + '</div></div></div>' +
+      (q.extra ? '<div class="q-note">' + h(q.extra) + '</div>' : '') +
+      (q.after ? '<div class="q-after"><h4>決まったら</h4><p>' + h(q.after) + '</p></div>' : '') +
+      (q.note === false ? '' : '<div class="q-note"><textarea data-note="' + esc(q.id) + '" placeholder="補足があれば（任意）"></textarea></div>');
+    list.appendChild(art);
+  });
+
+  // answer map: one tile per question, width = minutes (parsed from q.time), links to the card
+  var qmap = document.getElementById('qmap'); var totalMin = 0;
+  (KIT.questions || []).forEach(function (q) {
+    var m = parseInt(String(q.time || '').replace(/[^0-9]/g, ''), 10); if (!m) m = 3; totalMin += m;
+    var a = document.createElement('a'); a.href = '#' + q.id; a.style.flexGrow = m; a.setAttribute('data-map', q.id);
+    a.innerHTML = esc(q.id) + (q.time ? '<small>' + esc(q.time) + '</small>' : '');
+    a.title = (q.short || String(q.title || '').replace(/<[^>]+>/g, '')) + (q.time ? '（' + q.time + '）' : '');
+    qmap.appendChild(a);
+  });
+  if (!(KIT.questions || []).length) qmap.style.display = 'none';
+  document.getElementById('qmapcap').textContent = '問いの地図: 幅 = 所要時間の目安（合計 約 ' + totalMin + ' 分）。短いものから答えてよい。答えた問いは紫になる。';
+
+  function labelOf(btn) { var s = btn.querySelectorAll('span')[1]; return s ? s.textContent.replace(/\s+/g, ' ').trim() : ''; }
+
+  function render() {
+    document.querySelectorAll('.opts').forEach(function (g) {
+      var q = g.getAttribute('data-q'); var sel = (state[q] && state[q].sel) || [];
+      g.querySelectorAll('.opt').forEach(function (b) { b.classList.toggle('selected', sel.indexOf(b.getAttribute('data-k')) >= 0); });
+      var chip = document.querySelector('.chip[data-chip="' + q + '"]'); if (chip) chip.classList.toggle('done', sel.length > 0);
+      var tile = document.querySelector('.qmap a[data-map="' + q + '"]'); if (tile) tile.classList.toggle('done', sel.length > 0);
+    });
+    document.querySelectorAll('textarea[data-note]').forEach(function (t) { var q = t.getAttribute('data-note'); var v = (state[q] && state[q].note) || ''; if (t.value !== v) t.value = v; });
+    var lines = [KIT.summaryTitle || (KIT.title + ' — 回答'), ''];
+    (KIT.questions || []).forEach(function (q) {
+      var s = state[q.id] || {}; var sel = s.sel || [];
+      var short = q.short || q.title.replace(/<[^>]+>/g, '');
+      if (!sel.length) { lines.push(q.id + ' ' + short + ': 未回答'); }
+      else {
+        var g = document.querySelector('.opts[data-q="' + q.id + '"]');
+        var parts = sel.map(function (k) { var b = g.querySelector('.opt[data-k="' + k + '"]'); var t = b ? labelOf(b) : ''; return k + '（' + t.slice(0, 40) + (t.length > 40 ? '…' : '') + '）'; });
+        lines.push(q.id + ' ' + short + ': ' + parts.join(' / '));
+      }
+      if (s.note) lines.push('  メモ: ' + s.note.replace(/\n/g, ' '));
+    });
+    if (KIT.summaryFooter) lines.push('', KIT.summaryFooter);
+    var qn = (KIT.questions || []).length; var done = (KIT.questions || []).filter(function (q) { return state[q.id] && state[q.id].sel && state[q.id].sel.length; }).length;
+    document.getElementById('sumfill').style.width = (qn ? done / qn * 100 : 0) + '%';
+    document.getElementById('sumlab').textContent = done + ' / ' + qn + ' 問 回答済み';
+    document.getElementById('sumtext').textContent = lines.join('\n');
+  }
+
+  document.querySelectorAll('.opts').forEach(function (g) {
+    var q = g.getAttribute('data-q'); var multi = g.getAttribute('data-multi') === '1';
+    g.querySelectorAll('.opt').forEach(function (b) {
+      if (b.disabled) return;
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-k'); var s = state[q] || {}; var sel = s.sel || [];
+        if (multi) { var i = sel.indexOf(k); if (i >= 0) sel.splice(i, 1); else sel.push(k); } else { sel = sel[0] === k ? [] : [k]; }
+        s.sel = sel; state[q] = s; save(); render();
+      });
+    });
+  });
+  document.querySelectorAll('textarea[data-note]').forEach(function (t) {
+    t.addEventListener('input', function () { var q = t.getAttribute('data-note'); var s = state[q] || {}; s.note = t.value; state[q] = s; save(); render(); });
+  });
+  document.getElementById('clear').addEventListener('click', function () { state = {}; save(); render(); });
+  document.getElementById('copy').addEventListener('click', function () {
+    var t = document.getElementById('sumtext').textContent; var note = document.getElementById('copynote');
+    function fallback() { var r = document.createRange(); r.selectNodeContents(document.getElementById('sumtext')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); note.textContent = '選択しました。Ctrl/⌘+C でコピーしてください'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(function () { note.textContent = 'コピーしました'; }, fallback); } else { fallback(); }
+  });
+  var tip = document.getElementById('tip');
+  document.querySelectorAll('[data-tip]').forEach(function (s) {
+    s.addEventListener('mousemove', function (e) { tip.textContent = s.getAttribute('data-tip'); tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; tip.classList.add('on'); });
+    s.addEventListener('mouseleave', function () { tip.classList.remove('on'); });
+  });
+  render();
+})();
+</script>
+</body></html>
