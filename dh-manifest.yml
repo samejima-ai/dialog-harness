@@ -66,6 +66,7 @@ paths:
     - "crosscut-issue-quality-gate"
     - "crosscut-quota-observer"
     - "crosscut-verifier-drift"
+    - "decision-kit-html"
     - "layer0-archeo-architect"
     - "layer0-onboarding"
     - "layer0-reindex-librarian"

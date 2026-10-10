@@ -1,0 +1,497 @@
+{
+  "key": "example-visuals",
+  "title": "絵の見本キット",
+  "eyebrow": "decision-kit-html · 見本 · 全 13 型",
+  "lede": "visual 型をすべて 1 枚に並べた見本。数値と画像は架空（画像は小さな SVG）。新しいキットを書くときは、伝えたいことに合う型をここから選んで spec に写す。原画（figures）と表（table）と選択肢の画像は Q4 にある。",
+  "meta": [
+    "<span><b>用途</b> 描画確認・型の選び方の参照</span>"
+  ],
+  "hero_visuals": [
+    {
+      "type": "stack",
+      "title": "45 件の待ちの主体",
+      "unit": "件",
+      "items": [
+        {
+          "label": "人間専管",
+          "value": 14,
+          "color": "c1"
+        },
+        {
+          "label": "報告者へ 1 往復",
+          "value": 5,
+          "color": "c2"
+        },
+        {
+          "label": "P3",
+          "value": 3,
+          "color": "c3"
+        },
+        {
+          "label": "AI 単独可",
+          "value": 21,
+          "color": "c4"
+        },
+        {
+          "label": "待機",
+          "value": 2,
+          "color": "neutral"
+        }
+      ]
+    },
+    {
+      "type": "trend",
+      "title": "未対応件数の推移",
+      "unit": "件",
+      "points": [
+        {
+          "x": "9/1",
+          "y": 12
+        },
+        {
+          "x": "9/8",
+          "y": 18
+        },
+        {
+          "x": "9/15",
+          "y": 23
+        },
+        {
+          "x": "9/22",
+          "y": 31
+        },
+        {
+          "x": "9/25",
+          "y": 45
+        }
+      ]
+    },
+    {
+      "type": "stats",
+      "items": [
+        {
+          "n": "45",
+          "l": "待ち"
+        },
+        {
+          "n": "28 日",
+          "l": "最長の滞留",
+          "c": "no"
+        },
+        {
+          "n": "3",
+          "l": "今日決める問い",
+          "c": "accent"
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "eyebrow": "01 · どこで止まるか",
+      "h2": "報告が止まる場所を見る",
+      "sub": "赤の点線が届いていない経路。",
+      "visuals": [
+        {
+          "type": "flow",
+          "nodes": [
+            {
+              "label": "社員が送る",
+              "sub": "開発フィードバック",
+              "n": 45,
+              "c": "c1"
+            },
+            {
+              "label": "AI が整理",
+              "kind": "strong"
+            },
+            {
+              "label": "人間が決める",
+              "kind": "stop",
+              "sub": "ここで 28 日"
+            },
+            {
+              "label": "報告者へ返す",
+              "kind": "dim"
+            }
+          ],
+          "edges": [
+            "solid",
+            {
+              "style": "solid",
+              "label": "判断キット"
+            },
+            {
+              "style": "no",
+              "label": "返っていない"
+            }
+          ],
+          "loop_back": "提案: 決定を報告者へ自動で返す（閉ループ）"
+        },
+        {
+          "type": "timeline",
+          "title": "A-1 の経過",
+          "events": [
+            {
+              "date": "8/28",
+              "label": "報告"
+            },
+            {
+              "date": "8/29",
+              "label": "AI 整理済み"
+            },
+            {
+              "date": "9/25",
+              "label": "今日",
+              "kind": "now"
+            },
+            {
+              "date": "次",
+              "label": "決定→実装",
+              "kind": "future"
+            }
+          ],
+          "gap": "8/29 → 9/25 の 27 日間、人間の判断待ちで止まっていた"
+        }
+      ]
+    },
+    {
+      "eyebrow": "02 · 段階",
+      "h2": "3 段の梯子で進める",
+      "visuals": [
+        {
+          "type": "steps",
+          "items": [
+            {
+              "t": "STEP 1",
+              "m": "今すぐ",
+              "body": "migration なし・局所",
+              "now": true
+            },
+            {
+              "t": "STEP 2",
+              "m": "次 cycle",
+              "body": "RPC 1 本追加（P3 あり）"
+            },
+            {
+              "t": "STEP 3",
+              "m": "L0 が要る",
+              "body": "規範の新設",
+              "later": true
+            }
+          ]
+        },
+        {
+          "type": "meter",
+          "title": "今期の進み",
+          "value": 2,
+          "max": 5,
+          "unit": " 段"
+        },
+        {
+          "type": "figures",
+          "title": "repo の spec のままだと原画はこう見える",
+          "cols": 1,
+          "items": [
+            {
+              "img": "{{IMG:sample_crop}}",
+              "caption": "placeholder の箱（公開版は inject_images.py で本物の切り抜きに差し替わる）"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions_section": {
+    "eyebrow": "03 · 決めること",
+    "h2": "4 問に答える",
+    "sub": "推奨は AI の見立てであって決定ではない。"
+  },
+  "questions": [
+    {
+      "id": "Q1",
+      "title": "決定を報告者へ自動で返すか",
+      "short": "自動返信",
+      "time": "2 分",
+      "visuals": [
+        {
+          "type": "compare",
+          "title": "今 → A を選んだ後",
+          "before": {
+            "title": "今",
+            "items": [
+              "- 決定は AI と人間の間で閉じる",
+              "- 報告者は結果を知らない"
+            ]
+          },
+          "after": {
+            "title": "A",
+            "items": [
+              "+ 決定の 1 行が報告者に届く",
+              "+ resolved と同時に通知"
+            ]
+          }
+        },
+        {
+          "type": "matrix",
+          "title": "北極星 4 軸で見た 3 案",
+          "rec": "A",
+          "axes": [
+            "速い",
+            "簡単",
+            "わかりやすい",
+            "使いたくなる"
+          ],
+          "rows": [
+            {
+              "k": "A",
+              "label": "自動で返す",
+              "marks": [
+                2,
+                2,
+                2,
+                1
+              ]
+            },
+            {
+              "k": "B",
+              "label": "手動で返す",
+              "marks": [
+                0,
+                1,
+                2,
+                1
+              ]
+            },
+            {
+              "k": "C",
+              "label": "返さない",
+              "marks": [
+                2,
+                2,
+                0,
+                -1
+              ]
+            }
+          ]
+        }
+      ],
+      "facts": [
+        "<b>実測</b>: 未対応 45 件中 14 件が人間専管",
+        "最長 28 日（A-1）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>自動で返す</b>（resolved と同時）",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "手動で返す",
+          "rec": "次点"
+        },
+        {
+          "k": "C",
+          "label": "返さない",
+          "rec": "×逆行",
+          "disabled": true
+        }
+      ],
+      "after": "A なら cycle 候補 X-FB-REPLY（局所、migration ゼロ、所要 1 cycle）"
+    },
+    {
+      "id": "Q2",
+      "title": "どの工種から先に出すか",
+      "short": "工種の順",
+      "time": "5 分",
+      "visuals": [
+        {
+          "type": "hbar",
+          "title": "工種別の要望件数",
+          "unit": " 件",
+          "items": [
+            {
+              "label": "シーリング",
+              "value": 18,
+              "hl": true,
+              "note": "うち 6 件が同じ画面"
+            },
+            {
+              "label": "防水",
+              "value": 9
+            },
+            {
+              "label": "塗装",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "type": "waffle",
+          "title": "要望 32 件の内訳（1 マス = 1 件）",
+          "items": [
+            {
+              "label": "シーリング",
+              "value": 18,
+              "color": "c1"
+            },
+            {
+              "label": "防水",
+              "value": 9,
+              "color": "c2"
+            },
+            {
+              "label": "塗装",
+              "value": 5,
+              "color": "c3"
+            }
+          ]
+        }
+      ],
+      "facts": [
+        "シーリングが 56%（18 / 32）"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "シーリングから",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "3 工種同時"
+        }
+      ],
+      "after": "A なら F4-9 の枠内追記"
+    },
+    {
+      "id": "Q3",
+      "title": "呼び名を変えるか",
+      "short": "呼び名",
+      "time": "2 分",
+      "visual_skip": "言葉の選択で、数量も流れも無い",
+      "facts": [
+        "現場では「出面」と呼ぶ"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "出面に揃える",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "今のまま"
+        }
+      ]
+    },
+    {
+      "id": "Q4",
+      "title": "括弧の「(×7)」を何として読むか",
+      "short": "括弧の倍数",
+      "time": "2 分 · 現場の知識",
+      "visuals": [
+        {
+          "type": "figures",
+          "title": "原画（見てほしい所を 1 枚に 1 つ）",
+          "cols": 2,
+          "items": [
+            {
+              "img": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMjAgMjAwJyB3aWR0aD0nMzIwJyBoZWlnaHQ9JzIwMCc+PHJlY3Qgd2lkdGg9JzMyMCcgaGVpZ2h0PScyMDAnIGZpbGw9JyNmYmZhZjYnLz48bGluZSB4MT0nMCcgeTE9JzAnIHgyPScwJyB5Mj0nMjAwJyBzdHJva2U9JyNlMmRmZDMnLz48bGluZSB4MT0nNDAnIHkxPScwJyB4Mj0nNDAnIHkyPScyMDAnIHN0cm9rZT0nI2UyZGZkMycvPjxsaW5lIHgxPSc4MCcgeTE9JzAnIHgyPSc4MCcgeTI9JzIwMCcgc3Ryb2tlPScjZTJkZmQzJy8+PGxpbmUgeDE9JzEyMCcgeTE9JzAnIHgyPScxMjAnIHkyPScyMDAnIHN0cm9rZT0nI2UyZGZkMycvPjxsaW5lIHgxPScxNjAnIHkxPScwJyB4Mj0nMTYwJyB5Mj0nMjAwJyBzdHJva2U9JyNlMmRmZDMnLz48bGluZSB4MT0nMjAwJyB5MT0nMCcgeDI9JzIwMCcgeTI9JzIwMCcgc3Ryb2tlPScjZTJkZmQzJy8+PGxpbmUgeDE9JzI0MCcgeTE9JzAnIHgyPScyNDAnIHkyPScyMDAnIHN0cm9rZT0nI2UyZGZkMycvPjxsaW5lIHgxPScyODAnIHkxPScwJyB4Mj0nMjgwJyB5Mj0nMjAwJyBzdHJva2U9JyNlMmRmZDMnLz48cmVjdCB4PSczMCcgeT0nNDAnIHdpZHRoPScyNTAnIGhlaWdodD0nMTIwJyBmaWxsPSdub25lJyBzdHJva2U9JyMzMzMnIHN0cm9rZS13aWR0aD0nMycvPjxsaW5lIHgxPSczMCcgeTE9JzEwMCcgeDI9JzI4MCcgeTI9JzEwMCcgc3Ryb2tlPScjMzMzJyBzdHJva2Utd2lkdGg9JzEuNScvPjxjaXJjbGUgY3g9JzE5MCcgY3k9JzcwJyByPScyMicgZmlsbD0nbm9uZScgc3Ryb2tlPScjYzAzOTJiJyBzdHJva2Utd2lkdGg9JzMnLz48dGV4dCB4PScxNzUnIHk9Jzc3JyBmb250LXNpemU9JzE4JyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicgZmlsbD0nI2MwMzkyYic+MzwvdGV4dD48dGV4dCB4PScyMTQnIHk9JzYwJyBmb250LXNpemU9JzE2JyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicgZmlsbD0nI2MwMzkyYic+KMOXNyk8L3RleHQ+PHRleHQgeD0nNDAnIHk9JzE5MCcgZm9udC1zaXplPScxMicgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZpbGw9JyM3NzcnPuaetuepuuOBruWbs+mdou+8iOimi+acrO+8iTwvdGV4dD48L3N2Zz4=",
+              "tag": "束 A",
+              "caption": "番号 3 の横に赤で「(×7)」",
+              "note": "丸の中の番号と括弧の数の位置。括弧は番号の右肩にある"
+            },
+            {
+              "img": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMjAgMjAwJyB3aWR0aD0nMzIwJyBoZWlnaHQ9JzIwMCc+PHJlY3Qgd2lkdGg9JzMyMCcgaGVpZ2h0PScyMDAnIGZpbGw9JyNmYmZhZjYnLz48ZyBmb250LWZhbWlseT0nbW9ub3NwYWNlJyBmb250LXNpemU9JzE1JyBmaWxsPScjMjIyJz48dGV4dCB4PScxNicgeT0nMzQnPk5vICDlubMgIOOBvuOBjCAg6KiIPC90ZXh0PjxsaW5lIHgxPScxMCcgeTE9JzQ0JyB4Mj0nMzAwJyB5Mj0nNDQnIHN0cm9rZT0nIzk5OScvPjx0ZXh0IHg9JzE2JyB5PSc3Mic+MSAgIDUgICAxICAgIDY8L3RleHQ+PHRleHQgeD0nMTYnIHk9JzEwNCc+MjwvdGV4dD48dGV4dCB4PScxNicgeT0nMTM2Jz4zICAgMiAgIDAgICAgMjwvdGV4dD48L2c+PHJlY3QgeD0nOCcgeT0nODQnIHdpZHRoPScyOTYnIGhlaWdodD0nMjgnIGZpbGw9JyNjMDM5MmInIGZpbGwtb3BhY2l0eT0nLjEyJyBzdHJva2U9JyNjMDM5MmInLz48dGV4dCB4PScxNicgeT0nMTg2JyBmb250LXNpemU9JzEyJyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicgZmlsbD0nIzc3Nyc+5p6256m644Gu5pWw6YeP6KGo77yI6KaL5pys77yJPC90ZXh0Pjwvc3ZnPg==",
+              "tag": "束 C",
+              "caption": "番号 2 の行が空",
+              "note": "空の行を 0 と読まない。値が無いだけ"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "書き方 × 束（架空の件数）",
+          "hl_col": "束 A",
+          "columns": [
+            "書き方",
+            "束 A",
+            "束 C",
+            "束 D",
+            {
+              "label": "件数",
+              "align": "right"
+            }
+          ],
+          "rows": [
+            [
+              "番号の右肩に (×n)",
+              "●",
+              "○",
+              "◐",
+              41
+            ],
+            {
+              "cells": [
+                "番号だけで値が空",
+                "◐",
+                "●",
+                "○",
+                17
+              ],
+              "hl": true
+            },
+            [
+              "□ 付きの番号（□1）",
+              "○",
+              "◐",
+              "●",
+              9
+            ]
+          ],
+          "legend": [
+            "よく出る",
+            "ときどき",
+            "出ない"
+          ]
+        }
+      ],
+      "facts": [
+        "3 束で 67 件（架空）。束 A は右肩の (×n) が多い",
+        "今は「値 1・要確認」にして掛けていない"
+      ],
+      "options": [
+        {
+          "k": "A",
+          "label": "<b>n 箇所</b>（番号 1 つに同じ欠陥が n 個）",
+          "example": "3(×7) → 数量 7",
+          "rec": "推奨"
+        },
+        {
+          "k": "B",
+          "label": "<b>大きさの印と個数</b>（× = 小 など）",
+          "example": "3(×7) → 小 7",
+          "img": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA5MCA1NCcgd2lkdGg9JzkwJyBoZWlnaHQ9JzU0Jz48cmVjdCB3aWR0aD0nOTAnIGhlaWdodD0nNTQnIGZpbGw9JyNmYmZhZjYnLz48cmVjdCB4PScxNCcgeT0nMTQnIHdpZHRoPScyNicgaGVpZ2h0PScyNicgZmlsbD0nbm9uZScgc3Ryb2tlPScjMjIyJyBzdHJva2Utd2lkdGg9JzIuNScvPjx0ZXh0IHg9JzQ4JyB5PSczOCcgZm9udC1zaXplPScyNicgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZpbGw9JyMyMjInPjE8L3RleHQ+PC9zdmc+",
+          "imgAlt": "□ 付きの番号の例"
+        },
+        {
+          "k": "C",
+          "label": "<b>分からない</b> → 書き手に聞く",
+          "img": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA5MCA1NCcgd2lkdGg9JzkwJyBoZWlnaHQ9JzU0Jz48cmVjdCB3aWR0aD0nOTAnIGhlaWdodD0nNTQnIGZpbGw9JyNmYmZhZjYnLz48dGV4dCB4PScxNCcgeT0nMzgnIGZvbnQtc2l6ZT0nMjYnIGZvbnQtZmFtaWx5PSdzYW5zLXNlcmlmJyBmaWxsPScjMjIyJz4xMTwvdGV4dD48L3N2Zz4=",
+          "imgAlt": "「11」の例"
+        }
+      ],
+      "recWhy": "束 A の 41 件はすべて欠陥の数と合う（架空）",
+      "after": "A なら倍数を数量として受け取る（局所、migration なし）。B なら凡例の行に意味を持たせる。C なら質問を送る"
+    }
+  ],
+  "foot": "<p>見本。数値は架空。</p>",
+  "glossary": {
+    "P3": "本番の DB に変更を当てる作業。人が行い、AI は行わない",
+    "resolved": "フィードバックを「対応済み」にした印。付けた日時が残る",
+    "migration": "DB の形（表・列）を変える手順書。本番に当てるのは P3",
+    "cycle": "1 回の開発のまとまり。1 cycle = 1 PR が目安"
+  }
+}
