@@ -1,0 +1,843 @@
+<title>{{TITLE}}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Shippori+Mincho+B1:wght@600;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* 明るい地（既定）。暗い地は下の 2 箇所で同じ値に上書きする（design.md §配色） */
+  :root {
+    color-scheme: light;
+    --ground: #f6f5fa; --surface: #ffffff; --surface-2: #efedf7;
+    --line: #d4d1e3; --line-soft: #e6e4f0;
+    --ink: #1c1a2b; --ink-2: #4a4763; --ink-3: #66637f;
+    --accent: #5a4ccf; --accent-deep: #4a3db8; --accent-soft: rgba(90,76,207,.10); --on-accent: #ffffff;
+    /* data-viz categorical (light surface 用、references/design.md) */
+    --c1: #6d5fe0; --c2: #0f7d58; --c3: #9a6400; --c4: #2a6fc4; --c-neutral: #8f8da3; --c-neutral-2: #c9c7d6;
+    --seg-ink: #ffffff;
+    --no: #a53e3e; --no-soft: rgba(165,62,62,.08);
+    --scrim: rgba(20,18,32,.82);
+    /* 状態色: 回答済み = 緑（選んだ案の紫・推奨の灰と役割を分ける） */
+    --ok: #0f7d58; --ok-soft: rgba(15,125,88,.10); --on-ok: #ffffff;
+    --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #14141c; --surface: #1c1c27; --surface-2: #252533;
+      --line: #33334a; --line-soft: #26263a;
+      --ink: #ecebf3; --ink-2: #aaa8c0; --ink-3: #8a88a2;
+      --accent: #8b7ff0; --accent-deep: #6d5fe0; --accent-soft: rgba(139,127,240,.14); --on-accent: #0d0d14;
+      /* data-viz categorical (validated for the dark surface, see references/design.md) */
+      --c1: #9085e9; --c2: #199e70; --c3: #c98500; --c4: #3987e5; --c-neutral: #55546a; --c-neutral-2: #3a3950;
+      --seg-ink: #0d0d14;
+      --no: #c46a6a; --no-soft: rgba(196,106,106,.10);
+      --scrim: rgba(6,6,10,.88);
+      --ok: #199e70; --ok-soft: rgba(25,158,112,.14); --on-ok: #0d0d14;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #14141c; --surface: #1c1c27; --surface-2: #252533;
+    --line: #33334a; --line-soft: #26263a;
+    --ink: #ecebf3; --ink-2: #aaa8c0; --ink-3: #8a88a2;
+    --accent: #8b7ff0; --accent-deep: #6d5fe0; --accent-soft: rgba(139,127,240,.14); --on-accent: #0d0d14;
+    --c1: #9085e9; --c2: #199e70; --c3: #c98500; --c4: #3987e5; --c-neutral: #55546a; --c-neutral-2: #3a3950;
+    --seg-ink: #0d0d14;
+    --no: #c46a6a; --no-soft: rgba(196,106,106,.10);
+    --scrim: rgba(6,6,10,.88);
+    --ok: #199e70; --ok-soft: rgba(25,158,112,.14); --on-ok: #0d0d14;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ground); overflow-anchor: none; } /* 答えた問いを畳むときの位置ずれは JS で補正する */
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 24px 96px; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-family: var(--font-mono); }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.3; margin: 8px 0 12px; text-wrap: balance; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.35; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 16px; font-weight: 700; margin: 0 0 8px; }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  .lede { color: var(--ink-2); max-width: 70ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--ink-3); font-size: 13px; margin-top: 18px; }
+  .meta b { color: var(--ink-2); font-weight: 400; }
+  section { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--line-soft); }
+  section > .eyebrow { margin-bottom: 6px; }
+  .sub { color: var(--ink-2); max-width: 72ch; }
+  .panel { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; padding: 20px 22px; }
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: start; margin-top: 28px; }
+  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+  .stat { padding: 12px 14px; border-radius: 8px; background: var(--surface-2); }
+  .stat .n { font-family: var(--font-mono); font-size: 30px; line-height: 1.1; font-weight: 500; }
+  .stat .l { color: var(--ink-2); font-size: 13px; margin-top: 6px; }
+  /* stacked bar */
+  .bar { display: flex; height: 44px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--ground); margin-top: 14px; }
+  .seg { position: relative; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 14px; color: var(--seg-ink); font-weight: 500; cursor: default; transition: filter .15s; min-width: 10px; }
+  .seg:hover { filter: brightness(1.12); }
+  .seg.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 4px, var(--c-neutral-2) 4px 8px); color: var(--ink); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .sw.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 3px, var(--c-neutral-2) 3px 6px); }
+  .tip { position: fixed; pointer-events: none; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); font-size: 13px; padding: 6px 10px; border-radius: 6px; opacity: 0; transition: opacity .12s; z-index: 10; white-space: nowrap; }
+  .tip.on { opacity: 1; }
+  /* svg charts + diagrams */
+  .chart { width: 100%; height: auto; display: block; }
+  .chart text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-2); }
+  .chart .axis { stroke: var(--line); stroke-width: 1; }
+  .chart .grid { stroke: var(--line-soft); stroke-width: 1; }
+  .chart .lbl-strong { fill: var(--ink); font-size: 13px; }
+  .chart .lbl-note { fill: var(--ink-3); font-family: var(--font-body); font-size: 12px; }
+  .chart .lbl-body { fill: var(--ink); font-family: var(--font-body); font-size: 13px; }
+  .chart .lbl-body-2 { fill: var(--ink-2); font-family: var(--font-body); font-size: 12px; }
+  .chart .lbl-mono-strong { fill: var(--ink); font-size: 14px; font-weight: 500; }
+  .caption { color: var(--ink-3); font-size: 12.5px; margin-top: 8px; max-width: 72ch; }
+  .flow-wrap { overflow-x: auto; margin-top: 18px; }
+  .flow { min-width: 760px; }
+  .flow .box { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+  .flow .box-strong { fill: var(--surface-2); stroke: var(--accent); stroke-width: 1.25; }
+  .flow .box-dim { fill: var(--ground); stroke: var(--line-soft); stroke-width: 1; stroke-dasharray: 3 3; }
+  .flow .edge { fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+  .flow .edge-loop { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 4; }
+  .flow .edge-no { fill: none; stroke: var(--no); stroke-width: 1.5; stroke-dasharray: 2 4; }
+  .flow .arrow { fill: var(--ink-3); }
+  .flow .arrow-accent { fill: var(--accent); }
+  .flow .pill-1 { fill: var(--c1); } .flow .pill-2 { fill: var(--c2); } .flow .pill-3 { fill: var(--c3); } .flow .pill-4 { fill: var(--c4); }
+  .flow .pill-t { fill: var(--seg-ink); font-size: 12px; font-weight: 500; }
+  /* stepper */
+  .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+  @media (max-width: 760px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 420px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+  .step, .stat, .panel, .guard, .q-facts, .q-after, .sum, .meta { min-width: 0; overflow-wrap: anywhere; }
+  .viz, .q-viz > *, .hero-viz > *, .flow-wrap { min-width: 0; max-width: 100%; }
+  .step { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 8px; padding: 14px 16px; }
+  .step .t { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .08em; }
+  .step .m { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin: 2px 0 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-family: var(--font-mono); font-size: 12.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface-2); }
+  .chip.done { border-color: var(--ok); color: var(--ok); }
+  /* tables */
+  .tbl-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line-soft); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line-soft); }
+  th { color: var(--ink-3); font-weight: 400; font-size: 12px; letter-spacing: .06em; background: var(--surface); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.id { font-family: var(--font-mono); white-space: nowrap; color: var(--ink-2); }
+  .tag { display: inline-block; font-family: var(--font-mono); font-size: 11.5px; padding: 1px 7px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); white-space: nowrap; }
+  .tag.c1 { color: var(--c1); } .tag.c2 { color: var(--c2); } .tag.c3 { color: var(--c3); } .tag.c4 { color: var(--c4); } .tag.new { color: var(--accent); border-color: var(--accent); }
+  /* guard list */
+  .guards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+  @media (max-width: 760px) { .guards { grid-template-columns: 1fr; } }
+  .guard { background: var(--surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--no); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+  .guard b { display: block; margin-bottom: 4px; }
+  .guard .why { color: var(--ink-2); font-size: 13px; }
+  /* question cards */
+  .qlist { display: flex; flex-direction: column; gap: 22px; margin-top: 22px; }
+  .q { background: var(--surface); border: 1px solid var(--line-soft); border-left: 4px solid var(--line); border-radius: 10px; padding: 22px 24px; }
+  .q-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .q-num { font-family: var(--font-mono); color: var(--c1); font-size: 13px; letter-spacing: .1em; }
+  .q-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0; flex: 1 1 320px; text-wrap: balance; }
+  .q-time { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+  .q-fbs { margin-top: 6px; font-size: 13px; color: var(--ink-3); font-family: var(--font-mono); }
+  .q-quote { margin: 12px 0 0; padding: 8px 14px; border-left: 2px solid var(--line); color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+  /* 1 枚の問いは上から下へ読む: 問い → 原画/挿絵 → 選択肢 → 推奨 → ▸詳しく（事実・決まったら）。文字は畳み、絵と選択肢だけ常に見せる */
+  .q-body { display: flex; flex-direction: column; gap: 18px; margin-top: 18px; max-width: 820px; }
+  .q-facts h4, .q-opts h4, .q-after h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .12em; color: var(--ink-3); font-weight: 400; font-family: var(--font-mono); }
+  .q-facts ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .q-facts li { margin-bottom: 6px; }
+  .q-facts li b, .q-after b { color: var(--ink); font-weight: 700; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto 24px; gap: 10px; align-items: center; width: 100%; text-align: left; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--ink); font: inherit; font-size: 14px; line-height: 1.55; cursor: pointer; transition: border-color .12s, background .12s, color .12s; }
+  .opt:hover { border-color: var(--accent); }
+  .opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .opt .k { font-family: var(--font-mono); color: var(--ink-3); }
+  /* 札（AI推奨 / 次点）は灰。選んだ状態の紫とぶつけない */
+  .opt .rec { font-family: var(--font-mono); font-size: 11px; color: var(--ink-2); border: 1px solid var(--ink-3); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+  /* 選ぶ印: 未選択 = 空の丸、選択 = 塗りの丸 + ✓（複数選択は角丸の四角） */
+  .opt .ck { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; line-height: 1; color: transparent; justify-self: end; }
+  .opts[data-multi] .opt .ck { border-radius: 5px; }
+  .opt.selected { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+  .opt.selected .k { color: var(--on-accent); }
+  .opt.selected .ck { background: var(--on-accent); border-color: var(--on-accent); color: var(--accent); }
+  .opt.selected .rec { color: var(--on-accent); border-color: var(--on-accent); }
+  .opt.selected .opt-ex, .opt.selected .opt-ex::before { color: var(--on-accent); opacity: .9; }
+  .opt.no { cursor: not-allowed; color: var(--ink-3); border-style: dashed; }
+  .opt.no .k { color: var(--no); }
+  .opt.no .rec { color: var(--no); border-color: var(--no); }
+  .opt.no .ck { visibility: hidden; }
+  .opt .rec-empty { visibility: hidden; border: 0; padding: 0; }
+  .opt-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .opt-ex { color: var(--ink-2); font-size: 12.5px; font-weight: 400; }
+  .opt-ex::before { content: "例 "; font-family: var(--font-mono); color: var(--ink-3); }
+  .opt-img { display: block; align-self: flex-start; max-width: min(180px, 100%); max-height: 72px; width: auto; height: auto; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); }
+  .opt .kbd { display: none; }
+  /* 推奨の帯は灰（AI の見立て。選ばれてはいない） */
+  .q-rec { display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; border-radius: 8px; background: var(--surface-2); border: 1px dashed var(--line); font-size: 13.5px; color: var(--ink-2); }
+  .q-rec .q-rec-h { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; color: var(--ink-2); white-space: nowrap; }
+  .q-rec p { margin: 0; max-width: none; }
+  /* 回答の状態: 見出しの札（未回答 = 点線 / 回答済み = 緑） */
+  .q-state { font-family: var(--font-mono); font-size: 12px; border-radius: 999px; padding: 1px 10px; white-space: nowrap; border: 1px dashed var(--ink-3); color: var(--ink-3); }
+  .q.answered { border-left-color: var(--ok); }
+  .q.answered .q-state { border: 1px solid var(--ok); background: var(--ok); color: var(--on-ok); }
+  /* 答えた問いは 1 行に畳む（押すと開く）。見返さない前提で、未回答だけが目に入るようにする */
+  .q-ans { display: none; margin-top: 8px; font-size: 14px; color: var(--ink); background: var(--ok-soft); border-left: 3px solid var(--ok); border-radius: 0 6px 6px 0; padding: 4px 10px; overflow-wrap: anywhere; }
+  .q-ans small { display: block; color: var(--ink-2); font-size: 12.5px; }
+  .q-toggle { display: none; margin-left: auto; font: inherit; font-size: 13px; color: var(--accent); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; min-height: 32px; cursor: pointer; white-space: nowrap; }
+  .q-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .q.answered .q-toggle { display: inline-block; }
+  .q.collapsed { padding-top: 12px; padding-bottom: 12px; }
+  .q.collapsed > :not(.q-head):not(.q-ans) { display: none; }
+  .q.collapsed .q-ans { display: block; }
+  .q.collapsed .q-time { display: none; }
+  .q.collapsed .q-title { font-size: 16px; flex-basis: 200px; }
+  .q.collapsed .q-head { cursor: pointer; }
+  /* 事実・決まったら は ▸詳しく に畳む（絵と選択肢だけで決められるようにする） */
+  .q-more { border-top: 1px dashed var(--line-soft); padding-top: 8px; }
+  .q-more > summary { cursor: pointer; list-style: none; font-size: 13.5px; color: var(--accent); padding: 6px 0; min-height: 32px; }
+  .q-more > summary::-webkit-details-marker { display: none; }
+  .q-more > summary::before { content: "▸ "; }
+  .q-more[open] > summary::before { content: "▾ "; }
+  .q-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .q-more-in { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 4px; }
+  /* 用語の説明: 用語の横の (i) を押すと、その場の下に 1〜2 行が開く */
+  .gl-t { border-bottom: 1px dotted var(--accent); }
+  .gl-i { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin: 0 2px 0 3px; padding: 0; border-radius: 50%; border: 1px solid var(--accent); background: transparent; color: var(--accent); font: 700 11px/1 var(--font-mono); vertical-align: 2px; cursor: pointer; position: relative; }
+  .gl-i::after { content: ""; position: absolute; inset: -10px; } /* 押せる範囲を 38px に広げる */
+  .gl-i[aria-expanded="true"] { background: var(--accent); color: var(--on-accent); }
+  .gl-i:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .gl-body { display: block; margin: 6px 0 2px; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--ink-2); line-height: 1.6; letter-spacing: 0; text-align: left; }
+  .gl-body b { color: var(--ink); }
+  .q-head > .gl-body { flex: 1 0 100%; margin-top: 0; } /* 題の用語は見出しの中で開く（畳んだ問いでも見える） */
+  .gl-row { font-size: 13px; color: var(--ink-3); }
+  .q:focus { outline: none; }
+  .q.current { box-shadow: 0 0 0 2px var(--accent-soft), 0 0 0 1px var(--accent); }
+  .q { scroll-margin-top: 16px; scroll-margin-bottom: 96px; }
+  .q-after { color: var(--ink-2); font-size: 14px; }
+  .q-after p { max-width: none; margin: 0; }
+  .q-note { margin-top: 10px; }
+  .q-note textarea { width: 100%; min-height: 56px; background: var(--ground); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font: inherit; font-size: 13.5px; resize: vertical; }
+  .q-note textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* summary */
+  .sum { margin-top: 22px; background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 20px 22px; }
+  .sum pre { margin: 12px 0 0; padding: 14px; background: var(--ground); border-radius: 8px; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: var(--ink-2); max-height: 360px; overflow: auto; }
+  .btn { font: inherit; font-size: 13.5px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); cursor: pointer; }
+  .btn:hover { border-color: var(--accent-deep); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+  .btn.primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .btn.ok { background: var(--c2); border-color: var(--c2); color: var(--seg-ink); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn.quiet { border-color: var(--line); background: transparent; color: var(--ink-2); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .btn-row .note { color: var(--ink-3); font-size: 12.5px; }
+  .foot { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line-soft); color: var(--ink-3); font-size: 12.5px; }
+  .foot p { max-width: none; }
+  /* ---- declarative visuals (scripts/visuals.py, references/visuals.md) ---- */
+  .viz { margin: 18px 0 0; }
+  .viz-t { font-size: 13px; color: var(--ink-2); margin-bottom: 4px; font-family: var(--font-mono); letter-spacing: .04em; }
+  .hero-viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 20px 28px; margin-top: 28px; }
+  .hero-viz > .viz-stats, .hero-viz > .viz-flow, .hero-viz > .viz-timeline { grid-column: 1 / -1; }
+  .viz .stat-row { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+  .stat .n { white-space: nowrap; }
+  .hero-viz > .viz { margin: 0; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; padding: 18px 20px; }
+  .q-viz { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 4px 24px; }
+  .q-viz > .viz { margin-top: 6px; }
+  .waffle { display: grid; grid-template-columns: repeat(auto-fill, 16px); gap: 3px; margin-top: 12px; }
+  .waffle .cell { width: 16px; height: 16px; border-radius: 3px; display: block; }
+  .waffle .cell.neutral { background: repeating-linear-gradient(135deg, var(--c-neutral) 0 3px, var(--c-neutral-2) 3px 6px); }
+  .hbar { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .hb-row { display: grid; grid-template-columns: minmax(80px, 34%) 1fr auto; gap: 4px 10px; align-items: center; font-size: 13.5px; }
+  .hb-label { color: var(--ink-2); }
+  .hb-track { height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .hb-fill { height: 100%; background: var(--c1); opacity: .5; border-radius: 4px; }
+  .hb-fill.hl { opacity: 1; }
+  .hb-val { color: var(--ink); font-size: 13px; }
+  .hb-note { grid-column: 2 / -1; color: var(--ink-3); font-size: 12px; margin-top: -4px; }
+  .flowh { display: flex; align-items: stretch; margin-top: 4px; overflow-x: auto; padding: 12px 0 4px; }
+  .fl-node { position: relative; flex: 1 1 0; min-width: 110px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; }
+  .fl-node.strong { background: var(--surface-2); border-color: var(--accent); }
+  .fl-node.dim { background: var(--ground); border: 1px dashed var(--line-soft); color: var(--ink-3); }
+  .fl-node.stop { border-color: var(--no); box-shadow: inset 3px 0 0 var(--no); }
+  .fl-label { font-weight: 700; line-height: 1.45; }
+  .fl-sub { color: var(--ink-2); font-size: 12px; margin-top: 4px; line-height: 1.5; }
+  .fl-pill { position: absolute; top: -9px; left: 10px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; color: var(--seg-ink); border-radius: 999px; padding: 0 7px; line-height: 18px; }
+  .fl-edge { flex: 0 0 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .fl-line { position: relative; width: 100%; height: 0; border-top: 2px solid var(--ink-3); }
+  .fl-line::after { content: ""; position: absolute; right: -1px; top: -6px; border: 5px solid transparent; border-left: 7px solid var(--ink-3); }
+  .fl-edge.loop .fl-line { border-top: 2px dashed var(--accent); }
+  .fl-edge.loop .fl-line::after { border-left-color: var(--accent); }
+  .fl-edge.no .fl-line { border-top: 2px dotted var(--no); }
+  .fl-edge.no .fl-line::after { content: "×"; border: 0; top: -12px; right: 40%; color: var(--no); font-weight: 700; font-size: 14px; }
+  .fl-elab { font-size: 11px; color: var(--ink-3); text-align: center; line-height: 1.3; }
+  .fl-back { margin-top: 6px; color: var(--accent); font-size: 12.5px; }
+  @media (max-width: 640px) {
+    .flowh { flex-direction: column; overflow: visible; }
+    .fl-edge { flex: 0 0 34px; flex-direction: row; }
+    .fl-line { width: 0; height: 22px; border-top: 0; border-left: 2px solid var(--ink-3); }
+    .fl-line::after { right: auto; left: -6px; top: auto; bottom: -3px; border: 5px solid transparent; border-top: 7px solid var(--ink-3); }
+    .fl-edge.loop .fl-line { border-top: 0; border-left: 2px dashed var(--accent); }
+    .fl-edge.loop .fl-line::after { border-left-color: transparent; border-top-color: var(--accent); }
+    .fl-edge.no .fl-line { border-top: 0; border-left: 2px dotted var(--no); }
+    .fl-edge.no .fl-line::after { left: 6px; bottom: 2px; }
+    .fl-elab { text-align: left; margin-left: 8px; }
+  }
+  .cmp { display: grid; grid-template-columns: 1fr 32px 1fr; gap: 10px; align-items: stretch; margin-top: 12px; }
+  @media (max-width: 640px) { .cmp { grid-template-columns: 1fr; } .cmp-arrow { transform: rotate(90deg); } }
+  .cmp-col { border-radius: 8px; padding: 12px 14px; font-size: 13.5px; }
+  .cmp-col.before { background: var(--ground); border: 1px dashed var(--line); color: var(--ink-2); }
+  .cmp-col.after { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .cmp-h { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--ink-3); margin-bottom: 6px; }
+  .cmp-col.after .cmp-h { color: var(--accent); }
+  .cmp ul { margin: 0; padding-left: 0; list-style: none; }
+  .cmp li { margin-bottom: 5px; }
+  .cmp-plus { color: var(--c2); margin-right: 6px; } .cmp-minus { color: var(--no); margin-right: 6px; }
+  .cmp-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; }
+  .mx td:nth-child(2) { min-width: 8em; }
+  .mx th { white-space: nowrap; }
+  .mx td.mx-c, .mx th:nth-child(n+3) { text-align: center; white-space: nowrap; }
+  .mx tr.mx-rec td { background: var(--surface-2); } /* 推奨の行は灰（紫は選んだ案だけの色） */
+  .mx tr.mx-rec td.id { color: var(--ink); font-weight: 700; }
+  .mx-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--c1); vertical-align: middle; }
+  .mx-dot.full { background: var(--c1); }
+  .mx-dot.half { background: linear-gradient(90deg, var(--c1) 50%, transparent 50%); }
+  .mx-x { color: var(--no); font-weight: 700; }
+  .mx-na { color: var(--ink-3); }
+  .step.now { border-color: var(--accent); background: var(--surface-2); }
+  .step.later { border-style: dashed; background: var(--ground); color: var(--ink-3); }
+  .step-b { font-size: 13px; color: var(--ink-2); }
+  .meter { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .meter-track { flex: 1; height: 12px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .meter-fill { height: 100%; background: var(--c1); border-radius: 999px; transition: width .25s; }
+  #sumfill { background: var(--ok); }
+  .meter-lab { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .tl { list-style: none; margin: 14px 0 0; padding: 0; display: flex; gap: 0; overflow-x: auto; position: relative; }
+  .tl-ev { position: relative; flex: 1 1 0; min-width: 96px; padding: 22px 8px 0 0; font-size: 13px; }
+  .tl-ev::before { content: ""; position: absolute; top: 6px; left: 0; right: 0; border-top: 2px solid var(--line); }
+  .tl-ev.future::before { border-top-style: dashed; }
+  .tl-dot { position: absolute; top: 0; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--c1); border: 2px solid var(--ground); }
+  .tl-ev.now .tl-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .tl-ev.stop .tl-dot { background: var(--no); }
+  .tl-ev.future .tl-dot { background: var(--ground); border-color: var(--c1); }
+  .tl-d { display: block; color: var(--ink-3); font-size: 12px; }
+  .tl-l { display: block; color: var(--ink); line-height: 1.45; }
+  .tl-gap { margin-top: 8px; color: var(--no); font-size: 12.5px; }
+  /* answer map (auto, from questions[].time) */
+  .qmap { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 18px; min-height: 40px; }
+  .qmap a { flex: 1 1 0; min-width: 34px; min-height: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; color: var(--ink-2); text-decoration: none; font-family: var(--font-mono); font-size: 12px; line-height: 1.2; }
+  .qmap a small { font-size: 10.5px; color: var(--ink-3); }
+  .qmap a.done { background: var(--ok); border-color: var(--ok); color: var(--on-ok); }
+  .qmap a.done small { color: var(--on-ok); }
+  .qmap a.done::before { content: "✓"; font-size: 11px; line-height: 1; }
+  .qmap a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qmap-cap { color: var(--ink-3); font-size: 12.5px; margin-top: 6px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* 読み方（見る → 選ぶ → コピー） */
+  .howto { margin-top: 22px; background: var(--surface); border: 1px solid var(--line-soft); border-radius: 10px; }
+  .howto > summary { cursor: pointer; padding: 12px 16px; font-size: 14px; color: var(--ink-2); list-style: none; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .howto > summary::-webkit-details-marker { display: none; }
+  .howto > summary::before { content: "▸"; color: var(--accent); }
+  .howto[open] > summary::before { content: "▾"; }
+  .howto > summary b { color: var(--ink); }
+  .howto > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
+  .howto ol { list-style: none; margin: 0; padding: 0 16px 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .howto li { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; color: var(--ink-2); }
+  .howto li b { display: block; font-family: var(--font-display); font-size: 17px; color: var(--ink); margin-bottom: 2px; }
+  .howto li b .mono { color: var(--accent); font-size: 13px; margin-right: 6px; }
+  .howto kbd, .q-keys kbd { font-family: var(--font-mono); font-size: 11.5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface); color: var(--ink); }
+  @media (max-width: 640px) { .howto ol { grid-template-columns: 1fr; } }
+  /* 原画（figures） */
+  .figs { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 14px; margin-top: 10px; align-items: start; }
+  @media (max-width: 860px) { .figs[data-cols="3"], .figs[data-cols="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .figs { grid-template-columns: 1fr; } }
+  .fig { margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .fig-zoom { position: relative; display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); cursor: zoom-in; overflow: hidden; }
+  .fig-zoom:hover { border-color: var(--accent); }
+  .fig-zoom:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .fig-img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; }
+  .fig-zoom-hint { position: absolute; right: 6px; bottom: 6px; font-family: var(--font-mono); font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--scrim); color: #fff; }
+  .img-ph { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 120px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink-3); font-size: 13px; text-align: center; }
+  .img-ph code { font-family: var(--font-mono); color: var(--ink-2); }
+  .img-ph small { font-size: 11.5px; }
+  .opt-img.img-ph { min-height: 60px; max-width: 220px; }
+  .fig-cap { font-size: 13px; color: var(--ink); line-height: 1.55; }
+  .fig-tag { display: inline-block; margin-right: 6px; padding: 0 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-size: 11.5px; }
+  .fig-note { font-size: 13px; color: var(--ink); background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 6px 10px; line-height: 1.55; }
+  .fig-note-h { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--accent); }
+  .hero-viz > .viz-figures, .hero-viz > .viz-table, .q-viz > .viz-figures, .q-viz > .viz-table { grid-column: 1 / -1; }
+  /* 表（table） */
+  .dt th[scope="row"] { color: var(--ink); font-weight: 700; background: transparent; font-size: 13.5px; letter-spacing: 0; white-space: normal; min-width: 7em; }
+  .dt td.mk { text-align: center; }
+  .dt .al-right { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .dt .al-center { text-align: center; }
+  .dt .hl-col { background: var(--accent-soft); }
+  .dt thead th.hl-col { color: var(--accent); }
+  .dt tr.hl > * { background: var(--accent-soft); }
+  .dt tr.hl > th[scope="row"] { box-shadow: inset 3px 0 0 var(--accent); }
+  .tbl-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  /* 拡大表示（lightbox） */
+  .lb { border: 0; padding: 0; margin: 0; max-width: none; max-height: none; width: 100vw; height: 100dvh; background: rgba(8,8,12,.94); color: #fff; }
+  .lb:not([open]) { display: none; }
+  .lb::backdrop { background: var(--scrim); }
+  .lb-in { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 56px 12px calc(16px + env(safe-area-inset-bottom)); }
+  .lb-img { max-width: 100%; max-height: calc(100% - 64px); object-fit: contain; background: #fff; border-radius: 6px; }
+  .lb-cap { font-size: 14px; max-width: 72ch; text-align: center; color: #fff; }
+  .lb-close { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 12px; width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.4); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
+  .lb-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  /* 回答バー（常に下に出す） */
+  body.has-abar { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .abar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(0,0,0,.12); padding: 10px max(16px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .abar-in { max-width: 1040px; margin: 0 auto; display: flex; align-items: center; gap: 10px 14px; }
+  .abar-prog { font-family: var(--font-mono); font-size: 14px; color: var(--ink); white-space: nowrap; }
+  .abar-prog b { font-size: 18px; color: var(--accent); }
+  .abar-meter { flex: 1 1 auto; height: 8px; min-width: 40px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .abar-meter i { display: block; height: 100%; width: 0; background: var(--ok); border-radius: 999px; transition: width .25s; }
+  .abar .btn { white-space: nowrap; min-height: 40px; }
+  .abar-keys { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+  @media (max-width: 760px) { .abar-keys { display: none; } }
+  @media (max-width: 520px) {
+    .abar-in { flex-wrap: wrap; }
+    .abar-meter { order: 3; flex-basis: 100%; height: 6px; }
+    .abar .btn { flex: 1 1 0; padding: 7px 8px; font-size: 13px; }
+  }
+  .copy-ta { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; }
+  /* 狭い画面（375px）で横にはみ出さない */
+  @media (max-width: 560px) {
+    .wrap { padding: 28px 16px 72px; }
+    h1 { font-size: 27px; }
+    .q { padding: 18px 16px; }
+    .panel, .sum, .hero-viz > .viz { padding: 16px; }
+    .opt { grid-template-columns: 22px minmax(0, 1fr) 24px; }
+    .opt .rec { grid-column: 2; grid-row: 2; justify-self: start; }
+    .opt .ck { grid-column: 3; grid-row: 1; }
+    .opt .rec-empty { display: none; }
+    .hb-row { grid-template-columns: minmax(70px, 38%) minmax(0, 1fr) auto; }
+    .stat .n { font-size: 24px; white-space: normal; }
+    .grid-2 > * { min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">{{EYEBROW}}</div>
+  <h1>{{TITLE}}</h1>
+  <p class="lede">{{LEDE}}</p>
+  <div class="meta">{{META}}</div>
+
+  <details class="howto" id="howto" open>
+    <summary><b>読み方</b><span>見る → 選ぶ → コピー の 3 つだけ（<span id="howtomin">約 0 分</span>）</span></summary>
+    <ol>
+      <li><b><span class="mono">1</span>見る</b>問いのすぐ下の原画・図・表で違いをつかむ。画像は押すと大きくなる。事実の文は「▸ 詳しく」、用語は <span class="gl-i" aria-hidden="true" style="cursor:default">i</span> を押すと開く。</li>
+      <li><b><span class="mono">2</span>選ぶ</b>A〜D を押すと紫に塗られて ✓ が付く（灰の「AI推奨」札は AI の見立てで、選ばれてはいない）。答えた問いは緑の「✓ 回答済み」で 1 行に畳まれる（押すと開く）。キーなら <kbd>1</kbd>〜<kbd>4</kbd>、<kbd>Enter</kbd> で次の問い。</li>
+      <li><b><span class="mono">3</span>コピー</b>下のバーの「回答まとめをコピー」を押し、Claude との対話に貼る。補足は各問いのメモ欄へ。</li>
+    </ol>
+  </details>
+
+  {{HERO}}
+
+  {{SECTIONS}}
+
+  <section>
+    <div class="eyebrow">{{Q_EYEBROW}}</div>
+    <h2>{{Q_H2}}</h2>
+    <p class="sub">{{Q_SUB}}</p>
+    <div class="qmap" id="qmap" aria-label="問いの地図（幅 = 所要時間）"></div>
+    <div class="qmap-cap" id="qmapcap"></div>
+    <div class="qlist" id="qlist"></div>
+    <div class="sum" id="summary">
+      <h3>回答まとめ（選んだ内容がここに並ぶ）</h3>
+      <div class="meter"><div class="meter-track"><div class="meter-fill" id="sumfill" style="width:0%"></div></div><div class="meter-lab mono" id="sumlab"></div></div>
+      <p class="sub">コピーして Claude に貼れば、次の cycle はここから始まる。未回答の問いは「未回答」と出る。補足はメモ欄に書けば一緒に出る。</p>
+      <pre id="sumtext" tabindex="0" aria-label="回答まとめ（コピーされる文字）">（まだ何も選んでいません）</pre>
+      <div class="btn-row">
+        <button class="btn primary" id="copy" type="button">回答まとめをコピー</button>
+        <button class="btn quiet" id="clear" type="button">選択をすべて消す</button>
+        <span class="note" id="copynote" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+
+  {{AFTER_SECTIONS}}
+
+  <div class="foot">{{FOOT}}</div>
+</div>
+<div class="tip" id="tip"></div>
+<div class="abar" id="abar" role="region" aria-label="回答の進み">
+  <div class="abar-in">
+    <span class="abar-prog" id="abarprog">回答 <b>0</b>/0</span>
+    <div class="abar-meter" aria-hidden="true"><i id="abarfill"></i></div>
+    <span class="abar-keys"><kbd>1</kbd>〜<kbd>4</kbd> で選ぶ · <kbd>Enter</kbd> で次へ</span>
+    <button class="btn quiet" id="nextun" type="button">次の未回答へ</button>
+    <button class="btn primary" id="copy2" type="button">回答まとめをコピー</button>
+  </div>
+</div>
+<dialog class="lb" id="lb" aria-label="拡大表示">
+  <div class="lb-in">
+    <button class="lb-close" id="lbclose" type="button" aria-label="閉じる（Esc）">×</button>
+    <img class="lb-img" id="lbimg" alt="">
+    <div class="lb-cap" id="lbcap"></div>
+  </div>
+</dialog>
+<textarea class="copy-ta" id="copyta" readonly tabindex="-1" aria-hidden="true"></textarea>
+
+<script>
+var KIT = /*__KIT_DATA__*/{}/*__END_KIT_DATA__*/;
+(function () {
+  var KEY = 'dk-' + (KIT.key || 'kit');
+  var QS = KIT.questions || [];
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { state = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+  function h(s) { return s == null ? '' : String(s); } // trusted html from the kit author
+  function plain(s) { return String(s == null ? '' : s).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); }
+  function $(id) { return document.getElementById(id); }
+
+  // ---- 問いのカード（上から下へ: 問い → 原画/挿絵 → 選択肢 → 推奨 → ▸詳しく〔事実・決まったら〕 → メモ） ----
+  var list = $('qlist');
+  QS.forEach(function (q) {
+    var art = document.createElement('article');
+    art.className = 'q'; art.id = q.id; art.tabIndex = -1;
+    art.setAttribute('aria-labelledby', q.id + '-t');
+    var facts = (q.facts || []).map(function (f) { return '<li>' + h(f) + '</li>'; }).join('');
+    var recOpt = null;
+    var opts = (q.options || []).map(function (o, i) {
+      var isRec = !o.disabled && /^推奨/.test(String(o.rec || ''));
+      if (isRec && !recOpt) recOpt = o;
+      var cls = 'opt' + (o.disabled ? ' no' : '') + (isRec ? ' is-rec' : '');
+      var recText = isRec ? String(o.rec).replace(/^推奨/, 'AI推奨') : o.rec;
+      var rec = o.rec ? '<span class="rec">' + esc(recText) + '</span>' : '<span class="rec rec-empty" aria-hidden="true"></span>';
+      var ex = o.example ? '<span class="opt-ex">' + h(o.example) + '</span>' : '';
+      var im = o.imgHtml ? h(o.imgHtml) : '';
+      return '<button type="button" class="' + cls + '" data-k="' + esc(o.k) + '" data-i="' + i + '" aria-pressed="false"' + (o.disabled ? ' disabled' : '') +
+        '><span class="k">' + esc(o.k) + '</span><span class="opt-main"><span class="opt-lab">' + h(o.label) + '</span>' + ex + im + '</span>' + rec + '<span class="ck" aria-hidden="true">✓</span></button>';
+    }).join('');
+    var recHtml = '';
+    if (recOpt || q.recWhy) {
+      var who = recOpt ? esc(recOpt.k) + '（' + esc(plain(recOpt.label).slice(0, 30)) + '）' : '';
+      recHtml = '<div class="q-rec"><span class="q-rec-h">AI推奨</span><p>' + who + (q.recWhy ? (who ? ' — ' : '') + h(q.recWhy) : '') +
+        ' <span style="color:var(--ink-3)">（AI の見立て。選ぶのはあなた）</span></p></div>';
+    }
+    var nFacts = (q.facts || []).length;
+    var moreLab = [nFacts ? '事実 ' + nFacts : '', q.after ? '決まったら' : ''].filter(Boolean).join(' · ');
+    var more = (facts || q.after) ? '<details class="q-more"><summary>詳しく（' + esc(moreLab) + '）</summary><div class="q-more-in">' +
+      (facts ? '<div class="q-facts"><h4>' + esc(q.factsLabel || '事実') + '</h4><ul>' + facts + '</ul></div>' : '') +
+      (q.after ? '<div class="q-after"><h4>決まったら</h4><p>' + h(q.after) + '</p></div>' : '') +
+      '</div></details>' : '';
+    art.innerHTML =
+      '<div class="q-head"><span class="q-num">' + esc(q.id) + '</span><h3 class="q-title" id="' + esc(q.id) + '-t">' + h(q.title) + '</h3>' +
+      '<span class="q-state">未回答</span>' + (q.time ? '<span class="q-time">' + esc(q.time) + '</span>' : '') +
+      '<button type="button" class="q-toggle" aria-expanded="true">畳む</button></div>' +
+      '<div class="q-ans"></div>' +
+      (q.fbs ? '<div class="q-fbs">' + esc(q.fbs) + '</div>' : '') +
+      (q.quote ? '<blockquote class="q-quote">' + h(q.quote) + '</blockquote>' : '') +
+      (q.visualHtml ? '<div class="q-viz">' + h(q.visualHtml) + '</div>' : '') +
+      '<div class="q-body">' +
+      '<div class="q-opts"><h4>' + esc(q.optionsLabel || (q.multi ? '選択肢（複数可）' : '選択肢')) + '</h4><div class="opts" role="group" aria-label="' + esc(q.id) + ' の選択肢" data-q="' + esc(q.id) + '"' + (q.multi ? ' data-multi="1"' : '') + '>' + opts + '</div></div>' +
+      (q.extra ? '<div class="q-note">' + h(q.extra) + '</div>' : '') +
+      recHtml + more +
+      (q.note === false ? '' : '<div class="q-note"><textarea data-note="' + esc(q.id) + '" aria-label="' + esc(q.id) + ' のメモ" placeholder="補足があれば（任意。まとめに一緒に出る）"></textarea></div>') +
+      '</div>';
+    list.appendChild(art);
+  });
+
+  // ---- 用語の説明（spec の glossary）: 各ブロックで最初に出た用語の横に (i)。押すとその場の下に開く ----
+  var GL = KIT.glossary || {};
+  var TERMS = Object.keys(GL).filter(function (t) { return t; }).sort(function (a, b) { return b.length - a.length; });
+  var glSeq = 0;
+  function glButton(term, body) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'gl-i'; b.textContent = 'i';
+    b.setAttribute('aria-label', term + ' の説明'); b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', body.id);
+    return b;
+  }
+  function glBody(term) {
+    var d = document.createElement('span'); d.className = 'gl-body'; d.id = 'gl-' + (++glSeq); d.hidden = true; d.setAttribute('role', 'note');
+    d.innerHTML = '<b>' + esc(term) + '</b> — ' + h(GL[term]);
+    return d;
+  }
+  // 英数字の用語は語の途中に当てない（P3 を P30 の中に、cycle を recycle の中に付けない）
+  function findTerm(text, t) {
+    var alnum = /[A-Za-z0-9]/; var from = 0;
+    for (;;) {
+      var i = text.indexOf(t, from); if (i < 0) return -1;
+      var okL = !alnum.test(t.charAt(0)) || i === 0 || !alnum.test(text.charAt(i - 1));
+      var okR = !alnum.test(t.charAt(t.length - 1)) || !alnum.test(text.charAt(i + t.length) || ' ');
+      if (okL && okR) return i;
+      from = i + 1;
+    }
+  }
+  // 説明を置く場所: 用語を含む文のブロックの中か直後（ページの末尾や横並びの中に落とさない）
+  function placeBody(btn, body, root) {
+    var host = btn.parentElement.closest('li, p, blockquote, td, th, figcaption, .fig-cap, .fig-note, .q-head, h2, h3, .viz-t, .step, .fl-node, .sub, .lede, .cmp-col');
+    if (host && root.contains(host)) {
+      if (host.matches('h2, h3')) host.insertAdjacentElement('afterend', body); else host.appendChild(body);
+      return;
+    }
+    var el = btn.parentElement;
+    while (el && el !== root && /^inline/.test(getComputedStyle(el).display)) el = el.parentElement;
+    while (el && el !== root && el.parentElement && /flex|grid/.test(getComputedStyle(el.parentElement).display)) el = el.parentElement;
+    if (!el || el === root) btn.insertAdjacentElement('afterend', body); else el.insertAdjacentElement('afterend', body);
+  }
+  function glossarize(root) {
+    if (!TERMS.length || !root) return;
+    var used = {}; var queue = [];
+    // テンプレートの文字（札・見出しのラベル・あなたの答え）には付けない。描き直しで消えるため
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: function (n) {
+      var p = n.parentElement;
+      return n.nodeValue.trim() && p && !p.closest('button, textarea, script, style, svg, pre, a, summary, h4, .q-state, .q-toggle, .q-ans, .q-num, .q-time, .gl-row, .gl-body, .gl-t, .tip') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    } });
+    while (w.nextNode()) queue.push(w.currentNode);
+    while (queue.length) {
+      var node = queue.shift(); var text = node.nodeValue; var hit = null, at = Infinity;
+      TERMS.forEach(function (t) { if (used[t]) return; var i = findTerm(text, t); if (i >= 0 && i < at) { at = i; hit = t; } });
+      if (!hit) continue;
+      used[hit] = true;
+      var mid = node.splitText(at); var rest = mid.splitText(hit.length);
+      var span = document.createElement('span'); span.className = 'gl-t';
+      mid.parentNode.replaceChild(span, mid); span.appendChild(mid);
+      var body = glBody(hit); var btn = glButton(hit, body);
+      span.parentNode.insertBefore(btn, rest);
+      placeBody(btn, body, root);
+      queue.unshift(rest);
+    }
+    // 選択肢（ボタン）の中にだけ出る用語は、選択肢の上に「用語」の行で出す（ボタンの中に (i) を入れない）
+    var opts = root.querySelector && root.querySelector('.q-opts');
+    if (opts) {
+      var otext = opts.textContent; var row = null;
+      TERMS.forEach(function (t) {
+        if (used[t] || findTerm(otext, t) < 0) return;
+        used[t] = true;
+        if (!row) { row = document.createElement('div'); row.className = 'gl-row'; row.textContent = '用語: '; opts.parentNode.insertBefore(row, opts); }
+        var body = glBody(t); var span = document.createElement('span'); span.className = 'gl-t'; span.textContent = t;
+        row.appendChild(span); row.appendChild(glButton(t, body)); row.appendChild(document.createTextNode(' ')); row.appendChild(body);
+      });
+    }
+  }
+  [document.querySelector('.lede'), document.querySelector('.hero-viz')].forEach(glossarize);
+  document.querySelectorAll('.wrap > section').forEach(function (sec) { if (!sec.querySelector('#qlist')) glossarize(sec); });
+  QS.forEach(function (q) { glossarize($(q.id)); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.gl-i'); if (!b || !b.getAttribute('aria-controls')) return;
+    e.stopPropagation(); var d = $(b.getAttribute('aria-controls')); if (!d) return;
+    d.hidden = !d.hidden; b.setAttribute('aria-expanded', d.hidden ? 'false' : 'true');
+  }, true);
+
+  // ---- 問いの地図: 幅 = 所要時間 ----
+  var qmap = $('qmap'); var totalMin = 0;
+  QS.forEach(function (q) {
+    var m = parseInt(String(q.time || '').replace(/[^0-9]/g, ''), 10); if (!m) m = 3; totalMin += m;
+    var a = document.createElement('a'); a.href = '#' + q.id; a.style.flexGrow = m; a.setAttribute('data-map', q.id);
+    a.innerHTML = esc(q.id) + (q.time ? '<small>' + esc(q.time) + '</small>' : '');
+    a.title = (q.short || plain(q.title)) + (q.time ? '（' + q.time + '）' : '');
+    a.addEventListener('click', function (e) { e.preventDefault(); goTo(QS.indexOf(q)); });
+    qmap.appendChild(a);
+  });
+  if (!QS.length) { qmap.style.display = 'none'; $('abar').style.display = 'none'; }
+  else document.body.classList.add('has-abar');
+  $('qmapcap').textContent = '問いの地図: 幅 = 所要時間の目安（合計 約 ' + totalMin + ' 分）。短いものから答えてよい。答えた問いは緑の ✓ になる。';
+  $('howtomin').textContent = QS.length + ' 問 · 約 ' + totalMin + ' 分';
+  try { if (localStorage.getItem(KEY + '-howto') === 'closed') $('howto').open = false; } catch (e) {}
+  $('howto').addEventListener('toggle', function () { try { localStorage.setItem(KEY + '-howto', $('howto').open ? 'open' : 'closed'); } catch (e) {} });
+
+  function labelOf(btn) { var s = btn.querySelector('.opt-lab'); return s ? s.textContent.replace(/\s+/g, ' ').trim() : ''; }
+  function answered(q) { return !!(state[q.id] && state[q.id].sel && state[q.id].sel.length); }
+
+  // ---- 回答まとめ（行の形式は変えない: 貼り戻すと AI へのプロンプトになる） ----
+  function summaryText() {
+    var lines = [KIT.summaryTitle || (KIT.title + ' — 回答'), ''];
+    QS.forEach(function (q) {
+      var s = state[q.id] || {}; var sel = s.sel || [];
+      var short = q.short || String(q.title || '').replace(/<[^>]+>/g, '');
+      if (!sel.length) { lines.push(q.id + ' ' + short + ': 未回答'); }
+      else {
+        var g = document.querySelector('.opts[data-q="' + q.id + '"]');
+        var parts = sel.map(function (k) { var b = g.querySelector('.opt[data-k="' + k + '"]'); var t = b ? labelOf(b) : ''; return k + '（' + t.slice(0, 40) + (t.length > 40 ? '…' : '') + '）'; });
+        lines.push(q.id + ' ' + short + ': ' + parts.join(' / '));
+      }
+      if (s.note) lines.push('  メモ: ' + s.note.replace(/\n/g, ' '));
+    });
+    if (KIT.summaryFooter) lines.push('', KIT.summaryFooter);
+    return lines.join('\n');
+  }
+
+  function render() {
+    document.querySelectorAll('.opts').forEach(function (g) {
+      var q = g.getAttribute('data-q'); var sel = (state[q] && state[q].sel) || [];
+      g.querySelectorAll('.opt').forEach(function (b) { var on = sel.indexOf(b.getAttribute('data-k')) >= 0; b.classList.toggle('selected', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+      var card = $(q);
+      if (card) {
+        card.classList.toggle('answered', sel.length > 0);
+        card.querySelector('.q-state').textContent = sel.length ? '✓ 回答済み' : '未回答';
+        if (!sel.length) setCollapsed(card, false);
+        var note = (state[q] && state[q].note) || '';
+        var ans = sel.map(function (k) { var b = g.querySelector('.opt[data-k="' + k + '"]'); return '<b>' + esc(k) + '</b> ' + esc(b ? labelOf(b) : ''); }).join(' / ');
+        card.querySelector('.q-ans').innerHTML = sel.length ? 'あなたの答え: ' + ans + (note ? '<small>メモ: ' + esc(note) + '</small>' : '') : '';
+      }
+      var chip = document.querySelector('.chip[data-chip="' + q + '"]'); if (chip) chip.classList.toggle('done', sel.length > 0);
+      var tile = document.querySelector('.qmap a[data-map="' + q + '"]'); if (tile) tile.classList.toggle('done', sel.length > 0);
+    });
+    document.querySelectorAll('textarea[data-note]').forEach(function (t) { var q = t.getAttribute('data-note'); var v = (state[q] && state[q].note) || ''; if (t.value !== v) t.value = v; });
+    var qn = QS.length; var done = QS.filter(answered).length; var pct = (qn ? done / qn * 100 : 0) + '%';
+    $('sumfill').style.width = pct; $('abarfill').style.width = pct;
+    $('sumlab').textContent = done + ' / ' + qn + ' 問 回答済み';
+    $('abarprog').innerHTML = '回答 <b>' + done + '</b>/' + qn;
+    $('nextun').textContent = done >= qn ? 'まとめを見る' : '次の未回答へ';
+    $('sumtext').textContent = summaryText();
+  }
+
+  // ---- 答えた問いは畳む: 画面の外に出たら 1 行に（見返さない前提）。押すと開く ----
+  function setCollapsed(card, on) {
+    if (card.classList.contains('collapsed') === on) return;
+    var r = card.getBoundingClientRect(); var before = card.offsetHeight;
+    card.classList.toggle('collapsed', on);
+    var t = card.querySelector('.q-toggle'); t.textContent = on ? '開く' : '畳む'; t.setAttribute('aria-expanded', on ? 'false' : 'true');
+    if (r.top < 0) window.scrollBy(0, card.offsetHeight - before); // 画面より上の問いが縮んでも、今読んでいる所を動かさない
+  }
+  QS.forEach(function (q) {
+    var card = $(q.id);
+    card.querySelector('.q-toggle').addEventListener('click', function (e) { e.stopPropagation(); setCollapsed(card, !card.classList.contains('collapsed')); });
+    card.querySelector('.q-head').addEventListener('click', function () { if (card.classList.contains('collapsed')) setCollapsed(card, false); });
+  });
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var card = en.target;
+        if (en.isIntersecting || !card.classList.contains('answered') || card.contains(document.activeElement) && document.activeElement.tagName === 'TEXTAREA') return;
+        setCollapsed(card, true);
+      });
+    });
+    QS.forEach(function (q) { io.observe($(q.id)); });
+  }
+
+  // ---- 今の問い（キー操作の対象） ----
+  var cur = -1;
+  function setCur(i) {
+    if (cur >= 0 && $(QS[cur].id)) $(QS[cur].id).classList.remove('current');
+    cur = i; if (cur >= 0 && $(QS[cur].id)) $(QS[cur].id).classList.add('current');
+  }
+  function goTo(i) {
+    if (i < 0 || i >= QS.length) { var sum = $('summary'); sum.scrollIntoView({ block: 'start' }); $('sumtext').focus({ preventScroll: true }); setCur(-1); return; }
+    var el = $(QS[i].id); setCur(i); setCollapsed(el, false);
+    el.scrollIntoView({ block: 'start' }); el.focus({ preventScroll: true });
+  }
+  function nearestCard() {
+    var best = -1, bestD = Infinity;
+    QS.forEach(function (q, i) { var el = $(q.id); if (el.classList.contains('collapsed')) return; var r = el.getBoundingClientRect(); if (r.bottom < 60 || r.top > window.innerHeight - 80) return; var d = Math.abs(r.top); if (d < bestD) { bestD = d; best = i; } });
+    return best;
+  }
+  function nextUnanswered() {
+    var start = cur >= 0 ? cur : Math.max(0, nearestCard());
+    for (var n = 1; n <= QS.length; n++) { var i = (start + n) % QS.length; if (!answered(QS[i])) return i; }
+    return answered(QS[start] || {}) ? -1 : start;
+  }
+  QS.forEach(function (q, i) {
+    var el = $(q.id);
+    el.addEventListener('focusin', function () { setCur(i); });
+    el.addEventListener('pointerdown', function () { setCur(i); });
+  });
+
+  function choose(g, b) {
+    var q = g.getAttribute('data-q'); var multi = g.getAttribute('data-multi') === '1';
+    var k = b.getAttribute('data-k'); var s = state[q] || {}; var sel = s.sel || [];
+    if (multi) { var i = sel.indexOf(k); if (i >= 0) sel.splice(i, 1); else sel.push(k); } else { sel = sel[0] === k ? [] : [k]; }
+    s.sel = sel; state[q] = s; save(); render();
+  }
+  document.querySelectorAll('.opts').forEach(function (g) {
+    g.querySelectorAll('.opt').forEach(function (b) {
+      if (b.disabled) return;
+      b.addEventListener('click', function () { choose(g, b); });
+    });
+  });
+  document.querySelectorAll('textarea[data-note]').forEach(function (t) {
+    // メモを書いたまま問いが画面の外に出ていたら、書き終えた（フォーカスが外れた）所で畳む
+    t.addEventListener('blur', function () {
+      var card = $(t.getAttribute('data-note')); if (!card || !card.classList.contains('answered')) return;
+      var r = card.getBoundingClientRect(); if (r.bottom < 0 || r.top > window.innerHeight) setCollapsed(card, true);
+    });
+    t.addEventListener('input', function () { var q = t.getAttribute('data-note'); var s = state[q] || {}; s.note = t.value; state[q] = s; save(); render(); });
+  });
+  $('clear').addEventListener('click', function () { state = {}; save(); render(); });
+  $('nextun').addEventListener('click', function () { goTo(nextUnanswered()); });
+
+  // キー: 1〜4 / A〜D = 今の問いの選択肢、Enter = 次の問い（文字入力中は効かない）
+  document.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    var t = e.target; var tag = (t && t.tagName) || '';
+    if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+    if ($('lb').open) return;
+    var i = cur >= 0 && !$(QS[cur].id).classList.contains('collapsed') ? cur : nearestCard(); // 畳んだ問いに残った「今」は、画面の中の問いへ移す
+    if (i < 0) i = cur; if (i < 0) return;
+    var g = document.querySelector('.opts[data-q="' + QS[i].id + '"]'); if (!g) return;
+    if ($(QS[i].id).classList.contains('collapsed') && e.key !== 'Enter') return; // 畳んだ問いの答えを見えないまま変えない
+    var key = e.key.length === 1 ? e.key.toUpperCase() : e.key; var b = null;
+    if (/^[1-9]$/.test(key)) b = g.querySelectorAll('.opt')[parseInt(key, 10) - 1];
+    else if (/^[A-H]$/.test(key)) b = g.querySelector('.opt[data-k="' + key + '"]');
+    else if (key === 'Enter') {
+      var inCard = t === document.body || (t.closest && (t.classList.contains('q') || t.classList.contains('opt')));
+      if (!inCard) return;
+      e.preventDefault(); goTo(i + 1); return;
+    } else return;
+    if (!b || b.disabled) return;
+    e.preventDefault(); setCur(i); choose(g, b); b.focus({ preventScroll: true });
+  });
+
+  // ---- コピー: クリックの中で navigator.clipboard → だめなら textarea を選んで execCommand → それもだめならまとめを選択 ----
+  function copySummary(btn) {
+    var text = summaryText(); var note = $('copynote');
+    var label = btn.getAttribute('data-label') || btn.textContent; btn.setAttribute('data-label', label);
+    function flash(ok, msg) {
+      btn.textContent = ok ? 'コピーしました' : '選択しました'; btn.classList.toggle('ok', ok);
+      note.textContent = msg;
+      clearTimeout(btn._t); btn._t = setTimeout(function () { btn.textContent = label; btn.classList.remove('ok'); }, 2200);
+    }
+    function selectPre() {
+      var pre = $('sumtext'); pre.scrollIntoView({ block: 'center' });
+      var r = document.createRange(); r.selectNodeContents(pre); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      flash(false, '自動でコピーできませんでした。まとめを選択したので Ctrl/⌘+C でコピーしてください');
+    }
+    function viaTextarea() {
+      var ta = $('copyta'); ta.value = text; ta.removeAttribute('aria-hidden');
+      ta.focus(); ta.select(); try { ta.setSelectionRange(0, text.length); } catch (e) {}
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.setAttribute('aria-hidden', 'true'); btn.focus({ preventScroll: true });
+      if (ok) flash(true, 'コピーしました。Claude との対話に貼ってください（' + text.split('\n').length + ' 行）'); else selectPre();
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { flash(true, 'コピーしました。Claude との対話に貼ってください（' + text.split('\n').length + ' 行）'); }, viaTextarea);
+      } else viaTextarea();
+    } catch (e) { viaTextarea(); }
+  }
+  $('copy').addEventListener('click', function () { copySummary($('copy')); });
+  $('copy2').addEventListener('click', function () { copySummary($('copy2')); });
+
+  // ---- 原画の拡大（ページの中だけで開く。Esc / × / 背景で閉じる） ----
+  var lb = $('lb'), lbImg = $('lbimg'), lbCap = $('lbcap'), lbFrom = null;
+  function lbOpen(btn) {
+    var img = btn.querySelector('img'); if (!img) return;
+    var fig = btn.closest('figure'); var cap = fig && fig.querySelector('.fig-cap');
+    lbImg.src = img.currentSrc || img.src; lbImg.alt = img.alt; var tg = cap && cap.querySelector('.fig-tag'); lbCap.textContent = cap ? (tg ? tg.textContent + ' · ' + cap.textContent.slice(tg.textContent.length) : cap.textContent) : img.alt;
+    lbFrom = btn;
+    if (typeof lb.showModal === 'function') { try { lb.showModal(); } catch (e) { lb.setAttribute('open', ''); } } else lb.setAttribute('open', '');
+    $('lbclose').focus();
+  }
+  function lbClose() {
+    if (typeof lb.close === 'function' && lb.open) { try { lb.close(); } catch (e) { lb.removeAttribute('open'); } } else lb.removeAttribute('open');
+    lbImg.removeAttribute('src');
+    if (lbFrom) { lbFrom.focus({ preventScroll: true }); lbFrom = null; }
+  }
+  document.addEventListener('click', function (e) {
+    var z = e.target.closest && e.target.closest('[data-zoom]'); if (z) { e.preventDefault(); lbOpen(z); }
+  });
+  $('lbclose').addEventListener('click', lbClose);
+  lb.addEventListener('click', function (e) { if (e.target === lb || e.target.classList.contains('lb-in')) lbClose(); });
+  lb.addEventListener('cancel', function (e) { e.preventDefault(); lbClose(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && lb.hasAttribute('open')) { e.preventDefault(); lbClose(); } });
+
+  var tip = $('tip');
+  document.querySelectorAll('[data-tip]').forEach(function (s) {
+    s.addEventListener('mousemove', function (e) { tip.textContent = s.getAttribute('data-tip'); tip.style.left = Math.min(e.clientX + 12, window.innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; tip.classList.add('on'); });
+    s.addEventListener('mouseleave', function () { tip.classList.remove('on'); });
+  });
+  render();
+  QS.forEach(function (q) { if (answered(q)) setCollapsed($(q.id), true); });
+})();
+</script>

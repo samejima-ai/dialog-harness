@@ -120,6 +120,10 @@ nodes:
     kind: agent
     role: support
     impl: .claude/skills/rtk-integration/SKILL.md
+  - id: decision-kit-html
+    kind: agent
+    role: support
+    impl: .claude/skills/decision-kit-html/SKILL.md
 
   # --- tool（確定的・LLM 不使用。philosophy 第 2 条「計算的解決を最優先」） ---
   - id: harness-verify
@@ -300,6 +304,11 @@ edges:
     type: conditional
     condition: "跨ぎドメイン方針対立（解消不能は人間）"
     source: .claude/skills/crosscut-council/references/escalation-matrix.md#1-マトリクス
+  - from: decision-kit-html
+    to: crosscut-council
+    type: conditional
+    condition: "判断点に技術の得失・作るか否か・時期・直し方が含まれる（判定をキットの推奨にする。好み・委任・現場の知識は人へ）"
+    source: .claude/skills/decision-kit-html/SKILL.md#手順
 
   # === auto-merge の配線（F1-7・停止条件を明示的にノード化する） ===
   - from: layer1-autonomous-dev

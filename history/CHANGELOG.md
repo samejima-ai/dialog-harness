@@ -2,6 +2,19 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v6.20.0 F1 — 判断キット（decision-kit-html）を DH 配布へ昇格（2026-10-10）
+
+**この PR を持つと何が違うか**: 人に判断を返す面（○× を付けて回答まとめをコピー → 貼り戻すと実行が走る HTML）が DH の配布物になる。
+DH 自身の判断キット（`delivery/decision-kits/`）も生成器をリポジトリ内に持つ。中身は kakuman の 2026-10-10 改訂後
+（答える人の認知負荷が最上位: 常に見せるのは 問い・絵・選択肢 / 事実と決まったら は ▸詳しく / 用語は (i) / 選んだ案は紫の塗り + ✓ /
+答えた問いは緑の ✓回答済みで 1 行に畳む）。
+
+- spec: `dh-upgrades/upgrade-spec-v6.20.0.md` §F1（人間決定 2026-10-10「DH の配布スキルに昇格」。Council なし = 委任の範囲の判断）
+- 変更: `.claude/skills/decision-kit-html/`（新規。kakuman 版からプロジェクト固有の語を除去）/ `dh-manifest.yml` owned_skills /
+  `GRAPH.yml` node + edge（→ crosscut-council）/ `harness-verifier/fixtures/skill-triggers.yml`（正例 8・負例 8）
+- 配布先: 同名の project skill を持つ kakuman は、次回の同期で DH 所有へ移る（`harness_origin` と CLAUDE.md の表は同期 PR で人間承認）
+- 検証: `verify.py --strict` 全 PASS / `scripts/test-*` PASS / `build_kit.py assets/example-spec.json --strict` WARN 0
+
 ## v7.0.0 Phase A / PR-2 — 失効した規範を購読から外す経路（2026-09-13・F6）
 
 **この PR を持つと何が違うか**: 規範を「廃止した」と書いても購読に残り続ける状態が終わる。(1) 規範メタデータに `status` /
