@@ -2,6 +2,17 @@
 
 DH 本体のモード判定・major/minor 昇格の記録。
 
+## v6.20.0（minor 昇格、判断キットの配布 + v7.0.0 Phase A の前段）
+
+- 判定日: 2026-10-10
+- 判定者: ユーザー（`toriaezu.hide@gmail.com`）。発話「DH の VERSION を 6.20.0 に昇格して」
+- 改修主体: kakuman-platform 側の対話セッション（判断キット改訂キット 1010 → DH 昇格 #290）→ 同セッションで昇格 PR
+- **minor 昇格の根拠**: 後方互換維持。philosophy.md・delegation-boundary.md・auto-merge-boundary.md に触れていない。
+  規範の削除・参照の改名なし。追加は配布 skill 1 本（`decision-kit-html`）と v7.0.0 Phase A（L-FULL 領域のみ）
+- 含む spec: v6.19.0（F1〜F5、内容は 6.18.0 で配布済み・名乗りのみ本版）/ v6.20.0 F1（#290）/ v7.0.0 Phase A の PR-1・PR-2（状態は実装中のまま）
+- 6.19.0 は欠番（spec 番号は起草時の予約であって release 番号ではない、`dev-env-spec.md`）
+- 昇格 PR を 1 本立て、その merge を昇格時点とする（v6.18.0 の先例どおり）
+
 ## v7.0.0 Phase A / PR-2 — F6 失効セマンティクス（2026-09-13・VERSION は 6.18.0 のまま）
 
 - 体制: M2 / LC=1（PR-1 と同一 cycle の続き）。Council 新規発動なし — `v7phsa`（案C）が PR-2 = F6 の着地単位を含む。
