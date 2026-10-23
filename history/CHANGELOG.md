@@ -2,6 +2,19 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
+## v6.21.0 F1 — 判断キットを v2（1 項目ずつめくる型）に替える（2026-10-23）
+
+**この PR を持つと何が違うか**: 判断キットが 1 画面に 1 項目だけを出す。各項目は 左に絵（原図 ＞ モック ＞ 挿絵 ＞ 表・グラフ、必ず 1 枚）・
+右に 課題 → 説明 → 質問 → 選択肢 + メモ で、欄ごとの文字に上限があり細かい事実は ▸詳しく に畳む。複雑な項目は「解説」と「選ぶ」の 2 枚。
+最後のまとめは 答えの表 + 貼り戻すと実行が走るプロンプト。v1（全部の問いを縦に並べる型）の生成器は外す。
+
+- spec: `dh-upgrades/upgrade-spec-v6.21.0.md` §F1（人間決定 2026-10-23 = kakuman の kit-format-1023 回答 K6 B + 利用者発話「スキルを更新して」）
+- 変更: `.claude/skills/decision-kit-html/`（SKILL.md・template・example-spec・spec-schema を v2 に / `build_kit2.py` 追加 /
+  `check_layout.js` を v2 対応 / v1 の `build_kit.py`・`visuals.py`・`add_decisions.py`・`inject_images.py`・`references/visuals.md`・`design.md` を削除）/
+  `harness-verifier/fixtures/skill-triggers.yml`（正例 +2）
+- 配布先: 次回の同期で dir 単位で置き換わる。VERSION 6.21.0 への昇格は人間判定で別に行う
+- 検証: `verify.py --strict` / `scripts/test-*` / `build_kit2.py --strict` WARN 0 / `check_layout.js` 3 幅 × 全 9 ページ はみ出し 0
+
 ## VERSION 6.18.0 → 6.20.0 — 人に判断を返す面が配布物になる（2026-10-10）
 
 **この版を持つと何が違うか**: 判断キット（`decision-kit-html`）が DH から配られる。人にしか決められない判断点を、絵と選択肢だけが
