@@ -232,6 +232,11 @@ graph_excluded:
   - id: reviewer-misjudgment
     path: scripts/reviewer-misjudgment.py
     reason: レビュー誤判定の事後集計器。実行グラフ上の起動関係を持たない分析専用
+  - id: gate-metrics
+    path: scripts/gate-metrics.py
+    reason: >-
+      2026-11-06 roll-back 評価ゲートの 4 指標集計器（v7.0.0 Phase 0 / T-01）。
+      実行グラフ上の起動関係を持たない分析専用。pr-audit と同区分
   - id: upstream-scan
     path: scripts/upstream-scan.py
     reason: 配布先からの還流候補の走査器。実行グラフ上の起動関係を持たない分析専用
