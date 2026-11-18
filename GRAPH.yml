@@ -325,7 +325,7 @@ edges:
   - from: honshitsu-mondou
     to: decision-kit-html
     type: conditional
-    condition: "本質は定まり、残りが選択肢で決める判断点だけ（3 つ以上 or 絵が要る）"
+    condition: "本質は定まり、残りが選択肢で決める判断点だけ"
     source: .claude/skills/honshitsu-mondou/SKILL.md#使い分け
   - from: decision-kit-html
     to: shougou-houkoku

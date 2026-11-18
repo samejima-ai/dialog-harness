@@ -45,7 +45,7 @@
 ### 是正
 
 1. `.claude/skills/honshitsu-mondou/SKILL.md` を足す（DH の frontmatter・§起動条件。「この相手について」は既定に、個人の決まり〔AI を使う案を出さない〕は
-   「相手が使うと言っていない手段を勧めない」に一般化、渡し先の個人スキル〔要件定義・モック〕は layer0-spec-architect に）
+   「相手が使うと言っていない手段を勧めない」に一般化、渡し先の個人スキル〔要件定義・モック〕は layer0-spec-architect に。description に「仕様づくりでなく、本人が問答を望む時」を足して spec-architect と分け、結晶化の後の置き場に「開発では決定記録」を一言足した）
 2. `dh-manifest.yml`・`GRAPH.yml`（node + 本質問答 → layer0-spec-architect / decision-kit-html の 2 辺）・`skill-triggers.yml`（正例 5・負例 5）
 
 ### 受け入れ基準（F1・F2・F3 共通）

@@ -4,6 +4,7 @@ target_os: any
 dimension: D4
 description: >
   何かを考える・決める・始める前に、哲学の問いで「本質的に何をどうしたいのか」を一問ずつ問い詰め、本質の一文と目的の木に結晶化する問答モード。
+  仕様づくりでなく、本人が問答を望む時に使う。
   手段（作り方・技術）は脇に置いて最後に戻す。本質が定まった後の仕様の確定は layer0-spec-architect、選択肢で決めるだけなら decision-kit-html。
 ---
 
@@ -140,5 +141,5 @@ description: >
 ## 使い分け
 
 - 本質が固まった後、仕様の確定・開発環境の設計に進むなら layer0-spec-architect に渡す。「本質の一文」「ものさし」「新しい問い」をそのまま引き継ぐ。
-- 判断点を選択肢で決めたいだけ（本質は既に明確）なら decision-kit-html。技術の得失の比較なら crosscut-council。
+- 判断点を選択肢で決めたいだけ（本質は既に明確）なら decision-kit-html（技術の得失はそこから crosscut-council に回る）。
 - 実行し終えた後の照らし合わせは shougou-houkoku。
