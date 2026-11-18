@@ -124,6 +124,10 @@ nodes:
     kind: agent
     role: support
     impl: .claude/skills/decision-kit-html/SKILL.md
+  - id: shougou-houkoku
+    kind: agent
+    role: support
+    impl: .claude/skills/shougou-houkoku/SKILL.md
 
   # --- tool（確定的・LLM 不使用。philosophy 第 2 条「計算的解決を最優先」） ---
   - id: harness-verify
@@ -308,6 +312,11 @@ edges:
     to: crosscut-council
     type: conditional
     condition: "判断点に技術の得失・作るか否か・時期・直し方が含まれる（判定をキットの推奨にする。好み・委任・現場の知識は人へ）"
+    source: .claude/skills/decision-kit-html/SKILL.md#手順
+  - from: decision-kit-html
+    to: shougou-houkoku
+    type: conditional
+    condition: "全体の絵で「これで実行」が返り、実行し終えた（約束 = 全体の絵と出来た物を照らす）"
     source: .claude/skills/decision-kit-html/SKILL.md#手順
 
   # === auto-merge の配線（F1-7・停止条件を明示的にノード化する） ===
