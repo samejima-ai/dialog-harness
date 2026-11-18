@@ -1,6 +1,6 @@
-# upgrade-spec v6.22.0 — 判断キットの出口を「全体の絵」に分け、実行後の報告を照合報告（shougou-houkoku）にする
+# upgrade-spec v6.22.0 — 判断キットの出口を「全体の絵」に分け、実行後の報告を照合報告（shougou-houkoku）にし、前段の本質問答（honshitsu-mondou）を入れる
 
-> **状態: 実装中（F1・F2 済 = 本 PR で skill を差し替え / 新設）**。VERSION 6.22.0 への昇格は `dev-env-spec.md` §昇格の実行 に従い人間判定で別に行う。
+> **状態: 実装中（F1・F2・F3 済 = 本 PR で skill を差し替え / 新設）**。VERSION 6.22.0 への昇格は `dev-env-spec.md` §昇格の実行 に従い人間判定で別に行う。
 > 人間決定 2026-11-18（利用者発話「判断キットや報告のスキルを更新、導入したい」+ 選択「claude.ai 側の版に揃える」「DH 配布で新設」）。
 > Council 諮問なし（型の好みと配布の範囲 = 人間の判断で、技術の得失の比較を要する判断点が無い）。
 >
@@ -38,7 +38,17 @@
 2. `dh-manifest.yml` の overwrite 一覧・`GRAPH.yml`（node + decision-kit-html → shougou-houkoku の 1 辺。直す物の次の周は人の「直す」を通るので戻り辺は置かない = G-4）に載せる
 3. `harness-verifier/fixtures/skill-triggers.yml` に正例 5・負例 5
 
-### 受け入れ基準（F1・F2 共通）
+## F3 honshitsu-mondou を新設する（priority: standard）
+
+> 人間決定 2026-11-18 追加（利用者発話「本質問答のスキルも DH に入れて」）。起点 = claude.ai の個人スキル honshitsu-mondou。
+
+### 是正
+
+1. `.claude/skills/honshitsu-mondou/SKILL.md` を足す（DH の frontmatter・§起動条件。「この相手について」は既定に、個人の決まり〔AI を使う案を出さない〕は
+   「相手が使うと言っていない手段を勧めない」に一般化、渡し先の個人スキル〔要件定義・モック〕は layer0-spec-architect に）
+2. `dh-manifest.yml`・`GRAPH.yml`（node + 本質問答 → layer0-spec-architect / decision-kit-html の 2 辺）・`skill-triggers.yml`（正例 5・負例 5）
+
+### 受け入れ基準（F1・F2・F3 共通）
 
 - `verify.py --strict` 全 PASS / `scripts/test-*` PASS
 - `build_kit2.py assets/example-spec.json <out> --images <仮の画像> --strict` が WARN 0

@@ -128,6 +128,10 @@ nodes:
     kind: agent
     role: support
     impl: .claude/skills/shougou-houkoku/SKILL.md
+  - id: honshitsu-mondou
+    kind: agent
+    role: support
+    impl: .claude/skills/honshitsu-mondou/SKILL.md
 
   # --- tool（確定的・LLM 不使用。philosophy 第 2 条「計算的解決を最優先」） ---
   - id: harness-verify
@@ -313,6 +317,16 @@ edges:
     type: conditional
     condition: "判断点に技術の得失・作るか否か・時期・直し方が含まれる（判定をキットの推奨にする。好み・委任・現場の知識は人へ）"
     source: .claude/skills/decision-kit-html/SKILL.md#手順
+  - from: honshitsu-mondou
+    to: layer0-spec-architect
+    type: conditional
+    condition: "本質の一文が定まり、仕様の確定に進む（本質の一文・ものさし・新しい問いを引き継ぐ）"
+    source: .claude/skills/honshitsu-mondou/SKILL.md#使い分け
+  - from: honshitsu-mondou
+    to: decision-kit-html
+    type: conditional
+    condition: "本質は定まり、残りが選択肢で決める判断点だけ（3 つ以上 or 絵が要る）"
+    source: .claude/skills/honshitsu-mondou/SKILL.md#使い分け
   - from: decision-kit-html
     to: shougou-houkoku
     type: conditional

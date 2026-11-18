@@ -2,7 +2,7 @@
 
 DH 本体の改修履歴。各 Step の実行記録を時系列で追記する。
 
-## v6.22.0 F1・F2 — 判断キットの出口を「全体の絵」に分け、報告を照合報告にする（2026-11-18）
+## v6.22.0 F1・F2・F3 — 判断キットの出口を「全体の絵」に分け、報告を照合報告に、前段に本質問答を入れる（2026-11-18）
 
 **この PR を持つと何が違うか**: 判断キットの回答が返ってもすぐ実行しない。答えを全部合わせた「全体の絵」（判断対象 = 見せ方 / 数と段取り / 仕組み で構図を選ぶ）
 を見せ、言葉だけで決まった所に印を付けて「これで実行／ここを詰める」の 1 問で分ける。絵は 現物 ＞ 様式 ＞ モック ＞ 挿絵 ＞ 表・グラフ で、
@@ -13,7 +13,8 @@ DH 本体の改修履歴。各 Step の実行記録を時系列で追記する�
 - 変更: `.claude/skills/decision-kit-html/`（SKILL.md v3 / template・example-spec・spec-schema・build_kit2.py を claude.ai 版に / `render_visual.py` 追加 /
   `check_layout.js` は残す）/ `.claude/skills/shougou-houkoku/SKILL.md`（新設）/ `dh-manifest.yml`・`GRAPH.yml`（shougou-houkoku を登録）/
   `harness-verifier/fixtures/skill-triggers.yml`（kit 正例 +1・shougou-houkoku 正例 5 負例 5）
-- 配布先: 次回の同期で decision-kit-html は dir 単位で置き換わり、shougou-houkoku が増える。VERSION 6.22.0 への昇格は人間判定で別に行う
+- F3（追加発話「本質問答のスキルも DH に入れて」）: `.claude/skills/honshitsu-mondou/SKILL.md` 新設（一問ずつの哲学の問答で本質の一文と目的の木に結晶化）。manifest・GRAPH（→ spec-architect / decision-kit-html）・skill-triggers に登録
+- 配布先: 次回の同期で decision-kit-html は dir 単位で置き換わり、shougou-houkoku と honshitsu-mondou が増える。VERSION 6.22.0 への昇格は人間判定で別に行う
 
 ## v6.21.0 F1 — 判断キットを v2（1 項目ずつめくる型）に替える（2026-10-23）
 

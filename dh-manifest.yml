@@ -67,6 +67,7 @@ paths:
     - "crosscut-quota-observer"
     - "crosscut-verifier-drift"
     - "decision-kit-html"
+    - "honshitsu-mondou"
     - "layer0-archeo-architect"
     - "layer0-onboarding"
     - "layer0-reindex-librarian"
