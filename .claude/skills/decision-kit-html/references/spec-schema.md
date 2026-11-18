@@ -17,7 +17,7 @@
         { "kind": "original", "src": "{{IMG:faces}}", "caption": "…" },
         { "kind": "original", "file": "in/出面.xlsx", "focus": "出面!A3:H3", "caption": "いまの出面表（赤枠 = 列の見出し）" },
         { "kind": "original", "file": "in/図面.pdf", "page": 2, "box": [40, 20, 30, 25], "caption": "北面（赤枠 = 3 階の手すり）" },          // file = xlsx・docx・pptx・pdf・画像 → PNG
-        { "kind": "template", "file": "tpl/お知らせ.docx", "source": "nichi-format 同梱テンプレ", "caption": "これから作る形（中身は仮）", "trim": false },
+        { "kind": "template", "file": "tpl/お知らせ.docx", "source": "○○スキル同梱のテンプレ", "caption": "これから作る形（中身は仮）", "trim": false },
         { "kind": "mock", "url": "https://claude.ai/artifact/…", "src": "{{IMG:shot}}", "caption": "…" },
         { "kind": "mock", "html": "<div>…触れる見本…</div>", "caption": "…" },
         { "kind": "illustration", "src": "il.png", "caption": "見本（AI が描いた）…" },

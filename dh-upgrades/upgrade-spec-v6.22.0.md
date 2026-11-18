@@ -23,7 +23,7 @@
 ### 是正
 
 1. `SKILL.md` を v3 に置き換える（description ≤ 300 字、トリガー語は §起動条件）。v3 の本文は claude.ai 版と同じ。DH 版の違いは
-   frontmatter（`target_os` / `dimension`）・§起動条件・`check_layout.js` の手順と参照・固有名（人名・提出先）を一般名に、の 4 点
+   frontmatter（`target_os` / `dimension`）・§起動条件・`check_layout.js` の手順と参照・固有名（人名・提出先）を一般名に、の 4 点。加えて、feel が無くても推奨と食い違うメモがあれば全体の絵を出す（claude.ai 版の穴を埋めた）・見本 spec のまとめを v3 の形に・render_visual.py は Linux / macOS 向けと明記
 2. `assets/template.html`・`assets/example-spec.json`・`scripts/build_kit2.py` を claude.ai 版に揃える（`target` / `template` / `file` / `focus` / `box` / `whole` の点検）
 3. 足す: `scripts/render_visual.py`（xlsx・docx・pptx・pdf・画像 → PNG。LibreOffice → pdftoppm）
 4. `references/spec-schema.md` を揃え、claude.ai 版で崩れていた `phases` の注釈を直し、`feel` を載せる（組み立ては読まない）

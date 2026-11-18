@@ -94,7 +94,7 @@ description: >
    キット用の 1 本がまだ無い案件だけ 1 本作り、URL を決定記録に書く。前のキットに未回答が残っている間は上書きせず、先に聞く。
    spec と Markdown 正本はプロジェクトの記録の置き場へ
 8. **回答が返ったら、まず全体の絵**（下の「出口 = 全体の絵 → 2 本に分かれる」）。実行は全体の絵に「これで実行」が返ってから。
-   `feel` の問いが 1 つも無いキットだけは、全体の絵を飛ばして実行に回す。
+   `feel` の問いが 1 つも無く、推奨と食い違うメモも無いキットだけは、全体の絵を飛ばして実行に回す（この時は回答そのものが「これで実行」）。
    決定記録（決定・理由・捨てた案・出どころ）を正本に残し、出荷したら PR 番号つきの実態に直す
 9. **報告 = 照合報告（`shougou-houkoku`）**: 全体の絵（約束）と出来た物を本文の一枚で並べ、違う所に印を付け、「直す物はどれか」だけ聞く。
    違いが無ければ「約束どおり」の一行で終える。ずれと原因の札は決定記録の実行結果に足す。報告用の Artifact は作らない
@@ -158,7 +158,7 @@ summaryFooter:
 
 まとめのページは 答えの表（項目・答え・メモ）+ このプロンプト + コピーのボタン。コピーできない環境では本文を選択する。
 
-`feel` の問いが 1 つも無いキットは、summaryTitle を v2 の形（「この回答どおりに自律駆動で実行してください。…最後に照合報告（shougou-houkoku）で報告してください」）にしてよい。
+`feel` の問いが 1 つも無いキットは、summaryTitle を「この回答どおりに自律駆動で実行してください。ただし推奨と食い違うメモがあれば、先に全体の絵を出して「これで実行／ここを詰める」を聞いてください。最後に照合報告（shougou-houkoku）で報告してください」にする。
 
 ### 前後のスキル
 
@@ -183,9 +183,9 @@ summaryFooter:
 ## 参照
 
 - `references/spec-schema.md` — spec の項目
-- `assets/example-spec.json` — 見本（7 項目。原図・モック・挿絵・表・グラフ・解説 / 選ぶ の 2 枚を全部使う）
+- `assets/example-spec.json` — 見本（7 項目。現物・モック・挿絵・表・グラフ・解説 / 選ぶ の 2 枚・`feel` を使う。`target` / `template` / `file` の書き方は spec-schema.md）
 - `assets/template.html` — 1 ファイルの HTML の元（明暗・スマホ・キー操作つき）
 - `scripts/build_kit2.py` — spec → HTML（絵と文字の上限・target と先頭の絵を点検）
-- `scripts/render_visual.py` — xlsx・docx・pptx・pdf・画像 → PNG（LibreOffice → pdftoppm）
+- `scripts/render_visual.py` — xlsx・docx・pptx・pdf・画像 → PNG（LibreOffice → pdftoppm・ImageMagick。Linux / macOS 向け。Windows ではこの 3 つが PATH に無い〔`convert` は別物〕ので、画像にしてから `src` で渡す）
 - `scripts/check_layout.js` — PC 1440 / スマホ 390 のはみ出し判定 + スクリーンショット
 - `../shougou-houkoku/SKILL.md` — 実行後の照合報告
