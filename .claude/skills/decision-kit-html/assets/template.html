@@ -1,7 +1,7 @@
 <title>{{TITLE}}</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* 判断キット v2 = 1 項目ずつめくる。上に地図、項目は 左 = 絵（原図＞モック＞挿絵＞表・グラフ）/ 右 = 課題・説明・質問・選択肢・メモ。
+/* 判断キット v2 = 1 項目ずつめくる。上に地図、項目は 左 = 絵（現物＞様式＞モック＞挿絵＞表・グラフ）/ 右 = 課題・説明・質問・選択肢・メモ。
    複雑な項目は「解説」と「選ぶ」の 2 枚に分けて札を付ける。最後のページがまとめ。下に固定の帯（回答数・前へ / 次へ・コピー） */
 :root {
   --bg: #f4f6f5; --panel: #ffffff; --ink: #1c2420; --muted: #5f6a65; --line: #d6ddd9;
@@ -32,12 +32,17 @@ p { margin: 0; max-width: 70ch; }
 @media (max-width: 900px) { .page { grid-template-columns: 1fr; } }
 .pics { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 figure { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: zoom-in; }
+/* 元の大きさより拡大しない（小さい表が枠いっぱいに伸びて粗くなるのを防ぐ）。押すと拡大 */
+figure img { display: block; width: auto; max-width: 100%; height: auto; margin: 0 auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: zoom-in; }
 figure iframe { width: 100%; min-height: 460px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 figcaption { font-size: 12px; color: var(--muted); }
 .kind { display: inline-block; font-size: 11px; padding: 0 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px; }
 .kind.original { border-color: var(--accent); color: var(--accent); }
 .kind.mock { border-color: var(--sel); color: var(--sel); }
+.kind.template { border-color: var(--muted); color: var(--ink); border-style: dashed; }
+/* 様式・挿絵 = まだ無い物の見本。現物と見分けるため枠を点線に */
+figure.template img, figure.illustration img { outline: 2px dashed var(--line); outline-offset: 3px; }
+.fsrc { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); }
 .side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .head .num { font-size: 13px; font-weight: 700; color: var(--sel); }
@@ -100,7 +105,7 @@ pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line
   // raw = 書き手の文（<b> などの HTML を通す）/ esc = 人が打った文（メモ）。メモは必ず esc
   const raw = (s) => String(s ?? '');
   const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const KIND = { original: '原図', mock: 'モック', illustration: '挿絵', table: '表', chart: 'グラフ' };
+  const KIND = { original: '現物', template: '様式', mock: 'モック', illustration: '見本（AI）', table: '表', chart: 'グラフ' };
   // ページ = 項目ごとに 1 枚（phases の項目は 解説 / 選ぶ の 2 枚）+ 最後のまとめ
   const PAGES = [];
   SPEC.items.forEach((it, i) => {
@@ -115,12 +120,14 @@ pre { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line
   document.getElementById('meta').innerHTML = (SPEC.meta ?? []).join(' ・ ');
 
   function visual(v) {
-    const cap = `<figcaption><span class="kind ${v.kind}">${KIND[v.kind] ?? v.kind}</span>${esc(v.caption)}</figcaption>`;
+    // 現物 = ファイル名を、様式 = どの既定の様式・見本かを添える（何を見ているかを取り違えない）
+    const from = v.kind === 'template' && v.source ? `出所: ${esc(v.source)}` : (v.file ? `ファイル: ${esc(v.file)}${v.page > 1 ? `（${v.page} ページ目）` : ''}` : '');
+    const cap = `<figcaption><span class="kind ${v.kind}">${KIND[v.kind] ?? v.kind}</span>${esc(v.caption)}${from ? `<span class="fsrc">${from}</span>` : ''}</figcaption>`;
     if (v.kind === 'table') return `<figure><div class="tbl"><table><thead><tr>${v.columns.map((c) => `<th>${c}</th>`).join('')}</tr></thead><tbody>${v.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${cap}</figure>`;
     if (v.kind === 'chart') { const mx = Math.max(...v.bars.map((b) => b.value), 1); return `<figure><div class="bars">${v.bars.map((b) => `<div class="row"><span>${b.label}</span><span class="track"><span class="fill" style="display:block;width:${(b.value / mx) * 100}%"></span></span><span class="v">${b.value}${v.unit ?? ''}</span></div>`).join('')}</div>${cap}</figure>`; }
     if (v.kind === 'mock' && v.html) return `<figure><iframe title="${esc(v.caption)}" sandbox="allow-scripts" srcdoc="${v.html.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"></iframe>${cap}</figure>`;
     if (v.kind === 'mock' && v.url) return `<figure>${v.src ? `<img alt="${esc(v.caption)}" src="${v.src}">` : ''}<a class="btn primary" style="display:inline-flex;align-items:center;width:max-content;text-decoration:none" href="${v.url}" target="_blank" rel="noopener">触れるモックを開く</a>${cap}</figure>`;
-    return `<figure><img alt="${esc(v.caption)}" src="${v.src}">${cap}</figure>`;
+    return `<figure class="${v.kind}"><img alt="${esc(v.caption)}" src="${v.src}">${cap}</figure>`;
   }
   function render() {
     const p = PAGES[cur];

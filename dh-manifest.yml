@@ -76,6 +76,7 @@ paths:
     - "layer2-integration-verifier"
     - "layer2-orchestrator"
     - "rtk-integration"
+    - "shougou-houkoku"
 
   # merge: DH 提供だがプロジェクトがカスタムしうる。raw 上書き不可。差分を提示して人間がマージ。
   merge:

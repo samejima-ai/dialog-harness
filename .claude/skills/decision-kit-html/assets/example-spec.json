@@ -2,7 +2,7 @@
   "key": "kit-format-1023",
   "title": "判断キットの新しい型 — これ自体を新しい型で確かめる",
   "lede": "1 項目ずつめくり、左の絵（原図 ＞ モック ＞ 挿絵 ＞ 表・グラフ）を見ながら 課題 → 説明 → 質問 → 選択肢 + メモ で決め、最後にまとめをコピーする。",
-  "meta": ["起点 = kakuman-platform の利用者 2026-10-23「この説明方式の判断キットがとても良い」", "見本 = このページ（.claude/skills/decision-kit-html/assets/example-spec.json）"],
+  "meta": ["起点 = ひでさん 2026-10-23「この説明方式の判断キットがとても良い」", "見本 = このページ（docs/decision-kit-v2/assets/example-spec.json）"],
   "items": [
     {
       "id": "K1", "title": "新しい型の受け取り方",
