@@ -10,7 +10,7 @@ DH の哲学的洞察を記録するドキュメント。
 | `history/INTENT.md` | 概念の確立経緯（時系列） |
 | `history/DIMENSIONS.md` | 5 次元論の運用ルール（形式化） |
 | `harness-verifier/PHILOSOPHY.md` | 規律の自己相似性の存在論 |
-| `.claude/skills/layer0-spec-architect/references/philosophy.md` | DH 6 条憲法（仕様核） |
+| `.claude/skills/layer0-spec-architect/references/philosophy.md` | DH 憲法（仕様核・第1条〜第9条） |
 | **`history/DH-PHILOSOPHY-INSIGHTS.md`（本ファイル）** | **ブレストの哲学的洞察** |
 
 本ファイルは「業界最先端との対比 / 自律サイクルの三層構造 / Council 貫通性 / ACI の P4 内包」等、構造的判断の経緯と思想的含意を保存する。
